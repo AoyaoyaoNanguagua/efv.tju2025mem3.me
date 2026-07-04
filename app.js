@@ -484,6 +484,7 @@ class EFVScene extends Phaser.Scene {
     this.isCasting = false;
     this.isCat = false;
     this.isActionLocked = false;
+    this.isShowingCatIdleFrame = false;
     this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,J,B,C,R,L,U,I");
     this.input.keyboard.on("keydown", event => this.handleHotkey(event));
     this.input.on("pointerdown", pointer => {
@@ -622,6 +623,7 @@ class EFVScene extends Phaser.Scene {
     this.actor.anims?.stop();
     this.actor.setTexture(this.getBaseTextureKey());
     this.actor.setFrame("transform-7");
+    this.isShowingCatIdleFrame = true;
     currentFrameIndex = 7;
     updateFrameReadout(currentFrameIndex);
   }
@@ -639,7 +641,8 @@ class EFVScene extends Phaser.Scene {
       renderSelection();
     }
     const key = `${selected.id}-${action.id}`;
-    if (this.actor.anims?.currentAnim?.key !== key) {
+    if (this.isShowingCatIdleFrame || this.actor.anims?.currentAnim?.key !== key) {
+      this.isShowingCatIdleFrame = false;
       this.actor.play(key, true);
       this.bindAnimationFrameUpdates(action);
     }
@@ -679,6 +682,7 @@ class EFVScene extends Phaser.Scene {
     this.isActionLocked = action.repeat === 0;
     this.actor.body.setVelocity(0, 0);
     if (action.id !== "attack") this.actor.setTexture(this.getBaseTextureKey());
+    this.isShowingCatIdleFrame = false;
     const key = action.id === "attack"
       ? this.getAttackAnimationKey()
       : `${selected.id}-${action.id}${action.repeat === 0 ? "-once" : ""}`;
@@ -703,6 +707,7 @@ class EFVScene extends Phaser.Scene {
     renderSelection();
     this.isActionLocked = true;
     this.actor.setTexture(this.getBaseTextureKey());
+    this.isShowingCatIdleFrame = false;
     this.actor.play(`${selected.id}-catJump-once`, true);
     this.bindAnimationFrameUpdates(action);
     const vec = this.lastAimVector || directionVector(this.facing);
@@ -722,6 +727,7 @@ class EFVScene extends Phaser.Scene {
     this.isActionLocked = true;
     this.isCasting = false;
     this.actor.setTexture(this.getBaseTextureKey());
+    this.isShowingCatIdleFrame = false;
     const key = `${selected.id}-transform-once`;
     if (this.isCat && this.actor.anims?.playReverse) this.actor.anims.playReverse(key, true);
     else this.actor.play(key, true);
@@ -794,6 +800,7 @@ class EFVScene extends Phaser.Scene {
       this.isCasting = true;
       selectedAction = ACTIONS.find(action => action.id === "attack");
       renderSelection();
+      this.isShowingCatIdleFrame = false;
       this.actor.play(this.getAttackAnimationKey(), true);
       this.bindAnimationFrameUpdates(selectedAction);
       this.actor.once("animationcomplete", () => {
@@ -916,6 +923,7 @@ class EFVScene extends Phaser.Scene {
     this.staffSprite?.setVisible(false);
     selectedAction = ACTIONS.find(action => action.id === "death");
     renderSelection();
+    this.isShowingCatIdleFrame = false;
     this.actor.play(`${selected.id}-death-once`, true);
     this.bindAnimationFrameUpdates(selectedAction);
   }
