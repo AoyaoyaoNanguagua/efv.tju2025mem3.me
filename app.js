@@ -11,6 +11,12 @@ const VIEW_WIDTH = 960;
 const VIEW_HEIGHT = 540;
 
 const MAP_TILE_SIZE = 64;
+const PROJECTILE_RANGE_TILES = 6;
+const PROJECTILE_MAX_RANGE = MAP_TILE_SIZE * PROJECTILE_RANGE_TILES;
+const PROJECTILE_SPEED_SCALE = 0.72;
+const PROJECTILE_FRAME_SIZE = 362;
+const PROJECTILE_HEAD_ORIGIN = { x: 228 / PROJECTILE_FRAME_SIZE, y: 201 / PROJECTILE_FRAME_SIZE };
+const CAST_SOCKET_FORWARD_OFFSET = 0;
 const MAP_TILESET_KEY = "zhonghe-plaza-tileset";
 const MAP_TILEMAP_KEY = "zhonghe-plaza-tilemap";
 const MAP_TILESET_PATH = "assets/maps/tilesets/zhonghe-plaza-ground-tileset-v1.png";
@@ -20,11 +26,35 @@ const MAP_MACRO_PROP_ATLAS_KEY = "zhonghe-plaza-macro-props";
 const MAP_MACRO_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-macro-props-v1.png";
 const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
 const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v1.png";
+const PROJECTILE_TEXTURE_KEY = "lina-projectiles";
+const LEAF_SLIME_SHEET = "assets/enemies/leaf-poring-sprites-v2.png";
+const LEAF_SLIME_KEY = "leaf-slime";
+const LEAF_SLIME_FRAME_SIZE = 128;
+const LEAF_SLIME_COLS = 6;
+const LEAF_SLIME_DETECT_RANGE = MAP_TILE_SIZE * 6;
+const LEAF_SLIME_ATTACK_RANGE = 64;
+const LEAF_SLIME_ATTACK_COOLDOWN = 1250;
+const LEAF_SLIME_HOP_DISTANCE = 72;
+const LEAF_SLIME_HOP_DURATION = 420;
+const LEAF_SLIME_HOP_REST = 260;
+const LEAF_SLIME_ATTACK_DISTANCE = 116;
+const LEAF_SLIME_ATTACK_DURATION = 280;
+const LEAF_SLIME_VANISH_TIME = 520;
+const LEAF_SLIME_HIT_OFFSET_Y = -62;
+const LEAF_SLIME_HIT_RADIUS = 52;
 
 const ALL_FRAMES = [0, 1, 2, 3, 4, 5, 6, 7];
 const FOUR_FRAMES = [0, 1, 2, 3];
 const FIVE_FRAMES = [0, 1, 2, 3, 4];
 const SIX_FRAMES = [0, 1, 2, 3, 4, 5];
+
+const LINA_STAFF_CAST_SOCKETS = [
+  { x: 117, y: 64 },
+  { x: 99, y: 46 },
+  { x: 110, y: 58 },
+  { x: 108, y: 51 }
+];
+const LINA_DEFAULT_STAFF_SOCKET = LINA_STAFF_CAST_SOCKETS[1];
 
 const ACTIONS = [
   { id: "idle", label: "待机", hint: "呼吸 / 站立", row: 0, fps: 7, repeat: -1, frames: [0, 1, 2, 3] },
@@ -79,6 +109,7 @@ const EQUIPMENT = [
     attackSheet: "assets/sprites/lina-sprites-v15-attack-amethyst.png",
     projectileFrame: 0,
     impactFrame: 3,
+    projectileOrigin: { x: 228 / PROJECTILE_FRAME_SIZE, y: 201 / PROJECTILE_FRAME_SIZE },
     projectileScale: 0.15,
     spriteScale: 0.72,
     length: 54,
@@ -103,6 +134,7 @@ const EQUIPMENT = [
     attackSheet: "assets/sprites/lina-sprites-v15-attack-sakura.png",
     projectileFrame: 4,
     impactFrame: 7,
+    projectileOrigin: { x: 237 / PROJECTILE_FRAME_SIZE, y: 178 / PROJECTILE_FRAME_SIZE },
     projectileScale: 0.15,
     spriteScale: 0.72,
     length: 48,
@@ -127,6 +159,7 @@ const EQUIPMENT = [
     attackSheet: "assets/sprites/lina-sprites-v15-attack-thesis.png",
     projectileFrame: 8,
     impactFrame: 11,
+    projectileOrigin: { x: 227 / PROJECTILE_FRAME_SIZE, y: 163 / PROJECTILE_FRAME_SIZE },
     projectileScale: 0.15,
     spriteScale: 0.72,
     length: 60,
@@ -301,7 +334,7 @@ function buildUI() {
   const inventory = document.querySelector("#inventoryItems");
   inventory.innerHTML = EQUIPMENT.map(item => `
     <button class="inventory-item" data-equipment="${item.id}" style="--staff-color:${item.css}">
-      <span class="staff-icon">${item.mark}</span>
+      <img class="staff-icon" src="${item.asset}" alt="${item.name}图标" loading="lazy">
       <span><strong>${item.name}</strong><span>${item.description}</span></span>
     </button>`).join("");
 
@@ -448,7 +481,8 @@ class EFVScene extends Phaser.Scene {
     this.load.image(MAP_MACRO_PROP_ATLAS_KEY, MAP_MACRO_PROP_ATLAS_PATH);
     this.load.tilemapTiledJSON(MAP_TILEMAP_KEY, MAP_DATA_PATH);
     this.load.json("zhonghe-map-data", MAP_DATA_PATH);
-    this.load.spritesheet("lina-projectiles", PROJECTILE_ATLAS, { frameWidth: 362, frameHeight: 362 });
+    this.load.spritesheet(PROJECTILE_TEXTURE_KEY, PROJECTILE_ATLAS, { frameWidth: PROJECTILE_FRAME_SIZE, frameHeight: PROJECTILE_FRAME_SIZE });
+    this.load.spritesheet(LEAF_SLIME_KEY, LEAF_SLIME_SHEET, { frameWidth: LEAF_SLIME_FRAME_SIZE, frameHeight: LEAF_SLIME_FRAME_SIZE });
     EQUIPMENT.forEach(item => {
       this.load.image(item.id, item.asset);
       this.load.image(item.attackTexture, item.attackSheet);
@@ -473,6 +507,8 @@ class EFVScene extends Phaser.Scene {
     this.collisionVisible = false;
     this.drawObstacles();
     this.ensureProjectileTexture();
+    this.prepareProjectileAnimations();
+    this.prepareLeafSlimeAnimations();
 
     this.projectiles = this.physics.add.group({ allowGravity: false });
     this.projectileGraphics = this.add.graphics().setDepth(40);
@@ -493,7 +529,11 @@ class EFVScene extends Phaser.Scene {
 
     CHARACTERS.filter(c => c.hasSprite).forEach(c => this.prepareFrames(c));
     this.showCharacter(selected);
+    this.spawnLeafSlime();
     this.physics.add.collider(this.actor, this.obstacleGroup);
+    this.physics.add.collider(this.leafSlime, this.obstacleGroup);
+    this.bindActorLeafSlimeCollision();
+    this.physics.add.overlap(this.projectiles, this.leafSlime, (projectile, enemy) => this.handleLeafSlimeProjectileHit(projectile, enemy));
     this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => this.destroyProjectile(projectile, true));
     updateDirectionBadge(this.facing);
   }
@@ -586,6 +626,96 @@ class EFVScene extends Phaser.Scene {
     g.destroy();
   }
 
+  getProjectileAnimationKey(equipment, phase) {
+    return `${equipment.id}-${phase}`;
+  }
+
+  prepareProjectileAnimations() {
+    const texture = this.textures.get(PROJECTILE_TEXTURE_KEY);
+    texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
+    EQUIPMENT.forEach(equipment => {
+      const flightKey = this.getProjectileAnimationKey(equipment, "flight");
+      if (!this.anims.exists(flightKey)) {
+        this.anims.create({
+          key: flightKey,
+          frames: this.anims.generateFrameNumbers(PROJECTILE_TEXTURE_KEY, {
+            frames: [equipment.projectileFrame, equipment.projectileFrame + 1]
+          }),
+          frameRate: 12,
+          repeat: -1,
+          yoyo: true
+        });
+      }
+
+      const impactKey = this.getProjectileAnimationKey(equipment, "impact");
+      if (!this.anims.exists(impactKey)) {
+        this.anims.create({
+          key: impactKey,
+          frames: this.anims.generateFrameNumbers(PROJECTILE_TEXTURE_KEY, {
+            frames: [equipment.projectileFrame + 2, equipment.impactFrame]
+          }),
+          frameRate: 18,
+          repeat: 0
+        });
+      }
+    });
+  }
+
+  getLeafSlimeFrames(row) {
+    return Array.from({ length: LEAF_SLIME_COLS }, (_, index) => row * LEAF_SLIME_COLS + index);
+  }
+
+  prepareLeafSlimeAnimations() {
+    const texture = this.textures.get(LEAF_SLIME_KEY);
+    texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
+    const configs = [
+      { key: "move", row: 0, frameRate: 12, repeat: 0 },
+      { key: "attack", row: 1, frameRate: 13, repeat: 0 },
+      { key: "hit", row: 2, frameRate: 15, repeat: 0 },
+      { key: "dead", row: 3, frameRate: 9, repeat: 0 }
+    ];
+    configs.forEach(config => {
+      const key = `${LEAF_SLIME_KEY}-${config.key}`;
+      if (this.anims.exists(key)) return;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(LEAF_SLIME_KEY, { frames: this.getLeafSlimeFrames(config.row) }),
+        frameRate: config.frameRate,
+        repeat: config.repeat
+      });
+    });
+  }
+
+  spawnLeafSlime() {
+    if (!this.actor) return;
+    this.leafSlime?.destroy();
+    this.leafSlimeShadow?.destroy();
+    const x = Phaser.Math.Clamp(this.actor.x + 190, 900, WORLD_WIDTH - 160);
+    const y = Phaser.Math.Clamp(this.actor.y + 18, 900, WORLD_HEIGHT - 220);
+    const slime = this.physics.add.sprite(x, y, LEAF_SLIME_KEY, 0)
+      .setOrigin(0.5, 0.72)
+      .setScale(0.9)
+      .setDepth(y - 2);
+    slime.body.setSize(54, 34);
+    slime.body.setOffset(37, 70);
+    slime.body.setAllowGravity(false);
+    slime.body.setCollideWorldBounds(true);
+    slime.state = "move";
+    slime.nextHopAt = 0;
+    slime.lastAttackAt = -LEAF_SLIME_ATTACK_COOLDOWN;
+    slime.play(`${LEAF_SLIME_KEY}-move`);
+    this.leafSlime = slime;
+    this.leafSlimeShadow = this.add.ellipse(slime.x, slime.y + 12, 58, 18, 0x182313, 0.18)
+      .setDepth(slime.y - 4);
+    this.bindActorLeafSlimeCollision();
+  }
+
+  bindActorLeafSlimeCollision() {
+    if (!this.actor || !this.leafSlime) return;
+    this.actorLeafSlimeCollider?.destroy?.();
+    this.actorLeafSlimeCollider = this.physics.add.collider(this.actor, this.leafSlime);
+  }
+
   prepareFrames(character) {
     this.prepareSheetFrames(`${character.id}-sheet`, character.id, ACTIONS);
     if (character.id === "lina") {
@@ -623,6 +753,7 @@ class EFVScene extends Phaser.Scene {
 
   showCharacter(character) {
     this.actor?.destroy();
+    this.actorShadow?.destroy();
     const mapSpawn = this.mapData?.spawn || {};
     const spawn = {
       x: (mapSpawn.x ?? MAP_SOURCE_WIDTH / 2) * MAP_SCALE,
@@ -647,8 +778,11 @@ class EFVScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.startFollow(this.actor, true, 0.12, 0.12);
     this.cameras.main.centerOn(spawn.x, spawn.y);
+    this.actorShadow = this.add.ellipse(this.actor.x, this.actor.y + 3, 34, 11, 0x182313, 0.16)
+      .setDepth(this.actor.y - 1);
     this.physics.add.collider(this.actor, this.obstacleGroup);
     this.playLoop("idle");
+    this.bindActorLeafSlimeCollision();
   }
 
   bindAnimationFrameUpdates(action) {
@@ -866,40 +1000,69 @@ class EFVScene extends Phaser.Scene {
       });
     }
 
-    const vec = this.lastAimVector || directionVector(this.facing);
+    const direction = this.facing || nearestDirection(this.lastAimVector?.x || 0, this.lastAimVector?.y || 1);
+    const vec = directionVector(direction);
+    this.lastAimVector = vec;
     const castOrigin = this.getCastOrigin(vec);
     const startX = castOrigin.x;
     const startY = castOrigin.y;
-    const projectile = this.physics.add.image(startX, startY, "projectile-hitbox");
+    const projectileSpeed = equipment.speed * PROJECTILE_SPEED_SCALE;
+    const projectile = this.projectiles.create(startX, startY, "projectile-hitbox");
     projectile.setVisible(false);
-    projectile.body.setCircle(equipment.size);
+    projectile.body.setCircle(equipment.size, 16 - equipment.size, 16 - equipment.size);
     projectile.body.setAllowGravity(false);
-    projectile.body.setVelocity(vec.x * equipment.speed, vec.y * equipment.speed);
+    projectile.body.setVelocity(vec.x * projectileSpeed, vec.y * projectileSpeed);
     projectile.body.setCollideWorldBounds(true);
     projectile.spawnTime = now;
     projectile.color = equipment.color;
     projectile.radius = equipment.size;
     projectile.spawnX = startX;
     projectile.spawnY = startY;
-    projectile.maxDistance = equipment.range || 900;
+    projectile.maxDistance = Math.min(equipment.range || PROJECTILE_MAX_RANGE, PROJECTILE_MAX_RANGE);
+    projectile.maxLifetime = Math.ceil((projectile.maxDistance / projectileSpeed) * 1000) + 180;
     projectile.impactFrame = equipment.impactFrame;
     projectile.visualScale = equipment.projectileScale || 0.15;
+    projectile.depthOffset = vec.y < -0.12 ? -8 : 12;
+    projectile.visualBaseDepth = this.actor.y + 18;
+    projectile.visualRotation = Math.atan2(vec.y, vec.x);
+    projectile.impactAnimationKey = this.getProjectileAnimationKey(equipment, "impact");
     projectile.trail = [];
-    projectile.visual = this.add.sprite(startX, startY, "lina-projectiles", equipment.projectileFrame)
-      .setOrigin(0.5)
+    const projectileOrigin = equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN;
+    projectile.visual = this.add.sprite(startX, startY, PROJECTILE_TEXTURE_KEY, equipment.projectileFrame)
+      .setOrigin(projectileOrigin.x, projectileOrigin.y)
       .setScale(projectile.visualScale)
-      .setRotation(Math.atan2(vec.y, vec.x))
-      .setDepth(this.actor.y + 6);
-    this.projectiles.add(projectile);
-    this.flashCast(startX, startY, equipment.color);
+      .setRotation(projectile.visualRotation)
+      .setDepth(Math.max(startY + projectile.depthOffset, projectile.visualBaseDepth));
+    projectile.visual.play(this.getProjectileAnimationKey(equipment, "flight"));
+    this.flashCast(startX, startY, equipment.color, projectile.visualBaseDepth + 1);
   }
 
   getCastOrigin(vec) {
-    const sign = vec.x < -0.12 ? -1 : 1;
-    const horizontalReach = Math.abs(vec.x) > 0.12 ? 58 : 28;
+    if (selected.id === "lina" && selected.hasSprite) return this.getLinaStaffCastOrigin(vec);
     return {
-      x: this.actor.x + sign * horizontalReach,
-      y: this.actor.y - 74 + vec.y * 30
+      x: this.actor.x + vec.x * 54,
+      y: this.actor.y - 58 + vec.y * 54
+    };
+  }
+
+  getLinaStaffCastOrigin(vec) {
+    const activeFrameIndex = this.actor?.anims?.currentFrame
+      ? getAnimationFrameColumn(this.actor.anims.currentFrame)
+      : currentFrameIndex;
+    const frameIndex = selectedAction.id === "attack"
+      ? Phaser.Math.Clamp(activeFrameIndex, 0, LINA_STAFF_CAST_SOCKETS.length - 1)
+      : 1;
+    const socket = LINA_STAFF_CAST_SOCKETS[frameIndex] || LINA_DEFAULT_STAFF_SOCKET;
+    const originX = (this.actor.originX ?? 0.5) * FRAME_SIZE;
+    const originY = (this.actor.originY ?? ((selected.baseline || 146) / FRAME_SIZE)) * FRAME_SIZE;
+    const localX = (socket.x - originX) * (this.actor.flipX ? -1 : 1);
+    const localY = socket.y - originY;
+    const rotation = this.actor.rotation || 0;
+    const cos = Math.cos(rotation);
+    const sin = Math.sin(rotation);
+    return {
+      x: this.actor.x + localX * cos - localY * sin + vec.x * CAST_SOCKET_FORWARD_OFFSET,
+      y: this.actor.y + localX * sin + localY * cos + vec.y * CAST_SOCKET_FORWARD_OFFSET
     };
   }
 
@@ -907,8 +1070,26 @@ class EFVScene extends Phaser.Scene {
     this.staffSprite?.setVisible(false);
   }
 
-  flashCast(x, y, color) {
-    const ring = this.add.circle(x, y, 8, color, .44).setDepth(45);
+  updateActorShadows() {
+    if (this.actorShadow && this.actor?.active) {
+      this.actorShadow
+        .setPosition(this.actor.x, this.actor.y + 3)
+        .setDepth(this.actor.y - 1)
+        .setVisible(!this.isDead);
+    }
+    if (this.leafSlimeShadow) {
+      const slime = this.leafSlime;
+      const visible = !!slime?.active && slime.state !== "dead" && slime.state !== "vanish";
+      this.leafSlimeShadow
+        .setVisible(visible)
+        .setAlpha(visible ? Math.max(0.06, 0.18 * (slime.alpha ?? 1)) : 0)
+        .setPosition(slime?.x || 0, (slime?.y || 0) + 12)
+        .setDepth((slime?.y || 0) - 4);
+    }
+  }
+
+  flashCast(x, y, color, depth = 45) {
+    const ring = this.add.circle(x, y, 8, color, .44).setDepth(depth);
     this.tweens.add({
       targets: ring,
       radius: 28,
@@ -923,10 +1104,11 @@ class EFVScene extends Phaser.Scene {
     if (!projectile?.active) return;
     projectile.visual?.destroy();
     if (burst) {
-      const impact = this.add.sprite(projectile.x, projectile.y, "lina-projectiles", projectile.impactFrame)
+      const impact = this.add.sprite(projectile.x, projectile.y, PROJECTILE_TEXTURE_KEY, projectile.impactFrame)
         .setOrigin(0.5)
         .setScale((projectile.visualScale || 0.15) * 1.18)
-        .setDepth(projectile.y + 12);
+        .setDepth(Math.max(projectile.y + 12, projectile.visualBaseDepth || 0));
+      if (projectile.impactAnimationKey) impact.play(projectile.impactAnimationKey);
       this.tweens.add({
         targets: impact,
         scale: (projectile.visualScale || 0.15) * 1.45,
@@ -952,9 +1134,149 @@ class EFVScene extends Phaser.Scene {
     projectile.destroy();
   }
 
+  handleLeafSlimeProjectileHit(projectile, enemy) {
+    if (!enemy?.active) return;
+    this.destroyProjectile(projectile, true);
+    if (enemy.state === "dead" || enemy.state === "vanish") return;
+    this.playLeafSlimeHit(enemy);
+  }
+
+  checkLeafSlimeProjectileHit(projectile) {
+    const slime = this.leafSlime;
+    if (!projectile?.active || !slime?.active || slime.state === "dead" || slime.state === "vanish") return false;
+    const hitX = slime.x;
+    const hitY = slime.y + LEAF_SLIME_HIT_OFFSET_Y;
+    const distance = Phaser.Math.Distance.Between(projectile.x, projectile.y, hitX, hitY);
+    if (distance > LEAF_SLIME_HIT_RADIUS + projectile.radius) return false;
+    this.handleLeafSlimeProjectileHit(projectile, slime);
+    return true;
+  }
+
+  playLeafSlimeHit(slime) {
+    slime.actionToken = (slime.actionToken || 0) + 1;
+    const token = slime.actionToken;
+    slime.state = "hit";
+    slime.body.setVelocity(0, 0);
+    slime.setTint(0xfff0b0);
+    slime.play(`${LEAF_SLIME_KEY}-hit`, true);
+    slime.once("animationcomplete", () => {
+      if (!slime.active || slime.actionToken !== token) return;
+      this.killLeafSlime(slime);
+    });
+  }
+
+  killLeafSlime(slime) {
+    slime.actionToken = (slime.actionToken || 0) + 1;
+    const token = slime.actionToken;
+    slime.state = "dead";
+    slime.body.setVelocity(0, 0);
+    slime.body.enable = false;
+    slime.clearTint();
+    slime.play(`${LEAF_SLIME_KEY}-dead`, true);
+    slime.once("animationcomplete", () => {
+      if (!slime.active || slime.actionToken !== token) return;
+      slime.state = "vanish";
+      this.tweens.add({
+        targets: slime,
+        alpha: 0.12,
+        duration: LEAF_SLIME_VANISH_TIME / 8,
+        yoyo: true,
+        repeat: 3,
+        onComplete: () => {
+          if (!slime.active || slime.actionToken !== token) return;
+          this.leafSlimeShadow?.setVisible(false);
+          slime.destroy();
+        }
+      });
+    });
+  }
+
+  triggerLeafSlimeAttack(slime, dx, dy, distance) {
+    const now = this.time.now;
+    if (now - slime.lastAttackAt < LEAF_SLIME_ATTACK_COOLDOWN) return;
+    slime.lastAttackAt = now;
+    slime.actionToken = (slime.actionToken || 0) + 1;
+    const token = slime.actionToken;
+    slime.state = "attack";
+    const vec = normalizeVector(dx, dy);
+    slime.setFlipX(dx < 0);
+    slime.play(`${LEAF_SLIME_KEY}-attack`, true);
+    slime.body.setVelocity(vec.x * (LEAF_SLIME_ATTACK_DISTANCE / LEAF_SLIME_ATTACK_DURATION * 1000), vec.y * (LEAF_SLIME_ATTACK_DISTANCE / LEAF_SLIME_ATTACK_DURATION * 1000));
+    this.time.delayedCall(180, () => {
+      if (!slime.active || slime.actionToken !== token || !this.actor?.active) return;
+      const hitDistance = Phaser.Math.Distance.Between(slime.x, slime.y, this.actor.x, this.actor.y);
+      if (hitDistance > LEAF_SLIME_ATTACK_RANGE + 24) return;
+      this.actor.setTint(0xffe6a0);
+      this.cameras.main.shake(90, 0.002);
+      this.time.delayedCall(130, () => {
+        if (!this.actor?.active || this.isDead) return;
+        this.actor.clearTint();
+      });
+    });
+    this.time.delayedCall(LEAF_SLIME_ATTACK_DURATION, () => {
+      if (!slime.active || slime.actionToken !== token) return;
+      slime.body.setVelocity(0, 0);
+      slime.state = "move";
+      slime.nextHopAt = this.time.now + LEAF_SLIME_HOP_REST;
+    });
+  }
+
+  startLeafSlimeHop(slime, dx, dy, distance) {
+    const now = this.time.now;
+    if (now < (slime.nextHopAt || 0)) return;
+    slime.actionToken = (slime.actionToken || 0) + 1;
+    const token = slime.actionToken;
+    const vec = normalizeVector(dx, dy);
+    const hopDistance = Math.min(LEAF_SLIME_HOP_DISTANCE, Math.max(18, distance - LEAF_SLIME_ATTACK_RANGE + 12));
+    slime.state = "hop";
+    slime.setFlipX(dx < 0);
+    slime.play(`${LEAF_SLIME_KEY}-move`, true);
+    slime.body.setVelocity(vec.x * (hopDistance / LEAF_SLIME_HOP_DURATION * 1000), vec.y * (hopDistance / LEAF_SLIME_HOP_DURATION * 1000));
+    this.time.delayedCall(LEAF_SLIME_HOP_DURATION, () => {
+      if (!slime.active || slime.actionToken !== token) return;
+      slime.body.setVelocity(0, 0);
+      slime.state = "move";
+      slime.nextHopAt = this.time.now + LEAF_SLIME_HOP_REST;
+    });
+  }
+
+  updateLeafSlime() {
+    const slime = this.leafSlime;
+    if (!slime?.active || !this.actor?.active) return;
+    slime.setDepth(slime.y - 2);
+    if (slime.state === "hit" || slime.state === "dead" || slime.state === "vanish" || slime.state === "attack" || slime.state === "hop") return;
+
+    const dx = this.actor.x - slime.x;
+    const dy = this.actor.y - slime.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance > LEAF_SLIME_DETECT_RANGE) {
+      slime.body.setVelocity(0, 0);
+      return;
+    }
+
+    slime.setFlipX(dx < 0);
+    if (distance <= LEAF_SLIME_ATTACK_RANGE) {
+      this.triggerLeafSlimeAttack(slime, dx, dy, distance);
+      return;
+    }
+
+    this.startLeafSlimeHop(slime, dx, dy, distance);
+  }
+
   handleHotkey(event) {
     if (event.repeat) return;
     const key = String(event.key || "").toLowerCase();
+    const keyDirections = {
+      w: [0, -1],
+      arrowup: [0, -1],
+      s: [0, 1],
+      arrowdown: [0, 1],
+      a: [-1, 0],
+      arrowleft: [-1, 0],
+      d: [1, 0],
+      arrowright: [1, 0]
+    };
+    if (keyDirections[key]) this.updateFacing(keyDirections[key][0], keyDirections[key][1]);
     if (key === "b") toggleInventory();
     if (key === "c") this.toggleCollisionOverlay();
     if (key === "r") this.resetCameraToActor();
@@ -999,16 +1321,17 @@ class EFVScene extends Phaser.Scene {
     this.projectiles.children.each(projectile => {
       if (!projectile.active) return;
       const distance = Math.hypot(projectile.x - projectile.spawnX, projectile.y - projectile.spawnY);
-      if (distance > projectile.maxDistance || this.time.now - projectile.spawnTime > 1600) {
+      if (distance > projectile.maxDistance || this.time.now - projectile.spawnTime > projectile.maxLifetime) {
         this.destroyProjectile(projectile, true);
         return;
       }
+      if (this.checkLeafSlimeProjectileHit(projectile)) return;
       const vx = projectile.body.velocity.x;
       const vy = projectile.body.velocity.y;
       projectile.visual
         ?.setPosition(projectile.x, projectile.y)
         .setRotation(Math.atan2(vy, vx))
-        .setDepth(projectile.y + 10);
+        .setDepth(Math.max(projectile.y + (projectile.depthOffset || 10), projectile.visualBaseDepth || 0));
       projectile.trail.push({ x: projectile.x, y: projectile.y });
       if (projectile.trail.length > 7) projectile.trail.shift();
       projectile.trail.forEach((point, index) => {
@@ -1022,6 +1345,8 @@ class EFVScene extends Phaser.Scene {
   update(_time, delta) {
     if (!this.actor || !this.keys || this.isDead) {
       this.updateProjectiles();
+      this.updateLeafSlime();
+      this.updateActorShadows();
       return;
     }
 
@@ -1029,6 +1354,8 @@ class EFVScene extends Phaser.Scene {
       this.actor.setDepth(this.actor.y);
       this.drawEquippedStaff();
       this.updateProjectiles(delta);
+      this.updateLeafSlime();
+      this.updateActorShadows();
       return;
     }
 
@@ -1047,6 +1374,8 @@ class EFVScene extends Phaser.Scene {
     this.actor.setDepth(this.actor.y);
     this.drawEquippedStaff();
     this.updateProjectiles(delta);
+    this.updateLeafSlime();
+    this.updateActorShadows();
   }
 }
 

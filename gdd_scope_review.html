@@ -242,6 +242,7 @@
     .grid-2,
     .grid-3,
     .role-grid,
+    .monster-grid,
     .asset-showcase,
     .tech-grid {
       display: grid;
@@ -252,6 +253,7 @@
     .grid-2 { grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); }
     .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .role-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .monster-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; }
     .asset-showcase { grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); align-items: stretch; }
     .tech-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .map-showcase { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 18px; }
@@ -266,6 +268,7 @@
     .stat,
     .tile,
     .role,
+    .monster-card,
     .chapter,
     .route-step,
     .tech-item,
@@ -323,7 +326,7 @@
 
     .video-panel {
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto;
       background: #fff;
     }
 
@@ -337,14 +340,14 @@
     .video-panel video {
       display: block;
       width: 100%;
-      height: 100%;
-      min-height: 430px;
+      height: clamp(240px, 42vh, 302px);
+      min-height: 0;
       object-fit: contain;
       background: #111827;
     }
 
     .role {
-      overflow: hidden;
+      overflow: visible;
       display: grid;
       grid-template-rows: auto auto 1fr;
       position: relative;
@@ -356,12 +359,14 @@
     .role:hover,
     .role:focus-within {
       transform: scale(1.08);
-      z-index: 8;
+      z-index: 18;
       border-color: rgba(35, 103, 167, .42);
       box-shadow: 0 22px 50px rgba(31, 43, 63, .22);
     }
 
     .portrait-wrap {
+      overflow: hidden;
+      border-radius: 8px 8px 0 0;
       background: #eef2f7;
       border-bottom: 1px solid var(--line);
     }
@@ -376,6 +381,75 @@
 
     .role-body { padding: 13px; }
     .role-body strong { display: block; font-size: 18px; }
+
+    .role-popover {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 12px);
+      display: grid;
+      grid-template-columns: minmax(220px, .9fr) minmax(260px, 1.1fr);
+      gap: 12px;
+      width: min(760px, calc(100vw - 36px));
+      padding: 12px;
+      border: 1px solid rgba(35, 103, 167, .28);
+      border-radius: 8px;
+      background: rgba(255,255,255,.98);
+      box-shadow: 0 24px 70px rgba(24, 34, 52, .28);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 8px);
+      transition: opacity .16s ease, transform .16s ease;
+    }
+
+    .role:first-child .role-popover { left: 0; transform: translate(0, 8px); }
+    .role:last-child .role-popover { left: auto; right: 0; transform: translate(0, 8px); }
+
+    .role:hover .role-popover,
+    .role:focus-within .role-popover {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .role:first-child:hover .role-popover,
+    .role:first-child:focus-within .role-popover,
+    .role:last-child:hover .role-popover,
+    .role:last-child:focus-within .role-popover {
+      transform: translate(0, 0);
+    }
+
+    .hover-panel {
+      display: grid;
+      align-content: center;
+      min-height: 360px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f7f9fc;
+    }
+
+    .hover-panel.sprite-preview {
+      background:
+        linear-gradient(45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f2f6 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f2f6 75%);
+      background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+      background-size: 18px 18px;
+    }
+
+    .hover-panel img {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      max-height: 430px;
+      margin: auto;
+      object-fit: contain;
+    }
+
+    .hover-panel.sprite-preview img {
+      width: 100%;
+      image-rendering: pixelated;
+    }
 
     .sprite-sheet {
       padding: 8px;
@@ -396,6 +470,67 @@
       object-fit: contain;
       image-rendering: pixelated;
     }
+
+    .monster-card {
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(180px, .82fr) minmax(0, 1fr);
+      min-height: 260px;
+      background: #fff;
+    }
+
+    .monster-portrait {
+      display: grid;
+      place-items: center;
+      min-height: 260px;
+      padding: 14px;
+      background: #f4f7fb;
+      border-right: 1px solid var(--line);
+    }
+
+    .monster-portrait img {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      max-height: 240px;
+      object-fit: contain;
+    }
+
+    .monster-body {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      padding: 16px;
+    }
+
+    .monster-body strong {
+      display: block;
+      color: var(--ink);
+      font-size: 22px;
+    }
+
+    .monster-sprite {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f2f6 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f2f6 75%);
+      background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+      background-size: 18px 18px;
+    }
+
+    .monster-sprite img {
+      display: block;
+      width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .monster-sprite .model-preview { image-rendering: auto; }
 
     .map-card,
     .map-slide {
@@ -435,6 +570,14 @@
       object-fit: contain;
       object-position: 50% 50%;
       background: #eef2f7;
+    }
+
+    .map-card .campus-map,
+    .map-slide .campus-map {
+      aspect-ratio: 16 / 10;
+      object-fit: contain;
+      object-position: 50% 50%;
+      background: #e7edf4;
     }
 
     .map-card .slice-map,
@@ -710,6 +853,7 @@
       .grid-3,
       .asset-showcase,
       .map-showcase,
+      .monster-grid,
       .demo-body,
       .tech-grid,
       .tech-path ol,
@@ -720,13 +864,17 @@
       .role-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .story-flow { grid-template-columns: 1fr; }
       .chapter { grid-template-columns: 1fr; }
-      .poster-panel img, .video-panel video { min-height: 320px; }
+      .poster-panel img { min-height: 320px; }
+      .video-panel video { height: 224px; }
       .nav { position: static; }
       table { display: block; overflow-x: auto; white-space: nowrap; }
     }
 
     @media (max-width: 560px) {
       .role-grid { grid-template-columns: 1fr; }
+      .monster-card { grid-template-columns: 1fr; }
+      .monster-portrait { border-right: 0; border-bottom: 1px solid var(--line); }
+      .role-popover { display: none; }
       .hero-actions .button { width: 100%; }
       .demo-stage { min-height: 240px; }
     }
@@ -777,7 +925,7 @@
     <div class="section-head">
       <p class="section-kicker">Part 1 · Art Assets</p>
       <h2>原画立绘、精灵图集和海报</h2>
-      <p class="lead">角色、美术和地图是项目的第一眼吸引力。这里集中呈现主视觉海报、莉娜动画、五位角色立绘、8×8 精灵动作表，以及衷和广场区块地图资源。</p>
+      <p class="lead">角色、美术和地图是项目的第一眼吸引力。这里集中呈现主视觉海报、莉娜动画、五位角色立绘、8×8 精灵动作表、落叶怪物模型，以及完整校园地图和衷和广场区块资源。</p>
     </div>
 
     <div class="content">
@@ -802,32 +950,92 @@
           <div class="portrait-wrap"><img src="assets/portraits/lina.png" alt="莉娜立绘"></div>
           <div class="role-body"><strong>莉娜</strong><p>治疗与守护型角色，风格柔和，擅长精灵协作和队伍支援。</p></div>
           <div class="sprite-sheet"><img src="assets/sprites/lina-sprites-v10-anchored-expanded.png" alt="莉娜精灵图集"></div>
+          <div class="role-popover" aria-hidden="true">
+            <div class="hover-panel"><img src="assets/portraits/lina.png" alt="莉娜大立绘"></div>
+            <div class="hover-panel sprite-preview"><img src="assets/sprites/lina-sprites-v10-anchored-expanded.png" alt="莉娜大精灵图集"></div>
+          </div>
         </article>
         <article class="role">
           <div class="portrait-wrap"><img src="assets/portraits/ayu.png" alt="阿宇立绘"></div>
           <div class="role-body"><strong>阿宇</strong><p>近战突击角色，强调行动力、剑术和直接破局。</p></div>
           <div class="sprite-sheet"><img src="assets/sprites/ayu-sprites-v10-imagegen-anchored-clean.png" alt="阿宇精灵图集"></div>
+          <div class="role-popover" aria-hidden="true">
+            <div class="hover-panel"><img src="assets/portraits/ayu.png" alt="阿宇大立绘"></div>
+            <div class="hover-panel sprite-preview"><img src="assets/sprites/ayu-sprites-v10-imagegen-anchored-clean.png" alt="阿宇大精灵图集"></div>
+          </div>
         </article>
         <article class="role">
           <div class="portrait-wrap"><img src="assets/portraits/zhixia.png" alt="知夏立绘"></div>
           <div class="role-body"><strong>知夏</strong><p>学术爆发型角色，适合表现公式、推演和高伤害瞬间。</p></div>
           <div class="sprite-sheet"><img src="assets/sprites/zhixia-sprites-v2.png" alt="知夏精灵图集"></div>
+          <div class="role-popover" aria-hidden="true">
+            <div class="hover-panel"><img src="assets/portraits/zhixia.png" alt="知夏大立绘"></div>
+            <div class="hover-panel sprite-preview"><img src="assets/sprites/zhixia-sprites-v2.png" alt="知夏大精灵图集"></div>
+          </div>
         </article>
         <article class="role">
           <div class="portrait-wrap"><img src="assets/portraits/jiangxun.png" alt="江寻立绘"></div>
           <div class="role-body"><strong>江寻</strong><p>远程范围输出角色，适合箭雨、路线控制和精准打击。</p></div>
           <div class="sprite-sheet"><img src="assets/sprites/jiangxun-sprites-v3.png" alt="江寻精灵图集"></div>
+          <div class="role-popover" aria-hidden="true">
+            <div class="hover-panel"><img src="assets/portraits/jiangxun.png" alt="江寻大立绘"></div>
+            <div class="hover-panel sprite-preview"><img src="assets/sprites/jiangxun-sprites-v3.png" alt="江寻大精灵图集"></div>
+          </div>
         </article>
         <article class="role">
           <div class="portrait-wrap"><img src="assets/portraits/laodeng.png" alt="老登立绘"></div>
           <div class="role-body"><strong>老登</strong><p>重装稳定型角色，承担抗压、反击和工程感表达。</p></div>
           <div class="sprite-sheet"><img src="assets/sprites/laodeng-sprites-v2.png" alt="老登精灵图集"></div>
+          <div class="role-popover" aria-hidden="true">
+            <div class="hover-panel"><img src="assets/portraits/laodeng.png" alt="老登大立绘"></div>
+            <div class="hover-panel sprite-preview"><img src="assets/sprites/laodeng-sprites-v2.png" alt="老登大精灵图集"></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="monster-grid" aria-label="怪物模型展示">
+        <article class="monster-card">
+          <div class="monster-portrait"><img src="assets/enemies/leaf-poring-portrait-v2.png" alt="落叶立绘"></div>
+          <div class="monster-body">
+            <strong>落叶</strong>
+            <p class="muted">无四肢的落叶史莱姆小怪，移动像波利一样一跳一停，近战攻击为跳起撞向目标。</p>
+            <div class="monster-sprite"><img src="assets/enemies/leaf-poring-sprites-v2.png" alt="落叶移动、攻击、受击和死亡精灵图"></div>
+          </div>
+        </article>
+        <article class="monster-card">
+          <div class="monster-portrait"><img src="assets/enemies/autumn-ruin-portrait-v1.png" alt="秋墟立绘"></div>
+          <div class="monster-body">
+            <strong>秋墟</strong>
+            <p class="muted">较大的落叶怪模型，保留为后续精英怪或 Boss 方向，可继续扩展动作表和技能演出。</p>
+            <div class="monster-sprite"><img class="model-preview" src="assets/enemies/autumn-ruin-cutout-v1.png" alt="秋墟模型透明图"></div>
+          </div>
         </article>
       </div>
 
       <div class="map-showcase" aria-label="地图和瓦片资源">
         <div class="map-carousel" data-carousel>
           <figure class="map-slide active">
+            <img class="campus-map zoomable" src="assets/maps/tongji-siping-core-overworld-v4.png" alt="同济四平路校区完整地图">
+            <figcaption>
+              <strong>同济四平路校区完整地图</strong>
+              tongji-siping-core-overworld-v4 作为世界地图展示主图，承载后续多区块传送、学院节点、校史记忆和章节路线规划。
+            </figcaption>
+          </figure>
+          <figure class="map-slide">
+            <img class="large-map zoomable" src="assets/maps/references/zhonghe-plaza-tileset-style-reference-v2.png" alt="第一张地图风格参考">
+            <figcaption>
+              <strong>第一张地图风格参考</strong>
+              衷和广场区块沿用清晰、明亮、略带手绘质感的校园 RPG 风格，保证角色和环境在近景测试中统一。
+            </figcaption>
+          </figure>
+          <figure class="map-slide">
+            <img class="wide-map zoomable" src="assets/maps/tilesets/zhonghe-plaza-demo-preview-with-lina-v3.png" alt="第一张地图角色比例预览">
+            <figcaption>
+              <strong>第一张地图角色比例预览</strong>
+              用莉娜放进衷和广场样张里校准角色大小、铺地纹理、边界和可行走空间。
+            </figcaption>
+          </figure>
+          <figure class="map-slide">
             <img class="large-map zoomable" src="assets/maps/playable/zhonghe-plaza-layered-preview-v1.png" alt="衷和广场清晰分层实景地图">
             <figcaption>
               <strong>衷和广场清晰分层实景地图</strong>

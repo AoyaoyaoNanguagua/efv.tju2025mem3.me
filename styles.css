@@ -311,15 +311,14 @@ h1 {
 }
 
 .staff-icon {
-  display: grid;
-  place-items: center;
   width: 42px;
   height: 42px;
+  padding: 4px;
   border-radius: 10px;
-  color: #fff;
-  background: var(--staff-color);
-  font-size: 20px;
-  font-weight: 900;
+  border: 1px solid color-mix(in srgb, var(--staff-color) 36%, transparent);
+  background: color-mix(in srgb, var(--staff-color) 14%, #fff);
+  object-fit: contain;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.66);
 }
 
 .inventory-item strong { display: block; font-size: 13px; }
