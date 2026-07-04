@@ -366,6 +366,7 @@ function buildUI() {
   document.querySelector("#nextFrame").addEventListener("click", () => sceneRef?.stepFrame(1));
   document.querySelector("#testModeToggle").addEventListener("click", () => sceneRef?.resetCameraToActor());
   document.querySelector("#bagToggle").addEventListener("click", () => toggleInventory());
+  document.querySelector("#addMonsterButton")?.addEventListener("click", () => sceneRef?.spawnLeafSlime());
   document.querySelector("#collisionToggle").addEventListener("click", () => sceneRef?.toggleCollisionOverlay());
   document.querySelector("#cameraReset").addEventListener("click", () => sceneRef?.resetCameraToActor());
   document.querySelector("#fullscreenToggle").addEventListener("click", () => toggleFullscreen());
@@ -511,6 +512,7 @@ class EFVScene extends Phaser.Scene {
     this.prepareLeafSlimeAnimations();
 
     this.projectiles = this.physics.add.group({ allowGravity: false });
+    this.leafSlimes = this.physics.add.group({ allowGravity: false });
     this.projectileGraphics = this.add.graphics().setDepth(40);
     this.sparkles = this.add.group();
     this.facing = DIRECTIONS[2];
@@ -520,6 +522,7 @@ class EFVScene extends Phaser.Scene {
     this.isCasting = false;
     this.isCat = false;
     this.isActionLocked = false;
+    this.actorHitToken = 0;
     this.isShowingCatIdleFrame = false;
     this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,J,B,C,R,L,U,I");
     this.input.keyboard.on("keydown", event => this.handleHotkey(event));
@@ -531,9 +534,9 @@ class EFVScene extends Phaser.Scene {
     this.showCharacter(selected);
     this.spawnLeafSlime();
     this.physics.add.collider(this.actor, this.obstacleGroup);
-    this.physics.add.collider(this.leafSlime, this.obstacleGroup);
+    this.physics.add.collider(this.leafSlimes, this.obstacleGroup);
     this.bindActorLeafSlimeCollision();
-    this.physics.add.overlap(this.projectiles, this.leafSlime, (projectile, enemy) => this.handleLeafSlimeProjectileHit(projectile, enemy));
+    this.physics.add.overlap(this.projectiles, this.leafSlimes, (projectile, enemy) => this.handleLeafSlimeProjectileHit(projectile, enemy));
     this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => this.destroyProjectile(projectile, true));
     updateDirectionBadge(this.facing);
   }
@@ -687,15 +690,24 @@ class EFVScene extends Phaser.Scene {
   }
 
   spawnLeafSlime() {
-    if (!this.actor) return;
-    this.leafSlime?.destroy();
-    this.leafSlimeShadow?.destroy();
-    const x = Phaser.Math.Clamp(this.actor.x + 190, 900, WORLD_WIDTH - 160);
-    const y = Phaser.Math.Clamp(this.actor.y + 18, 900, WORLD_HEIGHT - 220);
-    const slime = this.physics.add.sprite(x, y, LEAF_SLIME_KEY, 0)
+    if (!this.actor || !this.leafSlimes) return null;
+    const count = this.leafSlimes.countActive(true);
+    const offsets = [
+      { x: 190, y: 18 },
+      { x: -170, y: 42 },
+      { x: 120, y: -150 },
+      { x: -120, y: -142 },
+      { x: 230, y: 126 },
+      { x: -230, y: 118 }
+    ];
+    const offset = offsets[count % offsets.length];
+    const spread = Math.floor(count / offsets.length) * 46;
+    const x = Phaser.Math.Clamp(this.actor.x + offset.x + Math.sign(offset.x || 1) * spread, 900, WORLD_WIDTH - 160);
+    const y = Phaser.Math.Clamp(this.actor.y + offset.y + Math.sign(offset.y || 1) * spread, 900, WORLD_HEIGHT - 220);
+    const slime = this.leafSlimes.create(x, y, LEAF_SLIME_KEY, 0)
       .setOrigin(0.5, 0.72)
       .setScale(0.9)
-      .setDepth(y - 2);
+      .setDepth(y + 6);
     slime.body.setSize(54, 34);
     slime.body.setOffset(37, 70);
     slime.body.setAllowGravity(false);
@@ -705,15 +717,16 @@ class EFVScene extends Phaser.Scene {
     slime.lastAttackAt = -LEAF_SLIME_ATTACK_COOLDOWN;
     slime.play(`${LEAF_SLIME_KEY}-move`);
     this.leafSlime = slime;
-    this.leafSlimeShadow = this.add.ellipse(slime.x, slime.y + 12, 58, 18, 0x182313, 0.18)
-      .setDepth(slime.y - 4);
+    slime.shadow = this.add.ellipse(slime.x, slime.y + 12, 58, 18, 0x182313, 0.18)
+      .setDepth(slime.y - 24);
     this.bindActorLeafSlimeCollision();
+    return slime;
   }
 
   bindActorLeafSlimeCollision() {
-    if (!this.actor || !this.leafSlime) return;
+    if (!this.actor || !this.leafSlimes) return;
     this.actorLeafSlimeCollider?.destroy?.();
-    this.actorLeafSlimeCollider = this.physics.add.collider(this.actor, this.leafSlime);
+    this.actorLeafSlimeCollider = this.physics.add.collider(this.actor, this.leafSlimes);
   }
 
   prepareFrames(character) {
@@ -766,7 +779,7 @@ class EFVScene extends Phaser.Scene {
       this.actor.body.setSize(34, 42);
       this.actor.body.setOffset(56, 92);
       this.actor.setCollideWorldBounds(true);
-      this.actor.setDepth(spawn.y);
+      this.actor.setDepth(spawn.y + 8);
       this.bindAnimationFrameUpdates(ACTIONS[0]);
       this.actor.play(`${character.id}-idle`, true);
     } else {
@@ -779,7 +792,7 @@ class EFVScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.actor, true, 0.12, 0.12);
     this.cameras.main.centerOn(spawn.x, spawn.y);
     this.actorShadow = this.add.ellipse(this.actor.x, this.actor.y + 3, 34, 11, 0x182313, 0.16)
-      .setDepth(this.actor.y - 1);
+      .setDepth(this.actor.y - 24);
     this.physics.add.collider(this.actor, this.obstacleGroup);
     this.playLoop("idle");
     this.bindActorLeafSlimeCollision();
@@ -1074,17 +1087,25 @@ class EFVScene extends Phaser.Scene {
     if (this.actorShadow && this.actor?.active) {
       this.actorShadow
         .setPosition(this.actor.x, this.actor.y + 3)
-        .setDepth(this.actor.y - 1)
+        .setDepth(this.actor.y - 24)
         .setVisible(!this.isDead);
     }
-    if (this.leafSlimeShadow) {
+    this.leafSlimes?.children.each(slime => {
+      const visible = !!slime?.active && slime.state !== "dead" && slime.state !== "vanish";
+      slime.shadow
+        ?.setVisible(visible)
+        .setAlpha(visible ? Math.max(0.06, 0.18 * (slime.alpha ?? 1)) : 0)
+        .setPosition(slime?.x || 0, (slime?.y || 0) + 12)
+        .setDepth((slime?.y || 0) - 24);
+    });
+    if (!this.leafSlimes && this.leafSlimeShadow) {
       const slime = this.leafSlime;
       const visible = !!slime?.active && slime.state !== "dead" && slime.state !== "vanish";
       this.leafSlimeShadow
         .setVisible(visible)
         .setAlpha(visible ? Math.max(0.06, 0.18 * (slime.alpha ?? 1)) : 0)
         .setPosition(slime?.x || 0, (slime?.y || 0) + 12)
-        .setDepth((slime?.y || 0) - 4);
+        .setDepth((slime?.y || 0) - 24);
     }
   }
 
@@ -1142,14 +1163,18 @@ class EFVScene extends Phaser.Scene {
   }
 
   checkLeafSlimeProjectileHit(projectile) {
-    const slime = this.leafSlime;
-    if (!projectile?.active || !slime?.active || slime.state === "dead" || slime.state === "vanish") return false;
-    const hitX = slime.x;
-    const hitY = slime.y + LEAF_SLIME_HIT_OFFSET_Y;
-    const distance = Phaser.Math.Distance.Between(projectile.x, projectile.y, hitX, hitY);
-    if (distance > LEAF_SLIME_HIT_RADIUS + projectile.radius) return false;
-    this.handleLeafSlimeProjectileHit(projectile, slime);
-    return true;
+    if (!projectile?.active) return false;
+    const slimes = this.leafSlimes?.getChildren?.() || [this.leafSlime].filter(Boolean);
+    for (const slime of slimes) {
+      if (!slime?.active || slime.state === "dead" || slime.state === "vanish") continue;
+      const hitX = slime.x;
+      const hitY = slime.y + LEAF_SLIME_HIT_OFFSET_Y;
+      const distance = Phaser.Math.Distance.Between(projectile.x, projectile.y, hitX, hitY);
+      if (distance > LEAF_SLIME_HIT_RADIUS + projectile.radius) continue;
+      this.handleLeafSlimeProjectileHit(projectile, slime);
+      return true;
+    }
+    return false;
   }
 
   playLeafSlimeHit(slime) {
@@ -1184,10 +1209,42 @@ class EFVScene extends Phaser.Scene {
         repeat: 3,
         onComplete: () => {
           if (!slime.active || slime.actionToken !== token) return;
-          this.leafSlimeShadow?.setVisible(false);
+          slime.shadow?.destroy();
           slime.destroy();
+          if (this.leafSlime === slime) {
+            this.leafSlime = this.leafSlimes?.getChildren?.().find(item => item.active) || null;
+          }
         }
       });
+    });
+  }
+
+  playActorHitReaction() {
+    if (!selected.hasSprite || !this.actor?.active || this.isDead) return;
+    this.actorHitToken = (this.actorHitToken || 0) + 1;
+    const token = this.actorHitToken;
+    const action = ACTIONS.find(item => item.id === "hit") || ACTIONS[0];
+    selectedAction = action;
+    renderSelection();
+    this.isCasting = false;
+    this.isActionLocked = true;
+    this.actor.body.setVelocity(0, 0);
+    this.actor.setTexture(this.getBaseTextureKey());
+    this.actor.setTint(0xffe6a0);
+    this.isShowingCatIdleFrame = false;
+    this.actor.off("animationcomplete");
+    this.actor.play(`${selected.id}-hit-once`, true);
+    this.bindAnimationFrameUpdates(action);
+    this.cameras.main.shake(90, 0.002);
+    this.time.delayedCall(180, () => {
+      if (!this.actor?.active || this.actorHitToken !== token || this.isDead) return;
+      this.actor.clearTint();
+    });
+    this.actor.once("animationcomplete", () => {
+      if (!this.actor?.active || this.actorHitToken !== token || this.isDead) return;
+      this.actor.clearTint();
+      this.isActionLocked = false;
+      this.returnToBaseLoop();
     });
   }
 
@@ -1206,12 +1263,7 @@ class EFVScene extends Phaser.Scene {
       if (!slime.active || slime.actionToken !== token || !this.actor?.active) return;
       const hitDistance = Phaser.Math.Distance.Between(slime.x, slime.y, this.actor.x, this.actor.y);
       if (hitDistance > LEAF_SLIME_ATTACK_RANGE + 24) return;
-      this.actor.setTint(0xffe6a0);
-      this.cameras.main.shake(90, 0.002);
-      this.time.delayedCall(130, () => {
-        if (!this.actor?.active || this.isDead) return;
-        this.actor.clearTint();
-      });
+      this.playActorHitReaction();
     });
     this.time.delayedCall(LEAF_SLIME_ATTACK_DURATION, () => {
       if (!slime.active || slime.actionToken !== token) return;
@@ -1241,9 +1293,13 @@ class EFVScene extends Phaser.Scene {
   }
 
   updateLeafSlime() {
-    const slime = this.leafSlime;
+    const slimes = this.leafSlimes?.getChildren?.() || [this.leafSlime].filter(Boolean);
+    slimes.forEach(slime => this.updateLeafSlimeBehavior(slime));
+  }
+
+  updateLeafSlimeBehavior(slime) {
     if (!slime?.active || !this.actor?.active) return;
-    slime.setDepth(slime.y - 2);
+    slime.setDepth(slime.y + 6);
     if (slime.state === "hit" || slime.state === "dead" || slime.state === "vanish" || slime.state === "attack" || slime.state === "hop") return;
 
     const dx = this.actor.x - slime.x;
@@ -1280,6 +1336,7 @@ class EFVScene extends Phaser.Scene {
     if (key === "b") toggleInventory();
     if (key === "c") this.toggleCollisionOverlay();
     if (key === "r") this.resetCameraToActor();
+    if (key === "x") this.spawnLeafSlime();
     if (key === "j") this.triggerPrimaryAction();
     if (key === "u") this.playPreviewAction("hit");
     if (key === "i") this.toggleDeathState();
@@ -1351,7 +1408,7 @@ class EFVScene extends Phaser.Scene {
     }
 
     if (this.isActionLocked) {
-      this.actor.setDepth(this.actor.y);
+      this.actor.setDepth(this.actor.y + 8);
       this.drawEquippedStaff();
       this.updateProjectiles(delta);
       this.updateLeafSlime();
@@ -1371,7 +1428,7 @@ class EFVScene extends Phaser.Scene {
       if (!this.isCasting) this.playLoop("idle");
     }
 
-    this.actor.setDepth(this.actor.y);
+    this.actor.setDepth(this.actor.y + 8);
     this.drawEquippedStaff();
     this.updateProjectiles(delta);
     this.updateLeafSlime();
