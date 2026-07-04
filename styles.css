@@ -233,7 +233,10 @@ h1 {
   top: 12px;
   right: 12px;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
+  max-width: min(520px, calc(100% - 24px));
   z-index: 2;
   pointer-events: none;
 }

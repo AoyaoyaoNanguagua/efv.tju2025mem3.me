@@ -340,7 +340,7 @@
     .video-panel video {
       display: block;
       width: 100%;
-      height: clamp(240px, 42vh, 302px);
+      height: clamp(320px, 56vh, 480px);
       min-height: 0;
       object-fit: contain;
       background: #111827;
@@ -865,7 +865,7 @@
       .story-flow { grid-template-columns: 1fr; }
       .chapter { grid-template-columns: 1fr; }
       .poster-panel img { min-height: 320px; }
-      .video-panel video { height: 224px; }
+      .video-panel video { height: 300px; }
       .nav { position: static; }
       table { display: block; overflow-x: auto; white-space: nowrap; }
     }
@@ -1029,31 +1029,10 @@
             </figcaption>
           </figure>
           <figure class="map-slide">
-            <img class="wide-map zoomable" src="assets/maps/tilesets/zhonghe-plaza-demo-preview-with-lina-v3.png" alt="第一张地图角色比例预览">
-            <figcaption>
-              <strong>第一张地图角色比例预览</strong>
-              用莉娜放进衷和广场样张里校准角色大小、铺地纹理、边界和可行走空间。
-            </figcaption>
-          </figure>
-          <figure class="map-slide">
-            <img class="large-map zoomable" src="assets/maps/playable/zhonghe-plaza-layered-preview-v1.png" alt="衷和广场清晰分层实景地图">
-            <figcaption>
-              <strong>衷和广场清晰分层实景地图</strong>
-              10000 × 6000 的横向区块以清晰铺地为底层，花坛、灯柱、长椅、树木和柱子作为独立物件叠加，碰撞区域跟随物件配置。
-            </figcaption>
-          </figure>
-          <figure class="map-slide">
             <img class="slice-map zoomable" src="assets/maps/props/zhonghe-plaza-props-atlas-v1.png" alt="衷和广场独立物件图集">
             <figcaption>
               <strong>衷和广场独立物件图集</strong>
               花坛、树、灯柱、长椅、柱子、旗帜等物件单独生成和裁切，后续可以按区块需求继续替换或增加新素材。
-            </figcaption>
-          </figure>
-          <figure class="map-slide">
-            <img class="tile-map zoomable" src="assets/maps/tilesets/zhonghe-plaza-tileset-v3.png" alt="衷和广场瓦片材质">
-            <figcaption>
-              <strong>衷和广场瓦片材质</strong>
-              512×512 的 64px tile 材质单用于地面、边界和基础结构，让近景移动时保持清晰纹理。
             </figcaption>
           </figure>
           <figure class="map-slide">
