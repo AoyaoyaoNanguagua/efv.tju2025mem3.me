@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>学术喵参与接入指南</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2735;
+      --muted: #5f6b7a;
+      --paper: #fffdf8;
+      --soft: #f4f7fa;
+      --line: #d9e0ea;
+      --blue: #2367a7;
+      --teal: #217c82;
+      --green: #267550;
+      --rose: #bd5572;
+      --amber: #9c6817;
+      --shadow: 0 18px 44px rgba(32, 43, 62, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.65;
+      background: #f7f4ec;
+    }
+
+    a { color: inherit; }
+    code {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #eef3f7;
+      color: #263445;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: .92em;
+    }
+
+    .hero {
+      padding: 54px clamp(18px, 5vw, 72px) 46px;
+      color: #fff;
+      background:
+        linear-gradient(115deg, rgba(18, 40, 58, .96), rgba(25, 93, 96, .82) 58%, rgba(125, 91, 31, .84)),
+        #17364f;
+    }
+
+    .hero-inner, .content {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #aee8eb;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 14px;
+      font-size: clamp(34px, 5vw, 62px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 830px;
+      margin-bottom: 24px;
+      color: rgba(255,255,255,.88);
+      font-size: 18px;
+    }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid rgba(255,255,255,.34);
+      border-radius: 7px;
+      color: #fff;
+      background: rgba(255,255,255,.14);
+      font-size: 14px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .button.primary { background: #2367a7; border-color: #77bbea; }
+    .button:hover { background: rgba(255,255,255,.24); }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px clamp(14px, 4vw, 48px);
+      border-bottom: 1px solid rgba(217, 224, 234, .8);
+      background: rgba(255, 255, 255, .94);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(28, 40, 58, .08);
+    }
+
+    .nav a {
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 6px;
+      color: #354055;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .nav a:hover { background: #edf3f8; }
+
+    .band {
+      padding: clamp(34px, 6vw, 72px) clamp(18px, 5vw, 72px);
+      border-bottom: 1px solid rgba(217, 224, 234, .72);
+      background: var(--paper);
+    }
+
+    .band.alt { background: #f3f7f8; }
+    .section-kicker {
+      margin-bottom: 8px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: clamp(26px, 3.4vw, 40px);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 19px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 900px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(34, 46, 66, .08);
+    }
+
+    .card p, .card li { color: var(--muted); font-size: 14px; }
+    .card ul, .card ol {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      margin: 6px 6px 0 0;
+      padding: 0 9px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .tag.green { background: var(--green); }
+    .tag.rose { background: var(--rose); }
+    .tag.amber { background: var(--amber); }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(34, 46, 66, .08);
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3f7fa;
+      color: #263445;
+      font-weight: 900;
+    }
+
+    td { color: var(--muted); }
+    tr:last-child td { border-bottom: 0; }
+
+    .callout {
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid #c8dce8;
+      border-radius: 8px;
+      background: #eef7f7;
+    }
+
+    .callout strong { display: block; margin-bottom: 6px; }
+    .files {
+      padding: 14px 16px;
+      border: 1px solid #d5dde8;
+      border-radius: 8px;
+      background: #101a28;
+      color: #e9f1f7;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .prompt {
+      padding: 14px;
+      border-left: 4px solid var(--teal);
+      border-radius: 6px;
+      background: #fff;
+      color: #334155;
+      font-size: 14px;
+    }
+
+    .footer {
+      padding: 28px clamp(18px, 5vw, 72px);
+      color: #d8e0ea;
+      background: #182333;
+      font-size: 14px;
+    }
+
+    .footer a { color: #fff; font-weight: 900; }
+
+    @media (max-width: 860px) {
+      .grid, .grid.two { grid-template-columns: 1fr; }
+      .hero { padding-top: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <p class="eyebrow">Academic Cat Contribution Guide</p>
+      <h1>把你的创意接入主线开发</h1>
+      <p class="subtitle">大家可以用 Codex、Claude Code、Cursor、Trae、VS Code 插件或自己熟悉的 Agent 和模型。项目不强制统一工具，强制统一的是交付格式、测试记录和可接入程度。</p>
+      <div class="actions">
+        <a class="button primary" href="#art">美术素材怎么交</a>
+        <a class="button" href="#agent">Agent 怎么用</a>
+        <a class="button" href="#pack">打包提交</a>
+        <a class="button" href="gdd_scope_review.html">回到项目展示页</a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <a href="#principle">参与原则</a>
+    <a href="#tool">工具模型建议</a>
+    <a href="#art">美术交付</a>
+    <a href="#agent">Agent 提示词</a>
+    <a href="#test">测试清单</a>
+    <a href="#pack">提交打包</a>
+    <a href="#code">功能开发</a>
+  </nav>
+
+  <section class="band" id="principle">
+    <div class="content">
+      <p class="section-kicker">01 Common Rule</p>
+      <h2>不要先争工具，先把素材做成能接入</h2>
+      <p class="lead">最适合大家参与的是美术内容：地图区块、小怪、NPC、装备道具、任务道具和校园彩蛋。每个贡献都要留下设计说明、素材文件、数据草案和测试记录，这样技术同学能判断是否能接进游戏。</p>
+      <div class="grid">
+        <article class="card">
+          <h3>个人参与感</h3>
+          <p>你可以设计一个怪物、NPC、小任务或地图角落，让它真正出现在学术喵世界里，而不是只停留在想法。</p>
+          <span class="tag green">NPC</span><span class="tag">小怪</span><span class="tag amber">地图</span>
+        </article>
+        <article class="card">
+          <h3>统一交付</h3>
+          <p>不同工具产出的内容都可以收，但文件名、尺寸、文档、JSON 草案和测试截图要按同一标准整理。</p>
+          <span class="tag">README</span><span class="tag">metadata.json</span><span class="tag">test_report</span>
+        </article>
+        <article class="card">
+          <h3>小步合入</h3>
+          <p>一次只交一个怪物、一个 NPC、一组道具或一个地图区块。先做小而完整的贡献，再逐步扩展。</p>
+          <span class="tag rose">小包提交</span><span class="tag green">可预览</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="tool">
+    <div class="content">
+      <p class="section-kicker">02 Agent And Model</p>
+      <h2>工具和模型按任务选，不要求全员一致</h2>
+      <p class="lead">如果你已经熟悉 Claude Code、Codex、Cursor、Trae、VS Code 插件或其他 Agent，就继续用熟悉的。选择标准只有一个：能不能读懂项目、按格式产出文件、帮你验证并整理交付。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>任务</th>
+              <th>推荐工具</th>
+              <th>模型建议</th>
+              <th>注意点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>怪物、NPC、道具、美术设定</td>
+              <td>Cursor、Trae、VS Code 插件、Codex、Claude Code 都可以</td>
+              <td>先用 Sonnet、DeepSeek、MiMo 等快速模型写说明和 JSON；复杂世界观或统一风格再用 Opus/Fable 等强模型打磨</td>
+              <td>图像本身用图像生成工具，代码 Agent 负责命名、切片、元数据和测试</td>
+            </tr>
+            <tr>
+              <td>地图区块设计</td>
+              <td>图像生成工具 + Codex/Claude Code/Cursor 做素材整理</td>
+              <td>先生成概念图，再让 Agent 提取切片、传送点、碰撞说明和接入文档</td>
+              <td>只做一个区块，不做全校连续大地图；地图之间用传送点切换</td>
+            </tr>
+            <tr>
+              <td>前端或玩法功能</td>
+              <td>Codex、Claude Code、Cursor Agent、Trae Code 模式</td>
+              <td>复杂跨文件改动用强代码模型；轻量配置和文档可用便宜快速模型</td>
+              <td>先让 Agent 出方案和测试计划，再改代码；不要直接引入大框架</td>
+            </tr>
+            <tr>
+              <td>后台、存档、排行榜</td>
+              <td>少量同学集中做，建议用 Codex 或 Claude Code 这类能跑命令的 coding agent</td>
+              <td>优先强代码模型，必须能生成 API 合约、测试命令和回滚说明</td>
+              <td>后台属于主线架构，不建议零散提交；先交设计文档</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>一句话建议</strong>
+        美术同学重点让 Agent 产出“设定文档 + 素材命名 + 元数据 + 测试报告”；程序同学重点让 Agent 产出“实现方案 + 文件改动 + 测试命令 + 风险说明”。
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="art">
+    <div class="content">
+      <p class="section-kicker">03 Art First</p>
+      <h2>美术贡献最适合开放共创</h2>
+      <p class="lead">地图、小怪、NPC、装备道具都可以由个人或小组提交。关键不是图多好看，而是它是否有角色定位、尺寸规范、透明背景、动作帧规划和可接入数据。</p>
+      <div class="grid">
+        <article class="card">
+          <h3>小怪</h3>
+          <ul>
+            <li>先确定名字、来源、攻击方式、出现地图、掉落物。</li>
+            <li>准备立绘或头像、精灵图、动作说明和数值草案。</li>
+            <li>至少提供待机、移动、受击、倒地，能做 8 向更好。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>NPC</h3>
+          <ul>
+            <li>先确定身份、性格、所在区块、对玩家有什么帮助。</li>
+            <li>准备立绘、行走小人、三段以内对话和一个任务钩子。</li>
+            <li>对话要短，最好能触发物品、图鉴或校史线索。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>地图区块</h3>
+          <ul>
+            <li>先出区块概念图，不要一上来就硬拼瓦片。</li>
+            <li>标清入口、出口、传送点、可走区域、碰撞区域。</li>
+            <li>再切建筑、地砖、水体、绿化、路牌、装饰模块。</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>类型</th>
+              <th>必须文件</th>
+              <th>推荐文件</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>小怪</td>
+              <td><code>monster_名字_spec.md</code>、<code>monster_名字_sprites.png</code>、<code>monster_名字_data.json</code>、<code>test_report.md</code></td>
+              <td>头像、预览 GIF、掉落物图标、攻击特效草图</td>
+            </tr>
+            <tr>
+              <td>NPC</td>
+              <td><code>npc_名字_spec.md</code>、<code>npc_名字_portrait.png</code>、<code>npc_名字_sprites.png</code>、<code>dialogue.md</code>、<code>test_report.md</code></td>
+              <td>任务钩子、表情差分、所在地图截图标注</td>
+            </tr>
+            <tr>
+              <td>地图区块</td>
+              <td><code>map_区块_concept.png</code>、<code>map_区块_slices/</code>、<code>map_区块_atlas.png</code>、<code>transitions.json</code>、<code>collision_notes.md</code></td>
+              <td>瓦片草案、音乐/氛围建议、事件点列表</td>
+            </tr>
+            <tr>
+              <td>装备道具</td>
+              <td><code>item_名字_icon.png</code>、<code>item_名字_spec.md</code>、<code>item_名字_data.json</code>、<code>test_report.md</code></td>
+              <td>掉落来源、强化路线、图鉴文案</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="agent">
+    <div class="content">
+      <p class="section-kicker">04 Prompt Template</p>
+      <h2>先让 Agent 生成文档，再生成素材和代码</h2>
+      <p class="lead">不要第一句就让 Agent “直接帮我接入游戏”。先让它产出设计说明和文件清单，你确认方向后，再让它分步生成素材、JSON、测试记录和打包目录。</p>
+      <div class="grid two">
+        <article class="card">
+          <h3>给 Agent 的第一句话</h3>
+          <div class="prompt">你是《学术喵的奇幻之旅：樱花同济篇》的内容协作 Agent。请先不要改代码，先帮我为一个【小怪/NPC/地图区块/道具】生成接入提案。提案必须包括：角色定位、出现位置、玩法作用、需要交付的文件清单、素材尺寸建议、metadata.json 草案、测试清单和打包结构。</div>
+        </article>
+        <article class="card">
+          <h3>生成小怪素材包</h3>
+          <div class="prompt">请根据上面的提案，生成一个小怪素材交付包结构。要求文件名全部使用英文小写和连字符；包含 spec.md、sprites.png 的帧规划、data.json、prompt_log.md、test_report.md。不要修改主项目代码，只输出文件内容和我需要准备的图片规格。</div>
+        </article>
+        <article class="card">
+          <h3>生成 NPC 素材包</h3>
+          <div class="prompt">请为这个 NPC 生成交付文件：npc_spec.md、dialogue.md、quest_hook.md、metadata.json、test_report.md。对话不超过三轮，任务目标要能接入地图探索、图鉴收集或校园彩蛋。</div>
+        </article>
+        <article class="card">
+          <h3>生成地图区块包</h3>
+          <div class="prompt">请只设计一个地图区块，不要设计全校地图。先生成 concept brief，再列出需要从图中切出的元素：建筑入口、地面、绿化、水体、道路边界、传送出口、装饰件。最后生成 transitions.json 和 collision_notes.md。</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="test">
+    <div class="content">
+      <p class="section-kicker">05 Local Check</p>
+      <h2>自己先测一遍，再交给主线</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>图片检查</h3>
+          <ul>
+            <li>PNG/WebP 能正常打开，没有水印、脏边和文字误生成。</li>
+            <li>角色或怪物背景透明，边缘没有明显白边。</li>
+            <li>精灵图帧宽高一致，动作方向和帧序写在说明里。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>游戏检查</h3>
+          <ul>
+            <li>打开本地页面，确认资源路径不报 404。</li>
+            <li>如改了 JS，至少运行 <code>node --check app.js</code>。</li>
+            <li>浏览器控制台没有红色错误，Demo 不影响原角色运行。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>内容检查</h3>
+          <ul>
+            <li>名字、定位、数值、掉落、对话和任务目标写清楚。</li>
+            <li>地图只做一个区块，出口写成传送点。</li>
+            <li>没有直接使用未经授权的商标、人物、校徽素材。</li>
+          </ul>
+        </article>
+      </div>
+      <div class="callout">
+        <strong>最小测试记录</strong>
+        在 <code>test_report.md</code> 里写：测试日期、测试方式、打开了哪个 HTML、检查了哪些图片、是否有控制台错误、还需要技术组处理什么。
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="pack">
+    <div class="content">
+      <p class="section-kicker">06 Delivery Package</p>
+      <h2>交付包按这个结构整理</h2>
+      <p class="lead">文件夹名使用英文小写，避免空格和特殊符号。提交 zip 时附一句话说明：我做了什么、适合放在哪个区块、需要技术组帮我接哪一步。</p>
+      <div class="files">contrib_art_monster-paper-bug_你的名字/
+  README.md
+  prompt_log.md
+  test_report.md
+  assets/
+    monster-paper-bug-portrait.png
+    monster-paper-bug-sprites.png
+    monster-paper-bug-preview.png
+  data/
+    monster-paper-bug-data.json
+    monster-paper-bug-spec.md</div>
+      <div class="grid two">
+        <article class="card">
+          <h3>README 写什么</h3>
+          <ul>
+            <li>一句话概念：它是谁，为什么适合学术喵。</li>
+            <li>推荐放置区块：衷和广场、图书馆、食堂、实验室等。</li>
+            <li>需要主线接入的内容：怪物、NPC、道具、事件或地图。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>metadata 写什么</h3>
+          <ul>
+            <li><code>id</code>、<code>displayName</code>、<code>type</code>、<code>zone</code>。</li>
+            <li>素材路径、帧大小、动作列表、碰撞建议。</li>
+            <li>掉落、对话、任务或传送点的草案数据。</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="code">
+    <div class="content">
+      <p class="section-kicker">07 Code And Backend</p>
+      <h2>功能、事件和后台走统一开发文档</h2>
+      <p class="lead">这类贡献人数可以少一些，但标准要更严格。先交方案，不要直接大改架构。任何新增后台、存档、排行榜、配置系统，都需要先写清楚 API、数据结构、测试命令和部署影响。</p>
+      <div class="grid">
+        <article class="card">
+          <h3>事件和剧情</h3>
+          <p>适合提交 <code>event_spec.md</code>、<code>dialogue.md</code>、<code>reward.json</code>。先做可配置内容，少改核心代码。</p>
+        </article>
+        <article class="card">
+          <h3>玩法功能</h3>
+          <p>先让 Agent 生成 <code>feature_brief.md</code>、<code>implementation_plan.md</code>、<code>test_plan.md</code>，确认后再改 <code>app.js</code> 或样式。</p>
+        </article>
+        <article class="card">
+          <h3>后台功能</h3>
+          <p>必须先提交 <code>api_contract.md</code>、<code>data_schema.md</code>、<code>deploy_notes.md</code>。没有测试命令和回滚说明，不进入主线。</p>
+        </article>
+      </div>
+      <div class="callout">
+        <strong>工具官方入口</strong>
+        可以参考 <a href="https://developers.openai.com/codex" target="_blank" rel="noopener">Codex</a>、<a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank" rel="noopener">Claude Code</a>、<a href="https://cursor.com/docs" target="_blank" rel="noopener">Cursor</a>、<a href="https://www.trae.ai/" target="_blank" rel="noopener">Trae</a>、<a href="https://api-docs.deepseek.com/" target="_blank" rel="noopener">DeepSeek API</a>、<a href="https://www.minimax.io/" target="_blank" rel="noopener">MiniMax</a> 的官方说明。实际接入以本项目交付标准为准。
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="content">
+      <p>回到 <a href="gdd_scope_review.html">学术喵项目展示页</a>。建议每位同学先从一个 NPC、小怪、道具或地图角落开始，做成一个完整小包。</p>
+    </div>
+  </footer>
+</body>
+</html>

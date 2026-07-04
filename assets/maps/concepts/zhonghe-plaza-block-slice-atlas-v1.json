@@ -1,0 +1,139 @@
+{
+  "source": "assets/maps/concepts/zhonghe-plaza-block-concept-v1.png",
+  "atlas": "assets/maps/concepts/zhonghe-plaza-block-slice-atlas-v1.png",
+  "note": "Reference slices from the generated Zhonghe Plaza block concept. These are design extraction references, not final collision-ready tiles.",
+  "slices": [
+    {
+      "name": "building_facade",
+      "box": [
+        435,
+        0,
+        1100,
+        190
+      ],
+      "role": "north building wall and glass rhythm",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/building_facade.png"
+    },
+    {
+      "name": "building_entrance_steps",
+      "box": [
+        640,
+        60,
+        900,
+        255
+      ],
+      "role": "main entrance, stairs and spawn-facing landmark",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/building_entrance_steps.png"
+    },
+    {
+      "name": "central_plaza_paving",
+      "box": [
+        520,
+        255,
+        1010,
+        710
+      ],
+      "role": "walkable open plaza ground and event space",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/central_plaza_paving.png"
+    },
+    {
+      "name": "plaza_border_lamps",
+      "box": [
+        505,
+        210,
+        1030,
+        800
+      ],
+      "role": "lamps, planters and collision boundary rhythm",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/plaza_border_lamps.png"
+    },
+    {
+      "name": "west_water_garden",
+      "box": [
+        90,
+        260,
+        465,
+        705
+      ],
+      "role": "water pool, garden pocket and quest corner",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/west_water_garden.png"
+    },
+    {
+      "name": "east_water_garden",
+      "box": [
+        1070,
+        250,
+        1450,
+        700
+      ],
+      "role": "water pool, pavilion-like corner and seating",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/east_water_garden.png"
+    },
+    {
+      "name": "northwest_transition",
+      "box": [
+        35,
+        0,
+        390,
+        245
+      ],
+      "role": "edge exit, road, trees and garden path",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/northwest_transition.png"
+    },
+    {
+      "name": "northeast_transition",
+      "box": [
+        1145,
+        0,
+        1505,
+        245
+      ],
+      "role": "edge exit, road, trees and garden path",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/northeast_transition.png"
+    },
+    {
+      "name": "southwest_transition",
+      "box": [
+        25,
+        740,
+        505,
+        1015
+      ],
+      "role": "road crossing and scene transition exit",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/southwest_transition.png"
+    },
+    {
+      "name": "southeast_transition",
+      "box": [
+        1025,
+        740,
+        1510,
+        1015
+      ],
+      "role": "road crossing and scene transition exit",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/southeast_transition.png"
+    },
+    {
+      "name": "hedge_planter_module",
+      "box": [
+        500,
+        715,
+        780,
+        850
+      ],
+      "role": "repeatable hedge, flowerbed and bench module",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/hedge_planter_module.png"
+    },
+    {
+      "name": "tree_lamp_bench_props",
+      "box": [
+        1200,
+        500,
+        1440,
+        770
+      ],
+      "role": "tree, lamp, bench and small interaction props",
+      "file": "assets/maps/concepts/zhonghe-plaza-block-slices-v1/tree_lamp_bench_props.png"
+    }
+  ]
+}

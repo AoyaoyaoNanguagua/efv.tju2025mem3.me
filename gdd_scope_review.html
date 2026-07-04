@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>《学术喵的奇幻之旅：樱花同济篇》项目主页</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1e2430;
+      --muted: #5f6978;
+      --soft: #f5f7fb;
+      --paper: #fffdf8;
+      --line: #d9e0ea;
+      --blue: #2367a7;
+      --teal: #217c82;
+      --green: #267550;
+      --rose: #c75a7b;
+      --amber: #a96f16;
+      --shadow: 0 18px 44px rgba(32, 43, 62, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.65;
+      background: #f7f4ec;
+    }
+
+    a { color: inherit; }
+    img, video { max-width: 100%; }
+
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      align-items: end;
+      padding: 28px clamp(18px, 4vw, 70px) 54px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(13, 27, 43, .92), rgba(20, 56, 78, .74) 46%, rgba(20, 56, 78, .14) 76%),
+        url("gdd-cover.png") right top / auto 112% no-repeat,
+        #17364f;
+    }
+
+    .hero-inner {
+      width: min(920px, 100%);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: #aee8eb;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 76px);
+      line-height: 1.05;
+      letter-spacing: 0;
+      text-shadow: 0 14px 34px rgba(0, 0, 0, .24);
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: rgba(255, 255, 255, .9);
+      font-size: clamp(16px, 2vw, 20px);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px solid rgba(255,255,255,.32);
+      border-radius: 7px;
+      color: #fff;
+      background: rgba(255,255,255,.14);
+      font-size: 14px;
+      font-weight: 900;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .button.primary { background: #2367a7; border-color: #6cb7ef; }
+    .button:hover { background: rgba(255,255,255,.23); }
+    .button.primary:hover { background: #1b5a94; }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px clamp(14px, 4vw, 48px);
+      border-bottom: 1px solid rgba(217, 224, 234, .8);
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(28, 40, 58, .08);
+    }
+
+    .nav a {
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 6px;
+      color: #354055;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .nav a:hover { background: #edf3f8; }
+
+    .band {
+      padding: clamp(34px, 6vw, 78px) clamp(18px, 4vw, 70px);
+      border-bottom: 1px solid rgba(217, 224, 234, .72);
+      background: var(--paper);
+    }
+
+    .band.alt { background: #f3f7f8; }
+    .band.deep { background: #192534; color: #fff; }
+    .band.deep .lead, .band.deep .muted { color: rgba(255,255,255,.74); }
+    .band.deep .section-kicker { color: #9de4e7; }
+
+    .invite-band {
+      padding: clamp(24px, 4vw, 44px) clamp(18px, 4vw, 70px);
+      color: #fff;
+      background: linear-gradient(90deg, #1b5d74, #2f6d58 54%, #7a5c1d);
+      box-shadow: inset 0 1px rgba(255,255,255,.16);
+    }
+
+    .invite-inner {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .invite-inner h2 {
+      font-size: clamp(24px, 3.4vw, 38px);
+    }
+
+    .invite-inner p {
+      max-width: 820px;
+      margin-top: 8px;
+      color: rgba(255,255,255,.86);
+      font-size: 16px;
+    }
+
+    .invite-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid rgba(255,255,255,.38);
+      border-radius: 7px;
+      color: #fff;
+      background: rgba(255,255,255,.15);
+      font-size: 14px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .invite-link:hover { background: rgba(255,255,255,.24); }
+
+    .invite-mark {
+      display: grid;
+      place-items: center;
+      width: 108px;
+      height: 108px;
+      border: 1px solid rgba(255,255,255,.32);
+      border-radius: 8px;
+      background: rgba(255,255,255,.13);
+      font-size: 18px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .section-head {
+      width: min(1120px, 100%);
+      margin: 0 auto 22px;
+    }
+
+    .section-kicker {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 19px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    p { margin: 0 0 12px; }
+    .lead {
+      max-width: 880px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .content {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero-summary,
+    .grid-2,
+    .grid-3,
+    .role-grid,
+    .asset-showcase,
+    .tech-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 26px; }
+    .grid-2 { grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .role-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .asset-showcase { grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); align-items: stretch; }
+    .tech-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .map-showcase { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 18px; }
+    .map-carousel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .stat,
+    .tile,
+    .role,
+    .chapter,
+    .route-step,
+    .tech-item,
+    .choice-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(34, 46, 66, .08);
+    }
+
+    .stat {
+      min-height: 112px;
+      padding: 16px;
+      color: var(--ink);
+      background: rgba(255,255,255,.92);
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 25px;
+      line-height: 1.1;
+    }
+
+    .stat span,
+    .tile p,
+    .role p,
+    .chapter p,
+    .tech-item p,
+    .choice-box p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tile, .chapter, .route-step, .tech-item, .choice-box { padding: 16px; }
+
+    .poster-panel,
+    .video-panel,
+    .demo-panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #111827;
+      box-shadow: var(--shadow);
+    }
+
+    .poster-panel img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 430px;
+      object-fit: cover;
+      object-position: 50% 35%;
+    }
+
+    .video-panel {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background: #fff;
+    }
+
+    .video-panel header,
+    .demo-panel header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f6f8fb;
+    }
+
+    .video-panel video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 430px;
+      object-fit: contain;
+      background: #111827;
+    }
+
+    .role {
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      position: relative;
+      z-index: 1;
+      transform-origin: center center;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .role:hover,
+    .role:focus-within {
+      transform: scale(1.08);
+      z-index: 8;
+      border-color: rgba(35, 103, 167, .42);
+      box-shadow: 0 22px 50px rgba(31, 43, 63, .22);
+    }
+
+    .portrait-wrap {
+      background: #eef2f7;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .portrait-wrap img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1.06;
+      object-fit: cover;
+      object-position: 50% 34%;
+    }
+
+    .role-body { padding: 13px; }
+    .role-body strong { display: block; font-size: 18px; }
+
+    .sprite-sheet {
+      padding: 8px;
+      border-top: 1px solid var(--line);
+      background:
+        linear-gradient(45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f2f6 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f2f6 75%);
+      background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+      background-size: 18px 18px;
+    }
+
+    .sprite-sheet img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .map-card,
+    .map-slide {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(34, 46, 66, .08);
+    }
+
+    .map-card img,
+    .map-slide img {
+      display: block;
+      width: 100%;
+      background: #eef2f7;
+    }
+
+    .map-slide {
+      display: none;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .map-slide.active { display: block; }
+
+    .map-card .wide-map,
+    .map-slide .wide-map {
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: 50% 48%;
+    }
+
+    .map-card .large-map,
+    .map-slide .large-map {
+      aspect-ratio: 3 / 2;
+      object-fit: contain;
+      object-position: 50% 50%;
+      background: #eef2f7;
+    }
+
+    .map-card .slice-map,
+    .map-slide .slice-map {
+      aspect-ratio: 15 / 13;
+      object-fit: contain;
+      object-position: 50% 50%;
+      background: #eef2f7;
+    }
+
+    .map-card .tile-map,
+    .map-slide .tile-map {
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      image-rendering: pixelated;
+      background:
+        linear-gradient(45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f2f6 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f2f6 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f2f6 75%);
+      background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+      background-size: 18px 18px;
+    }
+
+    .map-card figcaption,
+    .map-slide figcaption {
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .map-card figcaption strong,
+    .map-slide figcaption strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .carousel-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      background: #f7f9fc;
+    }
+
+    .carousel-button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid #c9d5e4;
+      border-radius: 50%;
+      color: #1f3f63;
+      background: #fff;
+      font-size: 22px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .carousel-button:hover { background: #eaf2f8; }
+
+    .carousel-label {
+      color: #324158;
+      font-size: 14px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .zoomable { cursor: zoom-in; }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(9, 16, 26, .88);
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-width: min(96vw, 1500px);
+      max-height: 88vh;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    }
+
+    .lightbox button {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(255,255,255,.12);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .demo-panel {
+      background: #fff;
+    }
+
+    .demo-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, .62fr);
+      gap: 16px;
+      align-items: center;
+      padding: clamp(16px, 3vw, 26px);
+    }
+
+    .demo-stage {
+      min-height: 330px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(18, 34, 55, .18), rgba(18, 34, 55, .18)),
+        url("assets/portraits/lina.png") center 30% / cover no-repeat;
+    }
+
+    .control-list {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .control-list span,
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 25px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 900;
+      background: #e9f1f7;
+      color: #25435f;
+    }
+
+    .tag.green { background: #e7f5ed; color: #216543; }
+    .tag.amber { background: #fff1d7; color: #7a4e08; }
+    .tag.rose { background: #fde8ef; color: #954160; }
+
+    .story-flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .route-step {
+      position: relative;
+      min-height: 132px;
+      box-shadow: none;
+    }
+
+    .route-step b {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--blue);
+    }
+
+    .chapter-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .chapter {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr) 210px;
+      gap: 16px;
+      align-items: start;
+      box-shadow: none;
+    }
+
+    .chapter b { color: var(--blue); }
+
+    .tech-path {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 8px;
+      background: rgba(255,255,255,.08);
+    }
+
+    .tech-path ol {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .tech-path li {
+      counter-increment: step;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 8px;
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.82);
+      font-size: 14px;
+    }
+
+    .tech-path li::before {
+      content: counter(step);
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      border-radius: 50%;
+      color: #123047;
+      background: #aee8eb;
+      font-weight: 900;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #263143;
+      background: #edf3f7;
+      font-weight: 900;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .footer {
+      padding: 24px clamp(18px, 4vw, 70px);
+      color: #5d6674;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        min-height: 86vh;
+        background:
+          linear-gradient(180deg, rgba(13, 27, 43, .86), rgba(20, 56, 78, .68)),
+          url("gdd-cover.png") center top / cover no-repeat,
+          #17364f;
+      }
+
+      .hero-summary,
+      .grid-2,
+      .grid-3,
+      .asset-showcase,
+      .map-showcase,
+      .demo-body,
+      .tech-grid,
+      .tech-path ol,
+      .invite-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .role-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .story-flow { grid-template-columns: 1fr; }
+      .chapter { grid-template-columns: 1fr; }
+      .poster-panel img, .video-panel video { min-height: 320px; }
+      .nav { position: static; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+
+    @media (max-width: 560px) {
+      .role-grid { grid-template-columns: 1fr; }
+      .hero-actions .button { width: 100%; }
+      .demo-stage { min-height: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <p class="eyebrow">The Erudite Feline’s Wonder Voyage, TJU: Cherry Blossom Chronicle</p>
+      <h1>学术喵的奇幻之旅：樱花同济篇</h1>
+      <p class="subtitle">五位“学术喵”从 AI 课程出发，在学习、探索、战斗和校史记忆中展开校园冒险。这里欢迎角色、美术、剧情、关卡、技术同学一起把它做成真正可玩的网页 RPG。</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#art">看原画立绘</a>
+        <a class="button" href="index.html" target="_blank" rel="noopener">进入动作测试</a>
+        <a class="button" href="#story">看故事玩法</a>
+        <a class="button" href="#tech">看技术路线</a>
+      </div>
+      <div class="hero-summary">
+        <div class="stat"><strong>5 位主角</strong><span>莉娜、阿宇、知夏、江寻、老登，开局五选一。</span></div>
+        <div class="stat"><strong>双形态</strong><span>人形态负责战斗表现，猫形态负责探索和校园感。</span></div>
+        <div class="stat"><strong>4 章主线</strong><span>AI 课程、樱花校园、智械危机、120 周年校庆。</span></div>
+        <div class="stat"><strong>轻量技术</strong><span>HTML + JavaScript + Phaser，适合快速接入角色、地图、剧情和玩法。</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="invite-band" id="join">
+    <div class="invite-inner">
+      <div>
+        <p class="section-kicker">Co-create With Agents</p>
+        <h2>把你的创意留在学术喵的校园里</h2>
+        <p>每位参与的同学，都有机会让自己亲手设计的 NPC、怪物、小任务、装备道具或校史彩蛋真正出现在游戏中。它不只是一次分工协作，也是一场 Agent 创作实践：用 AI 把灵感变成可落地的角色、关卡、数值、剧情和美术资产。</p>
+        <a class="invite-link" href="contribution_guide.html">查看参与接入指南</a>
+      </div>
+      <div class="invite-mark">共创<br>留名</div>
+    </div>
+  </section>
+
+  <nav class="nav" aria-label="页面导航">
+    <a href="#art">1 原画立绘页</a>
+    <a href="#demo">2 动作测试工坊</a>
+    <a href="#story">3 剧情与玩法</a>
+    <a href="#tech">4 技术选型</a>
+    <a href="#top">回到顶部</a>
+  </nav>
+
+  <section class="band" id="art">
+    <div class="section-head">
+      <p class="section-kicker">Part 1 · Art Assets</p>
+      <h2>原画立绘、精灵图集和海报</h2>
+      <p class="lead">角色、美术和地图是项目的第一眼吸引力。这里集中呈现主视觉海报、莉娜动画、五位角色立绘、8×8 精灵动作表，以及衷和广场区块地图资源。</p>
+    </div>
+
+    <div class="content">
+      <div class="asset-showcase">
+        <figure class="poster-panel">
+          <img src="gdd-cover.png" alt="学术喵的奇幻之旅海报">
+        </figure>
+        <article class="video-panel">
+          <header>
+            <h3>莉娜动画样片</h3>
+            <p class="muted">从立绘到动作帧，展示角色从设定走向可操作角色的表现力。</p>
+          </header>
+          <video controls preload="metadata" poster="assets/portraits/lina.png">
+            <source src="lina-animation.mp4" type="video/mp4">
+            浏览器不支持直接播放 MP4。
+          </video>
+        </article>
+      </div>
+
+      <div class="role-grid" style="margin-top:18px">
+        <article class="role">
+          <div class="portrait-wrap"><img src="assets/portraits/lina.png" alt="莉娜立绘"></div>
+          <div class="role-body"><strong>莉娜</strong><p>治疗与守护型角色，风格柔和，擅长精灵协作和队伍支援。</p></div>
+          <div class="sprite-sheet"><img src="assets/sprites/lina-sprites-v10-anchored-expanded.png" alt="莉娜精灵图集"></div>
+        </article>
+        <article class="role">
+          <div class="portrait-wrap"><img src="assets/portraits/ayu.png" alt="阿宇立绘"></div>
+          <div class="role-body"><strong>阿宇</strong><p>近战突击角色，强调行动力、剑术和直接破局。</p></div>
+          <div class="sprite-sheet"><img src="assets/sprites/ayu-sprites-v10-imagegen-anchored-clean.png" alt="阿宇精灵图集"></div>
+        </article>
+        <article class="role">
+          <div class="portrait-wrap"><img src="assets/portraits/zhixia.png" alt="知夏立绘"></div>
+          <div class="role-body"><strong>知夏</strong><p>学术爆发型角色，适合表现公式、推演和高伤害瞬间。</p></div>
+          <div class="sprite-sheet"><img src="assets/sprites/zhixia-sprites-v2.png" alt="知夏精灵图集"></div>
+        </article>
+        <article class="role">
+          <div class="portrait-wrap"><img src="assets/portraits/jiangxun.png" alt="江寻立绘"></div>
+          <div class="role-body"><strong>江寻</strong><p>远程范围输出角色，适合箭雨、路线控制和精准打击。</p></div>
+          <div class="sprite-sheet"><img src="assets/sprites/jiangxun-sprites-v3.png" alt="江寻精灵图集"></div>
+        </article>
+        <article class="role">
+          <div class="portrait-wrap"><img src="assets/portraits/laodeng.png" alt="老登立绘"></div>
+          <div class="role-body"><strong>老登</strong><p>重装稳定型角色，承担抗压、反击和工程感表达。</p></div>
+          <div class="sprite-sheet"><img src="assets/sprites/laodeng-sprites-v2.png" alt="老登精灵图集"></div>
+        </article>
+      </div>
+
+      <div class="map-showcase" aria-label="地图和瓦片资源">
+        <div class="map-carousel" data-carousel>
+          <figure class="map-slide active">
+            <img class="large-map zoomable" src="assets/maps/playable/zhonghe-plaza-layered-preview-v1.png" alt="衷和广场清晰分层实景地图">
+            <figcaption>
+              <strong>衷和广场清晰分层实景地图</strong>
+              10000 × 6000 的横向区块以清晰铺地为底层，花坛、灯柱、长椅、树木和柱子作为独立物件叠加，碰撞区域跟随物件配置。
+            </figcaption>
+          </figure>
+          <figure class="map-slide">
+            <img class="slice-map zoomable" src="assets/maps/props/zhonghe-plaza-props-atlas-v1.png" alt="衷和广场独立物件图集">
+            <figcaption>
+              <strong>衷和广场独立物件图集</strong>
+              花坛、树、灯柱、长椅、柱子、旗帜等物件单独生成和裁切，后续可以按区块需求继续替换或增加新素材。
+            </figcaption>
+          </figure>
+          <figure class="map-slide">
+            <img class="tile-map zoomable" src="assets/maps/tilesets/zhonghe-plaza-tileset-v3.png" alt="衷和广场瓦片材质">
+            <figcaption>
+              <strong>衷和广场瓦片材质</strong>
+              512×512 的 64px tile 材质单用于地面、边界和基础结构，让近景移动时保持清晰纹理。
+            </figcaption>
+          </figure>
+          <figure class="map-slide">
+            <img class="tile-map zoomable" src="assets/effects/lina-projectiles-atlas-v1.png" alt="莉娜法杖普通攻击粒子图集">
+            <figcaption>
+              <strong>莉娜法杖普通攻击粒子图集</strong>
+              三把法杖分别对应紫晶、樱花和开题星粒子，普通攻击从法杖发射，飞行一段距离或碰撞后爆开消失。
+            </figcaption>
+          </figure>
+          <div class="carousel-controls">
+            <button class="carousel-button" type="button" data-carousel-prev aria-label="上一张">‹</button>
+            <div class="carousel-label" data-carousel-label>衷和广场清晰分层实景地图 · 1 / 4</div>
+            <button class="carousel-button" type="button" data-carousel-next aria-label="下一张">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="demo">
+    <div class="section-head">
+      <p class="section-kicker">Part 2 · Action Lab</p>
+      <h2>动作测试工坊</h2>
+      <p class="lead">动作测试页用于观察角色动作、操作手感和精灵表规格。它连接了立绘、动作帧和游戏舞台，是战斗、探索、剧情演出的共同基础。</p>
+    </div>
+
+    <div class="content">
+      <article class="demo-panel">
+        <header>
+          <h3>动作入口</h3>
+          <p class="muted">进入动作测试页，可以查看角色移动、攻击、受击、倒地和人猫互变。</p>
+        </header>
+        <div class="demo-body">
+          <div class="demo-stage" aria-label="莉娜动作测试预览"></div>
+          <div>
+            <h3>可操作内容</h3>
+            <div class="control-list">
+              <span>WASD 移动</span>
+              <span>J 攻击 / 猫跳</span>
+              <span>L 人猫变身</span>
+              <span>U 受击</span>
+              <span>I 倒地 / 复位</span>
+            </div>
+            <p>动作工坊关注角色比例、动画节奏和舞台手感。美术同学可以据此调整帧表现，技术同学可以据此接入战斗、探索和事件演出。</p>
+            <p><a class="button primary" href="index.html" target="_blank" rel="noopener">进入动作测试</a></p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="band" id="story">
+    <div class="section-head">
+      <p class="section-kicker">Part 3 · Story and Gameplay</p>
+      <h2>未来游戏会是什么样子</h2>
+      <p class="lead">玩家进入游戏后，会从选角、成长、探索、战斗走向校史结局。故事围绕 AI 课程、校园生活、智能系统和 120 周年校庆展开，既有课程主题，也有校园记忆。</p>
+    </div>
+
+    <div class="content">
+      <div class="grid-3">
+        <article class="tile">
+          <h3>一句话概念</h3>
+          <p>玩家从五位学术喵中选择一位，在同济校园主题的区块地图中学习、探索、战斗、收集校史记忆，最终完成 120 周年校庆前的毕业冒险。</p>
+          <span class="tag green">保留名称与主角设定</span>
+        </article>
+        <article class="tile">
+          <h3>核心体验</h3>
+          <p>轻量放置提供成长，地图探索提供目标，自动战斗降低操作门槛，随机事件和图鉴让校园故事有记忆点。</p>
+          <span class="tag green">校园冒险感</span>
+        </article>
+        <article class="tile">
+          <h3>可玩性取舍</h3>
+          <p>第一章作为完整样章，二至四章以节点和剧情推进延展世界。这样既保留完整冒险感，也让美术、剧情、数值和程序都能找到明确切入点。</p>
+          <span class="tag amber">第一章纵切优先</span>
+        </article>
+      </div>
+
+      <div class="story-flow">
+        <article class="route-step"><b>1 选角</b><p>五位学术喵五选一，选定后以同一角色通关。</p></article>
+        <article class="route-step"><b>2 成长</b><p>学习或实习挂机，获得 EXP、学分和校园币。</p></article>
+        <article class="route-step"><b>3 探索</b><p>进入章节区块，发现节点、事件、怪物和图鉴线索；不同区块通过传送点切换。</p></article>
+        <article class="route-step"><b>4 战斗</b><p>自走战斗按技能冷却自动释放，玩家关注培养和选择。</p></article>
+        <article class="route-step"><b>5 结局</b><p>学分达标进入下一章，校史图鉴影响最终结局。</p></article>
+      </div>
+
+      <div class="chapter-list">
+        <article class="chapter">
+          <b>序章：新生报道</b>
+          <p>新生报到当天，图书馆记录出现异常。玩家学习双形态、挂机、背包、角色面板和第一次事件。</p>
+          <span class="tag green">教学入口</span>
+        </article>
+        <article class="chapter">
+          <b>第一章：AI 与协议革命</b>
+          <p>玩家选修 AI 课程，在提示词走廊、资料室和考核教室中理解目标、数据边界和幻觉验证，最终挑战 AI 陆教授。</p>
+          <span class="tag green">核心样章</span>
+        </article>
+        <article class="chapter">
+          <b>第二章：樱花济与食堂危机</b>
+          <p>樱花季与食堂供应记录被扰乱，玩家修复校园手账，追回丢失的补给，强化校园生活感。</p>
+          <span class="tag amber">节点化呈现</span>
+        </article>
+        <article class="chapter">
+          <b>第三章：智械危机</b>
+          <p>校园智能设备过度追求效率，玩家校准目标函数，面对混沌核心，讨论工程伦理和人机协作。</p>
+          <span class="tag amber">复用战斗模板</span>
+        </article>
+        <article class="chapter">
+          <b>第四章：120 周年校庆</b>
+          <p>玩家收集跨时代校史记忆，点亮“同舟共济”的终章舞台，根据图鉴收集度获得不同结局。</p>
+          <span class="tag amber">校史结局</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band deep" id="tech">
+    <div class="section-head">
+      <p class="section-kicker">Part 4 · Technical Direction</p>
+      <h2>技术路线：轻量、可扩展、适合协作</h2>
+      <p class="lead">项目采用浏览器原生页面与 Phaser 结合的路线：低门槛、易部署、便于快速接入美术素材、剧情配置和玩法模块。不同小组可以围绕角色、地图、剧情、数值和程序模块并行贡献。</p>
+    </div>
+
+    <div class="content">
+      <div class="tech-grid">
+        <article class="tech-item">
+          <h3>Phaser 舞台</h3>
+          <p>负责画布、角色动画、移动、战斗表现和区块地图，让角色资产能直接进入可玩空间。</p>
+          <span class="tag green">游戏核心</span>
+        </article>
+        <article class="tech-item">
+          <h3>静态网页入口</h3>
+          <p>HTML、CSS、JavaScript 组成清晰入口，打开即玩，部署到普通静态站点即可运行。</p>
+          <span class="tag green">低门槛协作</span>
+        </article>
+        <article class="tech-item">
+          <h3>JSON 配表</h3>
+          <p>角色、技能、怪物、章节、事件可以沉淀为配置文件，策划和数值同学能直接参与内容生产。</p>
+          <span class="tag amber">内容驱动</span>
+        </article>
+        <article class="tech-item">
+          <h3>轻量存档</h3>
+          <p>角色、章节、学分、图鉴等进度以轻量状态保存，保证体验连续，也能扩展为云端档案。</p>
+          <span class="tag amber">成长连续</span>
+        </article>
+      </div>
+
+      <div class="grid-2" style="margin-top:18px">
+        <article class="choice-box">
+          <h3>协作方式</h3>
+          <p>美术组提供立绘、精灵表和地图瓦片；策划组维护章节、事件和图鉴；技术组负责舞台、状态和交互。每一类贡献都能直接进入页面和游戏。</p>
+        </article>
+        <article class="choice-box">
+          <h3>扩展方向</h3>
+          <p>随着章节内容增长，可以继续增加可传送区块、Boss 演出、技能特效、图鉴结局和云端存档，让项目从可玩样章成长为完整作品。</p>
+        </article>
+      </div>
+
+      <div class="tech-path">
+        <h3>共创路线</h3>
+        <ol>
+          <li>五角色、动作表和第一章战斗完整跑通。</li>
+          <li>把技能、怪物、奖励、事件拆成 JSON 配置。</li>
+          <li>加入本地存档、章节解锁和结局页。</li>
+          <li>扩展云端档案、更多可传送区块和章节内容。</li>
+        </ol>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>项目入口：<strong>gdd_scope_review.html</strong>。动作测试入口：<strong>index.html</strong>。项目名称统一使用《学术喵的奇幻之旅：樱花同济篇》。</p>
+  </footer>
+  <div class="lightbox" id="imageLightbox" aria-hidden="true">
+    <button type="button" aria-label="关闭大图">×</button>
+    <img alt="">
+  </div>
+  <script>
+    document.querySelectorAll("[data-carousel]").forEach(carousel => {
+      const slides = Array.from(carousel.querySelectorAll(".map-slide"));
+      const label = carousel.querySelector("[data-carousel-label]");
+      let index = slides.findIndex(slide => slide.classList.contains("active"));
+      if (index < 0) index = 0;
+
+      const update = nextIndex => {
+        index = (nextIndex + slides.length) % slides.length;
+        slides.forEach((slide, slideIndex) => slide.classList.toggle("active", slideIndex === index));
+        const title = slides[index].querySelector("figcaption strong")?.textContent || "地图资源";
+        if (label) label.textContent = `${title} · ${index + 1} / ${slides.length}`;
+      };
+
+      carousel.querySelector("[data-carousel-prev]")?.addEventListener("click", () => update(index - 1));
+      carousel.querySelector("[data-carousel-next]")?.addEventListener("click", () => update(index + 1));
+      update(index);
+    });
+
+    const lightbox = document.getElementById("imageLightbox");
+    const lightboxImage = lightbox?.querySelector("img");
+    const closeLightbox = () => {
+      lightbox?.classList.remove("open");
+      lightbox?.setAttribute("aria-hidden", "true");
+      if (lightboxImage) {
+        lightboxImage.removeAttribute("src");
+        lightboxImage.alt = "";
+      }
+    };
+
+    document.querySelectorAll(".zoomable").forEach(image => {
+      image.addEventListener("click", () => {
+        if (!lightbox || !lightboxImage) return;
+        lightboxImage.src = image.currentSrc || image.src;
+        lightboxImage.alt = image.alt || "放大图片";
+        lightbox.classList.add("open");
+        lightbox.setAttribute("aria-hidden", "false");
+      });
+    });
+
+    lightbox?.addEventListener("click", event => {
+      if (event.target === lightbox || event.target.closest("button")) closeLightbox();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeLightbox();
+    });
+  </script>
+</body>
+</html>

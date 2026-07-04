@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>学术喵的奇幻之旅：衷和广场实景测试</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ZHONGHE PLAZA · LIVE TEST STAGE</p>
+        <h1>学术喵的奇幻之旅：樱花同济篇</h1>
+        <p class="title-en">The Erudite Feline’s Wonder Voyage, TJU: Cherry Blossom Chronicle</p>
+        <p class="subtitle">衷和广场区块实景测试：清晰地图纹理、中央广场活动区、绿化/水池/灯柱碰撞、莉娜八向移动、飞射攻击与独立法杖切换。</p>
+      </div>
+      <div id="assetStatus" class="status" aria-live="polite">正在检查实景资源...</div>
+    </header>
+
+    <section class="workspace">
+      <aside class="roster" aria-label="测试角色">
+        <h2 class="panel-title">测试角色</h2>
+        <div id="characterList" class="character-list"></div>
+        <div class="control-card">
+          <strong>实景操作</strong>
+          <span>WASD / 方向键：八向移动</span>
+          <span>J / 鼠标左键：人形为当前法杖攻击，猫形为猫跳</span>
+          <span>L：人形 / 猫形切换，猫形可再按 L 变回</span>
+          <span>U：受击动作，I：倒地 / 起身</span>
+          <span>B：打开/关闭包裹</span>
+          <span>C：显示/隐藏碰撞区</span>
+          <span>R：镜头回到角色</span>
+        </div>
+        <div class="control-card">
+          <strong>碰撞规则</strong>
+          <span class="legend green">中央广场外绿化、花坛、树池不可穿过</span>
+          <span class="legend blue">水池不可穿过，边缘保留行走路</span>
+          <span class="legend amber">灯柱、旗杆、装饰柱为小碰撞体</span>
+        </div>
+      </aside>
+
+      <section class="stage-card">
+        <div class="stage-head">
+          <div>
+            <span id="roleTag" class="role-tag"></span>
+            <h2 id="characterName"></h2>
+          </div>
+          <div class="stage-badges">
+            <div id="directionBadge" class="direction-badge">朝向：S</div>
+            <div id="weaponBadge" class="weapon-badge"></div>
+          </div>
+        </div>
+        <div class="game-wrap">
+          <div id="game" class="game-frame" aria-label="衷和广场实景测试"></div>
+          <div class="game-hud" aria-label="实景测试界面">
+            <button id="bagToggle" class="hud-button" type="button">包裹 B</button>
+            <button id="collisionToggle" class="hud-button" type="button">碰撞 C</button>
+            <button id="cameraReset" class="hud-button" type="button">归位 R</button>
+            <button id="fullscreenToggle" class="hud-button" type="button">全屏</button>
+          </div>
+          <section id="inventoryPanel" class="inventory-panel" aria-label="包裹" aria-hidden="true">
+            <header>
+              <strong>包裹</strong>
+              <span>点击法杖切换攻击效果</span>
+            </header>
+            <div id="inventoryItems" class="inventory-items"></div>
+          </section>
+        </div>
+        <div class="toolstrip" aria-label="动作与实景测试工具">
+          <button id="playToggle" type="button">暂停动画</button>
+          <button id="prevFrame" type="button">上一帧</button>
+          <button id="nextFrame" type="button">下一帧</button>
+          <button id="testModeToggle" type="button">镜头归位</button>
+          <label class="check-toggle"><input id="gridToggle" type="checkbox" checked> 显示帧格线</label>
+          <label class="select-field">预览背景
+            <select id="previewBg">
+              <option value="checker">棋盘</option>
+              <option value="dark">深色</option>
+              <option value="light">浅色</option>
+              <option value="pink">洋红</option>
+            </select>
+          </label>
+        </div>
+        <div class="timeline">
+          <span id="actionLabel">待机</span>
+          <span id="frameLabel">01 / 08</span>
+        </div>
+      </section>
+
+      <aside class="inspector">
+        <h2 class="panel-title">动作检查</h2>
+        <div id="actionList" class="action-list"></div>
+        <div class="spec-card">
+          <h3>当前设定</h3>
+          <dl>
+            <div><dt>战斗</dt><dd id="combatText"></dd></div>
+            <div><dt>猫形</dt><dd id="catText"></dd></div>
+            <div><dt>说明</dt><dd>当前版本先验证八向输入、飞射物与装备切换；真八向序列帧补齐后可接入同一方向状态。</dd></div>
+          </dl>
+        </div>
+        <div class="spec-card frame-card">
+          <h3>当前帧</h3>
+          <div id="framePreviewWrap" class="frame-preview-wrap checker grid-on">
+            <canvas id="framePreview" width="147" height="147"></canvas>
+          </div>
+          <p id="sheetText" class="sheet-text">等待精灵表加载...</p>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      <span>衷和广场区块</span><span>世界尺寸：10000 × 6000</span><span>镜头：960 × 540 跟随角色</span><span>八向控制 + 独立法杖切换</span>
+    </footer>
+  </main>
+  <script src="vendor/phaser.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
