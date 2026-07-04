@@ -3,26 +3,23 @@ const ROWS = 8;
 const FRAME_SIZE = 147;
 const ANIMATION_SPEED_FACTOR = 0.68;
 const MAP_SCALE = 1;
-const MAP_SOURCE_WIDTH = 10000;
-const MAP_SOURCE_HEIGHT = 6000;
+const MAP_SOURCE_WIDTH = 6400;
+const MAP_SOURCE_HEIGHT = 6400;
 const WORLD_WIDTH = MAP_SOURCE_WIDTH * MAP_SCALE;
 const WORLD_HEIGHT = MAP_SOURCE_HEIGHT * MAP_SCALE;
 const VIEW_WIDTH = 960;
 const VIEW_HEIGHT = 540;
 
-const MAP_CHUNK_DIR = "assets/maps/playable/zhonghe-plaza-layered-chunks-v1";
-const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-layered-playtest-v1.json";
+const MAP_TILE_SIZE = 64;
+const MAP_TILESET_KEY = "zhonghe-plaza-tileset";
+const MAP_TILEMAP_KEY = "zhonghe-plaza-tilemap";
+const MAP_TILESET_PATH = "assets/maps/tilesets/zhonghe-plaza-ground-tileset-v1.png";
+const MAP_PROP_ATLAS_KEY = "zhonghe-plaza-props";
+const MAP_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-props-atlas-v1.png";
+const MAP_MACRO_PROP_ATLAS_KEY = "zhonghe-plaza-macro-props";
+const MAP_MACRO_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-macro-props-v1.png";
+const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
 const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v1.png";
-const MAP_CHUNKS = Array.from({ length: 12 }, (_, index) => {
-  const row = Math.floor(index / 4);
-  const col = index % 4;
-  return {
-    key: `zhonghe-layered-map-r${row}-c${col}`,
-    path: `${MAP_CHUNK_DIR}/chunk-r${row}-c${col}.png`,
-    x: col * 2500,
-    y: row * 2000
-  };
-});
 
 const ALL_FRAMES = [0, 1, 2, 3, 4, 5, 6, 7];
 const FOUR_FRAMES = [0, 1, 2, 3];
@@ -446,7 +443,10 @@ class EFVScene extends Phaser.Scene {
   }
 
   preload() {
-    MAP_CHUNKS.forEach(chunk => this.load.image(chunk.key, chunk.path));
+    this.load.image(MAP_TILESET_KEY, MAP_TILESET_PATH);
+    this.load.image(MAP_PROP_ATLAS_KEY, MAP_PROP_ATLAS_PATH);
+    this.load.image(MAP_MACRO_PROP_ATLAS_KEY, MAP_MACRO_PROP_ATLAS_PATH);
+    this.load.tilemapTiledJSON(MAP_TILEMAP_KEY, MAP_DATA_PATH);
     this.load.json("zhonghe-map-data", MAP_DATA_PATH);
     this.load.spritesheet("lina-projectiles", PROJECTILE_ATLAS, { frameWidth: 362, frameHeight: 362 });
     EQUIPMENT.forEach(item => {
@@ -464,9 +464,9 @@ class EFVScene extends Phaser.Scene {
     this.cameras.main.roundPixels = true;
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.mapData = this.cache.json.get("zhonghe-map-data");
-    MAP_CHUNKS.forEach(chunk => {
-      this.add.image(chunk.x, chunk.y, chunk.key).setOrigin(0).setDepth(0);
-    });
+    this.renderTileMap();
+    this.prepareMapPropFrames();
+    this.renderMapProps();
 
     this.obstacleGroup = this.physics.add.staticGroup();
     this.collisionGraphics = this.add.graphics().setDepth(20).setVisible(false);
@@ -496,6 +496,58 @@ class EFVScene extends Phaser.Scene {
     this.physics.add.collider(this.actor, this.obstacleGroup);
     this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => this.destroyProjectile(projectile, true));
     updateDirectionBadge(this.facing);
+  }
+
+  renderTileMap() {
+    const tileMap = this.make.tilemap({ key: MAP_TILEMAP_KEY });
+    const tilesetName = this.mapData?.tilesets?.[0]?.name || "zhonghe-plaza-ground-tileset-v1";
+    const tileset = tileMap.addTilesetImage(tilesetName, MAP_TILESET_KEY, MAP_TILE_SIZE, MAP_TILE_SIZE);
+    this.tileMap = tileMap;
+    this.mapLayers = [];
+    tileMap.layers.forEach((layerData, index) => {
+      const layer = tileMap.createLayer(layerData.name, tileset, 0, 0);
+      if (!layer) return;
+      layer.setDepth(index);
+      layer.setCullPadding(4, 4);
+      this.mapLayers.push(layer);
+    });
+  }
+
+  prepareMapPropFrames() {
+    const frameSets = [
+      { key: MAP_PROP_ATLAS_KEY, frames: this.mapData?.propFrames || {} },
+      { key: MAP_MACRO_PROP_ATLAS_KEY, frames: this.mapData?.macroPropFrames || {} }
+    ];
+    frameSets.forEach(({ key, frames }) => {
+      const texture = this.textures.get(key);
+      if (!texture) return;
+      Object.entries(frames).forEach(([name, frame]) => {
+        if (!texture.has(name)) {
+          texture.add(name, 0, frame.x, frame.y, frame.w, frame.h);
+        }
+      });
+    });
+  }
+
+  getMapPropAtlasKey(item) {
+    if (item.atlas === "macro") return MAP_MACRO_PROP_ATLAS_KEY;
+    return MAP_PROP_ATLAS_KEY;
+  }
+
+  renderMapProps() {
+    this.mapProps?.forEach?.(prop => prop.destroy());
+    this.mapProps = [];
+    (this.mapData?.props || []).forEach(item => {
+      const frame = item.frame;
+      const atlasKey = this.getMapPropAtlasKey(item);
+      if (!frame || !this.textures.get(atlasKey)?.has(frame)) return;
+      const origin = item.origin || {};
+      const prop = this.add.image(item.x * MAP_SCALE, item.y * MAP_SCALE, atlasKey, frame)
+        .setOrigin(origin.x ?? 0.5, origin.y ?? 1)
+        .setScale(item.scale ?? 1)
+        .setDepth((item.y * MAP_SCALE) + (item.depthOffset || 0));
+      this.mapProps.push(prop);
+    });
   }
 
   drawObstacles() {
@@ -571,7 +623,11 @@ class EFVScene extends Phaser.Scene {
 
   showCharacter(character) {
     this.actor?.destroy();
-    const spawn = { x: 5000 * MAP_SCALE, y: 3300 * MAP_SCALE };
+    const mapSpawn = this.mapData?.spawn || {};
+    const spawn = {
+      x: (mapSpawn.x ?? MAP_SOURCE_WIDTH / 2) * MAP_SCALE,
+      y: (mapSpawn.y ?? MAP_SOURCE_HEIGHT / 2) * MAP_SCALE
+    };
     if (character.hasSprite) {
       this.actor = this.physics.add.sprite(spawn.x, spawn.y, `${character.id}-sheet`, "idle-0");
       this.actor.setScale(1);
