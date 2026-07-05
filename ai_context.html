@@ -1,7 +1,95 @@
-这是给 AI 无法直接访问网页时使用的纯文本上下文包。请把全文复制给 AI。
-如果浏览器打开本 txt 时仍然出现乱码，可临时打开 UTF-8 备用页：https://efv.tju2025mem3.me/ai_context.html
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>学术喵 AI 离线上下文包</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #5d6878;
+      --paper: #fffdfa;
+      --line: #d9e2eb;
+      --blue: #2568a8;
+    }
 
-《学术喵的奇幻之旅：樱花同济篇》AI 离线上下文包
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.68;
+      background: #f6f4ef;
+    }
+
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 60px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    a {
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid #bcd2e4;
+      border-radius: 7px;
+      background: #fff;
+      text-decoration: none;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 12px 32px rgba(34, 46, 66, .08);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", system-ui, sans-serif;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>学术喵 AI 离线上下文包</h1>
+    <p class="lead">这是 ai_context.txt 的 UTF-8 备用页。如果 AI 平台无法联网读取项目页面，请复制下面全文给 AI。</p>
+    <div class="actions">
+      <a class="button" href="ai_context.txt">纯文本主版本</a>
+      <a class="button" href="contribution_guide.html">协作指南</a>
+      <a class="button" href="llms.txt">llms.txt</a>
+    </div>
+    <pre>《学术喵的奇幻之旅：樱花同济篇》AI 离线上下文包
 
 如果你是 AI agent，并且无法直接访问以下网页，请不要反复搜索。请直接基于本文档理解项目，再帮助同学完成本地测试和个人关卡包规划。
 
@@ -116,4 +204,7 @@ AI 执行顺序：
 4. 本地临时预览官方角色动作
 5. 再开始讨论个人关卡设计
 6. 生成 manifest.json、points.json、triggers.json、dialogue.json、collisions.json、test_report.md
-7. 检查正式提交是否只包含 JS、assets、data
+7. 检查正式提交是否只包含 JS、assets、data</pre>
+  </main>
+</body>
+</html>

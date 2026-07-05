@@ -25,7 +25,7 @@ https://efv.tju2025mem3.me/index.html
 
 使用时把 `2540732` 改成自己的学号。搜索引擎收录需要时间，不要依赖搜索；让 AI 优先读取 `https://efv.tju2025mem3.me/llms.txt` 和本指南。临时 HTML 可以用于本地测试，但正式提交时只保留个人 JS、assets、data。
 
-如果 AI 仍然打不开网页，通常是 AI 平台自己的网络出站限制，不是项目页面失效。请打开或下载 `https://efv.tju2025mem3.me/ai_context.txt`，把全文复制给 AI，再继续本地测试和关卡规划。
+如果 AI 仍然打不开网页，通常是 AI 平台自己的网络出站限制，不是项目页面失效。请打开或下载 `https://efv.tju2025mem3.me/ai_context.txt`，把全文复制给 AI，再继续本地测试和关卡规划。若浏览器打开 txt 出现乱码，再使用 UTF-8 备用页：`https://efv.tju2025mem3.me/ai_context.html`。
 
 ## 1. 协作目标
 

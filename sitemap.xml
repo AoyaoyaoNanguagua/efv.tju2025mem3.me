@@ -24,4 +24,12 @@
     <loc>https://efv.tju2025mem3.me/llms.txt</loc>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://efv.tju2025mem3.me/ai_context.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://efv.tju2025mem3.me/ai_context.txt</loc>
+    <priority>0.7</priority>
+  </url>
 </urlset>
