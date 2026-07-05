@@ -25,6 +25,7 @@ body {
 body {
   margin: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   color: var(--ink);
   font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
   background: #dff3ff;
@@ -52,6 +53,8 @@ button {
 
 .game-stage {
   position: relative;
+  overflow: hidden;
+  touch-action: none;
   background: #dff3ff;
 }
 
@@ -67,15 +70,27 @@ button {
   z-index: 20;
   display: grid;
   align-items: center;
-  padding: 44px min(8vw, 116px);
+  justify-items: start;
+  padding: max(34px, 6vh) clamp(24px, 8vw, 132px);
   background:
-    linear-gradient(90deg, rgba(24, 17, 36, .74) 0%, rgba(59, 36, 70, .45) 42%, rgba(255, 255, 255, .04) 100%),
-    url("assets/ui/start-screen-bg-v1.png") center / cover no-repeat;
+    radial-gradient(ellipse at 25% 48%, rgba(20, 13, 35, .62) 0%, rgba(20, 13, 35, .36) 34%, transparent 58%),
+    linear-gradient(90deg, rgba(12, 10, 24, .66) 0%, rgba(29, 21, 42, .34) 38%, rgba(255, 255, 255, .02) 78%),
+    linear-gradient(0deg, rgba(18, 10, 26, .5) 0%, transparent 38%),
+    url("assets/ui/start-screen-bg-v4.png") center / cover no-repeat;
   transition: opacity .22s ease, visibility .22s ease;
 }
 
 .register-overlay {
+  align-items: start;
   overflow: auto;
+  padding-top: max(34px, 7vh);
+}
+
+.start-overlay.auth-mode-register {
+  align-items: start;
+  overflow: auto;
+  padding-top: max(28px, 5vh);
+  padding-bottom: max(28px, 5vh);
 }
 
 .start-overlay.hidden {
@@ -86,62 +101,32 @@ button {
 
 .login-card {
   position: relative;
-  width: min(520px, 92vw);
-  padding: 42px 40px 34px;
-  overflow: hidden;
+  width: min(560px, 92vw);
+  padding: 0;
+  overflow: visible;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, .3);
-  border-radius: 8px;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(246, 207, 112, .24), transparent 30%),
-    linear-gradient(180deg, rgba(62, 43, 84, .94), rgba(24, 17, 36, .92));
-  box-shadow:
-    0 34px 90px rgba(25, 15, 36, .45),
-    inset 0 1px 0 rgba(255, 255, 255, .2);
-  backdrop-filter: blur(14px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-shadow: 0 2px 18px rgba(12, 8, 24, .42);
 }
 
 .register-card {
   width: min(600px, 92vw);
 }
 
+.auth-mode-register .login-card {
+  width: min(600px, 92vw);
+}
+
 .login-card::before,
 .login-card::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-}
-
-.login-card::before {
-  inset: 14px;
-  border: 1px solid rgba(238, 213, 255, .22);
-  border-radius: 8px;
-}
-
-.login-card::after {
-  right: -84px;
-  bottom: -92px;
-  width: 230px;
-  height: 230px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, rgba(94, 210, 223, .34), rgba(143, 114, 214, .16) 48%, transparent 70%);
-  filter: blur(2px);
+  display: none;
 }
 
 .login-crest {
-  position: absolute;
-  top: 19px;
-  right: 28px;
-  width: 46px;
-  height: 46px;
-  border: 1px solid rgba(255, 255, 255, .35);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, .04)),
-    radial-gradient(circle at 50% 42%, #f6d66f 0 15%, #9c78e3 16% 42%, #402653 43% 100%);
-  box-shadow: 0 0 28px rgba(94, 210, 223, .24);
-  transform: rotate(45deg);
+  display: none;
 }
 
 .login-brand,
@@ -151,30 +136,122 @@ button {
 }
 
 .eyebrow {
-  margin: 0 0 12px;
-  color: #a5f2f7;
-  font: 900 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  letter-spacing: .12em;
+  margin: 0 0 13px;
+  color: #bff6ff;
+  font: 900 11px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .18em;
 }
 
 h1 {
   margin: 0;
-  max-width: 420px;
-  font-size: 38px;
-  line-height: 1.08;
+  max-width: 720px;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "STZhongsong", "Songti SC", "PingFang SC", serif;
+  font-size: clamp(40px, 4.7vw, 64px);
+  line-height: .98;
   letter-spacing: 0;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.title-subtitle {
+  margin: 12px 0 0;
+  color: #ffe7f2;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "STZhongsong", "Songti SC", "PingFang SC", serif;
+  font-size: clamp(23px, 2.2vw, 34px);
+  font-weight: 800;
 }
 
 .title-en {
-  margin: 9px 0 0;
-  color: #ffd8e8;
-  font: 700 15px/1.35 Georgia, "Times New Roman", serif;
+  margin: 15px 0 0;
+  color: rgba(255, 255, 255, .9);
+  font: 700 clamp(16px, 1.55vw, 22px)/1.25 Georgia, "Times New Roman", serif;
+}
+
+.title-chronicle {
+  margin: 5px 0 0;
+  color: #c7f6ff;
+  font: 800 clamp(12px, 1.15vw, 16px)/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.login-music-progress {
+  width: min(360px, 100%);
+  margin-top: 18px;
+  color: rgba(255, 255, 255, .86);
+}
+
+.music-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.music-progress-head b {
+  color: #c7f6ff;
+  font: 900 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.music-progress-track {
+  position: relative;
+  height: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(232, 249, 255, .38);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(12, 11, 25, .36), rgba(12, 11, 25, .18));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .14),
+    0 10px 24px rgba(10, 8, 22, .16);
+  backdrop-filter: blur(10px);
+}
+
+.music-progress-track::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .34), transparent);
+  opacity: .52;
+}
+
+.music-progress-track i {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, #ffe2ed 0%, #a9f5ff 56%, #f8dc85 100%);
+  box-shadow: 0 0 18px rgba(169, 245, 255, .58);
+  transition: width .18s ease;
+}
+
+.login-music-progress.ready .music-progress-track i {
+  box-shadow: 0 0 20px rgba(248, 220, 133, .62);
 }
 
 .login-form {
   display: grid;
-  gap: 14px;
-  margin-top: 28px;
+  width: min(372px, 100%);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.login-form[hidden] {
+  display: none;
+}
+
+.register-card .login-form {
+  width: min(480px, 100%);
+}
+
+.auth-mode-register .login-form {
+  width: min(480px, 100%);
 }
 
 .field,
@@ -185,28 +262,29 @@ h1 {
 
 .field span,
 .character-field > span {
-  color: rgba(255, 255, 255, .9);
-  font-size: 13px;
+  color: rgba(255, 255, 255, .86);
+  font-size: 12px;
   font-weight: 900;
+  letter-spacing: .06em;
 }
 
 .field input {
   width: 100%;
-  height: 50px;
-  padding: 0 15px;
+  height: 48px;
+  padding: 0 16px;
   color: #fff;
-  border: 1px solid rgba(213, 239, 244, .34);
+  border: 1px solid rgba(232, 249, 255, .44);
   border-radius: 8px;
   outline: 0;
-  background:
-    linear-gradient(180deg, rgba(16, 13, 26, .54), rgba(42, 29, 54, .46));
+  background: rgba(12, 11, 25, .36);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, .05),
-    0 10px 24px rgba(13, 9, 24, .13);
+    inset 0 1px 0 rgba(255, 255, 255, .12),
+    0 12px 28px rgba(10, 8, 22, .18);
+  backdrop-filter: blur(10px);
 }
 
 .field input::placeholder {
-  color: rgba(255, 255, 255, .55);
+  color: rgba(255, 255, 255, .58);
 }
 
 .field input:focus {
@@ -229,9 +307,10 @@ h1 {
   min-height: 58px;
   padding: 9px 10px;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, .28);
+  border: 1px solid rgba(255, 255, 255, .34);
   border-radius: 8px;
-  background: rgba(18, 14, 29, .42);
+  background: rgba(12, 11, 25, .36);
+  backdrop-filter: blur(10px);
   cursor: pointer;
 }
 
@@ -267,8 +346,8 @@ h1 {
   border-radius: 8px;
   color: #272334;
   background:
-    linear-gradient(135deg, #ffe2ed 0%, #a8f3f6 55%, #f7d36e 100%);
-  box-shadow: 0 16px 34px rgba(94, 210, 223, .22);
+    linear-gradient(135deg, #fff2f7 0%, #bff7ff 58%, #f8dc85 100%);
+  box-shadow: 0 16px 34px rgba(21, 17, 36, .22);
   cursor: pointer;
   font-weight: 900;
 }
@@ -291,17 +370,19 @@ h1 {
   align-items: center;
   gap: 8px;
   min-height: 24px;
-  color: rgba(255, 255, 255, .68);
+  color: rgba(255, 255, 255, .78);
   font-size: 13px;
   font-weight: 700;
 }
 
 .login-links a,
 .login-links button {
-  color: #bdf5fb;
+  padding: 0;
+  color: #d5f9ff;
   border: 0;
   background: transparent;
   cursor: pointer;
+  font: inherit;
   font-weight: 900;
   text-decoration: none;
 }
@@ -314,7 +395,7 @@ h1 {
 .hint {
   min-height: 18px;
   margin: 0;
-  color: rgba(255, 255, 255, .68);
+  color: rgba(255, 255, 255, .72);
   font-size: 12px;
   line-height: 1.55;
 }
@@ -330,6 +411,67 @@ h1 {
   background: var(--panel);
   box-shadow: 0 16px 42px rgba(31, 42, 58, .18);
   backdrop-filter: blur(12px);
+}
+
+.revive-dialog {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 12, 25, .24);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+
+.revive-dialog.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.revive-panel {
+  width: min(360px, calc(100vw - 48px));
+  padding: 20px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, .6);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 16px 42px rgba(31, 42, 58, .18);
+  backdrop-filter: blur(12px);
+}
+
+.revive-panel strong {
+  display: block;
+  color: #30263d;
+  font-size: 20px;
+}
+
+.revive-panel p {
+  margin: 8px 0 16px;
+  color: #625b6b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.revive-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.revive-actions button {
+  min-height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.revive-actions button:not(.primary) {
+  border: 1px solid rgba(93, 72, 120, .15);
+  color: #3b3443;
+  background: #fff;
 }
 
 .status-panel {
@@ -471,6 +613,75 @@ h1 {
   background: #f4fbff;
 }
 
+.mobile-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  pointer-events: none;
+}
+
+.move-stick {
+  position: absolute;
+  left: max(18px, calc(env(safe-area-inset-left) + 16px));
+  bottom: max(18px, calc(env(safe-area-inset-bottom) + 16px));
+  width: 116px;
+  height: 116px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .35), rgba(255, 255, 255, .12) 58%, rgba(29, 24, 42, .18));
+  box-shadow: 0 18px 42px rgba(31, 42, 58, .2);
+  pointer-events: auto;
+  touch-action: none;
+  backdrop-filter: blur(12px);
+}
+
+.move-stick i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff2f7, #bff7ff 58%, #f8dc85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .7),
+    0 10px 24px rgba(31, 42, 58, .18);
+  transform: translate(-50%, -50%);
+}
+
+.mobile-actions {
+  position: absolute;
+  right: max(18px, calc(env(safe-area-inset-right) + 16px));
+  bottom: max(18px, calc(env(safe-area-inset-bottom) + 16px));
+  display: grid;
+  grid-template-columns: 78px 78px;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.mobile-action {
+  min-height: 48px;
+  color: #34293f;
+  border: 1px solid rgba(255, 255, 255, .58);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .82);
+  box-shadow: 0 15px 34px rgba(31, 42, 58, .18);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 900;
+  touch-action: manipulation;
+  backdrop-filter: blur(12px);
+}
+
+.mobile-action.primary-action {
+  grid-row: span 2;
+  min-height: 106px;
+  color: #272334;
+  background: linear-gradient(135deg, #fff2f7 0%, #bff7ff 58%, #f8dc85 100%);
+}
+
 .boss-panel {
   left: 50%;
   bottom: 20px;
@@ -535,30 +746,21 @@ h1 {
 }
 
 @media (max-width: 760px) {
-  body {
-    overflow: auto;
-  }
-
   .start-overlay {
     align-items: end;
+    justify-items: stretch;
     padding: 18px;
+    background-position: 58% center;
   }
 
   .login-card,
   .register-card {
     width: min(520px, 100%);
-    padding: 34px 22px 24px;
-  }
-
-  .login-crest {
-    width: 34px;
-    height: 34px;
-    top: 18px;
-    right: 22px;
+    padding: 0;
   }
 
   h1 {
-    font-size: 30px;
+    font-size: clamp(30px, 8.6vw, 42px);
   }
 
   .character-options {
@@ -580,5 +782,97 @@ h1 {
   .boss-panel {
     bottom: 64px;
     grid-template-columns: 1fr;
+  }
+}
+
+@media (pointer: coarse), (hover: none) {
+  .mobile-controls {
+    display: block;
+  }
+
+  .quickbar {
+    right: max(12px, env(safe-area-inset-right));
+    max-width: min(520px, calc(100vw - 320px));
+  }
+}
+
+@media (orientation: landscape) and (pointer: coarse), (orientation: landscape) and (hover: none), (orientation: landscape) and (max-height: 620px) and (max-width: 1180px) {
+  .status-panel {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(8px, env(safe-area-inset-left));
+    width: min(300px, 34vw);
+    padding: 9px;
+  }
+
+  .profile-line {
+    margin-bottom: 6px;
+  }
+
+  .meta-row {
+    margin-top: 6px;
+  }
+
+  .skill-row,
+  .peer-list {
+    display: none;
+  }
+
+  .quickbar {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: auto;
+    max-width: min(450px, calc(100vw - 340px));
+    padding: 7px;
+    gap: 6px;
+  }
+
+  .quickbar button {
+    min-height: 28px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+
+  .move-stick {
+    width: clamp(92px, 16vh, 112px);
+    height: clamp(92px, 16vh, 112px);
+  }
+
+  .move-stick i {
+    width: clamp(38px, 7vh, 48px);
+    height: clamp(38px, 7vh, 48px);
+  }
+
+  .mobile-actions {
+    grid-template-columns: clamp(62px, 12vh, 78px) clamp(62px, 12vh, 78px);
+    gap: 8px;
+  }
+
+  .mobile-action {
+    min-height: clamp(40px, 8vh, 48px);
+    font-size: 12px;
+  }
+
+  .mobile-action.primary-action {
+    min-height: clamp(88px, 17vh, 106px);
+  }
+
+  .boss-panel {
+    bottom: max(92px, calc(env(safe-area-inset-bottom) + 84px));
+    min-width: min(520px, calc(100vw - 260px));
+    grid-template-columns: auto minmax(130px, 1fr) auto;
+    padding: 9px 11px;
+  }
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .quickbar {
+    top: auto;
+    right: 12px;
+    bottom: max(146px, calc(env(safe-area-inset-bottom) + 134px));
+    max-width: min(340px, calc(100vw - 24px));
+  }
+
+  .boss-panel {
+    bottom: max(146px, calc(env(safe-area-inset-bottom) + 134px));
   }
 }

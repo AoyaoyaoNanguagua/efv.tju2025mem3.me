@@ -185,7 +185,8 @@
     boss: { ...BOSS },
     bossRewardClaimed: false,
     lastHealAt: -Infinity,
-    connected: false
+    connected: false,
+    touchMove: { active: false, dx: 0, dy: 0 }
   };
 
   const $ = selector => document.querySelector(selector);
@@ -285,6 +286,15 @@
     const data = await apiRequest("/api/login", {
       method: "POST",
       body: { username, password }
+    });
+    setSession(data.token);
+    return normalizeProfile(data.profile);
+  }
+
+  async function registerWithPassword(username, nickname, password, characterId) {
+    const data = await apiRequest("/api/register", {
+      method: "POST",
+      body: { username, nickname, password, characterId }
     });
     setSession(data.token);
     return normalizeProfile(data.profile);
@@ -392,6 +402,13 @@
     toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2400);
   }
 
+  function renderReviveDialog(open) {
+    const dialog = $("#reviveDialog");
+    if (!dialog) return;
+    dialog.classList.toggle("open", !!open);
+    dialog.setAttribute("aria-hidden", String(!open));
+  }
+
   function getDefaultWsUrl() {
     if (location.protocol === "file:") return "ws://127.0.0.1:8787/ws";
     const protocol = location.protocol === "https:" ? "wss:" : "ws:";
@@ -405,8 +422,16 @@
       this.timer = null;
       this.mode = "login";
       this.step = 0;
-      this.loginNotes = [392, 493.88, 587.33, 659.25, 587.33, 493.88, 440, 493.88];
       this.gameNotes = [261.63, 329.63, 392, 523.25, 493.88, 392, 349.23, 392];
+      this.loginTrackUrl = "assets/audio/efv-login.mp3";
+      this.loginTrack = null;
+      this.loginObjectUrl = "";
+      this.loginLoading = false;
+      this.loginReady = false;
+      this.loginAutoplayBlocked = false;
+      this.loginTargetVolume = 0.56;
+      this.setLoginProgress(0, "初始素材加载中");
+      this.loadLoginTrack();
     }
 
     unlock() {
@@ -416,33 +441,141 @@
       if (this.ctx.state === "suspended") this.ctx.resume();
     }
 
-    start(mode = this.mode) {
+    start(mode = this.mode, userGesture = false) {
       this.mode = mode;
       this.unlock();
-      if (!this.enabled || !this.ctx) return;
+      if (!this.enabled) {
+        this.pauseLoginTrack();
+        this.stopGamePulse();
+        return;
+      }
+      if (this.mode === "login") {
+        this.stopGamePulse();
+        this.playLoginTrack(userGesture);
+        return;
+      }
+      this.pauseLoginTrack();
+      if (!this.ctx) return;
       if (!this.timer) {
-        this.timer = window.setInterval(() => this.playPulse(), this.mode === "login" ? 620 : 500);
+        this.timer = window.setInterval(() => this.playPulse(), 500);
       }
       this.playPulse();
     }
 
-    stop() {
+    stopGamePulse() {
       window.clearInterval(this.timer);
       this.timer = null;
     }
 
+    stop() {
+      this.stopGamePulse();
+      this.pauseLoginTrack();
+    }
+
     switchMode(mode) {
-      if (this.mode === mode && this.timer) return;
+      if (this.mode === mode) {
+        this.start(mode);
+        return;
+      }
       this.stop();
       this.step = 0;
       this.start(mode);
     }
 
-    toggle() {
+    toggle(userGesture = false) {
       this.enabled = !this.enabled;
       $("#musicToggle").textContent = this.enabled ? "音乐 开" : "音乐 关";
-      if (this.enabled) this.start(this.mode);
+      if (this.enabled) this.start(this.mode, userGesture);
       else this.stop();
+    }
+
+    setLoginProgress(percent, label, ready = false) {
+      const wrap = $("#loginMusicProgress");
+      const bar = $("#loginMusicBar");
+      const text = $("#loginMusicText");
+      const value = $("#loginMusicPercent");
+      const progress = Math.max(0, Math.min(100, Math.round(percent)));
+      if (bar) bar.style.width = `${progress}%`;
+      if (value) value.textContent = `${progress}%`;
+      if (text && label) text.textContent = label;
+      wrap?.classList.toggle("ready", ready);
+    }
+
+    setupLoginTrack(src, objectUrl = "") {
+      if (this.loginObjectUrl) URL.revokeObjectURL(this.loginObjectUrl);
+      this.loginObjectUrl = objectUrl;
+      const track = new Audio(src);
+      track.loop = true;
+      track.preload = "auto";
+      track.volume = this.loginTargetVolume;
+      this.loginTrack = track;
+      this.loginReady = true;
+      this.setLoginProgress(100, "初始素材加载完成", true);
+      if (this.enabled && this.mode === "login") this.playLoginTrack();
+    }
+
+    async loadLoginTrack() {
+      if (this.loginLoading || this.loginReady) return;
+      this.loginLoading = true;
+      try {
+        const response = await fetch(this.loginTrackUrl, { cache: "force-cache" });
+        if (!response.ok) throw new Error("login music unavailable");
+        const total = Number(response.headers.get("content-length") || 0);
+        if (!response.body || !total) {
+          const blob = await response.blob();
+          const objectUrl = URL.createObjectURL(blob);
+          this.setupLoginTrack(objectUrl, objectUrl);
+          return;
+        }
+        const reader = response.body.getReader();
+        const chunks = [];
+        let loaded = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          loaded += value.length;
+          this.setLoginProgress(Math.max(4, loaded / total * 99), "初始素材加载中");
+        }
+        const blob = new Blob(chunks, { type: response.headers.get("content-type") || "audio/mpeg" });
+        const objectUrl = URL.createObjectURL(blob);
+        this.setupLoginTrack(objectUrl, objectUrl);
+      } catch {
+        this.setupLoginTrack(this.loginTrackUrl);
+      } finally {
+        this.loginLoading = false;
+      }
+    }
+
+    async playLoginTrack(userGesture = false) {
+      this.loadLoginTrack();
+      if (!this.loginTrack || !this.enabled || this.mode !== "login") return;
+      const track = this.loginTrack;
+      track.volume = this.loginTargetVolume;
+      if (userGesture) {
+        track.muted = false;
+        this.loginAutoplayBlocked = false;
+      }
+      try {
+        await track.play();
+        this.loginAutoplayBlocked = false;
+        return;
+      } catch {
+        this.loginAutoplayBlocked = true;
+      }
+      if (userGesture) return;
+      try {
+        track.muted = true;
+        await track.play();
+        track.volume = this.loginTargetVolume;
+        track.muted = false;
+      } catch {
+        track.muted = false;
+      }
+    }
+
+    pauseLoginTrack() {
+      this.loginTrack?.pause();
     }
 
     tone(freq, duration = 0.2, type = "sine", gain = 0.055) {
@@ -461,11 +594,11 @@
     }
 
     playPulse() {
-      const notes = this.mode === "login" ? this.loginNotes : this.gameNotes;
+      const notes = this.gameNotes;
       const note = notes[this.step % notes.length];
       this.step += 1;
-      this.tone(note, 0.34, "triangle", this.mode === "login" ? 0.045 : 0.038);
-      this.tone(note / 2, 0.48, "sine", this.mode === "login" ? 0.028 : 0.024);
+      this.tone(note, 0.34, "triangle", 0.038);
+      this.tone(note / 2, 0.48, "sine", 0.024);
       if (this.mode === "game" && this.step % 4 === 0) this.tone(note * 1.5, 0.18, "sine", 0.018);
     }
 
@@ -556,6 +689,14 @@
       this.send({ type: "bossHit", damage });
     }
 
+    sendSlimeSpawn(slime) {
+      this.send({ type: "slimeSpawn", slime });
+    }
+
+    sendSlimeRemove(id) {
+      this.send({ type: "slimeRemove", id });
+    }
+
     handleMessage(raw) {
       let message = null;
       try {
@@ -582,6 +723,7 @@
           if (peer.id !== app.profile.id) this.peers.set(peer.id, peer);
         });
         if (message.boss) syncBossState(message.boss);
+        if (Array.isArray(message.slimes)) app.scene?.syncSlimes(message.slimes);
         renderPeers(this.peers);
         app.scene?.syncAllPeers(this.peers);
       }
@@ -599,6 +741,12 @@
       }
       if (message.type === "bossState" && message.boss) {
         syncBossState(message.boss);
+      }
+      if (message.type === "slimeSpawn" && message.slime) {
+        app.scene?.syncSlimeSpawn(message.slime);
+      }
+      if (message.type === "slimeRemove" && message.id) {
+        app.scene?.syncSlimeRemove(message.id);
       }
       if (message.type === "notice" && message.text) showToast(message.text);
     }
@@ -619,6 +767,7 @@
       this.lastBossHitAt = 0;
       this.lastShotAt = 0;
       this.remotePlayers = new Map();
+      this.syncedSlimeIds = new Set();
     }
 
     preload() {
@@ -656,12 +805,14 @@
       this.cameras.main.roundPixels = true;
       this.mapData = this.cache.json.get(MAP_DATA_KEY) || {};
       this.remotePlayers = new Map();
+      this.syncedSlimeIds = new Set();
       this.selectedEquipment = EQUIPMENT[0];
       this.facing = DIRECTIONS[2];
       this.lastAimVector = directionVector(this.facing);
       this.isCasting = false;
       this.isDead = false;
       this.isCat = false;
+      this.isCatJumping = false;
       this.isActionLocked = false;
       this.networkAction = "idle";
       this.actorHitToken = 0;
@@ -680,7 +831,7 @@
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.leafSlimes = this.physics.add.group({ allowGravity: false });
       this.projectileGraphics = this.add.graphics().setDepth(40);
-      this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,J,H,L,U,I,SPACE");
+      this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,J,H,L,U,I,C,X,SPACE");
 
       this.createActor();
       this.createBoss();
@@ -704,7 +855,7 @@
       app.multiplayer.connect();
       renderHud();
       renderBossHud();
-      showToast("WASD 移动，J 攻击，L 人形/猫形切换，H 护盾恢复");
+      showToast("WASD 移动，J 攻击，L 变身，C 增加怪物，X 生成 Boss，I 死亡/复活");
     }
 
     renderTileMap() {
@@ -927,7 +1078,12 @@
       showToast("AI 陆教授考核镜像已出现");
     }
 
-    spawnLeafSlime() {
+    findLeafSlime(id) {
+      if (!id || !this.leafSlimes) return null;
+      return (this.leafSlimes.getChildren?.() || []).find(slime => slime?.active && slime.slimeId === id) || null;
+    }
+
+    getNextLeafSlimePoint() {
       if (!this.actor || !this.leafSlimes) return null;
       const count = this.leafSlimes.countActive(true);
       const offsets = [
@@ -937,12 +1093,29 @@
         { x: -120, y: -142 }
       ];
       const offset = offsets[count % offsets.length];
-      const x = clamp(this.actor.x + offset.x, 900, this.worldWidth - 160);
-      const y = clamp(this.actor.y + offset.y, 900, this.worldHeight - 220);
+      return {
+        x: clamp(this.actor.x + offset.x, 900, this.worldWidth - 160),
+        y: clamp(this.actor.y + offset.y, 900, this.worldHeight - 220)
+      };
+    }
+
+    spawnLeafSlime(options = {}) {
+      if (!this.actor || !this.leafSlimes) return null;
+      const slimeId = String(options.id || makeId());
+      const existing = this.findLeafSlime(slimeId);
+      if (existing) return existing;
+      const point = Number.isFinite(options.x) && Number.isFinite(options.y)
+        ? { x: options.x, y: options.y }
+        : this.getNextLeafSlimePoint();
+      if (!point) return null;
+      const x = clamp(point.x, 900, this.worldWidth - 160);
+      const y = clamp(point.y, 900, this.worldHeight - 220);
       const slime = this.leafSlimes.create(x, y, LEAF_SLIME_KEY, 0)
         .setOrigin(0.5, 0.72)
         .setScale(0.9)
         .setDepth(y + 6);
+      slime.slimeId = slimeId;
+      slime.ownerId = options.ownerId || app.profile?.id || "";
       slime.body.setSize(54, 34);
       slime.body.setOffset(37, 70);
       slime.body.setAllowGravity(false);
@@ -954,7 +1127,34 @@
       slime.play(`${LEAF_SLIME_KEY}-move`);
       slime.shadow = this.add.ellipse(slime.x, slime.y + 12, 58, 18, 0x182313, 0.18)
         .setDepth(slime.y - 24);
+      this.syncedSlimeIds.add(slimeId);
+      if (options.broadcast && app.connected) {
+        app.multiplayer.sendSlimeSpawn({ id: slimeId, x, y });
+      }
       return slime;
+    }
+
+    syncSlimeSpawn(slime) {
+      if (!slime?.id) return;
+      this.spawnLeafSlime({
+        id: String(slime.id),
+        x: Number(slime.x),
+        y: Number(slime.y),
+        ownerId: String(slime.ownerId || ""),
+        broadcast: false
+      });
+    }
+
+    syncSlimes(slimes) {
+      slimes.forEach(slime => this.syncSlimeSpawn(slime));
+    }
+
+    syncSlimeRemove(id) {
+      const slime = this.findLeafSlime(String(id || ""));
+      if (!slime) return;
+      this.syncedSlimeIds.delete(slime.slimeId);
+      slime.shadow?.destroy();
+      slime.destroy();
     }
 
     bindActorLeafSlimeCollision() {
@@ -965,6 +1165,7 @@
 
     playLoop(actionId) {
       if (!this.actor || this.isCasting || this.isDead || this.isActionLocked) return;
+      if (this.isCatJumping) return;
       const character = getCharacter(app.profile.characterId);
       if (this.isCat && actionId === "idle") {
         this.actor.anims.stop();
@@ -993,18 +1194,15 @@
     }
 
     playCatJump() {
-      if (!this.actor || this.isDead || this.isActionLocked) return;
+      if (!this.actor || this.isDead || this.isActionLocked || this.isCatJumping) return;
       const character = getCharacter(app.profile.characterId);
       this.isCat = true;
-      this.isActionLocked = true;
+      this.isCatJumping = true;
       this.networkAction = "catJump";
       this.actor.setTexture(character.id);
       this.actor.play(`${character.id}-catJump-once`, true);
-      const vec = this.lastAimVector || directionVector(this.facing);
-      this.actor.body.setVelocity(vec.x * 360, vec.y * 360);
       this.actor.once("animationcomplete", () => {
-        this.actor.body.setVelocity(0, 0);
-        this.isActionLocked = false;
+        this.isCatJumping = false;
         this.returnToBaseLoop();
       });
     }
@@ -1189,6 +1387,10 @@
       slime.actionToken = (slime.actionToken || 0) + 1;
       const token = slime.actionToken;
       slime.state = "dead";
+      if (slime.slimeId && !slime.removeBroadcasted && app.connected) {
+        slime.removeBroadcasted = true;
+        app.multiplayer.sendSlimeRemove(slime.slimeId);
+      }
       slime.body.setVelocity(0, 0);
       slime.body.enable = false;
       slime.clearTint();
@@ -1225,9 +1427,34 @@
       this.playActorHitReaction();
       if (app.profile.hp <= 0) {
         this.isDead = true;
+        this.isCatJumping = false;
+        this.isActionLocked = false;
+        this.isCasting = false;
+        this.networkAction = "death";
+        this.actor.body.setVelocity(0, 0);
         this.actor.play(`${app.profile.characterId}-death-once`, true);
-        showToast("考核失败，按 H 恢复后继续挑战");
+        renderReviveDialog(true);
+        showToast("角色倒下了，点击复活或按 I 继续");
       }
+    }
+
+    revivePlayer() {
+      if (!app.profile || !this.actor) return;
+      app.profile.hp = app.profile.maxHp;
+      this.isDead = false;
+      this.isActionLocked = false;
+      this.isCasting = false;
+      this.isCatJumping = false;
+      this.isCat = false;
+      this.networkAction = "idle";
+      this.actor.clearTint();
+      this.actor.body.setVelocity(0, 0);
+      this.actor.setTexture(app.profile.characterId);
+      renderReviveDialog(false);
+      renderHud();
+      app.audio.heal();
+      this.returnToBaseLoop();
+      showToast("已复活，继续探索校园");
     }
 
     playActorHitReaction() {
@@ -1330,9 +1557,8 @@
       app.lastHealAt = now;
       app.profile.hp = Math.min(app.profile.maxHp, app.profile.hp + 42);
       if (app.profile.hp > 0 && this.isDead) {
-        this.isDead = false;
-        this.actor.clearTint();
-        this.returnToBaseLoop();
+        this.revivePlayer();
+        return;
       }
       app.audio.heal();
       renderHud();
@@ -1359,7 +1585,14 @@
       if (key === "h") this.healPlayer();
       if (key === "l") this.toggleTransformState();
       if (key === "u") this.playActorHitReaction();
-      if (key === "i") this.damagePlayer(999);
+      if (key === "c") {
+        if (this.spawnLeafSlime({ broadcast: true })) showToast("新增一只叶灵怪");
+      }
+      if (key === "x") this.startBoss();
+      if (key === "i") {
+        if (this.isDead || app.profile.hp <= 0) this.revivePlayer();
+        else this.damagePlayer(999);
+      }
     }
 
     getMoveVector() {
@@ -1369,7 +1602,11 @@
       const up = this.keys.W.isDown || this.keys.UP.isDown;
       const dx = (right ? 1 : 0) - (left ? 1 : 0);
       const dy = (down ? 1 : 0) - (up ? 1 : 0);
-      return { dx, dy, moving: !!(dx || dy) };
+      const touch = app.touchMove || { dx: 0, dy: 0 };
+      const touchMoving = Math.hypot(touch.dx || 0, touch.dy || 0) > 0.08;
+      const moveDx = touchMoving ? touch.dx : dx;
+      const moveDy = touchMoving ? touch.dy : dy;
+      return { dx: moveDx, dy: moveDy, moving: !!(touchMoving || dx || dy) };
     }
 
     updateFacing(dx, dy) {
@@ -1458,15 +1695,61 @@
           stroke: "#3c2e4c",
           strokeThickness: 4
         }).setOrigin(0.5).setDepth(peer.y + 30);
-        remote = { sprite, label, target: { x: peer.x, y: peer.y }, characterId: peer.characterId };
+        const hpBg = this.add.rectangle(peer.x, peer.y + 19, 50, 6, 0x1d1826, 0.48)
+          .setOrigin(0.5)
+          .setDepth(peer.y + 31);
+        const hpFill = this.add.rectangle(peer.x - 24, peer.y + 19, 48, 4, 0x42c98a, 0.92)
+          .setOrigin(0, 0.5)
+          .setDepth(peer.y + 32);
+        remote = {
+          sprite,
+          label,
+          hpBg,
+          hpFill,
+          target: { x: peer.x, y: peer.y },
+          characterId: peer.characterId,
+          hp: Number(peer.hp ?? peer.maxHp ?? 1),
+          maxHp: Math.max(1, Number(peer.maxHp || 1)),
+          down: false,
+          hitFlashToken: 0
+        };
         this.remotePlayers.set(peer.id, remote);
       }
       remote.target = { x: peer.x, y: peer.y };
       remote.sprite.setFlipX(!!peer.flipX);
       remote.label.setText(peer.name);
+      const nextMaxHp = Math.max(1, Number(peer.maxHp || remote.maxHp || 1));
+      const nextHp = clamp(Number(peer.hp ?? nextMaxHp), 0, nextMaxHp);
+      const tookDamage = nextHp < (remote.hp ?? nextHp) && nextHp > 0;
+      remote.hp = nextHp;
+      remote.maxHp = nextMaxHp;
+      remote.down = nextHp <= 0;
+      const ratio = clamp(nextHp / nextMaxHp, 0, 1);
+      remote.hpFill.setDisplaySize(Math.max(1, 48 * ratio), 4);
+      remote.hpFill.setFillStyle(ratio > 0.45 ? 0x42c98a : ratio > 0.2 ? 0xf3c75d : 0xef7fb0, 0.92);
+      remote.hpBg.setVisible(true);
+      remote.hpFill.setVisible(nextHp > 0);
+      if (tookDamage) {
+        remote.hitFlashToken += 1;
+        const token = remote.hitFlashToken;
+        remote.sprite.setTint(0xffe6a0);
+        this.time.delayedCall(180, () => {
+          if (remote.hitFlashToken === token && !remote.down) remote.sprite.clearTint();
+        });
+      }
+      if (remote.down) {
+        remote.sprite.clearTint();
+        const deathKey = `${peer.characterId}-death-once`;
+        if (this.anims.exists(deathKey) && remote.sprite.anims.currentAnim?.key !== deathKey) remote.sprite.play(deathKey, true);
+        return;
+      }
+      if (!tookDamage) remote.sprite.clearTint();
       const moving = Phaser.Math.Distance.Between(remote.sprite.x, remote.sprite.y, peer.x, peer.y) > 8;
       const requested = peer.action || (moving ? "walk" : "idle");
-      const animKey = `${peer.characterId}-${requested === "catRun" ? "catRun" : requested === "attack" ? "attack" : moving ? "walk" : "idle"}`;
+      const action = ["attack", "hit", "transform", "catRun", "catJump"].includes(requested)
+        ? requested
+        : moving ? "walk" : "idle";
+      const animKey = `${peer.characterId}-${["attack", "hit", "transform", "catJump"].includes(action) ? `${action}-once` : action}`;
       if (this.anims.exists(animKey) && remote.sprite.anims.currentAnim?.key !== animKey) remote.sprite.play(animKey, true);
     }
 
@@ -1474,6 +1757,8 @@
       const remote = this.remotePlayers.get(id);
       remote?.sprite.destroy();
       remote?.label.destroy();
+      remote?.hpBg.destroy();
+      remote?.hpFill.destroy();
       this.remotePlayers.delete(id);
     }
 
@@ -1483,6 +1768,8 @@
         remote.sprite.y += (remote.target.y - remote.sprite.y) * 0.16;
         remote.sprite.setDepth(remote.sprite.y + 8);
         remote.label.setPosition(remote.sprite.x, remote.sprite.y - 128).setDepth(remote.sprite.y + 30);
+        remote.hpBg.setPosition(remote.sprite.x, remote.sprite.y + 19).setDepth(remote.sprite.y + 31);
+        remote.hpFill.setPosition(remote.sprite.x - 24, remote.sprite.y + 19).setDepth(remote.sprite.y + 32);
       });
     }
 
@@ -1560,6 +1847,7 @@
   function startGame(profile) {
     app.profile = normalizeProfile(profile);
     saveProfile(app.profile);
+    renderReviveDialog(false);
     $("#startOverlay").classList.add("hidden");
     app.audio.switchMode("game");
     renderHud();
@@ -1586,9 +1874,122 @@
     }
   }
 
+  function exitGame() {
+    renderReviveDialog(false);
+    app.touchMove = { active: false, dx: 0, dy: 0 };
+    if (app.profile) saveProfile(app.profile);
+    app.multiplayer?.close();
+    if (app.game) {
+      app.game.destroy(true);
+      app.game = null;
+      app.scene = null;
+    }
+    app.connected = false;
+    app.boss = { ...BOSS };
+    app.bossRewardClaimed = false;
+    renderNetwork("未连接", false);
+    renderBossHud();
+    $("#startOverlay").classList.remove("hidden");
+    $("#loginButton").disabled = false;
+    app.audio.switchMode("login");
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  }
+
+  function setAuthMode(mode, userGesture = false) {
+    const isRegister = mode === "register";
+    const overlay = $("#startOverlay");
+    const loginForm = $("#profileForm");
+    const registerForm = $("#registerForm");
+    if (!overlay || !loginForm || !registerForm) return;
+
+    loginForm.hidden = isRegister;
+    registerForm.hidden = !isRegister;
+    overlay.classList.toggle("auth-mode-register", isRegister);
+    overlay.classList.toggle("auth-mode-login", !isRegister);
+    if (userGesture) app.audio?.start("login", true);
+
+    const focusTarget = isRegister ? $("#registerAccountInput") : $("#loginAccountInput");
+    window.setTimeout(() => focusTarget?.focus({ preventScroll: true }), 0);
+  }
+
+  function resetTouchMove() {
+    app.touchMove = { active: false, dx: 0, dy: 0 };
+    const knob = $("#moveKnob");
+    if (knob) knob.style.transform = "translate(-50%, -50%)";
+  }
+
+  function bindMobileControls() {
+    const stick = $("#moveStick");
+    const knob = $("#moveKnob");
+    if (!stick || !knob) return;
+    let activePointerId = null;
+
+    const updateStick = event => {
+      const rect = stick.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const maxDistance = rect.width * 0.34;
+      const rawX = event.clientX - centerX;
+      const rawY = event.clientY - centerY;
+      const distance = Math.hypot(rawX, rawY);
+      const scale = distance > maxDistance ? maxDistance / distance : 1;
+      const knobX = rawX * scale;
+      const knobY = rawY * scale;
+      const dx = Math.abs(knobX) < 5 ? 0 : knobX / maxDistance;
+      const dy = Math.abs(knobY) < 5 ? 0 : knobY / maxDistance;
+      app.touchMove = { active: true, dx, dy };
+      knob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+    };
+
+    stick.addEventListener("pointerdown", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      activePointerId = event.pointerId;
+      stick.setPointerCapture?.(event.pointerId);
+      updateStick(event);
+    });
+    stick.addEventListener("pointermove", event => {
+      if (event.pointerId !== activePointerId) return;
+      event.preventDefault();
+      event.stopPropagation();
+      updateStick(event);
+    });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(eventName => {
+      stick.addEventListener(eventName, event => {
+        if (event.pointerId !== activePointerId && eventName !== "lostpointercapture") return;
+        activePointerId = null;
+        resetTouchMove();
+      });
+    });
+    window.addEventListener("blur", resetTouchMove);
+
+    const bindAction = (selector, action) => {
+      const button = $(selector);
+      if (!button) return;
+      let pointerHandledAt = 0;
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        pointerHandledAt = performance.now();
+        action();
+      });
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (performance.now() - pointerHandledAt > 450) action();
+      });
+    };
+
+    bindAction("#mobileAttackButton", () => app.scene?.triggerPrimaryAction());
+    bindAction("#mobileTransformButton", () => app.scene?.toggleTransformState());
+    bindAction("#mobileHealButton", () => healPlayer());
+  }
+
   function bindUi() {
     const saved = loadProfile();
     const autoStart = new URLSearchParams(location.search).get("autostart") === "1";
+    renderCharacterOptions();
+    setAuthMode("login");
     if (saved?.account) $("#loginAccountInput").value = saved.account;
     if (app.authToken && saved?.name) {
       $("#profileHint").textContent = `已保存 ${saved.name} 的登录状态，请输入密码进入同一服务器。`;
@@ -1598,7 +1999,7 @@
     if (autoStart && app.authToken) {
       const button = $("#loginButton");
       button.disabled = true;
-      $("#profileHint").textContent = "正在读取服务器档案，准备进入衷和广场...";
+      $("#profileHint").textContent = "正在读取服务器档案，准备进入校园...";
       loadSessionProfile()
         .then(profile => {
           window.history.replaceState(null, "", "play.html");
@@ -1611,7 +2012,7 @@
         });
     }
 
-    const startAudioOnGesture = () => app.audio.start("login");
+    const startAudioOnGesture = () => app.audio.start("login", true);
     ["pointerdown", "keydown", "focusin", "input"].forEach(eventName => {
       $("#startOverlay").addEventListener(eventName, startAudioOnGesture, { once: true });
     });
@@ -1629,7 +2030,7 @@
       $("#profileHint").textContent = "正在登录服务器...";
       try {
         const profile = await loginWithPassword(username, password);
-        $("#profileHint").textContent = "登录成功，正在进入衷和广场...";
+        $("#profileHint").textContent = "登录成功，正在进入校园...";
         startGame(profile);
       } catch (error) {
         setSession("");
@@ -1637,15 +2038,66 @@
         $("#profileHint").textContent = error.message || "登录失败，请检查账号密码。";
       }
     });
-    $("#musicToggle").addEventListener("click", () => app.audio.toggle());
+
+    $("#showRegisterLink")?.addEventListener("click", event => {
+      event.preventDefault();
+      setAuthMode("register", true);
+    });
+    $("#backLoginButton")?.addEventListener("click", () => {
+      setAuthMode("login", true);
+    });
+    $("#registerForm")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const username = $("#registerAccountInput").value.trim();
+      const nickname = $("#registerNicknameInput").value.trim();
+      const password = $("#registerPasswordInput").value;
+      const confirm = $("#registerConfirmInput").value;
+      const button = $("#registerButton");
+
+      if (!/^[A-Za-z0-9_-]{3,18}$/.test(username)) {
+        $("#registerHint").textContent = "账号请使用 3-18 位字母、数字、下划线或短横线。";
+        return;
+      }
+      if (nickname.length < 1 || nickname.length > 12) {
+        $("#registerHint").textContent = "昵称请控制在 1-12 个字。";
+        return;
+      }
+      if (password.length < 6) {
+        $("#registerHint").textContent = "密码至少需要 6 位。";
+        return;
+      }
+      if (password !== confirm) {
+        $("#registerHint").textContent = "两次输入的密码不一致。";
+        return;
+      }
+
+      button.disabled = true;
+      $("#registerHint").textContent = "正在创建账号...";
+      try {
+        const profile = await registerWithPassword(username, nickname, password, app.selectedCharacterId);
+        $("#registerHint").textContent = "注册成功，正在进入校园...";
+        startGame(profile);
+      } catch (error) {
+        button.disabled = false;
+        $("#registerHint").textContent = error.message || "注册失败，请稍后再试。";
+      }
+    });
+    $("#musicToggle").addEventListener("click", () => app.audio.toggle(true));
     $("#attackButton").addEventListener("click", () => app.scene?.triggerPrimaryAction());
     $("#healButton").addEventListener("click", () => healPlayer());
+    $("#spawnButton").addEventListener("click", () => {
+      if (app.scene?.spawnLeafSlime({ broadcast: true })) showToast("新增一只叶灵怪");
+    });
     $("#bossButton").addEventListener("click", () => app.scene?.startBoss());
     $("#reconnectButton").addEventListener("click", () => app.multiplayer?.connect());
+    $("#exitButton").addEventListener("click", () => exitGame());
+    $("#reviveButton").addEventListener("click", () => app.scene?.revivePlayer());
+    $("#stayDownButton").addEventListener("click", () => renderReviveDialog(false));
     $("#fullscreenButton").addEventListener("click", async () => {
       if (document.fullscreenElement) await document.exitFullscreen();
       else await $(".game-stage").requestFullscreen();
     });
+    bindMobileControls();
   }
 
   document.addEventListener("DOMContentLoaded", () => {
