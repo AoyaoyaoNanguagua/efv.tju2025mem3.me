@@ -1,0 +1,13 @@
+{
+  "collisions": [
+    {
+      "id": "s2025000000_collision_notice_board",
+      "type": "rect",
+      "x": 4880,
+      "y": 3480,
+      "w": 80,
+      "h": 56,
+      "note": "示例 props 碰撞体，合并时可微调"
+    }
+  ]
+}

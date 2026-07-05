@@ -1,0 +1,38 @@
+# 学术喵的奇幻之旅：樱花同济篇
+
+这是《学术喵的奇幻之旅：樱花同济篇》的小组作业项目。项目当前是静态前端游戏测试页，使用 HTML、CSS、原生 JavaScript 和 Phaser。
+
+## 主要页面
+
+- 项目测试页：https://efv.tju2025mem3.me/index.html
+- 协作指南网页：https://efv.tju2025mem3.me/contribution_guide.html
+- 协作指南 Markdown：https://efv.tju2025mem3.me/contribution_guide.md
+- 项目展示页：https://efv.tju2025mem3.me/gdd_scope_review.html
+
+搜索引擎收录需要时间。如果 AI 无法通过搜索找到本站，请直接读取本文件和上面的 HTTPS 页面。
+
+如果 AI 的云环境仍然提示网络出站被组织限制，无法访问本站，请让用户打开或下载 https://efv.tju2025mem3.me/ai_context.txt，并把全文粘贴给 AI。
+
+## 给同学的推荐开场提示词
+
+https://efv.tju2025mem3.me/llms.txt
+https://efv.tju2025mem3.me/contribution_guide.html
+https://efv.tju2025mem3.me/gdd_scope_review.html
+https://efv.tju2025mem3.me/index.html
+
+是我们小组作业总体项目，你学习一下。然后我想先试一下官方角色能不能拉到我本地开始测试，然后我们再策划我的关卡怎么设计。
+
+我的学号是 2540732。你来组织文件结构，目前先看看官方 API 成不成，让角色在我电脑上能做动作。
+
+如果本地没有 Python，请你帮我安装 3.10/3.11 以及必要的环境；如果网络连接不好，请使用国内镜像。
+
+当能看到官方角色在我本地跑起来时，我们开始讨论我的关卡设计。
+
+## 协作规则摘要
+
+- 每位同学使用自己的学号创建内容包。
+- 正式提交只保留个人 JS、assets、data。
+- 可以本地临时写 HTML 预览，但不要提交 HTML。
+- 不要直接修改 app.js、index.html、styles.css、official-api.js、vendor 或公共 assets。
+- 官方角色、动作规格、风格提示和内容包注册入口在 official-api.js。
+- 怪物、NPC、技能特效、props 动画不强制 8 帧，请根据 AI agent 稳定性选择 1、2-4、4-6 或 8 帧。

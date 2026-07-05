@@ -1,0 +1,24 @@
+{
+  "studentId": "2025000000",
+  "id": "s2025000000_demo_pack",
+  "title": "示例关卡包",
+  "type": "level-pack",
+  "version": "0.1.0",
+  "zone": "zhonghe-plaza",
+  "entry": "2025000000-level.js",
+  "assets": {
+    "sprites": [],
+    "portraits": [],
+    "tilesets": [],
+    "props": [],
+    "enemies": [],
+    "npc": []
+  },
+  "data": {
+    "points": "data/points.json",
+    "triggers": "data/triggers.json",
+    "dialogue": "data/dialogue.json",
+    "collisions": "data/collisions.json",
+    "testReport": "data/test_report.md"
+  }
+}

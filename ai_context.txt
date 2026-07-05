@@ -1,0 +1,116 @@
+《学术喵的奇幻之旅：樱花同济篇》AI 离线上下文包
+
+如果你是 AI agent，并且无法直接访问以下网页，请不要反复搜索。请直接基于本文档理解项目，再帮助同学完成本地测试和个人关卡包规划。
+
+项目入口：
+- https://efv.tju2025mem3.me/llms.txt
+- https://efv.tju2025mem3.me/contribution_guide.html
+- https://efv.tju2025mem3.me/gdd_scope_review.html
+- https://efv.tju2025mem3.me/index.html
+
+项目概况：
+这是《学术喵的奇幻之旅：樱花同济篇》的小组作业项目。当前是静态前端游戏测试页，使用 HTML、CSS、原生 JavaScript 和 Phaser。主测试场景是衷和广场。当前目标是让同学们用统一结构提交可合并的关卡内容包。
+
+技术栈：
+- 页面：HTML、CSS、原生 JavaScript
+- 游戏框架：Phaser，公共库在 vendor/phaser.min.js
+- 主程序：app.js
+- 官方协作 API：official-api.js
+- 公共素材：assets/
+- 本地预览：可以用 python -m http.server 启动静态服务
+
+同学不要直接修改：
+- app.js
+- index.html
+- styles.css
+- official-api.js
+- vendor/
+- 公共 assets/
+
+每位同学的正式提交结构：
+contrib/学号/
+  学号-level.js
+  assets/
+    sprites/
+    portraits/
+    tilesets/
+    props/
+    enemies/
+    npc/
+  data/
+    manifest.json
+    points.json
+    triggers.json
+    dialogue.json
+    collisions.json
+    test_report.md
+
+正式提交只保留：
+1. 一个 JS 入口
+2. assets/
+3. data/
+
+可以临时写 HTML 自测，但不要提交 HTML。测试结果写入 data/test_report.md。
+
+官方 API：
+- EFVOfficial.getMainCharacter()：读取官方主角莉娜资料和素材路径
+- EFVOfficial.getSpriteSpec()：读取官方主角精灵表规格
+- EFVOfficial.getWeapons()：读取官方法杖和飞弹配置
+- EFVOfficial.getStylePrompt()：读取官方美术风格提示
+- EFVContrib.register(pack)：注册同学内容包
+
+官方主角莉娜精灵表：
+- 8 列 × 8 行
+- 每格 147 × 147
+- 总尺寸 1176 × 1176
+- 这是官方主角规格，不是所有同学投稿素材的硬性要求
+
+投稿素材帧数规则：
+- 怪物、NPC、技能特效、props 动画不强制 8 帧
+- 静态图：1 帧
+- 低门槛动画：2-4 帧
+- 中等动画：4-6 帧
+- 完整动画：8 帧或更多
+- 不论几帧，都要写清每格尺寸、行列数、动作名、帧序号、是否循环、播放速度
+
+美术方向：
+- 同济校园
+- 樱花季
+- 学术幻想
+- 轻量 JRPG
+- 清晰线稿
+- 柔和高明度色彩
+- 透明背景精灵
+- 俯视 2D 瓦片地图
+- 边缘干净，适合切片
+
+避免：
+- 真实校徽
+- 商业商标
+- 照片质感
+- 厚重暗黑风
+- 带水印素材
+- 难以切片的复杂透视
+
+推荐参考素材路径：
+- assets/portraits/lina.png
+- assets/sprites/lina-sprites-v10-anchored-expanded.png
+- assets/effects/lina-projectiles-atlas-v1.png
+- assets/maps/playable/previews/zhonghe-plaza-tilemap-playtest-v1-game-view.png
+- assets/maps/playable/previews/zhonghe-plaza-ground-material-atlas-imagegen-v1.png
+- assets/maps/playable/previews/zhonghe-plaza-ground-style-imagegen-v1.png
+- assets/maps/props/zhonghe-plaza-props-atlas-v1.png
+- assets/enemies/leaf-poring-portrait-v2.png
+- assets/enemies/leaf-poring-sprites-v2.png
+
+推荐给同学的开场提示词：
+“这是我们小组作业总体项目。请先学习项目资料，然后我想先试一下官方角色能不能拉到我本地开始测试，再策划我的关卡怎么设计。我的学号是【改成自己的学号】。你来组织文件结构，目前先看看官方 API 成不成，让角色在我电脑上能做动作。如果本地没有 Python，请帮我安装 3.10/3.11 以及必要环境；如果网络连接不好，请使用国内镜像。当能看到官方角色在我本地跑起来时，我们开始讨论我的关卡设计。”
+
+AI 执行顺序：
+1. 先解释项目技术栈和提交边界
+2. 先测试官方角色 API 是否可用
+3. 给同学创建 contrib/学号/ 的文件结构
+4. 本地临时预览官方角色动作
+5. 再开始讨论个人关卡设计
+6. 生成 manifest.json、points.json、triggers.json、dialogue.json、collisions.json、test_report.md
+7. 检查正式提交是否只包含 JS、assets、data

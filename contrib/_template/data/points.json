@@ -1,0 +1,21 @@
+{
+  "spawnPoints": [
+    {
+      "id": "s2025000000_spawn_main",
+      "x": 4800,
+      "y": 3600,
+      "facing": "S",
+      "note": "玩家进入该内容包后的测试点"
+    }
+  ],
+  "interestPoints": [
+    {
+      "id": "s2025000000_point_notice_board",
+      "type": "prop",
+      "x": 4920,
+      "y": 3520,
+      "asset": "assets/props/notice-board-v1.png",
+      "note": "示例可交互物件点位"
+    }
+  ]
+}
