@@ -108,7 +108,7 @@
         });
         localStorage.setItem(SESSION_KEY, data.token);
         localStorage.setItem(SAVE_KEY, JSON.stringify(data.profile));
-        setHint("注册成功，正在进入衷和广场...");
+        setHint("注册成功，正在进入校园...");
         window.location.href = "play.html?autostart=1";
       } catch (error) {
         button.disabled = false;

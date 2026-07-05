@@ -2,3 +2,4 @@ AddDefaultCharset UTF-8
 AddCharset UTF-8 .html .htm .css .js .json .txt .md .xml
 AddType text/plain .txt
 AddType text/markdown .md
+AddType audio/mpeg .mp3

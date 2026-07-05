@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parent
 DB_PATH = ROOT / "play-data.sqlite3"
 PORT = int(os.environ.get("PORT", "8787"))
 MAX_ONLINE = int(os.environ.get("MAX_ONLINE", "20"))
+MAX_SLIMES_PER_ROOM = int(os.environ.get("MAX_SLIMES_PER_ROOM", "24"))
 SESSION_TTL = 7 * 24 * 60 * 60
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_-]{3,18}$")
@@ -55,6 +56,7 @@ CONTENT_TYPES = {
     ".jpeg": "image/jpeg",
     ".webp": "image/webp",
     ".mp4": "video/mp4",
+    ".mp3": "audio/mpeg",
     ".txt": "text/plain; charset=utf-8",
     ".md": "text/markdown; charset=utf-8",
 }
@@ -307,7 +309,9 @@ def get_room(name: str = "zhonghe-plaza") -> dict:
             "name": name,
             "peers": {},
             "boss": dict(DEFAULT_BOSS),
+            "slimes": {},
         }
+    rooms[name].setdefault("slimes", {})
     return rooms[name]
 
 
@@ -421,6 +425,9 @@ def leave_client(client: WsClient) -> None:
                 del room["peers"][client.id]
                 left_room = client.room_name
                 left_id = client.id
+            if not room["peers"]:
+                room["boss"] = dict(DEFAULT_BOSS)
+                room["slimes"].clear()
         client.alive = False
     if left_room and left_id:
         broadcast(left_room, {"type": "peerLeft", "id": left_id}, client)
@@ -484,8 +491,9 @@ def handle_join(client: WsClient, message: dict) -> None:
         room["peers"][client.id] = player
         peers = [peer for peer_id, peer in room["peers"].items() if peer_id != client.id]
         boss = dict(room["boss"])
+        slimes = list(room["slimes"].values())
 
-    send_ws(client, {"type": "welcome", "id": client.id, "peers": peers, "boss": boss})
+    send_ws(client, {"type": "welcome", "id": client.id, "peers": peers, "boss": boss, "slimes": slimes})
     broadcast(room_name, {"type": "peerJoined", "player": player}, client)
 
 
@@ -541,6 +549,52 @@ def handle_boss_hit(client: WsClient, message: dict) -> None:
     broadcast(client.room_name, {"type": "bossState", "boss": boss_state})
 
 
+def clean_slime_id(value: object, fallback: bool = True) -> str:
+    text = str(value or "").strip()[:64]
+    if not text:
+        return f"slime-{secrets.token_urlsafe(8)}" if fallback else ""
+    cleaned = re.sub(r"[^A-Za-z0-9_-]", "", text)[:64]
+    return cleaned or (f"slime-{secrets.token_urlsafe(8)}" if fallback else "")
+
+
+def handle_slime_spawn(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name:
+        return
+    incoming = message.get("slime") or {}
+    slime = {
+        "id": clean_slime_id(incoming.get("id")),
+        "x": clean_number(incoming.get("x"), 3200, 0, 20000),
+        "y": clean_number(incoming.get("y"), 3200, 0, 20000),
+        "ownerId": client.id,
+        "createdAt": int(time.time() * 1000),
+    }
+    removed_id = ""
+    with state_lock:
+        room = get_room(client.room_name)
+        slimes = room["slimes"]
+        if len(slimes) >= MAX_SLIMES_PER_ROOM:
+            oldest_id = min(slimes.values(), key=lambda item: item.get("createdAt", 0)).get("id")
+            if oldest_id:
+                del slimes[oldest_id]
+                removed_id = oldest_id
+        slimes[slime["id"]] = slime
+    if removed_id:
+        broadcast(client.room_name, {"type": "slimeRemove", "id": removed_id})
+    broadcast(client.room_name, {"type": "slimeSpawn", "slime": slime}, client)
+
+
+def handle_slime_remove(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name:
+        return
+    slime_id = clean_slime_id(message.get("id"), fallback=False)
+    if not slime_id:
+        return
+    with state_lock:
+        room = get_room(client.room_name)
+        room["slimes"].pop(slime_id, None)
+    broadcast(client.room_name, {"type": "slimeRemove", "id": slime_id}, client)
+
+
 def handle_ws_message(client: WsClient, raw: str) -> None:
     try:
         message = json.loads(raw)
@@ -555,6 +609,10 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
         handle_boss_start(client, message)
     elif message_type == "bossHit":
         handle_boss_hit(client, message)
+    elif message_type == "slimeSpawn":
+        handle_slime_spawn(client, message)
+    elif message_type == "slimeRemove":
+        handle_slime_remove(client, message)
 
 
 class GameHandler(BaseHTTPRequestHandler):

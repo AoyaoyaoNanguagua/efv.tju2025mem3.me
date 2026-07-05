@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
   <link rel="stylesheet" href="play.css">
 </head>
@@ -12,9 +12,18 @@
       <div class="login-card" role="presentation">
         <div class="login-crest" aria-hidden="true"></div>
         <div class="login-brand">
-          <p class="eyebrow">EFV TJU / ONLINE MVP</p>
+          <p class="eyebrow">EFV TJU / CHERRY BLOSSOM CHRONICLE</p>
           <h1>学术喵的奇幻之旅</h1>
+          <p class="title-subtitle">樱花同济篇</p>
           <p class="title-en">The Erudite Feline's Wonder Voyage</p>
+          <p class="title-chronicle">TJU: Cherry Blossom Chronicle</p>
+          <div id="loginMusicProgress" class="login-music-progress" aria-label="初始素材加载进度">
+            <div class="music-progress-head">
+              <span id="loginMusicText">初始素材加载中</span>
+              <b id="loginMusicPercent">0%</b>
+            </div>
+            <div class="music-progress-track"><i id="loginMusicBar"></i></div>
+          </div>
         </div>
 
         <form id="profileForm" class="login-form">
@@ -27,12 +36,43 @@
             <input id="loginPasswordInput" name="password" type="password" maxlength="32" autocomplete="current-password" placeholder="输入账号密码" required>
           </label>
 
-          <button id="loginButton" class="primary login-submit" type="submit">进入衷和广场</button>
+          <button id="loginButton" class="primary login-submit" type="submit">进入校园</button>
           <div class="login-links">
             <span>第一次来？</span>
-            <a href="register.html">注册新账号</a>
+            <a id="showRegisterLink" href="register.html">注册新账号</a>
           </div>
           <p id="profileHint" class="hint" aria-live="polite">登录后会自动进入同一个服务器房间。</p>
+        </form>
+
+        <form id="registerForm" class="login-form register-form" hidden>
+          <label class="field">
+            <span>账号</span>
+            <input id="registerAccountInput" name="username" maxlength="18" autocomplete="username" placeholder="3-18 位字母数字或下划线" required>
+          </label>
+          <label class="field">
+            <span>昵称</span>
+            <input id="registerNicknameInput" name="nickname" maxlength="12" autocomplete="nickname" placeholder="显示在同学头顶的名字" required>
+          </label>
+          <label class="field">
+            <span>密码</span>
+            <input id="registerPasswordInput" name="password" type="password" maxlength="32" autocomplete="new-password" placeholder="至少 6 位" required>
+          </label>
+          <label class="field">
+            <span>确认密码</span>
+            <input id="registerConfirmInput" name="confirm" type="password" maxlength="32" autocomplete="new-password" placeholder="再输入一次密码" required>
+          </label>
+
+          <div class="character-field">
+            <span>选择角色</span>
+            <div id="characterOptions" class="character-options" aria-label="选择角色"></div>
+          </div>
+
+          <button id="registerButton" class="primary login-submit" type="submit">创建并进入校园</button>
+          <div class="login-links">
+            <span>已有账号？</span>
+            <button id="backLoginButton" class="text-link" type="button">返回登录</button>
+          </div>
+          <p id="registerHint" class="hint" aria-live="polite">账号会保存在服务器，角色和游戏进度会写入 SQLite。</p>
         </form>
       </div>
     </section>
@@ -64,10 +104,23 @@
 
       <nav class="quickbar" aria-label="快捷操作">
         <button id="musicToggle" type="button">音乐 开</button>
-        <button id="bossButton" type="button">Boss 考核</button>
+        <button id="spawnButton" type="button">C 增加怪物</button>
+        <button id="bossButton" type="button">X 生成 Boss</button>
         <button id="reconnectButton" type="button">重连同步</button>
         <button id="fullscreenButton" type="button">全屏</button>
+        <button id="exitButton" type="button">退出游戏</button>
       </nav>
+
+      <section id="mobileControls" class="mobile-controls" aria-label="移动端操作">
+        <div id="moveStick" class="move-stick" aria-label="移动摇杆">
+          <i id="moveKnob"></i>
+        </div>
+        <div class="mobile-actions" aria-label="移动端技能">
+          <button id="mobileAttackButton" class="mobile-action primary-action" type="button">攻击</button>
+          <button id="mobileTransformButton" class="mobile-action" type="button">变身</button>
+          <button id="mobileHealButton" class="mobile-action" type="button">恢复</button>
+        </div>
+      </section>
 
       <section id="bossPanel" class="boss-panel" aria-label="Boss 状态" aria-hidden="true">
         <div>
@@ -76,6 +129,17 @@
         </div>
         <div class="boss-meter"><i id="bossHpBar"></i></div>
         <b id="bossHpText">420 / 420</b>
+      </section>
+
+      <section id="reviveDialog" class="revive-dialog" aria-label="复活确认" aria-hidden="true">
+        <div class="revive-panel">
+          <strong>角色倒下了</strong>
+          <p>是否复活并继续探索校园？也可以按 I 立即复活。</p>
+          <div class="revive-actions">
+            <button id="reviveButton" class="primary" type="button">复活</button>
+            <button id="stayDownButton" type="button">暂不复活</button>
+          </div>
+        </div>
       </section>
 
       <div id="toast" class="toast" aria-live="polite"></div>
