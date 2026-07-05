@@ -1,0 +1,13 @@
+{
+  "triggers": [
+    {
+      "id": "s2025000000_event_first_dialogue",
+      "type": "dialogue",
+      "x": 4920,
+      "y": 3520,
+      "radius": 96,
+      "target": "s2025000000_dialogue_01",
+      "once": true
+    }
+  ]
+}

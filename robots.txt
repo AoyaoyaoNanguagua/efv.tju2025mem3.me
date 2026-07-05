@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://efv.tju2025mem3.me/sitemap.xml
