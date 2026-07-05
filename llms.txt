@@ -11,7 +11,7 @@
 
 搜索引擎收录需要时间。如果 AI 无法通过搜索找到本站，请直接读取本文件和上面的 HTTPS 页面。
 
-如果 AI 的云环境仍然提示网络出站被组织限制，无法访问本站，请让用户打开或下载 https://efv.tju2025mem3.me/ai_context.txt，并把全文粘贴给 AI。
+如果 AI 的云环境仍然提示网络出站被组织限制，无法访问本站，请让用户打开或下载 https://efv.tju2025mem3.me/ai_context.txt，并把全文粘贴给 AI。若浏览器打开 txt 出现乱码，再使用 UTF-8 备用页：https://efv.tju2025mem3.me/ai_context.html。
 
 ## 给同学的推荐开场提示词
 
