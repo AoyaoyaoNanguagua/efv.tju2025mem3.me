@@ -109,7 +109,7 @@
         localStorage.setItem(SESSION_KEY, data.token);
         localStorage.setItem(SAVE_KEY, JSON.stringify(data.profile));
         setHint("注册成功，正在进入衷和广场...");
-        window.location.href = "play.html";
+        window.location.href = "play.html?autostart=1";
       } catch (error) {
         button.disabled = false;
         setHint(error.message || "注册失败，请稍后再试。");

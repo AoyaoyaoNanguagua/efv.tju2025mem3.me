@@ -290,6 +290,11 @@
     return normalizeProfile(data.profile);
   }
 
+  async function loadSessionProfile() {
+    const data = await apiRequest("/api/me");
+    return normalizeProfile(data.profile);
+  }
+
   function getCharacter(id) {
     return CHARACTERS.find(character => character.id === id) || CHARACTERS[0];
   }
@@ -1583,11 +1588,27 @@
 
   function bindUi() {
     const saved = loadProfile();
+    const autoStart = new URLSearchParams(location.search).get("autostart") === "1";
     if (saved?.account) $("#loginAccountInput").value = saved.account;
     if (app.authToken && saved?.name) {
       $("#profileHint").textContent = `已保存 ${saved.name} 的登录状态，请输入密码进入同一服务器。`;
     } else {
       $("#profileHint").textContent = "登录后会自动进入同一个服务器房间。";
+    }
+    if (autoStart && app.authToken) {
+      const button = $("#loginButton");
+      button.disabled = true;
+      $("#profileHint").textContent = "正在读取服务器档案，准备进入衷和广场...";
+      loadSessionProfile()
+        .then(profile => {
+          window.history.replaceState(null, "", "play.html");
+          startGame(profile);
+        })
+        .catch(error => {
+          setSession("");
+          button.disabled = false;
+          $("#profileHint").textContent = error.message || "登录已过期，请重新登录。";
+        });
     }
 
     const startAudioOnGesture = () => app.audio.start("login");
