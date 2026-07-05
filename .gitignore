@@ -8,5 +8,6 @@ __pycache__/
 
 dist/
 *.log
+play-data.sqlite3*
 
 assets/maps/playable/previews/

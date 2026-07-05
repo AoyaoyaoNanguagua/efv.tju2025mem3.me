@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>学术喵的奇幻之旅：在线开发 MVP</title>
+  <link rel="stylesheet" href="play.css">
+</head>
+<body>
+  <main class="play-shell">
+    <section id="startOverlay" class="start-overlay" aria-label="登录游戏">
+      <div class="login-card" role="presentation">
+        <div class="login-crest" aria-hidden="true"></div>
+        <div class="login-brand">
+          <p class="eyebrow">EFV TJU / ONLINE MVP</p>
+          <h1>学术喵的奇幻之旅</h1>
+          <p class="title-en">The Erudite Feline's Wonder Voyage</p>
+        </div>
+
+        <form id="profileForm" class="login-form">
+          <label class="field">
+            <span>账号</span>
+            <input id="loginAccountInput" name="username" maxlength="18" autocomplete="username" placeholder="输入注册账号" required>
+          </label>
+          <label class="field">
+            <span>密码</span>
+            <input id="loginPasswordInput" name="password" type="password" maxlength="32" autocomplete="current-password" placeholder="输入账号密码" required>
+          </label>
+
+          <button id="loginButton" class="primary login-submit" type="submit">进入衷和广场</button>
+          <div class="login-links">
+            <span>第一次来？</span>
+            <a href="register.html">注册新账号</a>
+          </div>
+          <p id="profileHint" class="hint" aria-live="polite">登录后会自动进入同一个服务器房间。</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="game-stage">
+      <div id="gameRoot" class="game-root" aria-label="正式开发游戏区域"></div>
+
+      <aside class="status-panel" aria-label="玩家状态">
+        <div class="profile-line">
+          <strong id="hudName">同济学术喵</strong>
+          <span id="networkStatus">未连接</span>
+        </div>
+        <div class="bar-line">
+          <span>HP</span>
+          <div class="meter"><i id="hpBar"></i></div>
+          <b id="hpText">160 / 160</b>
+        </div>
+        <div class="meta-row">
+          <span id="levelText">Lv.1</span>
+          <span id="creditText">学分 0</span>
+          <span id="expText">EXP 0</span>
+        </div>
+        <div class="skill-row">
+          <button id="attackButton" class="skill active" type="button">J 晶光飞弹</button>
+          <button id="healButton" class="skill" type="button">H 樱光护盾</button>
+        </div>
+        <div id="peerList" class="peer-list"></div>
+      </aside>
+
+      <nav class="quickbar" aria-label="快捷操作">
+        <button id="musicToggle" type="button">音乐 开</button>
+        <button id="bossButton" type="button">Boss 考核</button>
+        <button id="reconnectButton" type="button">重连同步</button>
+        <button id="fullscreenButton" type="button">全屏</button>
+      </nav>
+
+      <section id="bossPanel" class="boss-panel" aria-label="Boss 状态" aria-hidden="true">
+        <div>
+          <span>最终 Boss</span>
+          <strong>AI 陆教授考核镜像</strong>
+        </div>
+        <div class="boss-meter"><i id="bossHpBar"></i></div>
+        <b id="bossHpText">420 / 420</b>
+      </section>
+
+      <div id="toast" class="toast" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="vendor/phaser.min.js"></script>
+  <script src="play.js"></script>
+</body>
+</html>
