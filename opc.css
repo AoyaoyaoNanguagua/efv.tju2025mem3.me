@@ -535,6 +535,26 @@ select {
   mix-blend-mode: multiply;
 }
 
+.worldline-poster {
+  background: #0d2440;
+}
+
+.worldline-poster img {
+  mix-blend-mode: normal;
+}
+
+.worldline-poster .worldline-caption {
+  top: 28px;
+  right: auto;
+  bottom: auto;
+  left: 28px;
+  width: min(430px, calc(100% - 56px));
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(13, 28, 52, 0.78), rgba(13, 28, 52, 0.44));
+  border-left: 4px solid var(--pink);
+  backdrop-filter: blur(6px);
+}
+
 .worldline-caption {
   position: absolute;
   left: 0;
@@ -1943,6 +1963,30 @@ select {
 
   .video-card video {
     height: min(64vh, 520px);
+  }
+
+  .worldline-poster {
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .worldline-poster img {
+    display: block;
+    height: auto;
+    min-height: 300px;
+    aspect-ratio: 16 / 9;
+  }
+
+  .worldline-poster .worldline-caption {
+    position: static;
+    width: auto;
+    padding: 22px;
+    background: #101b2c;
+    backdrop-filter: none;
+  }
+
+  .worldline-poster .worldline-caption h3 {
+    font-size: 1.45rem;
   }
 
   .chart-panel.wide {
