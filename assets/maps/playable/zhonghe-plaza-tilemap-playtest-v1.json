@@ -30973,5 +30973,35 @@
     "x": 3200,
     "y": 3968,
     "note": "Spawn is centered in the ceremonial axis, with side garden rooms and continuous green bands visible in the first screen."
-  }
+  },
+  "enemySpawns": [
+    {
+      "id": "leaf-slime-west-plaza",
+      "type": "leafSlime",
+      "x": 2680,
+      "y": 3980,
+      "note": "Fixed patrol near west plaza edge"
+    },
+    {
+      "id": "leaf-slime-east-plaza",
+      "type": "leafSlime",
+      "x": 3720,
+      "y": 3980,
+      "note": "Fixed patrol near east plaza edge"
+    },
+    {
+      "id": "leaf-slime-north-garden",
+      "type": "leafSlime",
+      "x": 3200,
+      "y": 3520,
+      "note": "Fixed patrol in north garden band"
+    },
+    {
+      "id": "leaf-slime-south-path",
+      "type": "leafSlime",
+      "x": 3200,
+      "y": 4480,
+      "note": "Fixed patrol on south ceremonial path"
+    }
+  ]
 }

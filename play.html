@@ -9,71 +9,139 @@
 <body>
   <main class="play-shell">
     <section id="startOverlay" class="start-overlay" aria-label="登录游戏">
-      <div class="login-card" role="presentation">
-        <div class="login-crest" aria-hidden="true"></div>
-        <div class="login-brand">
-          <p class="eyebrow">EFV TJU / CHERRY BLOSSOM CHRONICLE</p>
-          <h1>学术喵的奇幻之旅</h1>
-          <p class="title-subtitle">樱花同济篇</p>
-          <p class="title-en">The Erudite Feline's Wonder Voyage</p>
-          <p class="title-chronicle">TJU: Cherry Blossom Chronicle</p>
-          <div id="loginMusicProgress" class="login-music-progress" aria-label="初始素材加载进度">
-            <div class="music-progress-head">
-              <span id="loginMusicText">初始素材加载中</span>
-              <b id="loginMusicPercent">0%</b>
+      <div id="authStage" class="stage stage-auth">
+        <div class="login-card" role="presentation">
+          <div class="login-crest" aria-hidden="true"></div>
+          <div class="login-brand">
+            <p class="eyebrow">EFV TJU / CHERRY BLOSSOM CHRONICLE</p>
+            <h1>学术喵的奇幻之旅</h1>
+            <p class="title-subtitle">樱花同济篇</p>
+            <p class="title-en">The Erudite Feline's Wonder Voyage</p>
+            <p class="title-chronicle">TJU: Cherry Blossom Chronicle</p>
+            <div id="loginMusicProgress" class="login-music-progress" aria-label="初始素材加载进度">
+              <div class="music-progress-head">
+                <span id="loginMusicText">初始素材加载中</span>
+                <b id="loginMusicPercent">0%</b>
+              </div>
+              <div class="music-progress-track"><i id="loginMusicBar"></i></div>
             </div>
-            <div class="music-progress-track"><i id="loginMusicBar"></i></div>
+          </div>
+
+          <form id="profileForm" class="login-form">
+            <label class="field">
+              <span>账号</span>
+              <input id="loginAccountInput" name="username" maxlength="18" autocomplete="username" placeholder="输入注册账号" required>
+            </label>
+            <label class="field">
+              <span>密码</span>
+              <input id="loginPasswordInput" name="password" type="password" maxlength="32" autocomplete="current-password" placeholder="输入账号密码" required>
+            </label>
+
+            <button id="loginButton" class="primary login-submit" type="submit">进入校园</button>
+            <button id="offlineButton" class="ghost login-submit" type="button">离线试玩（无需服务器）</button>
+            <div class="login-links">
+              <span>第一次来？</span>
+              <a id="showRegisterLink" href="register.html">注册新账号</a>
+            </div>
+            <p id="profileHint" class="hint" aria-live="polite"></p>
+          </form>
+
+          <form id="registerForm" class="login-form register-form" hidden>
+            <label class="field">
+              <span>账号</span>
+              <input id="registerAccountInput" name="username" maxlength="18" autocomplete="username" placeholder="3-18 位字母数字或下划线" required>
+            </label>
+            <label class="field">
+              <span>昵称</span>
+              <input id="registerNicknameInput" name="nickname" maxlength="12" autocomplete="nickname" placeholder="显示在同学头顶的名字" required>
+            </label>
+            <label class="field">
+              <span>密码</span>
+              <input id="registerPasswordInput" name="password" type="password" maxlength="32" autocomplete="new-password" placeholder="至少 6 位" required>
+            </label>
+            <label class="field">
+              <span>确认密码</span>
+              <input id="registerConfirmInput" name="confirm" type="password" maxlength="32" autocomplete="new-password" placeholder="再输入一次密码" required>
+            </label>
+
+            <button id="registerButton" class="primary login-submit" type="submit">创建账号</button>
+            <div class="login-links">
+              <span>已有账号？</span>
+              <button id="backLoginButton" class="text-link" type="button">返回登录</button>
+            </div>
+            <p id="registerHint" class="hint" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <div id="serverStage" class="stage stage-server" hidden>
+        <button id="serverBackButton" class="stage-back" type="button">&#10094; 返回登录</button>
+        <div class="login-card server-card" role="presentation">
+          <div class="login-brand">
+            <p class="eyebrow">SELECT SERVER</p>
+            <h1>选择服务器</h1>
+            <p class="title-subtitle">樱花同济篇</p>
+          </div>
+          <div class="login-form">
+            <label class="field">
+              <span>服务器</span>
+              <select id="serverSelect" class="server-select">
+                <option value="zhonghe-plaza" selected>同舟星愿</option>
+              </select>
+            </label>
+            <button id="enterServerButton" class="primary login-submit" type="button">进入服务器</button>
+            <p id="serverHint" class="hint" aria-live="polite"></p>
           </div>
         </div>
+      </div>
 
-        <form id="profileForm" class="login-form">
-          <label class="field">
-            <span>账号</span>
-            <input id="loginAccountInput" name="username" maxlength="18" autocomplete="username" placeholder="输入注册账号" required>
-          </label>
-          <label class="field">
-            <span>密码</span>
-            <input id="loginPasswordInput" name="password" type="password" maxlength="32" autocomplete="current-password" placeholder="输入账号密码" required>
-          </label>
-
-          <button id="loginButton" class="primary login-submit" type="submit">进入校园</button>
-          <div class="login-links">
-            <span>第一次来？</span>
-            <a id="showRegisterLink" href="register.html">注册新账号</a>
+      <div id="warehouseStage" class="stage stage-warehouse" hidden>
+        <button id="warehouseBackButton" class="stage-back" type="button">&#10094; 返回选服</button>
+        <header class="warehouse-head">
+          <p class="eyebrow">CHARACTER PLAZA · 同舟星愿</p>
+          <h2>我的学术喵</h2>
+          <p class="warehouse-tip">点击空位创建新角色，点击角色进入校园</p>
+        </header>
+        <div id="warehousePlaza" class="warehouse-plaza" aria-label="角色广场"></div>
+        <p id="warehouseHint" class="hint warehouse-hint" aria-live="polite"></p>
+        <div id="deleteDialog" class="delete-dialog" hidden>
+          <div class="delete-panel">
+            <strong>删除角色</strong>
+            <p id="deleteDialogText"></p>
+            <div class="delete-actions">
+              <button id="deleteConfirmButton" class="danger" type="button">确认删除</button>
+              <button id="deleteCancelButton" class="ghost" type="button">取消</button>
+            </div>
           </div>
-          <p id="profileHint" class="hint" aria-live="polite">登录后会自动进入同一个服务器房间。</p>
-        </form>
+        </div>
+      </div>
 
-        <form id="registerForm" class="login-form register-form" hidden>
-          <label class="field">
-            <span>账号</span>
-            <input id="registerAccountInput" name="username" maxlength="18" autocomplete="username" placeholder="3-18 位字母数字或下划线" required>
-          </label>
-          <label class="field">
-            <span>昵称</span>
-            <input id="registerNicknameInput" name="nickname" maxlength="12" autocomplete="nickname" placeholder="显示在同学头顶的名字" required>
-          </label>
-          <label class="field">
-            <span>密码</span>
-            <input id="registerPasswordInput" name="password" type="password" maxlength="32" autocomplete="new-password" placeholder="至少 6 位" required>
-          </label>
-          <label class="field">
-            <span>确认密码</span>
-            <input id="registerConfirmInput" name="confirm" type="password" maxlength="32" autocomplete="new-password" placeholder="再输入一次密码" required>
-          </label>
-
-          <div class="character-field">
-            <span>选择角色</span>
-            <div id="characterOptions" class="character-options" aria-label="选择角色"></div>
+      <div id="createStage" class="stage stage-create" hidden>
+        <div class="create-panel">
+          <header class="warehouse-head">
+            <p class="eyebrow">NEW CHARACTER</p>
+            <h2>创建新角色</h2>
+          </header>
+          <div class="create-carousel">
+            <button id="createPrevButton" class="carousel-arrow" type="button" aria-label="上一个角色">&#10094;</button>
+            <div class="create-preview">
+              <div id="createSprite" class="sprite-anim create-sprite"></div>
+              <i class="create-pedestal" aria-hidden="true"></i>
+            </div>
+            <button id="createNextButton" class="carousel-arrow" type="button" aria-label="下一个角色">&#10095;</button>
           </div>
-
-          <button id="registerButton" class="primary login-submit" type="submit">创建并进入校园</button>
-          <div class="login-links">
-            <span>已有账号？</span>
-            <button id="backLoginButton" class="text-link" type="button">返回登录</button>
+          <div class="create-info">
+            <h3 id="createName"></h3>
+            <p id="createRole" class="create-role"></p>
+            <p id="createDesc" class="create-desc"></p>
+            <p id="createQuote" class="create-quote"></p>
           </div>
-          <p id="registerHint" class="hint" aria-live="polite">账号会保存在服务器，角色和游戏进度会写入 SQLite。</p>
-        </form>
+          <div class="create-actions">
+            <button id="createConfirmButton" class="primary" type="button">确认创建</button>
+            <button id="createBackButton" class="ghost" type="button">返回仓库</button>
+          </div>
+          <p id="createHint" class="hint" aria-live="polite"></p>
+        </div>
       </div>
     </section>
 

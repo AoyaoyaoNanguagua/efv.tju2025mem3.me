@@ -532,7 +532,7 @@ class EFVScene extends Phaser.Scene {
 
     CHARACTERS.filter(c => c.hasSprite).forEach(c => this.prepareFrames(c));
     this.showCharacter(selected);
-    this.spawnLeafSlime();
+    this.spawnMapLeafSlimes();
     this.physics.add.collider(this.actor, this.obstacleGroup);
     this.physics.add.collider(this.leafSlimes, this.obstacleGroup);
     this.bindActorLeafSlimeCollision();
@@ -689,21 +689,45 @@ class EFVScene extends Phaser.Scene {
     });
   }
 
-  spawnLeafSlime() {
-    if (!this.actor || !this.leafSlimes) return null;
-    const count = this.leafSlimes.countActive(true);
-    const offsets = [
-      { x: 190, y: 18 },
-      { x: -170, y: 42 },
-      { x: 120, y: -150 },
-      { x: -120, y: -142 },
-      { x: 230, y: 126 },
-      { x: -230, y: 118 }
+  getMapLeafSlimeSpawns() {
+    const spawns = this.mapData?.enemySpawns || this.mapData?.slimeSpawns;
+    if (Array.isArray(spawns) && spawns.length) {
+      return spawns.filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+    }
+    const spawn = this.mapData?.spawn || { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
+    return [
+      { id: "leaf-slime-west", x: spawn.x - 520, y: spawn.y + 12 },
+      { id: "leaf-slime-east", x: spawn.x + 520, y: spawn.y + 12 },
+      { id: "leaf-slime-north", x: spawn.x, y: spawn.y - 448 },
+      { id: "leaf-slime-south", x: spawn.x, y: spawn.y + 512 }
     ];
-    const offset = offsets[count % offsets.length];
-    const spread = Math.floor(count / offsets.length) * 46;
-    const x = Phaser.Math.Clamp(this.actor.x + offset.x + Math.sign(offset.x || 1) * spread, 900, WORLD_WIDTH - 160);
-    const y = Phaser.Math.Clamp(this.actor.y + offset.y + Math.sign(offset.y || 1) * spread, 900, WORLD_HEIGHT - 220);
+  }
+
+  spawnMapLeafSlimes() {
+    this.getMapLeafSlimeSpawns().forEach(point => {
+      this.spawnLeafSlimeAt(point.x, point.y);
+    });
+  }
+
+  getNextLeafSlimePoint() {
+    if (!this.leafSlimes) return null;
+    const points = this.getMapLeafSlimeSpawns();
+    if (!points.length) return null;
+    const activeSlimes = this.leafSlimes.getChildren?.() || [];
+    for (const point of points) {
+      const occupied = activeSlimes.some(slime =>
+        slime?.active
+        && slime.state !== "dead"
+        && slime.state !== "vanish"
+        && Math.hypot(slime.x - point.x, slime.y - point.y) < 96
+      );
+      if (!occupied) return point;
+    }
+    return points[activeSlimes.length % points.length];
+  }
+
+  spawnLeafSlimeAt(x, y) {
+    if (!this.leafSlimes) return null;
     const slime = this.leafSlimes.create(x, y, LEAF_SLIME_KEY, 0)
       .setOrigin(0.5, 0.72)
       .setScale(0.9)
@@ -721,6 +745,13 @@ class EFVScene extends Phaser.Scene {
       .setDepth(slime.y - 24);
     this.bindActorLeafSlimeCollision();
     return slime;
+  }
+
+  spawnLeafSlime() {
+    if (!this.leafSlimes) return null;
+    const point = this.getNextLeafSlimePoint();
+    if (!point) return null;
+    return this.spawnLeafSlimeAt(point.x, point.y);
   }
 
   bindActorLeafSlimeCollision() {

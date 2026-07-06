@@ -151,6 +151,14 @@
     }
   ];
 
+  const MELEE = {
+    cooldown: 330,
+    reach: 62,
+    radius: 72,
+    damage: 26,
+    color: 0x8fd8ff
+  };
+
   const BASE_STATS = {
     level: 1,
     exp: 0,
@@ -177,6 +185,9 @@
   const app = {
     profile: null,
     authToken: localStorage.getItem(SESSION_KEY) || "",
+    offlineMode: false,
+    characters: [],
+    serverRoom: "zhonghe-plaza",
     game: null,
     scene: null,
     multiplayer: null,
@@ -228,6 +239,24 @@
 
   function saveProfile(profile) {
     localStorage.setItem(SAVE_KEY, JSON.stringify(profile));
+    if (app.offlineMode && Number(profile.slot) >= 0) {
+      const roster = loadLocalRoster();
+      const index = roster.findIndex(item => Number(item.slot) === Number(profile.slot));
+      if (index >= 0) {
+        roster[index] = {
+          ...roster[index],
+          name: profile.name,
+          characterId: profile.characterId,
+          level: profile.level,
+          exp: profile.exp,
+          credits: profile.credits,
+          maxHp: profile.maxHp,
+          hp: profile.hp
+        };
+        saveLocalRoster(roster);
+        app.characters = roster;
+      }
+    }
     if (!app.authToken) return;
     window.clearTimeout(serverSaveTimer);
     serverSaveTimer = window.setTimeout(() => {
@@ -253,6 +282,7 @@
       account: String(profile.account || profile.username || ""),
       name: String(profile.name || profile.nickname || "同济学术喵").trim().slice(0, 12) || "同济学术喵",
       characterId,
+      slot: Number.isFinite(Number(profile.slot)) ? Number(profile.slot) : -1,
       level: Math.max(1, Number(profile.level || BASE_STATS.level)),
       exp: Math.max(0, Number(profile.exp || BASE_STATS.exp)),
       credits: Math.max(0, Number(profile.credits || BASE_STATS.credits)),
@@ -267,11 +297,16 @@
       ...(options.headers || {})
     };
     if (app.authToken) headers.authorization = `Bearer ${app.authToken}`;
-    const response = await fetch(path, {
-      ...options,
-      headers,
-      body: options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body
-    });
+    let response;
+    try {
+      response = await fetch(path, {
+        ...options,
+        headers,
+        body: options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body
+      });
+    } catch {
+      throw new Error("服务器暂时不可用");
+    }
     let data = {};
     try {
       data = await response.json();
@@ -282,27 +317,38 @@
     return data;
   }
 
+  const LOCAL_ROSTER_KEY = "efv-local-characters";
+
+  function loadLocalRoster() {
+    try {
+      const raw = localStorage.getItem(LOCAL_ROSTER_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveLocalRoster(list) {
+    localStorage.setItem(LOCAL_ROSTER_KEY, JSON.stringify(list));
+  }
+
   async function loginWithPassword(username, password) {
     const data = await apiRequest("/api/login", {
       method: "POST",
       body: { username, password }
     });
+    app.offlineMode = false;
     setSession(data.token);
+    app.characters = Array.isArray(data.characters) ? data.characters : [];
     return normalizeProfile(data.profile);
   }
 
-  async function registerWithPassword(username, nickname, password, characterId) {
-    const data = await apiRequest("/api/register", {
+  async function registerAccount(username, nickname, password) {
+    return apiRequest("/api/register", {
       method: "POST",
-      body: { username, nickname, password, characterId }
+      body: { username, nickname, password }
     });
-    setSession(data.token);
-    return normalizeProfile(data.profile);
-  }
-
-  async function loadSessionProfile() {
-    const data = await apiRequest("/api/me");
-    return normalizeProfile(data.profile);
   }
 
   function getCharacter(id) {
@@ -331,35 +377,268 @@
     };
   }
 
-  function renderCharacterOptions() {
-    const wrap = $("#characterOptions");
-    if (!wrap) return;
-    wrap.innerHTML = CHARACTERS.map(character => `
-      <button class="character-option" type="button" data-character="${character.id}" style="--character:${character.color}">
-        <img src="${character.portrait}" alt="${character.name}">
-        <b>${character.name}</b>
-      </button>
-    `).join("");
-    wrap.addEventListener("click", event => {
-      const button = event.target.closest("[data-character]");
-      if (!button) return;
-      app.audio?.start("login");
-      app.selectedCharacterId = button.dataset.character;
-      updateCharacterOptions();
-    });
-    updateCharacterOptions();
+  const CHARACTER_SLOT_LIMIT = 5;
+
+  // 以广场中央猫爪图案（约 35%, 77%）为中心环绕，收在广场地砖范围内，
+  // 避开台阶（y<70）和左侧背景里的猫（x<24）
+  const WAREHOUSE_SPOTS = [
+    { x: 36, y: 70 },
+    { x: 47, y: 77 },
+    { x: 43, y: 89 },
+    { x: 28, y: 89 },
+    { x: 25, y: 77 }
+  ];
+
+  const CREATABLE_CHARACTERS = [
+    {
+      id: "lina",
+      role: "召唤协同 · SUM-SPIRIT",
+      desc: "校园风魔法少女，法杖书签随身、学风精灵伴飞。性格温柔善良还有点天然呆，猫形态是一只白色长毛猫，最擅长图鉴收集与地标互动。",
+      quote: "「大家好喵~我是莉娜，请多指教哦~」"
+    },
+    {
+      id: "ayu",
+      role: "敏捷突击 · DPS-STRIKE",
+      desc: "校园风光剑士，同济蓝护腕配光剑激光笔。勇敢热血、值得信赖，猫形态是一只狸花猫，擅长快速跑图与追击脱战。",
+      quote: "「我是阿宇！立志成为同济最强的剑士喵！」"
+    }
+  ];
+
+  const spriteAnimator = {
+    timer: null,
+    frame: 0,
+    start() {
+      if (this.timer) return;
+      this.timer = window.setInterval(() => {
+        this.frame = (this.frame + 1) % 4;
+        document.querySelectorAll(".sprite-anim").forEach(el => {
+          const size = Number(el.dataset.frame) || 128;
+          el.style.backgroundPosition = `${-this.frame * size}px 0px`;
+        });
+      }, 190);
+    }
+  };
+
+  function setupSpriteAnim(el, character, size) {
+    el.dataset.frame = String(size);
+    el.style.width = `${size}px`;
+    el.style.height = `${size}px`;
+    el.style.backgroundImage = `url("${character.sprite}")`;
+    el.style.backgroundSize = `${size * 8}px ${size * 8}px`;
+    el.style.backgroundPosition = "0px 0px";
+    spriteAnimator.start();
   }
 
-  function updateCharacterOptions() {
-    document.querySelectorAll(".character-option").forEach(button => {
-      button.classList.toggle("active", button.dataset.character === app.selectedCharacterId);
+  function showStage(name) {
+    ["auth", "server", "warehouse", "create"].forEach(stage => {
+      const node = $(`#${stage}Stage`);
+      if (node) node.hidden = stage !== name;
     });
-    document.documentElement.style.setProperty("--character", getCharacter(app.selectedCharacterId).color);
+    $("#startOverlay").classList.remove("hidden");
+  }
+
+  function setActivePlazaSlot(target) {
+    document.querySelectorAll(".plaza-slot.active").forEach(node => {
+      if (node !== target) node.classList.remove("active");
+    });
+    target.classList.add("active");
+  }
+
+  function renderWarehouse() {
+    const plaza = $("#warehousePlaza");
+    if (!plaza) return;
+    plaza.innerHTML = "";
+    const bySlot = new Map((app.characters || []).map(item => [Number(item.slot), item]));
+    for (let slot = 0; slot < CHARACTER_SLOT_LIMIT; slot += 1) {
+      const spot = WAREHOUSE_SPOTS[slot];
+      const entry = bySlot.get(slot);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `plaza-slot ${entry ? "filled" : "empty"}`;
+      button.style.left = `${spot.x}%`;
+      button.style.top = `${spot.y}%`;
+      if (entry) {
+        const stand = document.createElement("div");
+        stand.className = "sprite-stand";
+        const shadow = document.createElement("i");
+        shadow.className = "sprite-shadow";
+        const sprite = document.createElement("div");
+        sprite.className = "sprite-anim";
+        setupSpriteAnim(sprite, getCharacter(entry.characterId), 128);
+        stand.append(shadow, sprite);
+        const label = document.createElement("span");
+        label.className = "slot-name";
+        label.textContent = `${entry.name} · Lv.${entry.level || 1}`;
+        const remove = document.createElement("span");
+        remove.className = "slot-delete";
+        remove.textContent = "\u00d7";
+        remove.title = "删除角色";
+        remove.setAttribute("role", "button");
+        remove.addEventListener("click", event => {
+          event.stopPropagation();
+          openDeleteDialog(entry);
+        });
+        button.append(stand, label, remove);
+        button.addEventListener("pointerenter", () => setActivePlazaSlot(button));
+        button.addEventListener("click", () => {
+          if (!button.classList.contains("active")) {
+            setActivePlazaSlot(button);
+            return;
+          }
+          enterWithSlot(slot);
+        });
+      } else {
+        const plus = document.createElement("span");
+        plus.className = "slot-plus";
+        plus.textContent = "+";
+        const label = document.createElement("span");
+        label.className = "slot-name";
+        label.textContent = "创建角色";
+        button.append(plus, label);
+        button.addEventListener("click", () => openCreateStage());
+      }
+      plaza.appendChild(button);
+    }
+    $("#warehouseHint").textContent = bySlot.size ? "" : "还没有角色，点击 + 创建第一个学术喵";
+  }
+
+  async function enterWithSlot(slot) {
+    const hint = $("#warehouseHint");
+    hint.textContent = "正在进入校园...";
+    try {
+      let profile;
+      if (app.offlineMode) {
+        const entry = (app.characters || []).find(item => Number(item.slot) === slot);
+        if (!entry) throw new Error("角色不存在。");
+        profile = normalizeProfile({ ...entry, account: "local-guest", slot });
+        if (profile.hp <= 0) profile.hp = profile.maxHp;
+      } else {
+        const data = await apiRequest("/api/characters/select", {
+          method: "POST",
+          body: { slot }
+        });
+        profile = normalizeProfile(data.profile);
+      }
+      hint.textContent = "";
+      startGame(profile);
+    } catch (error) {
+      hint.textContent = error.message || "进入失败，请重试。";
+    }
+  }
+
+  let pendingDeleteSlot = -1;
+
+  function openDeleteDialog(entry) {
+    pendingDeleteSlot = Number(entry.slot);
+    $("#deleteDialogText").textContent = `确定要删除「${entry.name} · Lv.${entry.level || 1}」吗？角色的等级和进度将无法找回。`;
+    $("#deleteDialog").hidden = false;
+  }
+
+  function closeDeleteDialog() {
+    pendingDeleteSlot = -1;
+    $("#deleteDialog").hidden = true;
+  }
+
+  async function confirmDeleteCharacter() {
+    if (pendingDeleteSlot < 0) return;
+    const slot = pendingDeleteSlot;
+    const button = $("#deleteConfirmButton");
+    button.disabled = true;
+    try {
+      if (app.offlineMode) {
+        const roster = loadLocalRoster().filter(item => Number(item.slot) !== slot);
+        saveLocalRoster(roster);
+        app.characters = roster;
+      } else {
+        const data = await apiRequest("/api/characters/delete", {
+          method: "POST",
+          body: { slot }
+        });
+        app.characters = Array.isArray(data.characters) ? data.characters : [];
+      }
+      closeDeleteDialog();
+      renderWarehouse();
+    } catch (error) {
+      $("#warehouseHint").textContent = error.message || "删除失败，请重试。";
+      closeDeleteDialog();
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  let createIndex = 0;
+
+  function renderCreateStage() {
+    const meta = CREATABLE_CHARACTERS[createIndex];
+    const character = getCharacter(meta.id);
+    setupSpriteAnim($("#createSprite"), character, 200);
+    $("#createName").textContent = character.name;
+    $("#createRole").textContent = meta.role;
+    $("#createDesc").textContent = meta.desc;
+    $("#createQuote").textContent = meta.quote;
+    $("#createHint").textContent = "";
+    document.documentElement.style.setProperty("--character", character.color);
+  }
+
+  function openCreateStage() {
+    renderCreateStage();
+    showStage("create");
+  }
+
+  async function confirmCreateCharacter() {
+    const meta = CREATABLE_CHARACTERS[createIndex];
+    const button = $("#createConfirmButton");
+    button.disabled = true;
+    $("#createHint").textContent = "正在创建角色...";
+    try {
+      if (app.offlineMode) {
+        const roster = loadLocalRoster();
+        const used = new Set(roster.map(item => Number(item.slot)));
+        if (used.size >= CHARACTER_SLOT_LIMIT) throw new Error(`角色仓库已满（最多 ${CHARACTER_SLOT_LIMIT} 个角色）。`);
+        let slot = 0;
+        while (used.has(slot)) slot += 1;
+        roster.push({ slot, characterId: meta.id, name: getCharacter(meta.id).name, ...BASE_STATS });
+        saveLocalRoster(roster);
+        app.characters = roster;
+      } else {
+        const data = await apiRequest("/api/characters/create", {
+          method: "POST",
+          body: { characterId: meta.id }
+        });
+        app.characters = Array.isArray(data.characters) ? data.characters : [];
+      }
+      renderWarehouse();
+      showStage("warehouse");
+    } catch (error) {
+      $("#createHint").textContent = error.message || "创建失败，请重试。";
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function enterServer() {
+    app.serverRoom = $("#serverSelect").value || "zhonghe-plaza";
+    const hint = $("#serverHint");
+    hint.textContent = "正在读取角色仓库...";
+    try {
+      if (app.offlineMode) {
+        app.characters = loadLocalRoster();
+      } else {
+        const data = await apiRequest("/api/characters");
+        app.characters = Array.isArray(data.characters) ? data.characters : [];
+      }
+      hint.textContent = "";
+      renderWarehouse();
+      showStage("warehouse");
+    } catch (error) {
+      hint.textContent = error.message || "读取失败，请重试。";
+    }
   }
 
   function renderHud() {
     if (!app.profile) return;
     $("#hudName").textContent = app.profile.name;
+    $("#attackButton").textContent = app.profile.characterId === "ayu" ? "J 光刃挥砍" : "J 晶光飞弹";
     $("#levelText").textContent = `Lv.${app.profile.level}`;
     $("#creditText").textContent = `学分 ${app.profile.credits}`;
     $("#expText").textContent = `EXP ${app.profile.exp}`;
@@ -633,7 +912,7 @@
         renderNetwork("多人在线", true);
         this.send({
           type: "join",
-          room: "zhonghe-plaza",
+          room: app.serverRoom || "zhonghe-plaza",
           token: app.authToken,
           player: this.currentPlayerState()
         });
@@ -835,7 +1114,7 @@
 
       this.createActor();
       this.createBoss();
-      this.spawnLeafSlime();
+      this.spawnMapLeafSlimes();
 
       this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
       this.physics.add.collider(this.actor, this.obstacleGroup);
@@ -852,7 +1131,11 @@
         if (pointer.leftButtonDown()) this.triggerPrimaryAction();
       });
 
-      app.multiplayer.connect();
+      if (app.offlineMode) {
+        renderNetwork("离线试玩", false);
+      } else {
+        app.multiplayer.connect();
+      }
       renderHud();
       renderBossHud();
       showToast("WASD 移动，J 攻击，L 变身，C 增加怪物，X 生成 Boss，I 死亡/复活");
@@ -1083,20 +1366,45 @@
       return (this.leafSlimes.getChildren?.() || []).find(slime => slime?.active && slime.slimeId === id) || null;
     }
 
-    getNextLeafSlimePoint() {
-      if (!this.actor || !this.leafSlimes) return null;
-      const count = this.leafSlimes.countActive(true);
-      const offsets = [
-        { x: 190, y: 18 },
-        { x: -170, y: 42 },
-        { x: 120, y: -150 },
-        { x: -120, y: -142 }
+    getMapLeafSlimeSpawns() {
+      const spawns = this.mapData?.enemySpawns || this.mapData?.slimeSpawns;
+      if (Array.isArray(spawns) && spawns.length) {
+        return spawns.filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+      }
+      const spawn = this.mapData?.spawn || { x: this.worldWidth / 2, y: this.worldHeight / 2 };
+      return [
+        { id: "leaf-slime-west", x: spawn.x - 520, y: spawn.y + 12 },
+        { id: "leaf-slime-east", x: spawn.x + 520, y: spawn.y + 12 },
+        { id: "leaf-slime-north", x: spawn.x, y: spawn.y - 448 },
+        { id: "leaf-slime-south", x: spawn.x, y: spawn.y + 512 }
       ];
-      const offset = offsets[count % offsets.length];
-      return {
-        x: clamp(this.actor.x + offset.x, 900, this.worldWidth - 160),
-        y: clamp(this.actor.y + offset.y, 900, this.worldHeight - 220)
-      };
+    }
+
+    spawnMapLeafSlimes() {
+      this.getMapLeafSlimeSpawns().forEach(point => {
+        this.spawnLeafSlime({
+          id: point.id,
+          x: point.x,
+          y: point.y
+        });
+      });
+    }
+
+    getNextLeafSlimePoint() {
+      if (!this.leafSlimes) return null;
+      const points = this.getMapLeafSlimeSpawns();
+      if (!points.length) return null;
+      const activeSlimes = this.leafSlimes.getChildren?.() || [];
+      for (const point of points) {
+        const occupied = activeSlimes.some(slime =>
+          slime?.active
+          && slime.state !== "dead"
+          && slime.state !== "vanish"
+          && Math.hypot(slime.x - point.x, slime.y - point.y) < 96
+        );
+        if (!occupied) return point;
+      }
+      return points[activeSlimes.length % points.length];
     }
 
     spawnLeafSlime(options = {}) {
@@ -1234,18 +1542,65 @@
         return;
       }
       const now = this.time.now;
+      const isMelee = app.profile.characterId === "ayu";
       const equipment = this.selectedEquipment || EQUIPMENT[0];
-      if (now - this.lastShotAt < equipment.cooldown) return;
+      const cooldown = isMelee ? MELEE.cooldown : equipment.cooldown;
+      if (now - this.lastShotAt < cooldown) return;
       this.lastShotAt = now;
       const character = getCharacter(app.profile.characterId);
       this.isCasting = true;
       this.networkAction = "attack";
       this.actor.play(this.getAttackAnimationKey(), true);
-      this.time.delayedCall(95, () => this.fireProjectile());
+      if (isMelee) this.time.delayedCall(110, () => this.dealMeleeDamage());
+      else this.time.delayedCall(95, () => this.fireProjectile());
       this.actor.once("animationcomplete", () => {
         this.isCasting = false;
         this.actor.setTexture(character.id);
         if (!this.isDead) this.playLoop("idle");
+      });
+    }
+
+    dealMeleeDamage() {
+      if (!this.actor || this.isDead) return;
+      const direction = this.facing || DIRECTIONS[2];
+      const vec = directionVector(direction);
+      this.lastAimVector = vec;
+      const hitX = this.actor.x + vec.x * MELEE.reach;
+      const hitY = this.actor.y - 44 + vec.y * MELEE.reach;
+      this.flashSlash(hitX, hitY, Math.atan2(vec.y, vec.x), this.actor.y + 20);
+      app.audio.cast();
+      let hitSomething = false;
+      const slimes = this.leafSlimes?.getChildren?.() || [];
+      for (const slime of slimes) {
+        if (!slime?.active || slime.state === "dead" || slime.state === "vanish") continue;
+        const distance = Phaser.Math.Distance.Between(hitX, hitY, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
+        if (distance <= MELEE.radius + LEAF_SLIME_HIT_RADIUS) {
+          this.playLeafSlimeHit(slime);
+          hitSomething = true;
+        }
+      }
+      if (app.boss.active && app.boss.hp > 0 && this.bossSprite?.visible) {
+        const bossDistance = Phaser.Math.Distance.Between(hitX, hitY, app.boss.x, app.boss.y - 60);
+        if (bossDistance < 96 + MELEE.radius) {
+          this.applyBossDamage(MELEE.damage);
+          hitSomething = true;
+        }
+      }
+      if (hitSomething) this.cameras.main.shake(60, 0.0015);
+    }
+
+    flashSlash(x, y, angle, depth = 45) {
+      const degrees = Phaser.Math.RadToDeg(angle);
+      const arc = this.add.arc(x, y, 52, degrees - 62, degrees + 62, false, MELEE.color, 0.42)
+        .setDepth(depth);
+      this.tweens.add({
+        targets: arc,
+        alpha: 0,
+        scaleX: 1.3,
+        scaleY: 1.3,
+        duration: 190,
+        ease: "Sine.easeOut",
+        onComplete: () => arc.destroy()
       });
     }
 
@@ -1411,9 +1766,6 @@
             if (!slime.active || slime.actionToken !== token) return;
             slime.shadow?.destroy();
             slime.destroy();
-            this.time.delayedCall(1600, () => {
-              if (this.leafSlimes.countActive(true) < 1) this.spawnLeafSlime();
-            });
           }
         });
       });
@@ -1654,6 +2006,11 @@
       if (!app.boss.active || app.boss.hp <= 0) return;
       const damage = projectile.damage || 18;
       this.destroyProjectile(projectile, true);
+      this.applyBossDamage(damage);
+    }
+
+    applyBossDamage(damage) {
+      if (!app.boss.active || app.boss.hp <= 0) return;
       if (app.connected) app.multiplayer.sendBossHit(damage);
       else syncBossState({ ...app.boss, hp: Math.max(0, app.boss.hp - damage), active: app.boss.hp - damage > 0 });
       app.audio.hit();
@@ -1889,8 +2246,28 @@
     app.bossRewardClaimed = false;
     renderNetwork("未连接", false);
     renderBossHud();
-    $("#startOverlay").classList.remove("hidden");
+    if (app.profile && Number(app.profile.slot) >= 0) {
+      app.characters = (app.characters || []).map(item =>
+        Number(item.slot) === Number(app.profile.slot)
+          ? {
+              ...item,
+              name: app.profile.name,
+              level: app.profile.level,
+              exp: app.profile.exp,
+              credits: app.profile.credits,
+              maxHp: app.profile.maxHp,
+              hp: app.profile.hp
+            }
+          : item
+      );
+    }
     $("#loginButton").disabled = false;
+    if (app.authToken || app.offlineMode) {
+      renderWarehouse();
+      showStage("warehouse");
+    } else {
+      showStage("auth");
+    }
     app.audio.switchMode("login");
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   }
@@ -1987,34 +2364,20 @@
 
   function bindUi() {
     const saved = loadProfile();
-    const autoStart = new URLSearchParams(location.search).get("autostart") === "1";
-    renderCharacterOptions();
     setAuthMode("login");
     if (saved?.account) $("#loginAccountInput").value = saved.account;
-    if (app.authToken && saved?.name) {
-      $("#profileHint").textContent = `已保存 ${saved.name} 的登录状态，请输入密码进入同一服务器。`;
-    } else {
-      $("#profileHint").textContent = "登录后会自动进入同一个服务器房间。";
-    }
-    if (autoStart && app.authToken) {
-      const button = $("#loginButton");
-      button.disabled = true;
-      $("#profileHint").textContent = "正在读取服务器档案，准备进入校园...";
-      loadSessionProfile()
-        .then(profile => {
-          window.history.replaceState(null, "", "play.html");
-          startGame(profile);
-        })
-        .catch(error => {
-          setSession("");
-          button.disabled = false;
-          $("#profileHint").textContent = error.message || "登录已过期，请重新登录。";
-        });
-    }
 
     const startAudioOnGesture = () => app.audio.start("login", true);
     ["pointerdown", "keydown", "focusin", "input"].forEach(eventName => {
       $("#startOverlay").addEventListener(eventName, startAudioOnGesture, { once: true });
+    });
+
+    $("#offlineButton")?.addEventListener("click", () => {
+      app.audio?.start("login", true);
+      app.offlineMode = true;
+      setSession("");
+      $("#profileHint").textContent = "";
+      showStage("server");
     });
 
     $("#profileForm").addEventListener("submit", async event => {
@@ -2029,9 +2392,10 @@
       button.disabled = true;
       $("#profileHint").textContent = "正在登录服务器...";
       try {
-        const profile = await loginWithPassword(username, password);
-        $("#profileHint").textContent = "登录成功，正在进入校园...";
-        startGame(profile);
+        await loginWithPassword(username, password);
+        button.disabled = false;
+        $("#profileHint").textContent = "";
+        showStage("server");
       } catch (error) {
         setSession("");
         button.disabled = false;
@@ -2074,13 +2438,49 @@
       button.disabled = true;
       $("#registerHint").textContent = "正在创建账号...";
       try {
-        const profile = await registerWithPassword(username, nickname, password, app.selectedCharacterId);
-        $("#registerHint").textContent = "注册成功，正在进入校园...";
-        startGame(profile);
+        await registerAccount(username, nickname, password);
+        $("#registerHint").textContent = "注册成功，请用新账号登录。";
+        $("#loginAccountInput").value = username;
+        window.setTimeout(() => {
+          button.disabled = false;
+          setAuthMode("login");
+        }, 900);
       } catch (error) {
         button.disabled = false;
         $("#registerHint").textContent = error.message || "注册失败，请稍后再试。";
       }
+    });
+
+    $("#enterServerButton")?.addEventListener("click", () => {
+      app.audio?.start("login", true);
+      enterServer();
+    });
+    $("#warehouseBackButton")?.addEventListener("click", () => {
+      closeDeleteDialog();
+      showStage("server");
+    });
+    $("#serverBackButton")?.addEventListener("click", () => {
+      app.offlineMode = false;
+      $("#serverHint").textContent = "";
+      showStage("auth");
+    });
+    $("#createPrevButton")?.addEventListener("click", () => {
+      createIndex = (createIndex - 1 + CREATABLE_CHARACTERS.length) % CREATABLE_CHARACTERS.length;
+      renderCreateStage();
+    });
+    $("#createNextButton")?.addEventListener("click", () => {
+      createIndex = (createIndex + 1) % CREATABLE_CHARACTERS.length;
+      renderCreateStage();
+    });
+    $("#createConfirmButton")?.addEventListener("click", () => confirmCreateCharacter());
+    $("#createBackButton")?.addEventListener("click", () => {
+      renderWarehouse();
+      showStage("warehouse");
+    });
+    $("#deleteConfirmButton")?.addEventListener("click", () => confirmDeleteCharacter());
+    $("#deleteCancelButton")?.addEventListener("click", () => closeDeleteDialog());
+    $("#deleteDialog")?.addEventListener("click", event => {
+      if (event.target === event.currentTarget) closeDeleteDialog();
     });
     $("#musicToggle").addEventListener("click", () => app.audio.toggle(true));
     $("#attackButton").addEventListener("click", () => app.scene?.triggerPrimaryAction());
@@ -2101,6 +2501,13 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    // iPadOS Safari 默认伪装成 MacIntel 桌面端，pointer:coarse 媒体查询可能不生效，
+    // 用「Mac 平台 + 多触点」识别 iPad，加类名强制显示触屏操控
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isIPadOS = navigator.platform === "MacIntel" && (navigator.maxTouchPoints || 0) > 1;
+    if (isIOS || isIPadOS) {
+      document.documentElement.classList.add("touch-ui");
+    }
     app.audio = new AudioEngine();
     app.multiplayer = new MultiplayerClient();
     bindUi();
