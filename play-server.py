@@ -27,6 +27,7 @@ SESSION_TTL = 7 * 24 * 60 * 60
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_-]{3,18}$")
 CHARACTER_IDS = {"lina", "ayu"}
+CHARACTER_LIMIT = 5
 
 BASE_PROFILE = {
     "level": 1,
@@ -114,6 +115,26 @@ def init_db() -> None:
               user_id INTEGER NOT NULL,
               expires_at REAL NOT NULL,
               created_at REAL NOT NULL,
+              FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS characters (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER NOT NULL,
+              slot INTEGER NOT NULL,
+              character_id TEXT NOT NULL DEFAULT 'lina',
+              name TEXT NOT NULL,
+              level INTEGER NOT NULL DEFAULT 1,
+              exp INTEGER NOT NULL DEFAULT 0,
+              credits INTEGER NOT NULL DEFAULT 0,
+              max_hp INTEGER NOT NULL DEFAULT 160,
+              hp INTEGER NOT NULL DEFAULT 160,
+              created_at REAL NOT NULL,
+              updated_at REAL NOT NULL,
+              UNIQUE(user_id, slot),
               FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
             )
             """
@@ -207,6 +228,7 @@ def default_profile(user: sqlite3.Row) -> dict:
         "account": user["username"],
         "name": clean_name(user["nickname"]),
         "characterId": clean_character(user["character_id"]),
+        "slot": -1,
         **BASE_PROFILE,
     }
 
@@ -219,6 +241,7 @@ def sanitize_profile(profile: dict, user: sqlite3.Row) -> dict:
         "account": base["account"],
         "name": clean_name(profile.get("name"), base["name"]),
         "characterId": clean_character(profile.get("characterId"), base["characterId"]),
+        "slot": clean_number(profile.get("slot"), -1, -1, CHARACTER_LIMIT - 1),
         "level": clean_number(profile.get("level"), base["level"], 1, 99),
         "exp": clean_number(profile.get("exp"), base["exp"], 0, 99999),
         "credits": clean_number(profile.get("credits"), base["credits"], 0, 99999),
@@ -256,7 +279,117 @@ def save_profile(user: sqlite3.Row, profile: dict) -> dict:
             "UPDATE users SET nickname = ?, character_id = ?, updated_at = ? WHERE id = ?",
             (safe_profile["name"], safe_profile["characterId"], now, user["id"]),
         )
+        if safe_profile["slot"] >= 0:
+            conn.execute(
+                """
+                UPDATE characters
+                SET character_id = ?, name = ?, level = ?, exp = ?, credits = ?, max_hp = ?, hp = ?, updated_at = ?
+                WHERE user_id = ? AND slot = ?
+                """,
+                (
+                    safe_profile["characterId"],
+                    safe_profile["name"],
+                    safe_profile["level"],
+                    safe_profile["exp"],
+                    safe_profile["credits"],
+                    safe_profile["maxHp"],
+                    safe_profile["hp"],
+                    now,
+                    user["id"],
+                    safe_profile["slot"],
+                ),
+            )
     return safe_profile
+
+
+DEFAULT_CHARACTER_NAMES = {"lina": "莉娜", "ayu": "阿宇"}
+
+
+def character_to_dict(row: sqlite3.Row) -> dict:
+    max_hp = clean_number(row["max_hp"], 160, 1, 9999)
+    return {
+        "slot": int(row["slot"]),
+        "characterId": clean_character(row["character_id"]),
+        "name": clean_name(row["name"]),
+        "level": clean_number(row["level"], 1, 1, 99),
+        "exp": clean_number(row["exp"], 0, 0, 99999),
+        "credits": clean_number(row["credits"], 0, 0, 99999),
+        "maxHp": max_hp,
+        "hp": clean_number(row["hp"], max_hp, 0, max_hp),
+    }
+
+
+def list_characters(user: sqlite3.Row) -> list[dict]:
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT * FROM characters WHERE user_id = ? ORDER BY slot", (user["id"],)
+        ).fetchall()
+    return [character_to_dict(row) for row in rows]
+
+
+def handle_character_create(user: sqlite3.Row, payload: dict) -> tuple[int, dict]:
+    requested = str(payload.get("characterId") or "")
+    if requested not in CHARACTER_IDS:
+        return 400, {"error": "这个角色暂未开放。"}
+    characters = list_characters(user)
+    if len(characters) >= CHARACTER_LIMIT:
+        return 400, {"error": f"角色仓库已满（最多 {CHARACTER_LIMIT} 个角色）。"}
+    used_slots = {item["slot"] for item in characters}
+    slot = next(index for index in range(CHARACTER_LIMIT) if index not in used_slots)
+    name = clean_name(payload.get("name"), DEFAULT_CHARACTER_NAMES.get(requested, user["nickname"]))
+    now = time.time()
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO characters(user_id, slot, character_id, name, level, exp, credits, max_hp, hp, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?)
+            """,
+            (user["id"], slot, requested, name, BASE_PROFILE["maxHp"], BASE_PROFILE["hp"], now, now),
+        )
+    return 200, {"slot": slot, "characters": list_characters(user)}
+
+
+def handle_character_delete(user: sqlite3.Row, payload: dict) -> tuple[int, dict]:
+    slot = clean_number(payload.get("slot"), -1, -1, CHARACTER_LIMIT - 1)
+    if slot < 0:
+        return 400, {"error": "请选择要删除的角色。"}
+    with db() as conn:
+        cursor = conn.execute(
+            "DELETE FROM characters WHERE user_id = ? AND slot = ?", (user["id"], slot)
+        )
+        deleted = cursor.rowcount
+    if not deleted:
+        return 404, {"error": "角色不存在。"}
+    return 200, {"characters": list_characters(user)}
+
+
+def handle_character_select(user: sqlite3.Row, payload: dict) -> tuple[int, dict]:
+    slot = clean_number(payload.get("slot"), -1, -1, CHARACTER_LIMIT - 1)
+    if slot < 0:
+        return 400, {"error": "请选择一个角色。"}
+    with db() as conn:
+        row = conn.execute(
+            "SELECT * FROM characters WHERE user_id = ? AND slot = ?", (user["id"], slot)
+        ).fetchone()
+    if not row:
+        return 404, {"error": "角色不存在。"}
+    character = character_to_dict(row)
+    if character["hp"] <= 0:
+        character["hp"] = character["maxHp"]
+    profile = save_profile(
+        user,
+        {
+            "name": character["name"],
+            "characterId": character["characterId"],
+            "slot": slot,
+            "level": character["level"],
+            "exp": character["exp"],
+            "credits": character["credits"],
+            "maxHp": character["maxHp"],
+            "hp": character["hp"],
+        },
+    )
+    return 200, {"profile": profile}
 
 
 def handle_register(payload: dict) -> tuple[int, dict]:
@@ -287,9 +420,8 @@ def handle_register(payload: dict) -> tuple[int, dict]:
     except sqlite3.IntegrityError:
         return 409, {"error": "这个账号已经被注册了。"}
 
-    profile = save_profile(user, default_profile(user))
-    token = create_session(user["id"])
-    return 200, {"token": token, "profile": profile}
+    save_profile(user, default_profile(user))
+    return 200, {"ok": True, "username": username}
 
 
 def handle_login(payload: dict) -> tuple[int, dict]:
@@ -300,7 +432,7 @@ def handle_login(payload: dict) -> tuple[int, dict]:
     if not user or password_hash(password, user["salt"]) != user["password_hash"]:
         return 401, {"error": "账号或密码不正确。"}
     token = create_session(user["id"])
-    return 200, {"token": token, "profile": load_profile(user)}
+    return 200, {"token": token, "profile": load_profile(user), "characters": list_characters(user)}
 
 
 def get_room(name: str = "zhonghe-plaza") -> dict:
@@ -628,7 +760,14 @@ class GameHandler(BaseHTTPRequestHandler):
             if not user:
                 json_response(self, 401, {"error": "请先登录。"})
                 return
-            json_response(self, 200, {"profile": load_profile(user)})
+            json_response(self, 200, {"profile": load_profile(user), "characters": list_characters(user)})
+            return
+        if path == "/api/characters":
+            user = user_by_token(auth_token_from_header(self))
+            if not user:
+                json_response(self, 401, {"error": "请先登录。"})
+                return
+            json_response(self, 200, {"characters": list_characters(user)})
             return
         if path == "/ws" and self.headers.get("upgrade", "").lower() == "websocket":
             self.handle_websocket()
@@ -653,6 +792,30 @@ class GameHandler(BaseHTTPRequestHandler):
                 return
             profile = save_profile(user, payload.get("profile") or {})
             json_response(self, 200, {"profile": profile})
+            return
+        if path == "/api/characters/create":
+            user = user_by_token(auth_token_from_header(self))
+            if not user:
+                json_response(self, 401, {"error": "登录已过期，请重新登录。"})
+                return
+            status, body = handle_character_create(user, payload)
+            json_response(self, status, body)
+            return
+        if path == "/api/characters/select":
+            user = user_by_token(auth_token_from_header(self))
+            if not user:
+                json_response(self, 401, {"error": "登录已过期，请重新登录。"})
+                return
+            status, body = handle_character_select(user, payload)
+            json_response(self, status, body)
+            return
+        if path == "/api/characters/delete":
+            user = user_by_token(auth_token_from_header(self))
+            if not user:
+                json_response(self, 401, {"error": "登录已过期，请重新登录。"})
+                return
+            status, body = handle_character_delete(user, payload)
+            json_response(self, status, body)
             return
         json_response(self, 404, {"error": "接口不存在。"})
 

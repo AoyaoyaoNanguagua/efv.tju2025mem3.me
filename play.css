@@ -365,6 +365,402 @@ h1 {
   margin-top: 4px;
 }
 
+.ghost {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .92);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.ghost:hover {
+  background: rgba(255, 255, 255, .14);
+}
+
+/* ---- 登录后阶段（服务器选择 / 角色仓库 / 创建角色） ---- */
+
+.stage-auth,
+.stage-server {
+  display: contents;
+}
+
+.start-overlay .stage[hidden] {
+  display: none !important;
+}
+
+.server-card {
+  max-width: 420px;
+}
+
+.server-select {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  color: #fff;
+  border: 1px solid rgba(232, 249, 255, .44);
+  border-radius: 8px;
+  outline: 0;
+  background: rgba(12, 11, 25, .55);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.server-select option {
+  color: #1d1830;
+  background: #f4f8ff;
+}
+
+.stage-warehouse {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.warehouse-head {
+  position: absolute;
+  top: clamp(16px, 4vh, 44px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 2px 16px rgba(10, 8, 22, .72);
+}
+
+.stage-back {
+  position: absolute;
+  top: clamp(16px, 4vh, 44px);
+  left: clamp(16px, 3vw, 40px);
+  z-index: 6;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, .32);
+  border-radius: 999px;
+  background: rgba(16, 12, 28, .55);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+  transition: background .2s ease;
+}
+
+.stage-back:hover {
+  background: rgba(94, 210, 223, .32);
+}
+
+.warehouse-head h2 {
+  margin: 2px 0;
+  font-size: clamp(24px, 3.4vw, 40px);
+  letter-spacing: .08em;
+}
+
+.warehouse-tip {
+  color: rgba(255, 255, 255, .82);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.warehouse-plaza {
+  position: absolute;
+  inset: 0;
+}
+
+.plaza-slot {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: translate(-50%, -100%);
+  transition: transform .22s ease;
+  z-index: 2;
+}
+
+.sprite-stand {
+  position: relative;
+}
+
+.sprite-stand .sprite-anim {
+  position: relative;
+  z-index: 1;
+}
+
+.sprite-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 0;
+  width: 62px;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(14, 9, 24, .46) 0%, rgba(14, 9, 24, .2) 55%, transparent 74%);
+}
+
+.plaza-slot.filled:hover,
+.plaza-slot.filled.active {
+  transform: translate(-50%, -100%) scale(1.24);
+  z-index: 6;
+}
+
+.slot-name {
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  background: rgba(16, 12, 28, .66);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+.plaza-slot.filled.active .slot-name::after {
+  content: " · 点击进入";
+  color: #ffe9a8;
+}
+
+.plaza-slot.empty .slot-plus {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 2px dashed rgba(255, 255, 255, .66);
+  border-radius: 50%;
+  background: rgba(20, 14, 34, .38);
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+  transition: background .2s ease, transform .2s ease, border-color .2s ease;
+}
+
+.plaza-slot.empty:hover .slot-plus {
+  border-color: #9be8f0;
+  background: rgba(94, 210, 223, .3);
+  transform: scale(1.1);
+}
+
+.slot-delete {
+  position: absolute;
+  top: 6px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, .4);
+  border-radius: 50%;
+  background: rgba(20, 12, 30, .68);
+  color: rgba(255, 255, 255, .88);
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity .18s ease, background .18s ease;
+  backdrop-filter: blur(4px);
+}
+
+.plaza-slot.filled:hover .slot-delete,
+.plaza-slot.filled.active .slot-delete {
+  opacity: 1;
+}
+
+.slot-delete:hover {
+  background: rgba(214, 69, 93, .85);
+  border-color: #ffb3c1;
+}
+
+.delete-dialog {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 9, 22, .45);
+  backdrop-filter: blur(3px);
+}
+
+.delete-dialog[hidden] {
+  display: none !important;
+}
+
+.delete-panel {
+  display: grid;
+  gap: 12px;
+  width: min(380px, calc(100vw - 48px));
+  padding: 22px 24px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 18px;
+  background: rgba(20, 15, 34, .88);
+  color: #fff;
+  text-align: center;
+  backdrop-filter: blur(14px);
+}
+
+.delete-panel strong {
+  font-size: 18px;
+}
+
+.delete-panel p {
+  color: rgba(255, 255, 255, .82);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.delete-actions .ghost {
+  flex: 1;
+  width: auto;
+}
+
+.danger {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ff7d95 0%, #d6455d 100%);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+}
+
+.danger:hover {
+  filter: brightness(1.06);
+}
+
+.danger:disabled {
+  cursor: wait;
+  opacity: .66;
+}
+
+.warehouse-hint {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .6);
+}
+
+.sprite-anim {
+  background-repeat: no-repeat;
+}
+
+.stage-create {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow: auto;
+}
+
+.create-panel {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  width: min(560px, 94vw);
+  padding: 26px 30px 24px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 22px;
+  background: rgba(14, 11, 26, .64);
+  color: #fff;
+  text-align: center;
+  backdrop-filter: blur(14px);
+}
+
+.create-panel .warehouse-head {
+  position: static;
+  transform: none;
+}
+
+.create-carousel {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 4vw, 34px);
+}
+
+.carousel-arrow {
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.carousel-arrow:hover {
+  background: rgba(94, 210, 223, .3);
+}
+
+.create-preview {
+  display: grid;
+  justify-items: center;
+}
+
+.create-pedestal {
+  width: 156px;
+  height: 34px;
+  margin-top: -22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(94, 210, 223, .5), transparent 70%);
+}
+
+.create-info h3 {
+  font-size: 26px;
+}
+
+.create-role {
+  color: #9be8f0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+
+.create-desc {
+  max-width: 420px;
+  color: rgba(255, 255, 255, .86);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.create-quote {
+  color: #ffd9ec;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.create-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.create-actions .primary,
+.create-actions .ghost {
+  flex: 1;
+  width: auto;
+}
+
 .login-links {
   display: flex;
   align-items: center;
@@ -785,7 +1181,7 @@ h1 {
   }
 }
 
-@media (pointer: coarse), (hover: none) {
+@media (pointer: coarse), (hover: none), (any-pointer: coarse) {
   .mobile-controls {
     display: block;
   }
@@ -794,6 +1190,16 @@ h1 {
     right: max(12px, env(safe-area-inset-right));
     max-width: min(520px, calc(100vw - 320px));
   }
+}
+
+/* iPad Safari 等伪装桌面端的触屏设备（JS 检测后打标记） */
+html.touch-ui .mobile-controls {
+  display: block;
+}
+
+html.touch-ui .quickbar {
+  right: max(12px, env(safe-area-inset-right));
+  max-width: min(520px, calc(100vw - 320px));
 }
 
 @media (orientation: landscape) and (pointer: coarse), (orientation: landscape) and (hover: none), (orientation: landscape) and (max-height: 620px) and (max-width: 1180px) {
