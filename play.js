@@ -8,8 +8,10 @@
   const MAP_TILE_SIZE = 64;
   const PROJECTILE_FRAME_SIZE = 362;
   const PROJECTILE_MAX_RANGE = MAP_TILE_SIZE * 6;
-  const PROJECTILE_SPEED_SCALE = 0.72;
-  const PROJECTILE_HEAD_ORIGIN = { x: 228 / PROJECTILE_FRAME_SIZE, y: 201 / PROJECTILE_FRAME_SIZE };
+  const PROJECTILE_SPEED_SCALE = 0.94;
+  const PROJECTILE_VISUAL_SCALE_MULTIPLIER = 2;
+  const PROJECTILE_HITBOX_SCALE_MULTIPLIER = 2;
+  const PROJECTILE_HEAD_ORIGIN = { x: 236 / PROJECTILE_FRAME_SIZE, y: 209 / PROJECTILE_FRAME_SIZE };
   const CAST_SOCKET_FORWARD_OFFSET = 0;
 
   const MAP_TILESET_KEY = "play-zhonghe-plaza-tileset";
@@ -22,8 +24,20 @@
   const MAP_MACRO_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-macro-props-v1.png";
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
 
-  const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v1.png";
+  const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v2.png";
   const PROJECTILE_TEXTURE_KEY = "play-lina-projectiles";
+  const ULTIMATE_BACK_ATLAS = "assets/effects/lina-ultimate-cyclone-back-v1.png";
+  const ULTIMATE_FRONT_ATLAS = "assets/effects/lina-ultimate-cyclone-front-v1.png";
+  const ULTIMATE_BACK_TEXTURE_KEY = "play-lina-ultimate-cyclone-back";
+  const ULTIMATE_FRONT_TEXTURE_KEY = "play-lina-ultimate-cyclone-front";
+  const ULTIMATE_FRAME_WIDTH = 768;
+  const ULTIMATE_FRAME_HEIGHT = 512;
+  const ULTIMATE_ORIGIN_Y = 300 / ULTIMATE_FRAME_HEIGHT;
+  const CHARGE_HOLD_THRESHOLD = 280;
+  const ULTIMATE_COOLDOWN = 5200;
+  const ULTIMATE_DAMAGE = 48;
+  const ULTIMATE_RADIUS_X = 430;
+  const ULTIMATE_RADIUS_Y = 220;
   const LEAF_SLIME_SHEET = "assets/enemies/leaf-poring-sprites-v2.png";
   const LEAF_SLIME_KEY = "play-leaf-slime";
   const LEAF_SLIME_FRAME_SIZE = 128;
@@ -55,6 +69,8 @@
 
   const ALL_FRAMES = [0, 1, 2, 3, 4, 5, 6, 7];
   const FOUR_FRAMES = [0, 1, 2, 3];
+  const CHARGE_LOOP_FRAMES = [1, 2, 3];
+  const ULTIMATE_CAST_FRAMES = [0, 1, 2, 3, 1, 2, 3];
   const SIX_FRAMES = [0, 1, 2, 3, 4, 5];
 
   const ACTIONS = [
@@ -106,11 +122,10 @@
       name: "紫晶治疗杖",
       color: 0xd98ad7,
       css: "#d98ad7",
-      attackTexture: "play-lina-attack-amethyst",
-      attackSheet: "assets/sprites/lina-sprites-v15-attack-amethyst.png",
       projectileFrame: 0,
       impactFrame: 3,
-      projectileOrigin: { x: 228 / PROJECTILE_FRAME_SIZE, y: 201 / PROJECTILE_FRAME_SIZE },
+      projectileOrigin: { x: 236 / PROJECTILE_FRAME_SIZE, y: 209 / PROJECTILE_FRAME_SIZE },
+      chargedProjectileOrigin: { x: 262 / PROJECTILE_FRAME_SIZE, y: 203 / PROJECTILE_FRAME_SIZE },
       projectileScale: 0.15,
       speed: 620,
       size: 13,
@@ -122,11 +137,10 @@
       name: "樱花短杖",
       color: 0xf07aa3,
       css: "#f07aa3",
-      attackTexture: "play-lina-attack-sakura",
-      attackSheet: "assets/sprites/lina-sprites-v15-attack-sakura.png",
       projectileFrame: 4,
       impactFrame: 7,
-      projectileOrigin: { x: 237 / PROJECTILE_FRAME_SIZE, y: 178 / PROJECTILE_FRAME_SIZE },
+      projectileOrigin: { x: 232 / PROJECTILE_FRAME_SIZE, y: 191 / PROJECTILE_FRAME_SIZE },
+      chargedProjectileOrigin: { x: 259 / PROJECTILE_FRAME_SIZE, y: 186 / PROJECTILE_FRAME_SIZE },
       projectileScale: 0.15,
       speed: 540,
       size: 16,
@@ -138,11 +152,10 @@
       name: "开题星杖",
       color: 0x54b5c8,
       css: "#54b5c8",
-      attackTexture: "play-lina-attack-thesis",
-      attackSheet: "assets/sprites/lina-sprites-v15-attack-thesis.png",
       projectileFrame: 8,
       impactFrame: 11,
-      projectileOrigin: { x: 227 / PROJECTILE_FRAME_SIZE, y: 163 / PROJECTILE_FRAME_SIZE },
+      projectileOrigin: { x: 235 / PROJECTILE_FRAME_SIZE, y: 159 / PROJECTILE_FRAME_SIZE },
+      chargedProjectileOrigin: { x: 257 / PROJECTILE_FRAME_SIZE, y: 155 / PROJECTILE_FRAME_SIZE },
       projectileScale: 0.15,
       speed: 760,
       size: 10,
@@ -872,6 +885,44 @@
       osc.stop(now + duration + 0.02);
     }
 
+    sweep(startFreq, endFreq, duration = 0.18, type = "sine", gain = 0.045) {
+      if (!this.enabled || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const amp = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(startFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+      amp.gain.setValueAtTime(0.0001, now);
+      amp.gain.exponentialRampToValueAtTime(gain, now + 0.018);
+      amp.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(amp).connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.02);
+    }
+
+    noise(duration = 0.25, gain = 0.035, filterType = "bandpass", frequency = 700) {
+      if (!this.enabled || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      const length = Math.max(1, Math.floor(this.ctx.sampleRate * duration));
+      const buffer = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+      const source = this.ctx.createBufferSource();
+      const filter = this.ctx.createBiquadFilter();
+      const amp = this.ctx.createGain();
+      source.buffer = buffer;
+      filter.type = filterType;
+      filter.frequency.setValueAtTime(frequency, now);
+      filter.Q.setValueAtTime(0.8, now);
+      amp.gain.setValueAtTime(0.0001, now);
+      amp.gain.exponentialRampToValueAtTime(gain, now + 0.025);
+      amp.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      source.connect(filter).connect(amp).connect(this.ctx.destination);
+      source.start(now);
+      source.stop(now + duration + 0.02);
+    }
+
     playPulse() {
       const notes = this.gameNotes;
       const note = notes[this.step % notes.length];
@@ -882,6 +933,20 @@
     }
 
     cast() { this.tone(740, 0.12, "triangle", 0.07); }
+    projectileFly() {
+      this.sweep(760, 1560, 0.12, "triangle", 0.05);
+      window.setTimeout(() => this.tone(1240, 0.045, "sine", 0.025), 45);
+    }
+    ultimateWind() {
+      this.noise(0.62, 0.038, "bandpass", 620);
+      this.sweep(180, 520, 0.52, "sine", 0.03);
+      window.setTimeout(() => this.noise(0.32, 0.026, "highpass", 1100), 180);
+    }
+    ultimateBurst() {
+      this.noise(0.18, 0.06, "lowpass", 520);
+      this.tone(92, 0.22, "sawtooth", 0.05);
+      window.setTimeout(() => this.tone(260, 0.08, "triangle", 0.045), 35);
+    }
     hit() { this.tone(160, 0.13, "sawtooth", 0.05); }
     boss() { this.tone(98, 0.42, "sawtooth", 0.055); }
     heal() {
@@ -1059,17 +1124,19 @@
         frameWidth: PROJECTILE_FRAME_SIZE,
         frameHeight: PROJECTILE_FRAME_SIZE
       });
+      this.load.spritesheet(ULTIMATE_BACK_TEXTURE_KEY, ULTIMATE_BACK_ATLAS, {
+        frameWidth: ULTIMATE_FRAME_WIDTH,
+        frameHeight: ULTIMATE_FRAME_HEIGHT
+      });
+      this.load.spritesheet(ULTIMATE_FRONT_TEXTURE_KEY, ULTIMATE_FRONT_ATLAS, {
+        frameWidth: ULTIMATE_FRAME_WIDTH,
+        frameHeight: ULTIMATE_FRAME_HEIGHT
+      });
       this.load.spritesheet(LEAF_SLIME_KEY, LEAF_SLIME_SHEET, {
         frameWidth: LEAF_SLIME_FRAME_SIZE,
         frameHeight: LEAF_SLIME_FRAME_SIZE
       });
       this.load.image(BOSS_KEY, BOSS_IMAGE);
-      EQUIPMENT.forEach(item => {
-        this.load.spritesheet(item.attackTexture, item.attackSheet, {
-          frameWidth: FRAME_SIZE,
-          frameHeight: FRAME_SIZE
-        });
-      });
       CHARACTERS.forEach(character => {
         this.load.spritesheet(character.id, character.sprite, {
           frameWidth: FRAME_SIZE,
@@ -1092,10 +1159,14 @@
       this.isDead = false;
       this.isCat = false;
       this.isCatJumping = false;
+      this.isTransforming = false;
       this.isActionLocked = false;
       this.networkAction = "idle";
       this.actorHitToken = 0;
       this.isShowingCatIdleFrame = false;
+      this.primaryHold = null;
+      this.chargeHoldTimer = null;
+      this.lastUltimateAt = -ULTIMATE_COOLDOWN;
 
       this.renderTileMap();
       this.prepareMapPropFrames();
@@ -1104,13 +1175,14 @@
       this.drawObstacles();
       this.prepareCharacterAnimations();
       this.prepareProjectileAnimations();
+      this.prepareUltimateAnimations();
       this.prepareLeafSlimeAnimations();
       this.ensureProjectileHitboxTexture();
 
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.leafSlimes = this.physics.add.group({ allowGravity: false });
       this.projectileGraphics = this.add.graphics().setDepth(40);
-      this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,J,H,L,U,I,C,X,SPACE");
+      this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,J,K,H,L,U,I,C,X,SPACE");
 
       this.createActor();
       this.createBoss();
@@ -1127,9 +1199,13 @@
       this.cameras.main.startFollow(this.actor, true, 0.12, 0.12);
       this.cameras.main.centerOn(this.actor.x, this.actor.y);
       this.input.keyboard.on("keydown", event => this.handleHotkey(event));
+      this.input.keyboard.on("keyup", event => this.handleKeyUp(event));
       this.input.on("pointerdown", pointer => {
-        if (pointer.leftButtonDown()) this.triggerPrimaryAction();
+        if (pointer.leftButtonDown()) this.beginPrimaryActionHold();
       });
+      this.input.on("pointerup", () => this.releasePrimaryActionHold());
+      this.input.on("pointerupoutside", () => this.releasePrimaryActionHold());
+      window.addEventListener("blur", () => this.cancelPrimaryActionHold());
 
       if (app.offlineMode) {
         renderNetwork("离线试玩", false);
@@ -1229,18 +1305,18 @@
       });
 
       const attackAction = getAction("attack");
-      EQUIPMENT.forEach(item => {
-        const texture = this.textures.get(item.attackTexture);
-        texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
-        const key = `lina-${item.id}-attack-once`;
-        if (!this.anims.exists(key)) {
-          this.anims.create({
-            key,
-            frames: this.makeActionFrames(item.attackTexture, attackAction),
-            frameRate: Math.max(1, attackAction.fps * ANIMATION_SPEED_FACTOR),
-            repeat: 0
-          });
-        }
+      [
+        { key: "lina-attack-charge-start", frames: FOUR_FRAMES, repeat: 0 },
+        { key: "lina-attack-charge-loop", frames: CHARGE_LOOP_FRAMES, repeat: -1 },
+        { key: "lina-ultimate-cast", frames: ULTIMATE_CAST_FRAMES, repeat: 0 }
+      ].forEach(config => {
+        if (this.anims.exists(config.key)) return;
+        this.anims.create({
+          key: config.key,
+          frames: this.makeActionFrames("lina", { ...attackAction, frames: config.frames }),
+          frameRate: Math.max(1, attackAction.fps * ANIMATION_SPEED_FACTOR),
+          repeat: config.repeat
+        });
       });
     }
 
@@ -1275,6 +1351,23 @@
             repeat: 0
           });
         }
+      });
+    }
+
+    prepareUltimateAnimations() {
+      [
+        { textureKey: ULTIMATE_BACK_TEXTURE_KEY, animationKey: "lina-ultimate-cyclone-back" },
+        { textureKey: ULTIMATE_FRONT_TEXTURE_KEY, animationKey: "lina-ultimate-cyclone-front" }
+      ].forEach(({ textureKey, animationKey }) => {
+        const texture = this.textures.get(textureKey);
+        texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
+        if (this.anims.exists(animationKey)) return;
+        this.anims.create({
+          key: animationKey,
+          frames: this.anims.generateFrameNumbers(textureKey, { start: 0, end: 7 }),
+          frameRate: 13,
+          repeat: 0
+        });
       });
     }
 
@@ -1497,8 +1590,82 @@
     }
 
     triggerPrimaryAction() {
+      this.beginPrimaryActionHold();
+      this.releasePrimaryActionHold();
+    }
+
+    beginPrimaryActionHold() {
+      if (this.primaryHold) return;
+      if (this.isCat || app.profile.characterId !== "lina") {
+        this.triggerPrimaryActionImmediate();
+        return;
+      }
+      this.startLinaAttackHold();
+    }
+
+    releasePrimaryActionHold() {
+      if (!this.primaryHold) return;
+      const hold = this.primaryHold;
+      hold.released = true;
+      if (this.time.now - hold.startedAt >= CHARGE_HOLD_THRESHOLD) hold.charged = true;
+      if (hold.startComplete || this.actor?.anims?.currentAnim?.key === "lina-attack-charge-loop") {
+        this.finishLinaAttackHold();
+      }
+    }
+
+    cancelPrimaryActionHold() {
+      this.primaryHold = null;
+      this.chargeHoldTimer?.remove?.(false);
+      this.chargeHoldTimer = null;
+    }
+
+    triggerPrimaryActionImmediate() {
       if (this.isCat) this.playCatJump();
       else this.castProjectile();
+    }
+
+    startLinaAttackHold() {
+      if (!this.actor || app.profile.hp <= 0 || this.isDead || this.isActionLocked || this.isCat) return;
+      const equipment = this.selectedEquipment || EQUIPMENT[0];
+      const now = this.time.now;
+      if (now - this.lastShotAt < equipment.cooldown) return;
+      this.lastShotAt = now;
+      this.primaryHold = {
+        startedAt: now,
+        charged: false,
+        released: false,
+        startComplete: false
+      };
+      this.isCasting = true;
+      this.networkAction = "attack";
+      this.actor.setTexture("lina");
+      this.actor.play("lina-attack-charge-start", true);
+      this.chargeHoldTimer?.remove?.(false);
+      this.chargeHoldTimer = this.time.delayedCall(CHARGE_HOLD_THRESHOLD, () => {
+        if (this.primaryHold && !this.primaryHold.released) this.primaryHold.charged = true;
+      });
+      this.actor.once("animationcomplete", () => {
+        const hold = this.primaryHold;
+        if (!hold || this.isDead) return;
+        hold.startComplete = true;
+        if (hold.released) {
+          this.finishLinaAttackHold();
+        } else {
+          this.actor.play("lina-attack-charge-loop", true);
+        }
+      });
+    }
+
+    finishLinaAttackHold() {
+      const hold = this.primaryHold;
+      if (!hold || !this.actor || this.isDead) return;
+      this.primaryHold = null;
+      this.chargeHoldTimer?.remove?.(false);
+      this.chargeHoldTimer = null;
+      this.fireProjectile({ charged: hold.charged });
+      this.isCasting = false;
+      this.actor.setTexture(app.profile.characterId);
+      if (!this.isDead) this.playLoop("idle");
     }
 
     playCatJump() {
@@ -1516,23 +1683,21 @@
     }
 
     toggleTransformState() {
-      if (!this.actor || this.isDead || this.isActionLocked) return;
+      if (!this.actor || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold || this.isTransforming) return;
       const character = getCharacter(app.profile.characterId);
-      this.isActionLocked = true;
-      this.isCasting = false;
+      this.isTransforming = true;
       this.networkAction = "transform";
       this.actor.setTexture(character.id);
       if (this.isCat && this.actor.anims?.playReverse) this.actor.anims.playReverse(`${character.id}-transform-once`, true);
       else this.actor.play(`${character.id}-transform-once`, true);
       this.actor.once("animationcomplete", () => {
         this.isCat = !this.isCat;
-        this.isActionLocked = false;
+        this.isTransforming = false;
         this.returnToBaseLoop();
       });
     }
 
     getAttackAnimationKey() {
-      if (app.profile.characterId === "lina") return `lina-${this.selectedEquipment.id}-attack-once`;
       return `${app.profile.characterId}-attack-once`;
     }
 
@@ -1558,6 +1723,93 @@
         this.actor.setTexture(character.id);
         if (!this.isDead) this.playLoop("idle");
       });
+    }
+
+    getActorFootCenter() {
+      if (!this.actor) return { x: 0, y: 0 };
+      const body = this.actor.body;
+      if (!body) return { x: this.actor.x, y: this.actor.y };
+      const bodyX = typeof body.x === "number" ? body.x : this.actor.x;
+      const bodyY = typeof body.y === "number" ? body.y : this.actor.y;
+      const bodyWidth = typeof body.width === "number" ? body.width : 0;
+      const bodyHeight = typeof body.height === "number" ? body.height : 0;
+      return {
+        x: body.center?.x ?? (bodyX + bodyWidth / 2),
+        y: body.bottom ?? (bodyY + bodyHeight)
+      };
+    }
+
+    castUltimate() {
+      if (!this.actor || app.profile.characterId !== "lina" || app.profile.hp <= 0) return;
+      if (this.isCat || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold) return;
+      const now = this.time.now;
+      if (now - this.lastUltimateAt < ULTIMATE_COOLDOWN) {
+        const remain = Math.ceil((ULTIMATE_COOLDOWN - (now - this.lastUltimateAt)) / 1000);
+        showToast(`大招冷却中：${remain}s`);
+        return;
+      }
+      this.lastUltimateAt = now;
+      this.isCasting = true;
+      this.isActionLocked = true;
+      this.networkAction = "attack";
+      this.actor.body.setVelocity(0, 0);
+      this.actor.setTexture("lina");
+      this.actor.play("lina-ultimate-cast", true);
+      this.playUltimateCyclone();
+    }
+
+    playUltimateCyclone() {
+      const footCenter = this.getActorFootCenter();
+      const x = footCenter.x;
+      const y = footCenter.y;
+      const back = this.add.sprite(x, y, ULTIMATE_BACK_TEXTURE_KEY, 0)
+        .setOrigin(0.5, ULTIMATE_ORIGIN_Y)
+        .setDepth(y - 34);
+      const front = this.add.sprite(x, y, ULTIMATE_FRONT_TEXTURE_KEY, 0)
+        .setOrigin(0.5, ULTIMATE_ORIGIN_Y)
+        .setDepth(y + 42);
+
+      back.play("lina-ultimate-cyclone-back", true);
+      front.play("lina-ultimate-cyclone-front", true);
+      app.audio.ultimateWind();
+      this.time.delayedCall(430, () => {
+        this.dealUltimateDamage(x, y);
+        app.audio.ultimateBurst();
+        this.cameras.main.shake(150, 0.0022);
+      });
+      front.once("animationcomplete", () => {
+        back.destroy();
+        front.destroy();
+        if (!this.actor || this.isDead) return;
+        this.isCasting = false;
+        this.isActionLocked = false;
+        this.actor.setTexture(app.profile.characterId);
+        this.returnToBaseLoop();
+      });
+    }
+
+    dealUltimateDamage(cx, cy) {
+      if (!this.actor || this.isDead) return;
+      let hitSomething = false;
+      const slimes = this.leafSlimes?.getChildren?.() || [];
+      for (const slime of slimes) {
+        if (!slime?.active || slime.state === "dead" || slime.state === "vanish") continue;
+        const dx = slime.x - cx;
+        const dy = (slime.y + LEAF_SLIME_HIT_OFFSET_Y) - cy;
+        if ((dx * dx) / (ULTIMATE_RADIUS_X * ULTIMATE_RADIUS_X) + (dy * dy) / (ULTIMATE_RADIUS_Y * ULTIMATE_RADIUS_Y) <= 1) {
+          this.playLeafSlimeHit(slime);
+          hitSomething = true;
+        }
+      }
+      if (app.boss.active && app.boss.hp > 0 && this.bossSprite?.visible) {
+        const dx = app.boss.x - cx;
+        const dy = (app.boss.y - 60) - cy;
+        if ((dx * dx) / (ULTIMATE_RADIUS_X * ULTIMATE_RADIUS_X) + (dy * dy) / (ULTIMATE_RADIUS_Y * ULTIMATE_RADIUS_Y) <= 1) {
+          this.applyBossDamage(ULTIMATE_DAMAGE);
+          hitSomething = true;
+        }
+      }
+      if (hitSomething) this.cameras.main.shake(140, 0.002);
     }
 
     dealMeleeDamage() {
@@ -1604,43 +1856,48 @@
       });
     }
 
-    fireProjectile() {
+    fireProjectile(options = {}) {
       if (!this.actor || this.isDead) return;
       const equipment = this.selectedEquipment || EQUIPMENT[0];
+      const charged = !!options.charged;
       const direction = this.facing || DIRECTIONS[2];
       const vec = directionVector(direction);
       this.lastAimVector = vec;
       const castOrigin = this.getCastOrigin(vec);
       const projectileSpeed = equipment.speed * PROJECTILE_SPEED_SCALE;
+      const flightFrame = equipment.projectileFrame + (charged ? 1 : 0);
       const projectile = this.projectiles.create(castOrigin.x, castOrigin.y, "play-projectile-hitbox");
       projectile.setVisible(false);
-      projectile.body.setCircle(equipment.size, 16 - equipment.size, 16 - equipment.size);
+      const projectileSize = Math.round(equipment.size * PROJECTILE_HITBOX_SCALE_MULTIPLIER);
+      projectile.body.setCircle(projectileSize, 16 - projectileSize, 16 - projectileSize);
       projectile.body.setAllowGravity(false);
       projectile.body.setVelocity(vec.x * projectileSpeed, vec.y * projectileSpeed);
       projectile.spawnTime = this.time.now;
       projectile.color = equipment.color;
-      projectile.radius = equipment.size;
+      projectile.radius = projectileSize;
       projectile.spawnX = castOrigin.x;
       projectile.spawnY = castOrigin.y;
       projectile.maxDistance = Math.min(equipment.range || PROJECTILE_MAX_RANGE, PROJECTILE_MAX_RANGE);
       projectile.maxLifetime = Math.ceil((projectile.maxDistance / projectileSpeed) * 1000) + 180;
       projectile.impactFrame = equipment.impactFrame;
-      projectile.visualScale = equipment.projectileScale || 0.15;
+      projectile.visualScale = (equipment.projectileScale || 0.15) * PROJECTILE_VISUAL_SCALE_MULTIPLIER;
+      projectile.impactScale = charged ? 1.5 : 1;
       projectile.depthOffset = vec.y < -0.12 ? -8 : 12;
       projectile.visualBaseDepth = this.actor.y + 18;
       projectile.visualRotation = Math.atan2(vec.y, vec.x);
       projectile.impactAnimationKey = this.getProjectileAnimationKey(equipment, "impact");
-      projectile.damage = app.profile.characterId === "lina" ? 22 : 18;
+      projectile.damage = app.profile.characterId === "lina" ? (charged ? 34 : 22) : 18;
       projectile.trail = [];
-      const projectileOrigin = equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN;
-      projectile.visual = this.add.sprite(castOrigin.x, castOrigin.y, PROJECTILE_TEXTURE_KEY, equipment.projectileFrame)
+      const projectileOrigin = charged
+        ? (equipment.chargedProjectileOrigin || equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN)
+        : (equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN);
+      projectile.visual = this.add.sprite(castOrigin.x, castOrigin.y, PROJECTILE_TEXTURE_KEY, flightFrame)
         .setOrigin(projectileOrigin.x, projectileOrigin.y)
         .setScale(projectile.visualScale)
         .setRotation(projectile.visualRotation)
         .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
-      projectile.visual.play(this.getProjectileAnimationKey(equipment, "flight"));
       this.flashCast(castOrigin.x, castOrigin.y, equipment.color, projectile.visualBaseDepth + 1);
-      app.audio.cast();
+      app.audio.projectileFly();
     }
 
     getCastOrigin(vec) {
@@ -1687,14 +1944,15 @@
       if (!projectile?.active) return;
       projectile.visual?.destroy();
       if (burst) {
+        const impactScale = projectile.impactScale || 1;
         const impact = this.add.sprite(projectile.x, projectile.y, PROJECTILE_TEXTURE_KEY, projectile.impactFrame)
           .setOrigin(0.5)
-          .setScale((projectile.visualScale || 0.15) * 1.18)
+          .setScale((projectile.visualScale || 0.15) * 1.18 * impactScale)
           .setDepth(Math.max(projectile.y + 12, projectile.visualBaseDepth || 0));
         if (projectile.impactAnimationKey) impact.play(projectile.impactAnimationKey);
         this.tweens.add({
           targets: impact,
-          scale: (projectile.visualScale || 0.15) * 1.45,
+          scale: (projectile.visualScale || 0.15) * 1.45 * impactScale,
           alpha: 0,
           duration: 260,
           ease: "Sine.easeOut",
@@ -1780,6 +2038,8 @@
       if (app.profile.hp <= 0) {
         this.isDead = true;
         this.isCatJumping = false;
+        this.isTransforming = false;
+        this.cancelPrimaryActionHold();
         this.isActionLocked = false;
         this.isCasting = false;
         this.networkAction = "death";
@@ -1797,6 +2057,8 @@
       this.isActionLocked = false;
       this.isCasting = false;
       this.isCatJumping = false;
+      this.isTransforming = false;
+      this.cancelPrimaryActionHold();
       this.isCat = false;
       this.networkAction = "idle";
       this.actor.clearTint();
@@ -1815,6 +2077,8 @@
       this.actorHitToken = (this.actorHitToken || 0) + 1;
       const token = this.actorHitToken;
       this.isCasting = false;
+      this.isTransforming = false;
+      this.cancelPrimaryActionHold();
       this.isActionLocked = true;
       this.networkAction = "hit";
       this.actor.body.setVelocity(0, 0);
@@ -1933,7 +2197,8 @@
         arrowright: [1, 0]
       };
       if (keyDirections[key]) this.updateFacing(keyDirections[key][0], keyDirections[key][1]);
-      if (key === "j" || key === " ") this.triggerPrimaryAction();
+      if (key === "j" || key === " ") this.beginPrimaryActionHold();
+      if (key === "k") this.castUltimate();
       if (key === "h") this.healPlayer();
       if (key === "l") this.toggleTransformState();
       if (key === "u") this.playActorHitReaction();
@@ -1945,6 +2210,11 @@
         if (this.isDead || app.profile.hp <= 0) this.revivePlayer();
         else this.damagePlayer(999);
       }
+    }
+
+    handleKeyUp(event) {
+      const key = String(event.key || "").toLowerCase();
+      if (key === "j" || key === " ") this.releasePrimaryActionHold();
     }
 
     getMoveVector() {
@@ -2157,12 +2427,12 @@
         if (moving) {
           const vec = normalizeVector(dx, dy);
           this.updateFacing(dx, dy);
-          const speed = this.isCat ? 310 : character.speed;
+          const speed = this.isCat ? character.speed * 2 : character.speed;
           this.actor.body.setVelocity(vec.x * speed, vec.y * speed);
-          if (!this.isCasting) this.playLoop("walk");
+          if (!this.isCasting && !this.isTransforming) this.playLoop("walk");
         } else {
           this.actor.body.setVelocity(0, 0);
-          if (!this.isCasting) this.playLoop("idle");
+          if (!this.isCasting && !this.isTransforming) this.playLoop("idle");
         }
       }
       this.actor.setDepth(this.actor.y + 8);
@@ -2357,7 +2627,39 @@
       });
     };
 
-    bindAction("#mobileAttackButton", () => app.scene?.triggerPrimaryAction());
+    const bindHoldAction = (selector, begin, release) => {
+      const button = $(selector);
+      if (!button) return;
+      let pointerDown = false;
+      let pointerHandledAt = 0;
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        pointerDown = true;
+        pointerHandledAt = performance.now();
+        button.setPointerCapture?.(event.pointerId);
+        begin();
+      });
+      ["pointerup", "pointercancel", "lostpointercapture"].forEach(eventName => {
+        button.addEventListener(eventName, event => {
+          if (!pointerDown && eventName !== "lostpointercapture") return;
+          event.preventDefault?.();
+          event.stopPropagation?.();
+          pointerDown = false;
+          release();
+        });
+      });
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (performance.now() - pointerHandledAt > 450) {
+          begin();
+          release();
+        }
+      });
+    };
+
+    bindHoldAction("#mobileAttackButton", () => app.scene?.beginPrimaryActionHold(), () => app.scene?.releasePrimaryActionHold());
     bindAction("#mobileTransformButton", () => app.scene?.toggleTransformState());
     bindAction("#mobileHealButton", () => healPlayer());
   }
@@ -2483,7 +2785,33 @@
       if (event.target === event.currentTarget) closeDeleteDialog();
     });
     $("#musicToggle").addEventListener("click", () => app.audio.toggle(true));
-    $("#attackButton").addEventListener("click", () => app.scene?.triggerPrimaryAction());
+    {
+      const attackButton = $("#attackButton");
+      let pointerDown = false;
+      let pointerHandledAt = 0;
+      attackButton.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        pointerDown = true;
+        pointerHandledAt = performance.now();
+        attackButton.setPointerCapture?.(event.pointerId);
+        app.scene?.beginPrimaryActionHold();
+      });
+      ["pointerup", "pointercancel", "lostpointercapture"].forEach(eventName => {
+        attackButton.addEventListener(eventName, event => {
+          if (!pointerDown && eventName !== "lostpointercapture") return;
+          event.preventDefault?.();
+          pointerDown = false;
+          app.scene?.releasePrimaryActionHold();
+        });
+      });
+      attackButton.addEventListener("click", event => {
+        event.preventDefault();
+        if (performance.now() - pointerHandledAt > 450) {
+          app.scene?.beginPrimaryActionHold();
+          app.scene?.releasePrimaryActionHold();
+        }
+      });
+    }
     $("#healButton").addEventListener("click", () => healPlayer());
     $("#spawnButton").addEventListener("click", () => {
       if (app.scene?.spawnLeafSlime({ broadcast: true })) showToast("新增一只叶灵怪");

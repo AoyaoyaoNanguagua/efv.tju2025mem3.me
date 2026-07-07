@@ -814,8 +814,9 @@ h1 {
   inset: 0;
   z-index: 6;
   display: grid;
-  place-items: center;
-  padding: 24px;
+  align-items: start;
+  justify-items: center;
+  padding: max(74px, calc(env(safe-area-inset-top) + 68px)) 24px 24px;
   background: rgba(15, 12, 25, .24);
   opacity: 0;
   pointer-events: none;

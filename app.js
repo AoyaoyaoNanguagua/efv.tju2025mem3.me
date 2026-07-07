@@ -15,7 +15,7 @@ const PROJECTILE_RANGE_TILES = 6;
 const PROJECTILE_MAX_RANGE = MAP_TILE_SIZE * PROJECTILE_RANGE_TILES;
 const PROJECTILE_SPEED_SCALE = 0.72;
 const PROJECTILE_FRAME_SIZE = 362;
-const PROJECTILE_HEAD_ORIGIN = { x: 228 / PROJECTILE_FRAME_SIZE, y: 201 / PROJECTILE_FRAME_SIZE };
+const PROJECTILE_HEAD_ORIGIN = { x: 236 / PROJECTILE_FRAME_SIZE, y: 209 / PROJECTILE_FRAME_SIZE };
 const CAST_SOCKET_FORWARD_OFFSET = 0;
 const MAP_TILESET_KEY = "zhonghe-plaza-tileset";
 const MAP_TILEMAP_KEY = "zhonghe-plaza-tilemap";
@@ -25,7 +25,7 @@ const MAP_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-props-atlas-v1.png"
 const MAP_MACRO_PROP_ATLAS_KEY = "zhonghe-plaza-macro-props";
 const MAP_MACRO_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-macro-props-v1.png";
 const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
-const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v1.png";
+const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v2.png";
 const PROJECTILE_TEXTURE_KEY = "lina-projectiles";
 const LEAF_SLIME_SHEET = "assets/enemies/leaf-poring-sprites-v2.png";
 const LEAF_SLIME_KEY = "leaf-slime";
@@ -105,11 +105,9 @@ const EQUIPMENT = [
     mark: "晶",
     shape: "crystal",
     asset: "assets/weapons/lina-amethyst-wand-sprite-v3.png",
-    attackTexture: "lina-attack-amethyst",
-    attackSheet: "assets/sprites/lina-sprites-v15-attack-amethyst.png",
     projectileFrame: 0,
     impactFrame: 3,
-    projectileOrigin: { x: 228 / PROJECTILE_FRAME_SIZE, y: 201 / PROJECTILE_FRAME_SIZE },
+    projectileOrigin: { x: 236 / PROJECTILE_FRAME_SIZE, y: 209 / PROJECTILE_FRAME_SIZE },
     projectileScale: 0.15,
     spriteScale: 0.72,
     length: 54,
@@ -130,11 +128,9 @@ const EQUIPMENT = [
     mark: "樱",
     shape: "petal",
     asset: "assets/weapons/lina-sakura-wand-sprite-v3.png",
-    attackTexture: "lina-attack-sakura",
-    attackSheet: "assets/sprites/lina-sprites-v15-attack-sakura.png",
     projectileFrame: 4,
     impactFrame: 7,
-    projectileOrigin: { x: 237 / PROJECTILE_FRAME_SIZE, y: 178 / PROJECTILE_FRAME_SIZE },
+    projectileOrigin: { x: 232 / PROJECTILE_FRAME_SIZE, y: 191 / PROJECTILE_FRAME_SIZE },
     projectileScale: 0.15,
     spriteScale: 0.72,
     length: 48,
@@ -155,11 +151,9 @@ const EQUIPMENT = [
     mark: "星",
     shape: "star",
     asset: "assets/weapons/lina-thesis-wand-sprite-v3.png",
-    attackTexture: "lina-attack-thesis",
-    attackSheet: "assets/sprites/lina-sprites-v15-attack-thesis.png",
     projectileFrame: 8,
     impactFrame: 11,
-    projectileOrigin: { x: 227 / PROJECTILE_FRAME_SIZE, y: 163 / PROJECTILE_FRAME_SIZE },
+    projectileOrigin: { x: 235 / PROJECTILE_FRAME_SIZE, y: 159 / PROJECTILE_FRAME_SIZE },
     projectileScale: 0.15,
     spriteScale: 0.72,
     length: 60,
@@ -268,9 +262,7 @@ async function discoverAssets() {
 
 function getSheetImage(character) {
   if (!character.hasSprite) return null;
-  const sheetPath = selectedAction.id === "attack" && character.id === "lina"
-    ? (selectedEquipment.attackSheet || character.sprite)
-    : character.sprite;
+  const sheetPath = character.sprite;
   const cacheKey = `${character.id}:${sheetPath}`;
   if (sheetImages.has(cacheKey)) return sheetImages.get(cacheKey);
   const image = new Image();
@@ -305,8 +297,8 @@ function renderFramePreview() {
     return;
   }
 
-  const frameWidth = image.naturalWidth / COLS;
-  const frameHeight = image.naturalHeight / ROWS;
+  const frameWidth = FRAME_SIZE;
+  const frameHeight = FRAME_SIZE;
   const sx = currentFrameIndex * frameWidth;
   const sy = selectedAction.row * frameHeight;
   ctx.imageSmoothingEnabled = false;
@@ -486,7 +478,6 @@ class EFVScene extends Phaser.Scene {
     this.load.spritesheet(LEAF_SLIME_KEY, LEAF_SLIME_SHEET, { frameWidth: LEAF_SLIME_FRAME_SIZE, frameHeight: LEAF_SLIME_FRAME_SIZE });
     EQUIPMENT.forEach(item => {
       this.load.image(item.id, item.asset);
-      this.load.image(item.attackTexture, item.attackSheet);
     });
     CHARACTERS.forEach(character => {
       this.load.image(`${character.id}-portrait`, character.portrait);
@@ -762,24 +753,19 @@ class EFVScene extends Phaser.Scene {
 
   prepareFrames(character) {
     this.prepareSheetFrames(`${character.id}-sheet`, character.id, ACTIONS);
-    if (character.id === "lina") {
-      const attack = ACTIONS.find(action => action.id === "attack");
-      EQUIPMENT.forEach(item => this.prepareSheetFrames(item.attackTexture, `${character.id}-${item.id}`, [attack]));
-    }
   }
 
-  prepareSheetFrames(textureKey, animationPrefix, actions) {
+  prepareSheetFrames(textureKey, animationPrefix, actions, options = {}) {
     const texture = this.textures.get(textureKey);
     texture.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
-    const source = texture.getSourceImage();
     actions.filter(Boolean).forEach(action => {
       const names = [];
-      const y0 = action.row * (source.height / ROWS);
-      const frameHeight = source.height / ROWS;
+      const frameWidth = FRAME_SIZE;
+      const frameHeight = FRAME_SIZE;
+      const y0 = action.row * frameHeight;
       for (let col = 0; col < COLS; col++) {
-        const x0 = col * (source.width / COLS);
-        const frameWidth = source.width / COLS;
-        const frameName = `${action.id}-${col}`;
+        const x0 = col * frameWidth;
+        const frameName = `${options.framePrefix || ""}${action.id}-${col}`;
         if (!texture.has(frameName)) texture.add(frameName, 0, x0, y0, frameWidth, frameHeight);
         names.push({ key: textureKey, frame: frameName });
       }
@@ -844,7 +830,6 @@ class EFVScene extends Phaser.Scene {
   }
 
   getAttackAnimationKey() {
-    if (selected.id === "lina") return `${selected.id}-${this.selectedEquipment.id}-attack-once`;
     return `${selected.id}-attack-once`;
   }
 
@@ -986,10 +971,7 @@ class EFVScene extends Phaser.Scene {
     this.actor.anims.stop();
     isPaused = true;
     updateFrameReadout(currentFrameIndex + delta);
-    const textureKey = selectedAction.id === "attack" && selected.id === "lina"
-      ? selectedEquipment.attackTexture
-      : this.getBaseTextureKey();
-    this.actor.setTexture(textureKey);
+    this.actor.setTexture(this.getBaseTextureKey());
     this.actor.setFrame(`${selectedAction.id}-${currentFrameIndex}`);
     updatePlaybackControls();
   }
