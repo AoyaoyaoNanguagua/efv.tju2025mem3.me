@@ -1,0 +1,805 @@
+{
+  "$schema": "https://efv.local/schemas/chapter-map-v0.json",
+  "id": "ch1_m01_classroom_spawn",
+  "slug": "ch1-m01-classroom-spawn",
+  "chapterId": "chapter1",
+  "title": "第一协议教室",
+  "version": "0.1.0",
+  "status": "p0-playable-data",
+  "summary": "Chapter 1 entry map. The player learns protocol cards, clears the first bug-note encounter, and unlocks the corridor exit toward the archive map.",
+  "runtime": {
+    "kind": "tilemap-plan-with-play-js-fields",
+    "tileSize": 64,
+    "world": {
+      "columns": 48,
+      "rows": 32,
+      "width": 3072,
+      "height": 2048
+    },
+    "baseTilemap": "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json",
+    "tileIndexSource": "assets/maps/tilesets/zhonghe-plaza-tilemap-v3.json#tileIndex",
+    "tileset": {
+      "name": "zhonghe-plaza-ground-tileset-v1",
+      "path": "assets/maps/tilesets/zhonghe-plaza-ground-tileset-v1.png",
+      "tileWidth": 64,
+      "tileHeight": 64
+    },
+    "propAtlases": {
+      "default": "assets/maps/props/zhonghe-plaza-props-atlas-v1.png",
+      "macro": "assets/maps/props/zhonghe-plaza-macro-props-v1.png"
+    },
+    "playJsCompatibleFields": [
+      "spawn",
+      "camera",
+      "propFrames",
+      "macroPropFrames",
+      "props",
+      "obstacles",
+      "enemySpawns"
+    ],
+    "materializationNote": "The tilePlan can be expanded into a Tiled JSON layer set. Existing play.js can already consume the listed compatible fields after the main thread routes MAP_DATA_PATH to this map or merges this data into a Tiled map."
+  },
+  "tilePlan": {
+    "layers": [
+      {
+        "name": "ground",
+        "defaultTile": "plaza_light",
+        "rects": [
+          {
+            "tile": "plaza_block",
+            "x": 0,
+            "y": 0,
+            "w": 48,
+            "h": 4,
+            "usage": "north classroom wall band"
+          },
+          {
+            "tile": "plaza_diamond",
+            "x": 6,
+            "y": 8,
+            "w": 36,
+            "h": 16,
+            "usage": "main classroom floor"
+          },
+          {
+            "tile": "stairs",
+            "x": 20,
+            "y": 25,
+            "w": 8,
+            "h": 3,
+            "usage": "south entry steps"
+          },
+          {
+            "tile": "plaza_ornament",
+            "x": 21,
+            "y": 13,
+            "w": 6,
+            "h": 4,
+            "usage": "teaching focus medallion"
+          }
+        ]
+      },
+      {
+        "name": "terrain_edges",
+        "defaultTile": 0,
+        "rects": [
+          {
+            "tile": "road_edge",
+            "x": 0,
+            "y": 4,
+            "w": 48,
+            "h": 1,
+            "usage": "wall shadow edge"
+          },
+          {
+            "tile": "grass_edge_w",
+            "x": 4,
+            "y": 5,
+            "w": 1,
+            "h": 22,
+            "usage": "left boundary trim"
+          },
+          {
+            "tile": "grass_edge_e",
+            "x": 43,
+            "y": 5,
+            "w": 1,
+            "h": 22,
+            "usage": "right boundary trim"
+          }
+        ]
+      },
+      {
+        "name": "building",
+        "defaultTile": 0,
+        "rects": [
+          {
+            "tile": "tower_wall",
+            "x": 8,
+            "y": 1,
+            "w": 32,
+            "h": 3,
+            "usage": "classroom back wall"
+          },
+          {
+            "tile": "tower_entrance",
+            "x": 21,
+            "y": 2,
+            "w": 6,
+            "h": 2,
+            "usage": "blackboard glow window"
+          }
+        ]
+      }
+    ],
+    "walkableCorridors": [
+      {
+        "id": "ch1_m01_corridor_south_entry",
+        "x": 1344,
+        "y": 1536,
+        "w": 384,
+        "h": 320
+      },
+      {
+        "id": "ch1_m01_corridor_center_aisle",
+        "x": 1216,
+        "y": 640,
+        "w": 640,
+        "h": 896
+      },
+      {
+        "id": "ch1_m01_corridor_east_exit",
+        "x": 2240,
+        "y": 704,
+        "w": 512,
+        "h": 256
+      }
+    ]
+  },
+  "spawn": {
+    "id": "ch1_m01_spawn_player_start",
+    "x": 1536,
+    "y": 1696,
+    "facing": "N",
+    "setFlags": [
+      "ch1_intro_entered_classroom"
+    ],
+    "note": "South door start point. Keep the first screen focused on the blackboard, protocol deck, and two side desk lanes."
+  },
+  "camera": {
+    "width": 960,
+    "height": 540,
+    "startX": 1536,
+    "startY": 1450
+  },
+  "propFrames": {
+    "bench": {
+      "x": 931,
+      "y": 422,
+      "w": 212,
+      "h": 137
+    },
+    "signboard": {
+      "x": 928,
+      "y": 656,
+      "w": 214,
+      "h": 199
+    },
+    "lamp": {
+      "x": 701,
+      "y": 319,
+      "w": 72,
+      "h": 268
+    },
+    "column-tall": {
+      "x": 412,
+      "y": 632,
+      "w": 104,
+      "h": 242
+    },
+    "planter-purple": {
+      "x": 86,
+      "y": 76,
+      "w": 179,
+      "h": 196
+    },
+    "planter-pink": {
+      "x": 382,
+      "y": 78,
+      "w": 173,
+      "h": 194
+    },
+    "plaza-medallion": {
+      "x": 372,
+      "y": 946,
+      "w": 196,
+      "h": 195
+    },
+    "banner": {
+      "x": 975,
+      "y": 903,
+      "w": 122,
+      "h": 275
+    }
+  },
+  "macroPropFrames": {
+    "threshold-fence-wide": {
+      "x": 0,
+      "y": 640,
+      "w": 620,
+      "h": 180
+    },
+    "flower-border-wide": {
+      "x": 0,
+      "y": 160,
+      "w": 640,
+      "h": 170
+    },
+    "lamp-row-triple": {
+      "x": 1100,
+      "y": 330,
+      "w": 500,
+      "h": 290
+    },
+    "formal-medallion-node": {
+      "x": 660,
+      "y": 570,
+      "w": 420,
+      "h": 240
+    }
+  },
+  "props": [
+    {
+      "id": "ch1_m01_prop_blackboard",
+      "frame": "threshold-fence-wide",
+      "atlas": "macro",
+      "x": 1536,
+      "y": 448,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 1.02,
+      "role": "syllabus terminal backdrop"
+    },
+    {
+      "id": "ch1_m01_prop_protocol_deck",
+      "frame": "formal-medallion-node",
+      "atlas": "macro",
+      "x": 1536,
+      "y": 930,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.72,
+      "role": "collectible protocol card stand"
+    },
+    {
+      "id": "ch1_m01_prop_west_desk_a",
+      "frame": "bench",
+      "x": 896,
+      "y": 948,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.9,
+      "role": "desk obstacle"
+    },
+    {
+      "id": "ch1_m01_prop_west_desk_b",
+      "frame": "bench",
+      "x": 896,
+      "y": 1188,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.9,
+      "role": "desk obstacle"
+    },
+    {
+      "id": "ch1_m01_prop_east_desk_a",
+      "frame": "bench",
+      "x": 2176,
+      "y": 948,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.9,
+      "role": "desk obstacle"
+    },
+    {
+      "id": "ch1_m01_prop_east_desk_b",
+      "frame": "bench",
+      "x": 2176,
+      "y": 1188,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.9,
+      "role": "desk obstacle"
+    },
+    {
+      "id": "ch1_m01_prop_attendance_board",
+      "frame": "signboard",
+      "x": 544,
+      "y": 704,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.78,
+      "role": "optional inspection node"
+    },
+    {
+      "id": "ch1_m01_prop_exit_board",
+      "frame": "signboard",
+      "x": 2656,
+      "y": 844,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.78,
+      "role": "corridor exit marker"
+    },
+    {
+      "id": "ch1_m01_prop_left_lamp",
+      "frame": "lamp",
+      "x": 448,
+      "y": 1516,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.7,
+      "role": "light boundary"
+    },
+    {
+      "id": "ch1_m01_prop_right_lamp",
+      "frame": "lamp",
+      "x": 2624,
+      "y": 1516,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.7,
+      "role": "light boundary"
+    },
+    {
+      "id": "ch1_m01_prop_front_flowers",
+      "frame": "flower-border-wide",
+      "atlas": "macro",
+      "x": 1536,
+      "y": 1888,
+      "origin": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scale": 0.78,
+      "role": "south visual boundary"
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "ch1_m01_collision_north_wall",
+      "type": "wall",
+      "x": 0,
+      "y": 0,
+      "w": 3072,
+      "h": 448
+    },
+    {
+      "id": "ch1_m01_collision_west_wall",
+      "type": "wall",
+      "x": 0,
+      "y": 0,
+      "w": 256,
+      "h": 2048
+    },
+    {
+      "id": "ch1_m01_collision_east_wall",
+      "type": "wall",
+      "x": 2816,
+      "y": 0,
+      "w": 256,
+      "h": 2048
+    },
+    {
+      "id": "ch1_m01_collision_south_rail_left",
+      "type": "edge",
+      "x": 0,
+      "y": 1856,
+      "w": 1328,
+      "h": 192
+    },
+    {
+      "id": "ch1_m01_collision_south_rail_right",
+      "type": "edge",
+      "x": 1744,
+      "y": 1856,
+      "w": 1328,
+      "h": 192
+    },
+    {
+      "id": "ch1_m01_collision_west_desk_a",
+      "type": "desk",
+      "x": 760,
+      "y": 848,
+      "w": 272,
+      "h": 112
+    },
+    {
+      "id": "ch1_m01_collision_west_desk_b",
+      "type": "desk",
+      "x": 760,
+      "y": 1088,
+      "w": 272,
+      "h": 112
+    },
+    {
+      "id": "ch1_m01_collision_east_desk_a",
+      "type": "desk",
+      "x": 2040,
+      "y": 848,
+      "w": 272,
+      "h": 112
+    },
+    {
+      "id": "ch1_m01_collision_east_desk_b",
+      "type": "desk",
+      "x": 2040,
+      "y": 1088,
+      "w": 272,
+      "h": 112
+    },
+    {
+      "id": "ch1_m01_collision_protocol_stand",
+      "type": "terminal",
+      "x": 1392,
+      "y": 808,
+      "w": 288,
+      "h": 128
+    }
+  ],
+  "interactionNodes": [
+    {
+      "id": "ch1_m01_node_syllabus_terminal",
+      "type": "inspect",
+      "label": "课程协议板",
+      "x": 1536,
+      "y": 560,
+      "radius": 112,
+      "dialogueId": "ch1_m01_dialogue_intro",
+      "setFlags": [
+        "ch1_intro_read_syllabus",
+        "ch1_task_fix_prompt_chain_active"
+      ],
+      "unlockCards": [
+        "ch1_card_context_window"
+      ]
+    },
+    {
+      "id": "ch1_m01_node_protocol_deck",
+      "type": "collect",
+      "label": "协议卡讲台",
+      "x": 1536,
+      "y": 816,
+      "radius": 96,
+      "requiresFlags": [
+        "ch1_intro_read_syllabus"
+      ],
+      "grantCards": [
+        "ch1_card_context_window",
+        "ch1_card_traceable_instruction"
+      ],
+      "setFlags": [
+        "ch1_intro_card_claimed"
+      ],
+      "once": true
+    },
+    {
+      "id": "ch1_m01_node_attendance_board",
+      "type": "inspect",
+      "label": "出勤白板",
+      "x": 544,
+      "y": 660,
+      "radius": 96,
+      "dialogueId": "ch1_m01_dialogue_attendance",
+      "setFlags": [
+        "ch1_m01_attendance_checked"
+      ],
+      "rewardCredits": 1,
+      "once": true
+    },
+    {
+      "id": "ch1_m01_node_bug_notes",
+      "type": "spawn",
+      "label": "错乱笔记堆",
+      "x": 2020,
+      "y": 1390,
+      "radius": 128,
+      "requiresFlags": [
+        "ch1_intro_card_claimed"
+      ],
+      "spawnEncounterId": "ch1_m01_encounter_bug_notes",
+      "setFlags": [
+        "ch1_m01_bug_notes_disturbed"
+      ],
+      "once": true
+    },
+    {
+      "id": "ch1_m01_node_corridor_exit",
+      "type": "teleport",
+      "label": "提示词走廊入口",
+      "x": 2752,
+      "y": 832,
+      "radius": 112,
+      "requiresFlags": [
+        "ch1_intro_card_claimed",
+        "ch1_m01_bug_notes_cleared"
+      ],
+      "targetMapId": "ch1_m02_prompt_archive",
+      "targetSpawnId": "ch1_m02_spawn_south_gate",
+      "facing": "E",
+      "setFlags": [
+        "ch1_m01_cleared",
+        "ch1_m02_unlocked"
+      ]
+    }
+  ],
+  "protocolCards": [
+    {
+      "id": "ch1_card_context_window",
+      "name": "上下文窗口",
+      "tier": 1,
+      "type": "protocol",
+      "effect": "Reveal hidden interaction notes within 160 px after inspecting a syllabus or archive node.",
+      "teaches": "Keep enough previous context before asking an agent to act.",
+      "firstAvailableAt": "ch1_m01_node_syllabus_terminal"
+    },
+    {
+      "id": "ch1_card_traceable_instruction",
+      "name": "可追踪指令",
+      "tier": 1,
+      "type": "protocol",
+      "effect": "Marks quest-relevant nodes and prevents duplicate collection flags.",
+      "teaches": "A good request states output, constraints, and verification needs.",
+      "firstAvailableAt": "ch1_m01_node_protocol_deck"
+    },
+    {
+      "id": "ch1_card_schema_lock",
+      "name": "结构锁定",
+      "tier": 1,
+      "type": "protocol",
+      "effect": "Required later to open the agent lab small-boss gate.",
+      "teaches": "Stable JSON or table schemas make later automation reliable.",
+      "firstAvailableAt": "ch1_m02_prompt_archive"
+    }
+  ],
+  "questFlags": [
+    {
+      "id": "ch1_intro_entered_classroom",
+      "default": false,
+      "description": "Player spawned into Chapter 1."
+    },
+    {
+      "id": "ch1_intro_read_syllabus",
+      "default": false,
+      "description": "Syllabus terminal inspected."
+    },
+    {
+      "id": "ch1_task_fix_prompt_chain_active",
+      "default": false,
+      "description": "Main Chapter 1 task started."
+    },
+    {
+      "id": "ch1_intro_card_claimed",
+      "default": false,
+      "description": "First protocol cards collected."
+    },
+    {
+      "id": "ch1_m01_bug_notes_disturbed",
+      "default": false,
+      "description": "Bug-note encounter started."
+    },
+    {
+      "id": "ch1_m01_bug_notes_cleared",
+      "default": false,
+      "description": "All m01 enemy points cleared."
+    },
+    {
+      "id": "ch1_m01_cleared",
+      "default": false,
+      "description": "Exit to m02 unlocked and used."
+    },
+    {
+      "id": "ch1_m02_unlocked",
+      "default": false,
+      "description": "Prompt archive route unlocked."
+    }
+  ],
+  "triggers": [
+    {
+      "id": "ch1_m01_trigger_intro_dialogue",
+      "type": "dialogue",
+      "x": 1536,
+      "y": 560,
+      "radius": 112,
+      "target": "ch1_m01_dialogue_intro",
+      "once": true
+    },
+    {
+      "id": "ch1_m01_trigger_protocol_deck",
+      "type": "collect",
+      "x": 1536,
+      "y": 816,
+      "radius": 96,
+      "target": "ch1_m01_node_protocol_deck",
+      "once": true
+    },
+    {
+      "id": "ch1_m01_trigger_bug_notes",
+      "type": "spawn",
+      "x": 2020,
+      "y": 1390,
+      "radius": 128,
+      "target": "ch1_m01_encounter_bug_notes",
+      "once": true
+    },
+    {
+      "id": "ch1_m01_trigger_exit_to_m02",
+      "type": "teleport",
+      "x": 2752,
+      "y": 832,
+      "radius": 112,
+      "target": "ch1_m02_prompt_archive",
+      "once": false
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "ch1_m01_dialogue_intro",
+      "speaker": "课程协议板",
+      "lines": [
+        "第一章从这里开始。先取走协议卡，再清理错乱笔记。",
+        "出口会在记录到可追踪指令和清理标记后打开。"
+      ]
+    },
+    {
+      "id": "ch1_m01_dialogue_attendance",
+      "speaker": "出勤白板",
+      "lines": [
+        "白板上写着：请求要能复查，结果要能接入。",
+        "你记下了一个额外学分点。"
+      ]
+    },
+    {
+      "id": "ch1_m01_dialogue_exit_locked",
+      "speaker": "走廊门",
+      "lines": [
+        "门缝里有微光，但还缺少一张协议卡和清理标记。"
+      ]
+    }
+  ],
+  "enemySpawns": [
+    {
+      "id": "ch1-m01-demand-bug-west",
+      "type": "leafSlime",
+      "skin": "leaf-poring-as-demand-bug",
+      "x": 1072,
+      "y": 1376,
+      "level": 1,
+      "group": "ch1_m01_encounter_bug_notes",
+      "activeAfter": "ch1_m01_bug_notes_disturbed",
+      "dropTable": [
+        "credit-small",
+        "note-fragment"
+      ],
+      "note": "Reuse leaf poring sprite until the demand-bug sprite exists."
+    },
+    {
+      "id": "ch1-m01-demand-bug-east",
+      "type": "leafSlime",
+      "skin": "leaf-poring-as-demand-bug",
+      "x": 2000,
+      "y": 1376,
+      "level": 1,
+      "group": "ch1_m01_encounter_bug_notes",
+      "activeAfter": "ch1_m01_bug_notes_disturbed",
+      "dropTable": [
+        "credit-small",
+        "note-fragment"
+      ],
+      "note": "Second enemy teaches kiting around desk lanes."
+    },
+    {
+      "id": "ch1-m01-demand-bug-center",
+      "type": "leafSlime",
+      "skin": "leaf-poring-as-demand-bug",
+      "x": 1536,
+      "y": 1220,
+      "level": 1,
+      "group": "ch1_m01_encounter_bug_notes",
+      "activeAfter": "ch1_m01_bug_notes_disturbed",
+      "dropTable": [
+        "credit-small"
+      ],
+      "note": "Center spawn is close enough to pressure but not surround the player."
+    }
+  ],
+  "encounters": [
+    {
+      "id": "ch1_m01_encounter_bug_notes",
+      "type": "enemy-wave",
+      "title": "错乱笔记清理",
+      "activationTrigger": "ch1_m01_trigger_bug_notes",
+      "enemyIds": [
+        "ch1-m01-demand-bug-west",
+        "ch1-m01-demand-bug-east",
+        "ch1-m01-demand-bug-center"
+      ],
+      "clearWhenAllDefeated": true,
+      "setFlagsOnClear": [
+        "ch1_m01_bug_notes_cleared"
+      ],
+      "rewardCredits": 2,
+      "rewardExp": 20
+    }
+  ],
+  "exitPoints": [
+    {
+      "id": "ch1_m01_exit_corridor_to_m02",
+      "type": "teleport",
+      "x": 2752,
+      "y": 832,
+      "radius": 112,
+      "targetMapId": "ch1_m02_prompt_archive",
+      "targetSpawnId": "ch1_m02_spawn_south_gate",
+      "targetFacing": "E",
+      "requiresFlags": [
+        "ch1_intro_card_claimed",
+        "ch1_m01_bug_notes_cleared"
+      ],
+      "setFlags": [
+        "ch1_m01_cleared",
+        "ch1_m02_unlocked"
+      ],
+      "lockedDialogueId": "ch1_m01_dialogue_exit_locked"
+    }
+  ],
+  "chapterBossPoint": {
+    "mapId": "ch1_m04_library_lawn_boss",
+    "pointId": "ch1_m04_boss_ai_professor_exam",
+    "x": 1664,
+    "y": 768,
+    "requiresFlags": [
+      "ch1_m03_small_boss_cleared",
+      "ch1_card_schema_lock_collected"
+    ],
+    "setFlagsOnDefeat": [
+      "ch1_final_boss_defeated",
+      "ch1_complete"
+    ],
+    "note": "Defined here as a route reference; full m04 map art is indexed as a placeholder in chapter1-p0-runtime.json."
+  },
+  "completionPoint": {
+    "id": "ch1_m04_exit_chapter_clear",
+    "mapId": "ch1_m04_library_lawn_boss",
+    "type": "chapter-clear",
+    "x": 1664,
+    "y": 384,
+    "radius": 128,
+    "requiresFlags": [
+      "ch1_final_boss_defeated"
+    ],
+    "setFlags": [
+      "ch1_complete"
+    ]
+  }
+}

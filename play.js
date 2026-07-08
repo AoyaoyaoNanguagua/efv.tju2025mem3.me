@@ -23,6 +23,41 @@
   const MAP_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-props-atlas-v1.png";
   const MAP_MACRO_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-macro-props-v1.png";
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
+  const CHAPTER_ONE_MAP_DATA_KEY = "play-ch1-m01-classroom-data";
+  const CHAPTER_ONE_MAP_DATA_PATH = "assets/chapter1/ch1-m01-classroom-spawn.json";
+  const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
+  const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
+  const CHAPTER_ONE_MAP_BACKGROUNDS = [
+    { key: "ch1-map-classroom-spawn-bg", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-bg-v2-2048.png" },
+    { key: "ch1-map-prompt-archive-bg", path: "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v2-2048.png" },
+    { key: "ch1-map-agent-lab-bg", path: "assets/chapter1/maps/ch1_m03_agent_lab/background/ch1-map-agent-lab-bg-v2-2048.png" },
+    { key: "ch1-map-library-lawn-boss-bg", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/background/ch1-map-library-lawn-boss-bg-v2-2048.png" },
+    { key: "ch1-m01-spawn-nw", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-nw-v1.png" },
+    { key: "ch1-m01-spawn-ne", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-ne-v1.png" },
+    { key: "ch1-m01-spawn-sw", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-sw-v1.png" },
+    { key: "ch1-m01-spawn-se", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-se-v1.png" },
+    { key: "ch1-process-nw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-nw-v1.png" },
+    { key: "ch1-process-ne", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-ne-v1.png" },
+    { key: "ch1-process-sw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-sw-v1.png" },
+    { key: "ch1-process-se", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-se-v1.png" },
+    { key: "ch1-m03-agent-nw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-nw-v1.png" },
+    { key: "ch1-m03-agent-ne", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-ne-v1.png" },
+    { key: "ch1-m03-agent-sw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-sw-v1.png" },
+    { key: "ch1-m03-agent-se", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-se-v1.png" },
+    { key: "ch1-m04-boss-nw", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-nw-v1.png" },
+    { key: "ch1-m04-boss-ne", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-ne-v1.png" },
+    { key: "ch1-m04-boss-sw", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-sw-v1.png" },
+    { key: "ch1-m04-boss-se", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-se-v1.png" }
+  ];
+  const MAP_PORTAL_KEY = "ch1-map-teleport-portal";
+  const MAP_PORTAL_IMAGE = "assets/chapter1/vfx/ch1-map-teleport-portal-sheet-v1.png";
+  const MAP_PORTAL_FRAME_WIDTH = 192;
+  const MAP_PORTAL_FRAME_HEIGHT = 192;
+  const BOSS_VOID_PORTAL_KEY = "ch1-boss-void-portal";
+  const BOSS_VOID_PORTAL_IMAGE = "assets/chapter1/vfx/ch1-boss-void-portal-sheet-v1.png";
+  const BOSS_VOID_PORTAL_FRAME_WIDTH = 256;
+  const BOSS_VOID_PORTAL_FRAME_HEIGHT = 256;
+  const QUICKBAR_ICONS_IMAGE = "assets/chapter1/ui/ch1-quickbar-icons-sheet-v1.png";
 
   const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v2.png";
   const PROJECTILE_TEXTURE_KEY = "play-lina-projectiles";
@@ -34,7 +69,13 @@
   const ULTIMATE_FRAME_HEIGHT = 512;
   const ULTIMATE_ORIGIN_Y = 300 / ULTIMATE_FRAME_HEIGHT;
   const CHARGE_HOLD_THRESHOLD = 280;
-  const ULTIMATE_COOLDOWN = 5200;
+  const ENERGY_DEFAULT_MAX = 150;
+  const ENERGY_REGEN_PER_SECOND = 4.5;
+  const ENERGY_HIT_GAIN = 8;
+  const ENERGY_CHARGED_HIT_GAIN = 18;
+  const ENERGY_MELEE_HIT_GAIN = 6;
+  const ULTIMATE_COST = 100;
+  const HEAL_COST = 50;
   const ULTIMATE_DAMAGE = 48;
   const ULTIMATE_RADIUS_X = 430;
   const ULTIMATE_RADIUS_Y = 220;
@@ -55,9 +96,63 @@
   const LEAF_SLIME_HIT_RADIUS = 52;
 
   const BOSS_KEY = "play-ai-professor-boss";
-  const BOSS_IMAGE = "assets/enemies/autumn-ruin-portrait-v1.png";
+  const BOSS_IMAGE = "assets/chapter1/boss/ai-professor-summoner-game-cutout-v1.png";
+  const BOSS_VISUAL_SCALE = 0.42;
+  const QUANTUM_SCHOLAR_KEY = "ch1-enemy-quantum-scholar-rare";
+  const QUANTUM_FAMILIAR_KEY = "ch1-enemy-quantum-familiar-elite";
+  const QUANTUM_PAPER_KEY = "ch1-enemy-quantum-paper-mob";
+  const BLOCKCHAIN_CHAINBEAST_KEY = "ch1-enemy-blockchain-chainbeast-rare";
+  const BLOCKCHAIN_LOCK_KEY = "ch1-enemy-blockchain-lock-elite";
+  const BLOCKCHAIN_SPIDER_KEY = "ch1-enemy-blockchain-spider-mob";
+  const AIAGENT_CYBERMAGE_KEY = "ch1-enemy-aiagent-cybermage-rare";
+  const AIAGENT_DIGITAL_CAT_KEY = "ch1-enemy-aiagent-digital-cat-elite";
+  const AIAGENT_BOTCAT_KEY = "ch1-enemy-aiagent-botcat-mob";
+  const CHAPTER_ONE_ENEMY_IMAGES = [
+    { key: QUANTUM_SCHOLAR_KEY, path: "assets/chapter1/enemies/ch1-enemy-quantum-scholar-rare-cutout-v1.png" },
+    { key: QUANTUM_FAMILIAR_KEY, path: "assets/chapter1/enemies/ch1-enemy-quantum-familiar-elite-cutout-v1.png" },
+    { key: QUANTUM_PAPER_KEY, path: "assets/chapter1/enemies/ch1-enemy-quantum-paper-mob-cutout-v1.png" },
+    { key: BLOCKCHAIN_CHAINBEAST_KEY, path: "assets/chapter1/enemies/ch1-enemy-blockchain-chainbeast-rare-cutout-v2.png" },
+    { key: BLOCKCHAIN_LOCK_KEY, path: "assets/chapter1/enemies/ch1-enemy-blockchain-lock-elite-cutout-v1.png" },
+    { key: BLOCKCHAIN_SPIDER_KEY, path: "assets/chapter1/enemies/ch1-enemy-blockchain-spider-mob-cutout-v1.png" },
+    { key: AIAGENT_CYBERMAGE_KEY, path: "assets/chapter1/enemies/ch1-enemy-aiagent-cybermage-rare-cutout-v1.png" },
+    { key: AIAGENT_DIGITAL_CAT_KEY, path: "assets/chapter1/enemies/ch1-enemy-aiagent-digital-cat-elite-cutout-v2.png" },
+    { key: AIAGENT_BOTCAT_KEY, path: "assets/chapter1/enemies/ch1-enemy-aiagent-botcat-mob-cutout-v1.png" }
+  ];
+  const BOSS_PORTAL_OPEN_MS = 520;
+  const BOSS_PORTAL_EGRESS_MS = 820;
+  const BOSS_PORTAL_CLOSE_MS = 420;
+  const BOSS_PORTAL_STAGGER_MS = 110;
+  const PLAYER_CRIT_CHANCE = 0.16;
+  const PLAYER_MAGIC_CRIT_MULTIPLIER = 2;
+  const PLAYER_PHYSICAL_CRIT_MULTIPLIER = 1.5;
+  const CREDIT_DEFENSE_MIN = 0.3;
+  const CREDIT_DEFENSE_MAX = 1.2;
+  const SHIELD_BLOCK_COLOR = 0x8fd8ff;
   const SAVE_KEY = "efv-play-profile-v2";
   const SESSION_KEY = "efv-session-token";
+  const CHAPTER_ONE_KEY = "efv-chapter-one-slice-v1";
+  const CHAPTER_ONE_PROTOCOL_CARD_GOAL = 3;
+  const BOSS_SUMMON_GROUP = "ch1_final_professor_summons";
+  const BOSS_CHEST_FLAG = "ch1_boss_chest_opened";
+  const CHAT_HISTORY_LIMIT = 40;
+  const CHAT_TEXT_LIMIT = 80;
+  const ENTRY_LOADING_MIN_MS = 5000;
+  const MINIMAP_COLORS = {
+    player: "#ffffff",
+    task: "#5ed2df",
+    battle: "#ef7fb0",
+    exit: "#42c98a",
+    boss: "#f3c75d",
+    chest: "#8f72d6",
+    locked: "#756b7d",
+    done: "#8fa29d"
+  };
+
+  const CHAPTER_ONE_CARD_NAMES = {
+    ch1_card_context_window: "上下文窗口",
+    ch1_card_traceable_instruction: "可追踪指令",
+    ch1_card_schema_lock: "结构锁定"
+  };
 
   const LINA_STAFF_CAST_SOCKETS = [
     { x: 117, y: 64 },
@@ -177,23 +272,110 @@
     exp: 0,
     credits: 0,
     maxHp: 160,
-    hp: 160
+    hp: 160,
+    maxEnergy: ENERGY_DEFAULT_MAX,
+    energy: ENERGY_DEFAULT_MAX,
+    shield: 0,
+    attackPower: 26,
+    magicPower: 22
   };
 
   const BOSS = {
     id: "boss_ai_prof",
-    name: "AI 陆教授考核镜像",
-    maxHp: 420,
-    hp: 420,
+    name: "陆教授的协议考核",
+    maxHp: 5,
+    hp: 0,
     active: false,
     x: 0,
     y: 0,
-    damage: 10,
-    touchRange: 170,
-    attackCooldown: 1500,
+    phase: "idle",
+    waveIndex: 0,
+    waveTitle: "",
+    wavesTotal: 3,
+    summonsRemaining: 0,
+    eliteRemaining: 0,
+    chestReady: false,
+    damage: 0,
+    touchRange: 0,
+    attackCooldown: 2200,
     rewardCredits: 8,
     rewardExp: 80
   };
+
+  const BOSS_SUMMON_WAVES = [
+    {
+      id: "quantum",
+      title: "量子系",
+      color: 0x5ed2df,
+      units: [
+        { rank: "rare", label: "量子稀有精英", dx: 260, dy: 110, tint: 0x70e7ff, scale: 1.28, maxHp: 260, damage: 15, creditDefense: 4, rewardExp: 44, rewardCredits: 4, dropId: "ch1_drop_quantum_probability_core", dropName: "量子概率核心" },
+        { rank: "elite", label: "量子精英", dx: -220, dy: 120, tint: 0x9b83ff, scale: 1.08, maxHp: 150, damage: 12, rewardExp: 24, rewardCredits: 2, dropId: "ch1_drop_quantum_shard", dropName: "量子相干碎片" },
+        { rank: "mob", label: "量子小怪", dx: -70, dy: 265, tint: 0xbff7ff, scale: 0.86, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
+        { rank: "mob", label: "量子小怪", dx: 100, dy: 275, tint: 0xbff7ff, scale: 0.86, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
+        { rank: "mob", label: "量子小怪", dx: 0, dy: -170, tint: 0xd7c8ff, scale: 0.82, maxHp: 68, damage: 9, rewardExp: 12, rewardCredits: 1 }
+      ]
+    },
+    {
+      id: "blockchain",
+      title: "区块链系",
+      color: 0xf3c75d,
+      units: [
+        { rank: "rare", label: "链铸稀有精英", dx: -270, dy: 105, textureKey: BLOCKCHAIN_CHAINBEAST_KEY, staticImage: true, tint: 0xffffff, scale: 0.16, maxHp: 300, damage: 17, creditDefense: 5, rewardExp: 46, rewardCredits: 5, dropId: "ch1_drop_chain_forge_core", dropName: "链铸重核" },
+        { rank: "elite", label: "重锁精英", dx: 235, dy: 130, tint: 0x8e8172, scale: 1.12, maxHp: 175, damage: 13, rewardExp: 26, rewardCredits: 3, dropId: "ch1_drop_blockchain_lock", dropName: "验证锁片" },
+        { rank: "mob", label: "链条小怪", dx: -110, dy: 270, tint: 0x786b5e, scale: 0.9, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
+        { rank: "mob", label: "链条小怪", dx: 65, dy: 285, tint: 0x786b5e, scale: 0.9, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
+        { rank: "mob", label: "锁扣小怪", dx: 160, dy: -150, tint: 0xc9a44d, scale: 0.86, maxHp: 82, damage: 10, rewardExp: 13, rewardCredits: 1 }
+      ]
+    },
+    {
+      id: "aiagent",
+      title: "AI Agent 系",
+      color: 0x8f72d6,
+      units: [
+        { rank: "rare", label: "数字猫稀有精英", dx: 270, dy: 105, textureKey: AIAGENT_DIGITAL_CAT_KEY, staticImage: true, tint: 0xffffff, scale: 0.17, maxHp: 320, damage: 18, creditDefense: 6, rewardExp: 48, rewardCredits: 5, dropId: "ch1_drop_agent_memory_core", dropName: "Agent 记忆核心" },
+        { rank: "elite", label: "任务路由精英", dx: -235, dy: 130, tint: 0xb889ff, scale: 1.1, maxHp: 190, damage: 14, rewardExp: 28, rewardCredits: 3, dropId: "ch1_drop_agent_tool_node", dropName: "工具节点" },
+        { rank: "mob", label: "提示词小怪", dx: -135, dy: 275, tint: 0x9ff7ff, scale: 0.88, maxHp: 92, damage: 11, rewardExp: 14, rewardCredits: 1 },
+        { rank: "mob", label: "记忆碎片", dx: 45, dy: 285, tint: 0xd9c3ff, scale: 0.86, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 },
+        { rank: "mob", label: "工具调用小怪", dx: -35, dy: -165, tint: 0x72e2d7, scale: 0.86, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 }
+      ]
+    }
+  ];
+
+  [
+    {
+      title: "量子系",
+      color: 0x5ed2df,
+      units: [
+        { rank: "rare", label: "量子观测稀有精英", dx: 260, dy: 110, textureKey: QUANTUM_SCHOLAR_KEY, staticImage: true, tint: 0xffffff, scale: 0.68, maxHp: 260, damage: 15, creditDefense: 4, rewardExp: 44, rewardCredits: 4, dropId: "ch1_drop_quantum_probability_core", dropName: "量子概率核心" },
+        { rank: "elite", label: "波函数精英", dx: -220, dy: 120, textureKey: QUANTUM_FAMILIAR_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 150, damage: 12, rewardExp: 24, rewardCredits: 2, dropId: "ch1_drop_quantum_shard", dropName: "量子相干碎片" },
+        { rank: "mob", label: "量子纸灵", dx: -70, dy: 265, textureKey: QUANTUM_PAPER_KEY, staticImage: true, tint: 0xffffff, scale: 0.52, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
+        { rank: "mob", label: "量子纸灵", dx: 100, dy: 275, textureKey: QUANTUM_PAPER_KEY, staticImage: true, tint: 0xffffff, scale: 0.52, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
+        { rank: "mob", label: "纠缠火花", dx: 0, dy: -170, textureKey: QUANTUM_PAPER_KEY, staticImage: true, tint: 0xc7f7ff, scale: 0.5, maxHp: 68, damage: 9, rewardExp: 12, rewardCredits: 1 }
+      ]
+    },
+    {
+      title: "区块链系",
+      color: 0xf3c75d,
+      units: [
+        { rank: "rare", label: "链铸重兽稀有精英", dx: -270, dy: 105, textureKey: BLOCKCHAIN_CHAINBEAST_KEY, staticImage: true, tint: 0xffffff, scale: 0.55, maxHp: 300, damage: 17, creditDefense: 5, rewardExp: 46, rewardCredits: 5, dropId: "ch1_drop_chain_forge_core", dropName: "链铸重核" },
+        { rank: "elite", label: "重锁精英", dx: 235, dy: 130, textureKey: BLOCKCHAIN_LOCK_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 175, damage: 13, rewardExp: 26, rewardCredits: 3, dropId: "ch1_drop_blockchain_lock", dropName: "验证锁片" },
+        { rank: "mob", label: "链爪小怪", dx: -110, dy: 270, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
+        { rank: "mob", label: "链爪小怪", dx: 65, dy: 285, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
+        { rank: "mob", label: "锁扣小怪", dx: 160, dy: -150, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: true, tint: 0xffe0a6, scale: 0.55, maxHp: 82, damage: 10, rewardExp: 13, rewardCredits: 1 }
+      ]
+    },
+    {
+      title: "AI Agent 系",
+      color: 0x8f72d6,
+      units: [
+        { rank: "rare", label: "Agent 协调稀有精英", dx: 270, dy: 105, textureKey: AIAGENT_CYBERMAGE_KEY, staticImage: true, tint: 0xffffff, scale: 0.66, maxHp: 320, damage: 18, creditDefense: 6, rewardExp: 48, rewardCredits: 5, dropId: "ch1_drop_agent_memory_core", dropName: "Agent 记忆核心" },
+        { rank: "elite", label: "数字猫精英", dx: -235, dy: 130, textureKey: AIAGENT_DIGITAL_CAT_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 190, damage: 14, rewardExp: 28, rewardCredits: 3, dropId: "ch1_drop_agent_tool_node", dropName: "工具节点" },
+        { rank: "mob", label: "工具调用小怪", dx: -135, dy: 275, textureKey: AIAGENT_BOTCAT_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 92, damage: 11, rewardExp: 14, rewardCredits: 1 },
+        { rank: "mob", label: "记忆碎片", dx: 45, dy: 285, textureKey: AIAGENT_BOTCAT_KEY, staticImage: true, tint: 0xcff7ff, scale: 0.56, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 },
+        { rank: "mob", label: "子任务幽影", dx: -35, dy: -165, textureKey: AIAGENT_BOTCAT_KEY, staticImage: true, tint: 0xd9c3ff, scale: 0.55, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 }
+      ]
+    }
+  ].forEach((wavePatch, index) => Object.assign(BOSS_SUMMON_WAVES[index], wavePatch));
 
   const app = {
     profile: null,
@@ -208,6 +390,8 @@
     selectedCharacterId: "lina",
     boss: { ...BOSS },
     bossRewardClaimed: false,
+    chapterOne: { protocolCards: 0, bossCleared: false },
+    chat: { messages: [] },
     lastHealAt: -Infinity,
     connected: false,
     touchMove: { active: false, dx: 0, dy: 0 }
@@ -215,6 +399,50 @@
 
   const $ = selector => document.querySelector(selector);
   let serverSaveTimer = null;
+  let textEntryGuardBound = false;
+
+  function clearChildren(node) {
+    while (node?.firstChild) node.removeChild(node.firstChild);
+  }
+
+  function isTextEntryTarget(target) {
+    if (!target || target === document || target === window) return false;
+    const tag = String(target.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select" || target.isContentEditable;
+  }
+
+  function plainObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value) ? { ...value } : {};
+  }
+
+  function stringArray(value) {
+    return Array.isArray(value) ? value.map(item => String(item)).filter(Boolean) : [];
+  }
+
+  function ensureProfileProgress(profile) {
+    const previousMaxEnergy = Math.max(1, Number(profile.maxEnergy || ENERGY_DEFAULT_MAX));
+    const incomingEnergy = Number(profile.energy ?? previousMaxEnergy);
+    profile.maxEnergy = Math.max(ENERGY_DEFAULT_MAX, previousMaxEnergy);
+    profile.energy = clamp(incomingEnergy, 0, profile.maxEnergy);
+    if (previousMaxEnergy < ENERGY_DEFAULT_MAX && incomingEnergy >= previousMaxEnergy) profile.energy = profile.maxEnergy;
+    profile.shield = Math.max(0, Number(profile.shield || 0));
+    profile.attackPower = Math.max(1, Number(profile.attackPower || BASE_STATS.attackPower));
+    profile.magicPower = Math.max(1, Number(profile.magicPower || BASE_STATS.magicPower));
+    profile.chapterId = String(profile.chapterId || "chapter1");
+    profile.mapId = String(profile.mapId || "ch1_m01_classroom_spawn");
+    profile.spawnId = String(profile.spawnId || "ch1_m01_spawn_player_start");
+    profile.flags = plainObject(profile.flags);
+    profile.quests = plainObject(profile.quests);
+    profile.inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
+    profile.equipment = Array.isArray(profile.equipment) ? profile.equipment : [];
+    profile.collections = plainObject(profile.collections);
+    profile.collections.protocolCards = stringArray(profile.collections.protocolCards);
+    return profile;
+  }
+
+  function isTextEntryActive() {
+    return isTextEntryTarget(document.activeElement);
+  }
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -258,13 +486,29 @@
       if (index >= 0) {
         roster[index] = {
           ...roster[index],
+          id: profile.id,
+          account: profile.account,
           name: profile.name,
           characterId: profile.characterId,
+          slot: profile.slot,
           level: profile.level,
           exp: profile.exp,
           credits: profile.credits,
           maxHp: profile.maxHp,
-          hp: profile.hp
+          hp: profile.hp,
+          maxEnergy: profile.maxEnergy,
+          energy: profile.energy,
+          shield: profile.shield,
+          attackPower: profile.attackPower,
+          magicPower: profile.magicPower,
+          chapterId: profile.chapterId,
+          mapId: profile.mapId,
+          spawnId: profile.spawnId,
+          flags: plainObject(profile.flags),
+          quests: plainObject(profile.quests),
+          inventory: Array.isArray(profile.inventory) ? profile.inventory : [],
+          equipment: Array.isArray(profile.equipment) ? profile.equipment : [],
+          collections: plainObject(profile.collections)
         };
         saveLocalRoster(roster);
         app.characters = roster;
@@ -290,7 +534,7 @@
 
   function normalizeProfile(profile = {}) {
     const characterId = getCharacter(profile.characterId).id;
-    return {
+    return ensureProfileProgress({
       id: String(profile.id || makeId()),
       account: String(profile.account || profile.username || ""),
       name: String(profile.name || profile.nickname || "同济学术喵").trim().slice(0, 12) || "同济学术喵",
@@ -300,8 +544,21 @@
       exp: Math.max(0, Number(profile.exp || BASE_STATS.exp)),
       credits: Math.max(0, Number(profile.credits || BASE_STATS.credits)),
       maxHp: Math.max(1, Number(profile.maxHp || BASE_STATS.maxHp)),
-      hp: clamp(Number(profile.hp ?? profile.maxHp ?? BASE_STATS.hp), 0, Math.max(1, Number(profile.maxHp || BASE_STATS.maxHp)))
-    };
+      hp: clamp(Number(profile.hp ?? profile.maxHp ?? BASE_STATS.hp), 0, Math.max(1, Number(profile.maxHp || BASE_STATS.maxHp))),
+      maxEnergy: profile.maxEnergy,
+      energy: profile.energy,
+      shield: profile.shield,
+      attackPower: profile.attackPower,
+      magicPower: profile.magicPower,
+      chapterId: profile.chapterId,
+      mapId: profile.mapId,
+      spawnId: profile.spawnId,
+      flags: profile.flags,
+      quests: profile.quests,
+      inventory: profile.inventory,
+      equipment: profile.equipment,
+      collections: profile.collections
+    });
   }
 
   async function apiRequest(path, options = {}) {
@@ -443,7 +700,7 @@
   }
 
   function showStage(name) {
-    ["auth", "server", "warehouse", "create"].forEach(stage => {
+    ["auth", "server", "warehouse", "create", "entryLoading"].forEach(stage => {
       const node = $(`#${stage}Stage`);
       if (node) node.hidden = stage !== name;
     });
@@ -610,7 +867,22 @@
         if (used.size >= CHARACTER_SLOT_LIMIT) throw new Error(`角色仓库已满（最多 ${CHARACTER_SLOT_LIMIT} 个角色）。`);
         let slot = 0;
         while (used.has(slot)) slot += 1;
-        roster.push({ slot, characterId: meta.id, name: getCharacter(meta.id).name, ...BASE_STATS });
+        roster.push({
+          id: makeId(),
+          account: "local-guest",
+          slot,
+          characterId: meta.id,
+          name: getCharacter(meta.id).name,
+          ...BASE_STATS,
+          chapterId: "chapter1",
+          mapId: "ch1_m01_classroom_spawn",
+          spawnId: "ch1_m01_spawn_player_start",
+          flags: {},
+          quests: {},
+          inventory: [],
+          equipment: [],
+          collections: { protocolCards: [] }
+        });
         saveLocalRoster(roster);
         app.characters = roster;
       } else {
@@ -651,13 +923,22 @@
   function renderHud() {
     if (!app.profile) return;
     $("#hudName").textContent = app.profile.name;
-    $("#attackButton").textContent = app.profile.characterId === "ayu" ? "J 光刃挥砍" : "J 晶光飞弹";
+    const attackLabel = $("#attackButton")?.querySelector("span");
+    if (attackLabel) attackLabel.textContent = app.profile.characterId === "ayu" ? "光刃挥砍" : "晶光飞弹";
     $("#levelText").textContent = `Lv.${app.profile.level}`;
     $("#creditText").textContent = `学分 ${app.profile.credits}`;
     $("#expText").textContent = `EXP ${app.profile.exp}`;
     const hpRatio = clamp(app.profile.hp / app.profile.maxHp, 0, 1);
     $("#hpBar").style.width = `${Math.round(hpRatio * 100)}%`;
-    $("#hpText").textContent = `${Math.max(0, Math.ceil(app.profile.hp))} / ${app.profile.maxHp}`;
+    const shieldText = app.profile.shield > 0 ? ` +${Math.ceil(app.profile.shield)}盾` : "";
+    $("#hpText").textContent = `${Math.max(0, Math.ceil(app.profile.hp))} / ${app.profile.maxHp}${shieldText}`;
+    const maxEnergy = Math.max(1, Number(app.profile.maxEnergy || ENERGY_DEFAULT_MAX));
+    const energy = clamp(Number(app.profile.energy ?? maxEnergy), 0, maxEnergy);
+    const energyBar = $("#energyBar");
+    const energyText = $("#energyText");
+    if (energyBar) energyBar.style.width = `${Math.round(energy / maxEnergy * 100)}%`;
+    if (energyText) energyText.textContent = `${Math.round(energy)} / ${Math.round(maxEnergy)}`;
+    renderChapterHud();
     saveProfile(app.profile);
   }
 
@@ -668,12 +949,264 @@
     node.classList.toggle("offline", !online);
   }
 
+  function chapterStateKey() {
+    return `${CHAPTER_ONE_KEY}:${app.profile?.id || "guest"}`;
+  }
+
+  function profileFlags() {
+    if (!app.profile) return {};
+    app.profile.flags = plainObject(app.profile.flags);
+    return app.profile.flags;
+  }
+
+  function hasFlag(flag) {
+    return !!flag && !!profileFlags()[flag];
+  }
+
+  function setFlag(flag, value = true) {
+    if (!flag || !app.profile) return;
+    profileFlags()[flag] = !!value;
+  }
+
+  function getProtocolCardIds() {
+    if (!app.profile) return [];
+    app.profile.collections = plainObject(app.profile.collections);
+    app.profile.collections.protocolCards = stringArray(app.profile.collections.protocolCards);
+    return app.profile.collections.protocolCards;
+  }
+
+  function syncChapterStateFromProfile() {
+    const cards = getProtocolCardIds();
+    app.chapterOne = {
+      protocolCards: cards.length,
+      bossCleared: hasFlag("ch1_final_boss_defeated") || hasFlag("ch1_complete")
+    };
+  }
+
+  function loadChapterState() {
+    if (!app.profile) return { protocolCards: 0, bossCleared: false };
+    try {
+      const raw = localStorage.getItem(chapterStateKey());
+      const data = raw ? JSON.parse(raw) : {};
+      const cards = getProtocolCardIds();
+      while (cards.length < clamp(Number(data.protocolCards || 0), 0, CHAPTER_ONE_PROTOCOL_CARD_GOAL)) {
+        const fallbackId = Object.keys(CHAPTER_ONE_CARD_NAMES)[cards.length] || `ch1_card_legacy_${cards.length + 1}`;
+        if (!cards.includes(fallbackId)) cards.push(fallbackId);
+        else break;
+      }
+      if (data.bossCleared) setFlag("ch1_final_boss_defeated");
+      syncChapterStateFromProfile();
+      return app.chapterOne;
+    } catch {
+      syncChapterStateFromProfile();
+      return app.chapterOne;
+    }
+  }
+
+  function saveChapterState() {
+    if (!app.profile) return;
+    syncChapterStateFromProfile();
+    localStorage.setItem(chapterStateKey(), JSON.stringify(app.chapterOne));
+    saveProfile(app.profile);
+  }
+
+  function getChapterTasks() {
+    return [
+      { label: "教室：检查课程协议板", done: hasFlag("ch1_intro_read_syllabus") },
+      { label: "教室：清理错乱笔记堆", done: hasFlag("ch1_m01_bug_notes_cleared") },
+      { label: "资料室：修复引用链", done: hasFlag("ch1_m02_copy_shadow_cleared") },
+      { label: "机房：完成路演压力测试", done: hasFlag("ch1_m03_small_boss_cleared") },
+      { label: `收集 ${CHAPTER_ONE_PROTOCOL_CARD_GOAL} 张协议卡`, done: getProtocolCardIds().length >= CHAPTER_ONE_PROTOCOL_CARD_GOAL },
+      { label: "开启陆教授 Boss 宝箱", done: !!app.chapterOne.bossCleared }
+    ];
+  }
+
+  function renderChapterHud() {
+    const list = $("#chapterTaskList");
+    if (!list) return;
+    syncChapterStateFromProfile();
+    clearChildren(list);
+    getChapterTasks().forEach(task => {
+      const item = document.createElement("div");
+      item.className = `chapter-task${task.done ? " done" : ""}`;
+      const dot = document.createElement("i");
+      dot.setAttribute("aria-hidden", "true");
+      const label = document.createElement("span");
+      label.textContent = task.label;
+      item.append(dot, label);
+      list.appendChild(item);
+    });
+    const count = clamp(Number(app.chapterOne.protocolCards || 0), 0, CHAPTER_ONE_PROTOCOL_CARD_GOAL);
+    const ratio = CHAPTER_ONE_PROTOCOL_CARD_GOAL ? count / CHAPTER_ONE_PROTOCOL_CARD_GOAL : 0;
+    $("#protocolCardText").textContent = `${count} / ${CHAPTER_ONE_PROTOCOL_CARD_GOAL}`;
+    $("#protocolCardBar").style.width = `${Math.round(ratio * 100)}%`;
+  }
+
+  function collectProtocolCard(cardId = "") {
+    const cards = getProtocolCardIds();
+    const fallbackIds = Object.keys(CHAPTER_ONE_CARD_NAMES);
+    const finalId = cardId || fallbackIds[cards.length] || `ch1_card_runtime_${cards.length + 1}`;
+    if (cards.includes(finalId)) return false;
+    if (cards.length >= CHAPTER_ONE_PROTOCOL_CARD_GOAL && !CHAPTER_ONE_CARD_NAMES[finalId]) return false;
+    cards.push(finalId);
+    setFlag(`${finalId}_collected`);
+    saveChapterState();
+    renderChapterHud();
+    return true;
+  }
+
+  function grantExperience(amount = 0) {
+    if (!app.profile) return 0;
+    let gainedLevels = 0;
+    app.profile.exp = Math.max(0, Number(app.profile.exp || 0) + Math.max(0, Number(amount) || 0));
+    while (app.profile.exp >= 100) {
+      app.profile.exp -= 100;
+      app.profile.level += 1;
+      app.profile.maxHp += 18;
+      app.profile.hp = app.profile.maxHp;
+      app.profile.attackPower = Math.max(1, Number(app.profile.attackPower || BASE_STATS.attackPower) + 3);
+      app.profile.magicPower = Math.max(1, Number(app.profile.magicPower || BASE_STATS.magicPower) + 3);
+      gainedLevels += 1;
+    }
+    return gainedLevels;
+  }
+
+  function markChapterBossCleared() {
+    setFlag("ch1_final_boss_defeated");
+    setFlag("ch1_complete");
+    saveChapterState();
+    renderChapterHud();
+  }
+
+  function normalizeChatText(value) {
+    return String(value || "").replace(/\s+/g, " ").trim().slice(0, CHAT_TEXT_LIMIT);
+  }
+
+  function chatTime(value) {
+    const date = new Date(Number(value) || Date.now());
+    return date.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function normalizeChatEntry(entry = {}, variant = "message") {
+    const player = entry.player || {};
+    const playerId = String(entry.playerId || entry.senderId || player.id || "");
+    return {
+      id: String(entry.id || makeId()),
+      playerId,
+      name: String(entry.name || entry.sender || player.name || (variant === "system" ? "系统" : "同学")).slice(0, 16),
+      text: normalizeChatText(entry.text || entry.message || ""),
+      createdAt: Number(entry.createdAt || entry.time || Date.now()),
+      variant,
+      self: !!playerId && !!app.profile?.id && playerId === app.profile.id
+    };
+  }
+
+  function appendChatEntry(entry) {
+    const list = $("#chatMessages");
+    if (!list || !entry.text) return;
+    if (entry.id && app.chat.messages.some(message => message.id === entry.id)) return;
+    app.chat.messages.push(entry);
+    if (app.chat.messages.length > CHAT_HISTORY_LIMIT) app.chat.messages.shift();
+
+    const line = document.createElement("article");
+    line.className = `chat-line ${entry.variant || "message"}${entry.self ? " self" : ""}`;
+
+    const meta = document.createElement("div");
+    meta.className = "chat-meta";
+    const name = document.createElement("span");
+    name.className = "chat-name";
+    name.textContent = entry.self ? "我" : entry.name;
+    const time = document.createElement("span");
+    time.className = "chat-time";
+    time.textContent = chatTime(entry.createdAt);
+    meta.append(name, time);
+
+    const text = document.createElement("p");
+    text.className = "chat-text";
+    text.textContent = entry.text;
+    line.append(meta, text);
+    list.appendChild(line);
+    while (list.childElementCount > CHAT_HISTORY_LIMIT) list.removeChild(list.firstElementChild);
+    list.scrollTop = list.scrollHeight;
+  }
+
+  function renderChatHistory(entries) {
+    const list = $("#chatMessages");
+    if (!list) return;
+    app.chat.messages = [];
+    clearChildren(list);
+    (Array.isArray(entries) ? entries : []).slice(-CHAT_HISTORY_LIMIT).forEach(entry => {
+      appendChatEntry(normalizeChatEntry(entry));
+    });
+  }
+
+  function renderChatSystem(text) {
+    appendChatEntry(normalizeChatEntry({ text, name: "系统" }, "system"));
+  }
+
+  function renderChatError(text) {
+    appendChatEntry(normalizeChatEntry({ text: text || "公共频道暂时不可用", name: "系统" }, "error"));
+  }
+
+  function renderInteractionPrompt(text = "") {
+    const node = $("#interactionPrompt");
+    if (!node) return;
+    node.textContent = text;
+    node.classList.toggle("open", !!text);
+    node.setAttribute("aria-hidden", String(!text));
+  }
+
+  function handleChatMessage(payload) {
+    const entry = payload?.chat || payload?.message || payload;
+    appendChatEntry(normalizeChatEntry(typeof entry === "string" ? { text: entry } : entry));
+  }
+
+  function updateChatControls() {
+    const button = $("#chatSendButton");
+    if (button) button.disabled = !app.profile;
+  }
+
+  function submitChat() {
+    const input = $("#chatInput");
+    if (!input) return;
+    const text = normalizeChatText(input.value);
+    if (!text) return;
+    if (!app.profile) {
+      renderChatError("请先进入角色后再发送公共频道消息。");
+      return;
+    }
+    const sent = app.connected ? app.multiplayer?.sendChat(text) : null;
+    if (!sent) {
+      renderChatError("公共频道未连接，消息未发送。");
+      return;
+    }
+    input.value = "";
+  }
+
+  function resetChat() {
+    app.chat.messages = [];
+    clearChildren($("#chatMessages"));
+    renderChatSystem("欢迎来到同舟星愿公共频道。");
+    updateChatControls();
+  }
+
   function renderPeers(peers) {
     const list = $("#peerList");
     const values = Array.from(peers.values());
-    list.innerHTML = values.length
-      ? values.map(peer => `<div class="peer"><span>${peer.name}</span><b>${getCharacter(peer.characterId).name}</b></div>`).join("")
-      : `<div class="peer"><span>等待同学加入同一房间</span><b>0 online</b></div>`;
+    clearChildren(list);
+    const entries = values.length
+      ? values
+      : [{ name: "等待同学加入同一房间", characterId: "", status: "0 online" }];
+    entries.forEach(peer => {
+      const row = document.createElement("div");
+      row.className = "peer";
+      const name = document.createElement("span");
+      name.textContent = String(peer.name || "同学").slice(0, 16);
+      const role = document.createElement("b");
+      role.textContent = peer.status || getCharacter(peer.characterId).name;
+      row.append(name, role);
+      list.appendChild(row);
+    });
   }
 
   function renderBossHud() {
@@ -682,7 +1215,232 @@
     panel.setAttribute("aria-hidden", String(!app.boss.active));
     const ratio = clamp(app.boss.hp / app.boss.maxHp, 0, 1);
     $("#bossHpBar").style.width = `${Math.round(ratio * 100)}%`;
-    $("#bossHpText").textContent = `${Math.max(0, Math.ceil(app.boss.hp))} / ${app.boss.maxHp}`;
+    const wave = Number(app.boss.waveIndex || 0) + 1;
+    const total = Number(app.boss.wavesTotal || BOSS_SUMMON_WAVES.length);
+    $("#bossHpText").textContent = app.boss.active
+      ? `第 ${wave}/${total} 波 ${Math.max(0, Math.ceil(app.boss.hp))} / ${app.boss.maxHp}`
+      : `${Math.max(0, Math.ceil(app.boss.hp))} / ${app.boss.maxHp}`;
+  }
+
+  function setPanelCollapsed(panelId, collapsed) {
+    const panel = $(`#${panelId}`);
+    const button = document.querySelector(`[data-panel-toggle="${panelId}"]`);
+    if (!panel) return;
+    panel.classList.toggle("collapsed", !!collapsed);
+    panel.setAttribute("aria-expanded", String(!collapsed));
+    if (button) button.setAttribute("aria-pressed", String(!collapsed));
+  }
+
+  function initializeHudPanels() {
+    setPanelCollapsed("chapterHud", true);
+    setPanelCollapsed("publicChat", true);
+    setPanelCollapsed("minimapPanel", false);
+  }
+
+  function bindPanelToggles() {
+    document.querySelectorAll("[data-panel-toggle]").forEach(button => {
+      button.addEventListener("click", () => {
+        const panelId = button.getAttribute("data-panel-toggle");
+        const panel = panelId ? $(`#${panelId}`) : null;
+        if (!panel) return;
+        setPanelCollapsed(panelId, !panel.classList.contains("collapsed"));
+      });
+    });
+  }
+
+  function minimapFlagsMet(flags = []) {
+    return (Array.isArray(flags) ? flags : []).every(flag => hasFlag(flag));
+  }
+
+  function minimapDoneByFlags(flags = []) {
+    const list = Array.isArray(flags) ? flags : [];
+    return list.length > 0 && list.every(flag => hasFlag(flag));
+  }
+
+  function minimapEncounterDone(scene, encounterId) {
+    return !!scene?.getEncounter?.(encounterId)?.setFlagsOnClear?.some(flag => hasFlag(flag));
+  }
+
+  function collectMinimapMarkers(scene) {
+    if (!scene?.mapData) return [];
+    const markers = [];
+    (scene.mapData.interactionNodes || []).forEach(node => {
+      if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+      if (node.type === "teleport") {
+        markers.push({
+          type: "exit",
+          x: node.x,
+          y: node.y,
+          label: node.label || "出口",
+          locked: !minimapFlagsMet(node.requiresFlags),
+          done: minimapDoneByFlags(node.setFlags)
+        });
+        return;
+      }
+      if (node.type === "spawn") {
+        const done = minimapEncounterDone(scene, node.spawnEncounterId);
+        markers.push({
+          type: "battle",
+          x: node.x,
+          y: node.y,
+          label: node.label || "战斗",
+          locked: !minimapFlagsMet(node.requiresFlags),
+          done
+        });
+        return;
+      }
+      markers.push({
+        type: "task",
+        x: node.x,
+        y: node.y,
+        label: node.label || "任务",
+        locked: !minimapFlagsMet(node.requiresFlags),
+        done: hasFlag(`${node.id}_done`) || minimapDoneByFlags(node.setFlags)
+      });
+    });
+    (scene.mapData.exitPoints || []).forEach(point => {
+      if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+      markers.push({
+        type: "exit",
+        x: point.x,
+        y: point.y,
+        label: "出口",
+        locked: !minimapFlagsMet(point.requiresFlags),
+        done: minimapDoneByFlags(point.setFlags)
+      });
+    });
+    (scene.mapData.enemySpawns || []).forEach(point => {
+      if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+      if (point.group && minimapEncounterDone(scene, point.group)) return;
+      markers.push({
+        type: "battle",
+        x: point.x,
+        y: point.y,
+        label: "小怪",
+        locked: !!point.activeAfter && !hasFlag(point.activeAfter),
+        done: false
+      });
+    });
+    (scene.leafSlimes?.getChildren?.() || []).forEach(slime => {
+      if (!slime?.active || slime.state === "dead" || slime.state === "vanish") return;
+      markers.push({
+        type: "battle",
+        x: slime.x,
+        y: slime.y,
+        label: slime.displayLabel || "敌人",
+        locked: false,
+        done: false
+      });
+    });
+    if (app.boss.active && app.boss.hp > 0) {
+      markers.push({ type: "boss", x: app.boss.x, y: app.boss.y, label: "教授考核", locked: false, done: false });
+    } else if (scene.mapData.chapterBossPoint && !hasFlag("ch1_final_boss_defeated")) {
+      const point = scene.mapData.chapterBossPoint;
+      markers.push({
+        type: "boss",
+        x: point.x,
+        y: point.y,
+        label: "教授考核",
+        locked: !minimapFlagsMet(point.requiresFlags),
+        done: false
+      });
+    }
+    if (scene.bossChest?.visible) {
+      markers.push({ type: "chest", x: scene.bossChest.x, y: scene.bossChest.y, label: "Boss宝箱", locked: false, done: false });
+    }
+    return markers;
+  }
+
+  function drawMinimapMarker(ctx, x, y, marker) {
+    const color = marker.done ? MINIMAP_COLORS.done : (MINIMAP_COLORS[marker.type] || MINIMAP_COLORS.task);
+    const radius = marker.type === "player" ? 5 : marker.type === "boss" ? 5 : 4;
+    ctx.save();
+    ctx.globalAlpha = marker.done ? 0.55 : marker.locked ? 0.72 : 1;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = marker.locked ? MINIMAP_COLORS.locked : "rgba(255,255,255,.9)";
+    ctx.lineWidth = marker.type === "player" ? 2.2 : 1.6;
+    ctx.beginPath();
+    if (marker.type === "exit") {
+      ctx.rect(x - radius, y - radius, radius * 2, radius * 2);
+    } else if (marker.type === "chest") {
+      ctx.roundRect?.(x - 5, y - 3.5, 10, 7, 2);
+      if (!ctx.roundRect) ctx.rect(x - 5, y - 3.5, 10, 7);
+    } else {
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.stroke();
+    if (marker.type === "boss" && !marker.done) {
+      ctx.strokeStyle = "rgba(243,199,93,.42)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 9, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function renderMinimap(scene = app.scene) {
+    const canvas = $("#minimapCanvas");
+    if (!canvas || !scene?.worldWidth || !scene?.worldHeight) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const width = canvas.width;
+    const height = canvas.height;
+    const pad = 9;
+    const scale = Math.min((width - pad * 2) / scene.worldWidth, (height - pad * 2) / scene.worldHeight);
+    const offsetX = (width - scene.worldWidth * scale) / 2;
+    const offsetY = (height - scene.worldHeight * scale) / 2;
+    const mapX = value => offsetX + value * scale;
+    const mapY = value => offsetY + value * scale;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(51, 67, 64, .16)";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(244, 226, 196, .92)";
+    ctx.fillRect(offsetX, offsetY, scene.worldWidth * scale, scene.worldHeight * scale);
+
+    const minimapImageKey = scene.mapData?.minimapImage?.key || scene.mapData?.background?.key || "";
+    if (minimapImageKey && scene.textures?.exists(minimapImageKey)) {
+      const sourceImage = scene.textures.get(minimapImageKey)?.getSourceImage?.();
+      if (sourceImage) {
+        ctx.save();
+        ctx.globalAlpha = 0.88;
+        ctx.drawImage(sourceImage, offsetX, offsetY, scene.worldWidth * scale, scene.worldHeight * scale);
+        ctx.restore();
+      }
+    }
+
+    ctx.fillStyle = "rgba(89, 121, 73, .22)";
+    (scene.mapData?.props || []).forEach(prop => {
+      if (!Number.isFinite(prop.x) || !Number.isFinite(prop.y)) return;
+      const size = clamp((prop.scale || 1) * 6, 3, 10);
+      ctx.fillRect(mapX(prop.x) - size / 2, mapY(prop.y) - size / 2, size, size);
+    });
+
+    ctx.fillStyle = "rgba(66, 51, 44, .24)";
+    (scene.mapData?.obstacles || []).forEach(item => {
+      ctx.fillRect(mapX(item.x), mapY(item.y), Math.max(1, item.w * scale), Math.max(1, item.h * scale));
+    });
+
+    const cam = scene.cameras?.main;
+    if (cam) {
+      ctx.strokeStyle = "rgba(45, 145, 166, .36)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(mapX(cam.scrollX), mapY(cam.scrollY), cam.width * scale, cam.height * scale);
+    }
+
+    collectMinimapMarkers(scene).forEach(marker => drawMinimapMarker(ctx, mapX(marker.x), mapY(marker.y), marker));
+    if (scene.actor) drawMinimapMarker(ctx, mapX(scene.actor.x), mapY(scene.actor.y), { type: "player" });
+
+    const status = $("#minimapStatus");
+    if (status) {
+      status.textContent = hasFlag("ch1_complete")
+        ? "章节完成"
+        : app.boss.active
+          ? "教授考核中"
+          : "任务导航";
+    }
   }
 
   let toastTimer = null;
@@ -694,11 +1452,100 @@
     toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2400);
   }
 
+  let entryLoadingState = null;
+  function setEntryLoadingDom(percent, label) {
+    const bar = $("#entryLoadingBar");
+    const text = $("#entryLoadingText");
+    const value = $("#entryLoadingPercent");
+    const progress = clamp(percent, 0, 100);
+    if (bar) bar.style.width = `${progress.toFixed(0)}%`;
+    if (text && label) text.textContent = label;
+    if (value) value.textContent = `${progress.toFixed(0)}%`;
+  }
+
+  function beginEntryLoading() {
+    window.clearInterval(entryLoadingState?.timer);
+    window.clearTimeout(entryLoadingState?.finishTimer);
+    entryLoadingState = {
+      startedAt: performance.now(),
+      realProgress: 0,
+      timer: null,
+      finishTimer: null
+    };
+    showStage("entryLoading");
+    $("#startOverlay")?.classList.remove("hidden");
+    setEntryLoadingDom(0, "正在开启学院传送协议");
+    entryLoadingState.timer = window.setInterval(() => {
+      const state = entryLoadingState;
+      if (!state) return;
+      const fakeProgress = Math.min(92, (performance.now() - state.startedAt) / ENTRY_LOADING_MIN_MS * 92);
+      const realProgress = Math.min(96, state.realProgress * 96);
+      const progress = Math.max(fakeProgress, realProgress);
+      setEntryLoadingDom(progress, state.realProgress >= 1 ? "正在同步玩家出生点" : "正在加载地图、角色与怪物资产");
+    }, 80);
+  }
+
+  function setEntryLoadingProgress(value) {
+    if (!entryLoadingState) return;
+    entryLoadingState.realProgress = clamp(Number(value) || 0, 0, 1);
+  }
+
+  function finishEntryLoadingWhenReady() {
+    const state = entryLoadingState;
+    if (!state) return;
+    state.realProgress = 1;
+    const wait = Math.max(0, ENTRY_LOADING_MIN_MS - (performance.now() - state.startedAt));
+    window.clearTimeout(state.finishTimer);
+    state.finishTimer = window.setTimeout(() => {
+      if (entryLoadingState !== state) return;
+      window.clearInterval(state.timer);
+      setEntryLoadingDom(100, "加载完成");
+      $("#startOverlay")?.classList.add("hidden");
+      entryLoadingState = null;
+      app.audio.switchMode("game");
+    }, wait);
+  }
+
+  let mapLoadingTimer = null;
+  function showMapLoading(title = "正在穿过传送门") {
+    const overlay = $("#mapLoadingOverlay");
+    const label = $("#mapLoadingTitle");
+    const bar = $("#mapLoadingBar");
+    if (!overlay || !bar) return;
+    window.clearTimeout(mapLoadingTimer);
+    if (label) label.textContent = title;
+    bar.style.width = "8%";
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => { bar.style.width = "78%"; });
+  }
+
+  function hideMapLoading() {
+    const overlay = $("#mapLoadingOverlay");
+    const bar = $("#mapLoadingBar");
+    if (!overlay || !bar) return;
+    window.clearTimeout(mapLoadingTimer);
+    bar.style.width = "100%";
+    mapLoadingTimer = window.setTimeout(() => {
+      overlay.classList.remove("open");
+      overlay.setAttribute("aria-hidden", "true");
+    }, 220);
+  }
+
   function renderReviveDialog(open) {
     const dialog = $("#reviveDialog");
     if (!dialog) return;
     dialog.classList.toggle("open", !!open);
     dialog.setAttribute("aria-hidden", String(!open));
+  }
+
+  function renderChapterClearPanel(open) {
+    const panel = $("#chapterClearPanel");
+    if (!panel) return;
+    const cards = $("#chapterClearCards");
+    if (cards) cards.textContent = `${getProtocolCardIds().length} / ${CHAPTER_ONE_PROTOCOL_CARD_GOAL}`;
+    panel.classList.toggle("open", !!open);
+    panel.setAttribute("aria-hidden", String(!open));
   }
 
   function getDefaultWsUrl() {
@@ -776,7 +1623,10 @@
 
     toggle(userGesture = false) {
       this.enabled = !this.enabled;
-      $("#musicToggle").textContent = this.enabled ? "音乐 开" : "音乐 关";
+      const musicButton = $("#musicToggle");
+      const musicLabel = musicButton?.querySelector("span");
+      if (musicLabel) musicLabel.textContent = this.enabled ? "音乐开" : "音乐关";
+      else if (musicButton) musicButton.textContent = this.enabled ? "音乐 开" : "音乐 关";
       if (this.enabled) this.start(this.mode, userGesture);
       else this.stop();
     }
@@ -953,6 +1803,12 @@
       this.tone(523.25, 0.18, "sine", 0.06);
       window.setTimeout(() => this.tone(659.25, 0.18, "sine", 0.045), 80);
     }
+    enterGame() {
+      this.sweep(196, 880, 0.42, "triangle", 0.06);
+      window.setTimeout(() => this.tone(523.25, 0.18, "sine", 0.052), 90);
+      window.setTimeout(() => this.tone(783.99, 0.22, "triangle", 0.046), 180);
+      window.setTimeout(() => this.noise(0.28, 0.028, "highpass", 1450), 260);
+    }
   }
 
   class MultiplayerClient {
@@ -1017,12 +1873,27 @@
         flipX: !!actor?.flipX,
         action: app.scene?.networkAction || "idle",
         hp: app.profile.hp,
-        maxHp: app.profile.maxHp
+        maxHp: app.profile.maxHp,
+        shield: app.profile.shield || 0
       };
     }
 
     sendState() {
       this.send({ type: "update", player: this.currentPlayerState() });
+    }
+
+    sendChat(text) {
+      const cleaned = normalizeChatText(text);
+      if (!cleaned || this.ws?.readyState !== WebSocket.OPEN) return null;
+      const chat = {
+        id: makeId(),
+        playerId: app.profile.id,
+        name: app.profile.name,
+        text: cleaned,
+        createdAt: Date.now()
+      };
+      this.send({ type: "chatSend", id: chat.id, text: cleaned });
+      return chat;
     }
 
     sendBossStart(boss) {
@@ -1066,10 +1937,17 @@
         (message.peers || []).forEach(peer => {
           if (peer.id !== app.profile.id) this.peers.set(peer.id, peer);
         });
+        if (Array.isArray(message.chat)) renderChatHistory(message.chat);
         if (message.boss) syncBossState(message.boss);
         if (Array.isArray(message.slimes)) app.scene?.syncSlimes(message.slimes);
         renderPeers(this.peers);
         app.scene?.syncAllPeers(this.peers);
+      }
+      if (message.type === "chatMessage") {
+        handleChatMessage(message);
+      }
+      if (message.type === "chatError") {
+        renderChatError(message.text || message.error);
       }
       if (message.type === "peerJoined" || message.type === "peerUpdated") {
         const peer = message.player;
@@ -1101,7 +1979,6 @@
     app.boss = { ...app.boss, ...boss };
     renderBossHud();
     app.scene?.syncBoss();
-    if (wasActive && !app.boss.active && app.boss.hp <= 0) claimBossReward();
   }
 
   class PlayScene extends Phaser.Scene {
@@ -1112,14 +1989,20 @@
       this.lastShotAt = 0;
       this.remotePlayers = new Map();
       this.syncedSlimeIds = new Set();
+      this.bossSummonIds = new Set();
+      this.bossWavePending = false;
     }
 
     preload() {
+      this.load.on("progress", value => setEntryLoadingProgress(value));
       this.load.image(MAP_TILESET_KEY, MAP_TILESET_PATH);
       this.load.image(MAP_PROP_ATLAS_KEY, MAP_PROP_ATLAS_PATH);
       this.load.image(MAP_MACRO_PROP_ATLAS_KEY, MAP_MACRO_PROP_ATLAS_PATH);
       this.load.tilemapTiledJSON(MAP_TILEMAP_KEY, MAP_DATA_PATH);
       this.load.json(MAP_DATA_KEY, MAP_DATA_PATH);
+      this.load.json(CHAPTER_ONE_MAP_DATA_KEY, CHAPTER_ONE_MAP_DATA_PATH);
+      this.load.json(CHAPTER_ONE_MAPS_KEY, CHAPTER_ONE_MAPS_PATH);
+      CHAPTER_ONE_MAP_BACKGROUNDS.forEach(item => this.load.image(item.key, item.path));
       this.load.spritesheet(PROJECTILE_TEXTURE_KEY, PROJECTILE_ATLAS, {
         frameWidth: PROJECTILE_FRAME_SIZE,
         frameHeight: PROJECTILE_FRAME_SIZE
@@ -1137,6 +2020,15 @@
         frameHeight: LEAF_SLIME_FRAME_SIZE
       });
       this.load.image(BOSS_KEY, BOSS_IMAGE);
+      CHAPTER_ONE_ENEMY_IMAGES.forEach(item => this.load.image(item.key, item.path));
+      this.load.spritesheet(MAP_PORTAL_KEY, MAP_PORTAL_IMAGE, {
+        frameWidth: MAP_PORTAL_FRAME_WIDTH,
+        frameHeight: MAP_PORTAL_FRAME_HEIGHT
+      });
+      this.load.spritesheet(BOSS_VOID_PORTAL_KEY, BOSS_VOID_PORTAL_IMAGE, {
+        frameWidth: BOSS_VOID_PORTAL_FRAME_WIDTH,
+        frameHeight: BOSS_VOID_PORTAL_FRAME_HEIGHT
+      });
       CHARACTERS.forEach(character => {
         this.load.spritesheet(character.id, character.sprite, {
           frameWidth: FRAME_SIZE,
@@ -1149,9 +2041,16 @@
     create() {
       app.scene = this;
       this.cameras.main.roundPixels = true;
-      this.mapData = this.cache.json.get(MAP_DATA_KEY) || {};
+      this.baseMapData = this.cache.json.get(MAP_DATA_KEY) || {};
+      this.chapterMapData = this.cache.json.get(CHAPTER_ONE_MAP_DATA_KEY) || {};
+      this.chapterMapRegistry = this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {};
+      this.mapData = this.composeRuntimeMapData();
       this.remotePlayers = new Map();
       this.syncedSlimeIds = new Set();
+      this.bossSummonIds = new Set();
+      this.bossWavePending = false;
+      this.activeInteraction = null;
+      this.encounterRewards = new Set();
       this.selectedEquipment = EQUIPMENT[0];
       this.facing = DIRECTIONS[2];
       this.lastAimVector = directionVector(this.facing);
@@ -1166,33 +2065,36 @@
       this.isShowingCatIdleFrame = false;
       this.primaryHold = null;
       this.chargeHoldTimer = null;
-      this.lastUltimateAt = -ULTIMATE_COOLDOWN;
+      this.lastUltimateAt = 0;
 
       this.renderTileMap();
       this.prepareMapPropFrames();
       this.renderMapProps();
+      this.renderForegroundOverlays();
       this.obstacleGroup = this.physics.add.staticGroup();
       this.drawObstacles();
       this.prepareCharacterAnimations();
       this.prepareProjectileAnimations();
       this.prepareUltimateAnimations();
       this.prepareLeafSlimeAnimations();
+      this.preparePortalAnimations();
       this.ensureProjectileHitboxTexture();
+      this.ensureBossChestTexture();
 
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.leafSlimes = this.physics.add.group({ allowGravity: false });
       this.projectileGraphics = this.add.graphics().setDepth(40);
-      this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,J,K,H,L,U,I,C,X,SPACE");
+      this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,K,H,L,U,I,C,X,SPACE");
 
       this.createActor();
       this.createBoss();
+      this.createInteractionNodes();
       this.spawnMapLeafSlimes();
 
       this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
-      this.physics.add.collider(this.actor, this.obstacleGroup);
-      this.physics.add.collider(this.leafSlimes, this.obstacleGroup);
-      this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => this.destroyProjectile(projectile, true));
-      this.physics.add.overlap(this.projectiles, this.leafSlimes, (projectile, enemy) => this.handleLeafSlimeProjectileHit(projectile, enemy));
+      this.bindMapColliders();
+      this.projectileObstacleCollider = this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => this.destroyProjectile(projectile, true));
+      this.projectileSlimeOverlap = this.physics.add.overlap(this.projectiles, this.leafSlimes, (projectile, enemy) => this.handleLeafSlimeProjectileHit(projectile, enemy));
       this.bindActorLeafSlimeCollision();
 
       this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
@@ -1214,10 +2116,77 @@
       }
       renderHud();
       renderBossHud();
-      showToast("WASD 移动，J 攻击，L 变身，C 增加怪物，X 生成 Boss，I 死亡/复活");
+      renderMinimap(this);
+      finishEntryLoadingWhenReady();
+      showToast("WASD 移动，E 交互，J 攻击，L 变身；完成协议卡后挑战 Boss");
+    }
+
+    getChapterMapRegistry() {
+      return this.chapterMapRegistry?.maps || {};
+    }
+
+    getCurrentMapId() {
+      const maps = this.getChapterMapRegistry();
+      const requested = app.profile?.mapId || this.chapterMapRegistry?.defaultMapId || "ch1_m01_classroom_spawn";
+      return maps[requested] ? requested : (this.chapterMapRegistry?.defaultMapId || "ch1_m01_classroom_spawn");
+    }
+
+    composeRuntimeMapData(mapId = this.getCurrentMapId()) {
+      const maps = this.getChapterMapRegistry();
+      if (maps[mapId]) return { ...maps[mapId] };
+      const chapter = this.chapterMapData || {};
+      return {
+        ...this.baseMapData,
+        ...chapter,
+        layers: this.baseMapData.layers,
+        tilesets: this.baseMapData.tilesets,
+        width: this.baseMapData.width,
+        height: this.baseMapData.height,
+        tilewidth: this.baseMapData.tilewidth,
+        tileheight: this.baseMapData.tileheight,
+        propFrames: chapter.propFrames || this.baseMapData.propFrames || {},
+        macroPropFrames: chapter.macroPropFrames || this.baseMapData.macroPropFrames || {},
+        props: chapter.props || this.baseMapData.props || [],
+        obstacles: chapter.obstacles || this.baseMapData.obstacles || [],
+        enemySpawns: chapter.enemySpawns || this.baseMapData.enemySpawns || [],
+        spawn: chapter.spawn || this.baseMapData.spawn
+      };
     }
 
     renderTileMap() {
+      if (Array.isArray(this.mapData?.background?.chunks) && this.mapData.background.chunks.length) {
+        const chunks = this.mapData.background.chunks;
+        this.mapBackgroundChunks = [];
+        chunks.forEach(chunk => {
+          const image = this.add.image(chunk.x || 0, chunk.y || 0, chunk.key)
+            .setOrigin(0, 0)
+            .setDepth(-20);
+          image.setDisplaySize(Number(chunk.width) || image.width, Number(chunk.height) || image.height);
+          this.mapBackgroundChunks.push(image);
+        });
+        this.mapLayers = [];
+        this.tileMap = null;
+        this.worldWidth = Number(this.mapData.background.width)
+          || Math.max(...chunks.map(chunk => (Number(chunk.x) || 0) + (Number(chunk.width) || 0)));
+        this.worldHeight = Number(this.mapData.background.height)
+          || Math.max(...chunks.map(chunk => (Number(chunk.y) || 0) + (Number(chunk.height) || 0)));
+        return;
+      }
+      if (this.mapData?.background?.key) {
+        const bgKey = this.mapData.background.key;
+        const bg = this.add.image(0, 0, bgKey)
+          .setOrigin(0, 0)
+          .setDepth(-20);
+        const targetWidth = Number(this.mapData.background.width) || bg.width || 1024;
+        const targetHeight = Number(this.mapData.background.height) || bg.height || 1024;
+        bg.setDisplaySize(targetWidth, targetHeight);
+        this.mapBackground = bg;
+        this.mapLayers = [];
+        this.tileMap = null;
+        this.worldWidth = targetWidth;
+        this.worldHeight = targetHeight;
+        return;
+      }
       const tileMap = this.make.tilemap({ key: MAP_TILEMAP_KEY });
       const tilesetName = this.mapData?.tilesets?.[0]?.name || "zhonghe-plaza-ground-tileset-v1";
       const tileset = tileMap.addTilesetImage(tilesetName, MAP_TILESET_KEY, MAP_TILE_SIZE, MAP_TILE_SIZE);
@@ -1266,12 +2235,250 @@
       });
     }
 
+    findBackgroundChunkForRect(item) {
+      const chunks = this.mapData?.background?.chunks || [];
+      return chunks.find(chunk => {
+        const x = Number(chunk.x) || 0;
+        const y = Number(chunk.y) || 0;
+        const w = Number(chunk.width) || 0;
+        const h = Number(chunk.height) || 0;
+        return item.x >= x && item.y >= y && item.x + item.w <= x + w && item.y + item.h <= y + h;
+      });
+    }
+
+    renderForegroundOverlays() {
+      this.foregroundOverlays = [];
+      (this.mapData?.foregroundOverlays || []).forEach(item => {
+        if (!Number.isFinite(item.x) || !Number.isFinite(item.y) || !Number.isFinite(item.w) || !Number.isFinite(item.h)) return;
+        const chunk = this.findBackgroundChunkForRect(item);
+        const textureKey = item.textureKey || chunk?.key || this.mapData?.background?.key;
+        if (!textureKey || !this.textures.exists(textureKey)) return;
+        const sourceX = Number.isFinite(item.sourceX) ? item.sourceX : item.x - (Number(chunk?.x) || 0);
+        const sourceY = Number.isFinite(item.sourceY) ? item.sourceY : item.y - (Number(chunk?.y) || 0);
+        const overlay = this.add.image(item.x, item.y, textureKey)
+          .setOrigin(0, 0)
+          .setCrop(sourceX, sourceY, item.w, item.h)
+          .setDisplaySize(item.w, item.h)
+          .setDepth(Number(item.depth) || item.y + item.h + 40)
+          .setAlpha(Number(item.alpha) || 1);
+        this.foregroundOverlays.push(overlay);
+      });
+    }
+
     drawObstacles() {
       (this.mapData.obstacles || []).forEach(item => {
         const zone = this.add.zone(item.x + item.w / 2, item.y + item.h / 2, item.w, item.h);
         this.physics.add.existing(zone, true);
         this.obstacleGroup.add(zone);
       });
+    }
+
+    bindMapColliders() {
+      this.actorObstacleCollider?.destroy?.();
+      this.slimeObstacleCollider?.destroy?.();
+      if (this.actor && this.obstacleGroup) this.actorObstacleCollider = this.physics.add.collider(this.actor, this.obstacleGroup);
+      if (this.leafSlimes && this.obstacleGroup) this.slimeObstacleCollider = this.physics.add.collider(this.leafSlimes, this.obstacleGroup);
+    }
+
+    getFootPoint(entity = this.actor) {
+      return { x: entity?.x || 0, y: entity?.y || 0 };
+    }
+
+    flagRequirementsMet(required = []) {
+      return (required || []).every(flag => hasFlag(flag));
+    }
+
+    getDialogue(id) {
+      return (this.mapData.dialogues || []).find(item => item.id === id) || null;
+    }
+
+    showDialogue(id, fallback = "") {
+      const dialogue = this.getDialogue(id);
+      const line = dialogue?.lines?.[0] || fallback;
+      if (line) showToast(`${dialogue?.speaker || "提示"}：${line}`);
+    }
+
+    nodeDoneFlag(node) {
+      return `${node.id}_done`;
+    }
+
+    createInteractionNodes() {
+      const seen = new Set();
+      this.interactionNodes = [
+        ...(Array.isArray(this.mapData.interactionNodes) ? this.mapData.interactionNodes : []),
+        ...(Array.isArray(this.mapData.exitPoints) ? this.mapData.exitPoints : [])
+      ].filter(node => {
+        const id = String(node.id || `${node.type}:${node.x}:${node.y}`);
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+      this.interactionMarkers = [];
+      this.interactionNodes.forEach(node => {
+        const marker = node.type === "teleport"
+          ? this.add.sprite(node.x, node.y + 5, MAP_PORTAL_KEY)
+            .setOrigin(0.5, 0.62)
+            .setScale(Number(node.portalScale) || 0.72)
+            .setAlpha(0.88)
+            .setDepth(node.y + 2)
+            .play("ch1-map-portal-loop")
+          : this.add.circle(node.x, node.y, 15, 0xf3c75d, 0.28)
+            .setStrokeStyle(2, 0xffffff, 0.72)
+            .setDepth(node.y + 3);
+        const label = this.add.text(node.x, node.y - 30, node.label || "交互", {
+          fontFamily: "Microsoft YaHei, sans-serif",
+          fontSize: "12px",
+          fontStyle: "700",
+          color: "#30263d",
+          backgroundColor: "rgba(255,255,255,.72)",
+          padding: { x: 6, y: 3 }
+        }).setOrigin(0.5, 1).setDepth(node.y + 4);
+        this.interactionMarkers.push({ node, marker, label });
+      });
+    }
+
+    getNearestInteraction() {
+      if (!this.actor) return null;
+      const foot = this.getFootPoint(this.actor);
+      let nearest = null;
+      let nearestDistance = Infinity;
+      if (this.bossChest?.visible && !hasFlag(BOSS_CHEST_FLAG)) {
+        const distance = Math.hypot(foot.x - this.bossChest.x, foot.y - this.bossChest.y);
+        if (distance <= 120) {
+          nearest = {
+            id: "ch1_boss_chest",
+            type: "bossChest",
+            label: "开启 Boss 宝箱",
+            x: this.bossChest.x,
+            y: this.bossChest.y
+          };
+          nearestDistance = distance;
+        }
+      }
+      (this.interactionNodes || []).forEach(node => {
+        if (node.once && hasFlag(this.nodeDoneFlag(node))) return;
+        const distance = Math.hypot(foot.x - node.x, foot.y - node.y);
+        if (distance <= (node.radius || 96) && distance < nearestDistance) {
+          nearest = node;
+          nearestDistance = distance;
+        }
+      });
+      return nearest;
+    }
+
+    updateInteractionPrompt() {
+      const node = this.getNearestInteraction();
+      this.activeInteraction = node;
+      if (!node) {
+        renderInteractionPrompt("");
+        return;
+      }
+      const locked = !this.flagRequirementsMet(node.requiresFlags);
+      renderInteractionPrompt(`${locked ? "条件未满足：" : ""}${node.label || "交互"}`);
+    }
+
+    applyNodeRewards(node) {
+      (node.setFlags || []).forEach(flag => setFlag(flag));
+      const cards = [...(node.unlockCards || []), ...(node.grantCards || [])];
+      cards.forEach(cardId => {
+        const collected = collectProtocolCard(cardId);
+        if (collected) showToast(`获得协议卡：${CHAPTER_ONE_CARD_NAMES[cardId] || cardId}`);
+      });
+      if (node.rewardCredits) {
+        app.profile.credits += Number(node.rewardCredits) || 0;
+        showToast(`学分记录更新，校园币 +${node.rewardCredits}`);
+      }
+      if (node.once) setFlag(this.nodeDoneFlag(node));
+      renderHud();
+    }
+
+    triggerInteraction(node = this.activeInteraction) {
+      if (!node) return;
+      if (node.type === "bossChest") {
+        this.openBossChest();
+        return;
+      }
+      if (!this.flagRequirementsMet(node.requiresFlags)) {
+        this.showDialogue(node.lockedDialogueId || "ch1_m01_dialogue_exit_locked", "先完成前置目标。");
+        return;
+      }
+      if (node.once && hasFlag(this.nodeDoneFlag(node))) {
+        showToast("这个节点已经完成");
+        return;
+      }
+      if (node.type === "teleport") {
+        this.transitionToMap(node);
+        return;
+      }
+      this.applyNodeRewards(node);
+      if (node.dialogueId) this.showDialogue(node.dialogueId);
+      if (node.spawnEncounterId) this.spawnEncounter(node.spawnEncounterId);
+      if (node.type === "boss") {
+        this.startBoss({ x: node.x, y: node.y, force: true });
+      }
+      if (node.type === "chapter-clear") {
+        (node.setFlags || []).forEach(flag => setFlag(flag));
+        saveProfile(app.profile);
+        renderChapterClearPanel(true);
+      }
+    }
+
+    openBossChest() {
+      if (!this.bossChest?.visible || hasFlag(BOSS_CHEST_FLAG)) return;
+      setFlag(BOSS_CHEST_FLAG);
+      app.profile.inventory = Array.isArray(app.profile.inventory) ? app.profile.inventory : [];
+      app.profile.inventory.push({
+        id: "ch1_drop_professor_boss_chest",
+        name: "教授考核宝箱",
+        qty: 1,
+        source: "chapter_boss"
+      });
+      this.bossChest.setVisible(false).setActive(false);
+      claimBossReward();
+      renderInteractionPrompt("");
+      renderMinimap(this);
+    }
+
+    getEncounter(id) {
+      return (this.mapData.encounters || []).find(item => item.id === id) || null;
+    }
+
+    spawnEncounter(encounterId) {
+      const encounter = this.getEncounter(encounterId);
+      if (!encounter) return;
+      const clearFlags = encounter.setFlagsOnClear || [];
+      if (clearFlags.some(flag => hasFlag(flag))) {
+        showToast("这组错乱笔记已经清理完毕");
+        return;
+      }
+      let spawned = 0;
+      (this.mapData.enemySpawns || [])
+        .filter(point => point.group === encounterId)
+        .forEach(point => {
+          if (this.findLeafSlime(point.id)) return;
+          if (this.spawnLeafSlime({ ...point, group: point.group })) spawned += 1;
+        });
+      showToast(spawned ? `${encounter.title || "遭遇"}：错乱笔记正在实体化` : "这组敌人已经在场上");
+    }
+
+    checkEncounterClear(groupId) {
+      if (!groupId) return;
+      const encounter = this.getEncounter(groupId);
+      if (!encounter || this.encounterRewards.has(groupId)) return;
+      const alive = (this.leafSlimes?.getChildren?.() || []).some(slime =>
+        slime?.active && slime.groupId === groupId && slime.state !== "dead" && slime.state !== "vanish"
+      );
+      if (alive) return;
+      this.encounterRewards.add(groupId);
+      (encounter.setFlagsOnClear || []).forEach(flag => setFlag(flag));
+      if (encounter.rewardCredits) app.profile.credits += Number(encounter.rewardCredits) || 0;
+      if (encounter.rewardExp) grantExperience(Number(encounter.rewardExp) || 0);
+      renderHud();
+      showToast(`${encounter.title || "遭遇"}完成，出口协议已更新`);
+    }
+
+    enterChapterBossArena(node) {
+      this.transitionToMap(node);
     }
 
     makeActionFrames(textureKey, action) {
@@ -1395,6 +2602,23 @@
       });
     }
 
+    preparePortalAnimations() {
+      [
+        { textureKey: MAP_PORTAL_KEY, animationKey: "ch1-map-portal-loop", frameRate: 9 },
+        { textureKey: BOSS_VOID_PORTAL_KEY, animationKey: "ch1-boss-void-portal-loop", frameRate: 12 }
+      ].forEach(({ textureKey, animationKey, frameRate }) => {
+        const texture = this.textures.get(textureKey);
+        texture?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
+        if (this.anims.exists(animationKey)) return;
+        this.anims.create({
+          key: animationKey,
+          frames: this.anims.generateFrameNumbers(textureKey, { start: 0, end: 7 }),
+          frameRate,
+          repeat: -1
+        });
+      });
+    }
+
     ensureProjectileHitboxTexture() {
       if (this.textures.exists("play-projectile-hitbox")) return;
       const g = this.make.graphics({ x: 0, y: 0, add: false });
@@ -1404,8 +2628,46 @@
       g.destroy();
     }
 
+    ensureBossChestTexture() {
+      if (this.textures.exists("play-boss-chest")) return;
+      const g = this.make.graphics({ x: 0, y: 0, add: false });
+      g.fillStyle(0x2f2542, 1);
+      g.fillRoundedRect(10, 18, 76, 42, 8);
+      g.fillStyle(0x7a4a35, 1);
+      g.fillRoundedRect(14, 22, 68, 34, 6);
+      g.fillStyle(0xf3c75d, 1);
+      g.fillRect(13, 31, 70, 5);
+      g.fillRect(44, 18, 8, 40);
+      g.fillRoundedRect(38, 32, 20, 18, 4);
+      g.fillStyle(0x8f72d6, 1);
+      g.fillCircle(48, 41, 5);
+      g.lineStyle(3, 0xfff2d0, 0.82);
+      g.strokeRoundedRect(10, 18, 76, 42, 8);
+      g.generateTexture("play-boss-chest", 96, 72);
+      g.destroy();
+    }
+
+    ensureBossPortalTextures() {
+      // Boss portals are now image-based VFX spritesheets loaded in preload().
+    }
+
+    resolveSpawnPoint(spawnId = app.profile?.spawnId) {
+      const points = Array.isArray(this.mapData.spawnPoints) ? this.mapData.spawnPoints : [];
+      return points.find(point => point.id === spawnId)
+        || this.mapData.spawn
+        || { id: "runtime-spawn", x: this.worldWidth / 2, y: this.worldHeight / 2 };
+    }
+
+    applyMapSpawnFlags(spawn) {
+      app.profile.chapterId = this.mapData.chapterId || "chapter1";
+      app.profile.mapId = this.mapData.id || "ch1_m01_classroom_spawn";
+      app.profile.spawnId = spawn.id || "ch1_m01_spawn_player_start";
+      (spawn.setFlags || []).forEach(flag => setFlag(flag));
+    }
+
     createActor() {
-      const spawn = this.mapData.spawn || { x: this.worldWidth / 2, y: this.worldHeight / 2 };
+      const spawn = this.resolveSpawnPoint();
+      this.applyMapSpawnFlags(spawn);
       const character = getCharacter(app.profile.characterId);
       this.actor = this.physics.add.sprite(spawn.x, spawn.y, character.id, 0)
         .setOrigin(0.5, character.baseline / FRAME_SIZE)
@@ -1419,20 +2681,107 @@
         .setDepth(this.actor.y - 24);
     }
 
+    clearRuntimeMapObjects() {
+      this.mapProps?.forEach(prop => prop.destroy());
+      this.mapProps = [];
+      this.foregroundOverlays?.forEach(item => item.destroy());
+      this.foregroundOverlays = [];
+      this.interactionMarkers?.forEach(item => {
+        item.marker?.destroy();
+        item.label?.destroy();
+      });
+      this.interactionMarkers = [];
+      this.mapLayers?.forEach(layer => layer?.destroy?.());
+      this.mapLayers = [];
+      this.mapBackgroundChunks?.forEach(chunk => chunk.destroy());
+      this.mapBackgroundChunks = [];
+      this.mapBackground?.destroy();
+      this.mapBackground = null;
+      this.obstacleGroup?.clear(true, true);
+      this.projectiles?.children?.each(projectile => this.destroyProjectile(projectile, false));
+      this.leafSlimes?.children?.each(slime => {
+        slime.shadow?.destroy();
+        slime.hpBg?.destroy();
+        slime.hpFrame?.destroy();
+        slime.hpFill?.destroy();
+        slime.nameLabel?.destroy();
+        slime.destroy();
+      });
+      this.syncedSlimeIds?.clear();
+      this.bossSummonIds?.clear();
+      this.bossChest?.setVisible(false).setActive(false);
+      this.bossSprite?.setVisible(false).setActive(false);
+      syncBossState({ ...BOSS });
+    }
+
+    transitionToMap(node) {
+      const targetMapId = node.targetMapId || this.getCurrentMapId();
+      const maps = this.getChapterMapRegistry();
+      if (!maps[targetMapId]) {
+        showToast("目标地图暂未接入");
+        return;
+      }
+      if (this.mapTransitioning) return;
+      this.mapTransitioning = true;
+      this.isActionLocked = true;
+      this.actor?.body?.setVelocity(0, 0);
+      showMapLoading(`前往${maps[targetMapId].title || "新区域"}`);
+      this.time.delayedCall(620, () => {
+        (node.setFlags || []).forEach(flag => setFlag(flag));
+        app.profile.mapId = targetMapId;
+        app.profile.spawnId = node.targetSpawnId || maps[targetMapId].spawn?.id || "";
+        this.clearRuntimeMapObjects();
+        this.mapData = this.composeRuntimeMapData(targetMapId);
+        this.renderTileMap();
+        this.prepareMapPropFrames();
+        this.renderMapProps();
+        this.renderForegroundOverlays();
+        this.drawObstacles();
+        const spawn = this.resolveSpawnPoint(app.profile.spawnId);
+        this.applyMapSpawnFlags(spawn);
+        this.actor.setPosition(spawn.x, spawn.y);
+        this.actor.body.setVelocity(0, 0);
+        this.actor.setCollideWorldBounds(true);
+        this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
+        this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
+        this.cameras.main.pan(spawn.x, spawn.y, 320, "Sine.easeInOut");
+        this.bindMapColliders();
+        this.createInteractionNodes();
+        this.spawnMapLeafSlimes();
+        saveProfile(app.profile);
+        renderChapterHud();
+        renderMinimap(this);
+        this.mapTransitioning = false;
+        this.isActionLocked = false;
+        hideMapLoading();
+        showToast(`进入${this.mapData.title || "新区域"}`);
+      });
+    }
+
     createBoss() {
       this.bossSprite = this.physics.add.image(0, 0, BOSS_KEY)
         .setOrigin(0.5, 0.72)
-        .setScale(0.34)
+        .setScale(BOSS_VISUAL_SCALE)
         .setVisible(false)
         .setActive(false)
         .setDepth(0);
       this.bossSprite.body.setAllowGravity(false);
       this.bossSprite.body.setImmovable(true);
+      this.bossChest = this.physics.add.image(0, 0, "play-boss-chest")
+        .setOrigin(0.5, 0.82)
+        .setScale(1.05)
+        .setVisible(false)
+        .setActive(false)
+        .setDepth(0);
+      this.bossChest.body.setAllowGravity(false);
+      this.bossChest.body.setImmovable(true);
+      this.ensureBossPortalTextures();
     }
 
     syncBoss() {
       if (!this.bossSprite) return;
-      if (!app.boss.active || app.boss.hp <= 0) {
+      const visiblePhases = new Set(["summoning", "between", "portalOpening", "portalClosing"]);
+      if (!app.boss.active && !visiblePhases.has(app.boss.phase)) {
         this.bossSprite.setVisible(false).setActive(false);
         return;
       }
@@ -1443,15 +2792,210 @@
         .setDepth(app.boss.y + 18);
     }
 
-    startBoss() {
-      const x = clamp(this.actor.x + 420, 420, this.worldWidth - 420);
-      const y = clamp(this.actor.y - 70, 640, this.worldHeight - 420);
-      const boss = { ...BOSS, active: true, hp: BOSS.maxHp, x, y };
+    startBoss(options = {}) {
+      if (!options.force && getProtocolCardIds().length < CHAPTER_ONE_PROTOCOL_CARD_GOAL) {
+        showToast("协议卡不足也可挑战，但稀有精英会更难处理");
+      }
+      const x = Number.isFinite(options.x) ? options.x : clamp(this.actor.x + 420, 420, this.worldWidth - 420);
+      const y = Number.isFinite(options.y) ? options.y : clamp(this.actor.y - 70, 640, this.worldHeight - 420);
+      const firstWave = BOSS_SUMMON_WAVES[0];
+      const boss = {
+        ...BOSS,
+        active: true,
+        maxHp: firstWave.units.length,
+        hp: firstWave.units.length,
+        x,
+        y,
+        phase: "summoning",
+        waveIndex: 0,
+        waveTitle: firstWave.title,
+        wavesTotal: BOSS_SUMMON_WAVES.length,
+        summonsRemaining: firstWave.units.length,
+        eliteRemaining: firstWave.units.filter(unit => unit.rank !== "mob").length,
+        chestReady: false
+      };
       app.bossRewardClaimed = false;
+      setFlag(BOSS_CHEST_FLAG, false);
+      this.bossWavePending = false;
+      this.bossChest?.setVisible(false).setActive(false);
       if (app.connected) app.multiplayer.sendBossStart(boss);
       syncBossState(boss);
+      this.beginBossWaveSequence(0);
       app.audio.boss();
-      showToast("AI 陆教授考核镜像已出现");
+      showToast("陆教授开启三系协议考核：量子、区块链、AI Agent");
+      return boss;
+    }
+
+    playBossCastAnimation() {
+      if (!this.bossSprite?.visible) return;
+      this.tweens.killTweensOf(this.bossSprite);
+      this.tweens.add({
+        targets: this.bossSprite,
+        y: app.boss.y - 10,
+        scale: BOSS_VISUAL_SCALE * 1.08,
+        angle: -2,
+        yoyo: true,
+        repeat: 1,
+        duration: 260,
+        ease: "Sine.easeInOut",
+        onComplete: () => {
+          this.bossSprite?.setPosition(app.boss.x, app.boss.y).setScale(BOSS_VISUAL_SCALE).setAngle(0);
+        }
+      });
+      const aura = this.add.circle(app.boss.x, app.boss.y - 112, 22, 0x8f72d6, 0.22)
+        .setStrokeStyle(3, 0x5ed2df, 0.68)
+        .setDepth(app.boss.y + 26);
+      this.tweens.add({
+        targets: aura,
+        radius: 86,
+        alpha: 0,
+        duration: 620,
+        ease: "Sine.easeOut",
+        onComplete: () => aura.destroy()
+      });
+    }
+
+    createBossPortal(wave) {
+      const x = clamp(app.boss.x, 150, this.worldWidth - 150);
+      const y = clamp(app.boss.y + 130, 160, this.worldHeight - 130);
+      const portal = this.add.sprite(x, y, BOSS_VOID_PORTAL_KEY)
+        .setOrigin(0.5)
+        .setScale(0.28)
+        .setAlpha(0)
+        .setDepth(y + 34)
+        .play("ch1-boss-void-portal-loop");
+      this.bossPortal = { portal, x, y };
+      this.tweens.add({ targets: portal, alpha: 0.96, scale: 1.18, duration: BOSS_PORTAL_OPEN_MS, ease: "Sine.easeOut" });
+      return this.bossPortal;
+    }
+
+    closeBossPortal() {
+      const portal = this.bossPortal;
+      if (!portal) return;
+      this.tweens.add({ targets: portal.portal, alpha: 0, scale: 0.24, duration: BOSS_PORTAL_CLOSE_MS, ease: "Sine.easeIn", onComplete: () => portal.portal.destroy() });
+      this.bossPortal = null;
+    }
+
+    beginBossWaveSequence(index) {
+      const wave = BOSS_SUMMON_WAVES[index];
+      if (!wave || !app.boss.active) return;
+      this.bossWavePending = true;
+      syncBossState({ ...app.boss, phase: "portalOpening", waveIndex: index, waveTitle: wave.title });
+      this.playBossCastAnimation();
+      const portal = this.createBossPortal(wave);
+      showToast(`陆教授正在展开${wave.title}传送门`);
+      this.time.delayedCall(BOSS_PORTAL_OPEN_MS, () => {
+        if (!app.boss.active) return;
+        this.spawnBossWave(index, { fromPortal: true, portal });
+        this.time.delayedCall(BOSS_PORTAL_EGRESS_MS + wave.units.length * BOSS_PORTAL_STAGGER_MS + 120, () => {
+          this.closeBossPortal();
+          syncBossState({ ...app.boss, phase: "summoning" });
+          this.bossWavePending = false;
+          this.updateBossSummonState();
+        });
+      });
+    }
+
+    spawnBossWave(index, options = {}) {
+      const wave = BOSS_SUMMON_WAVES[index];
+      if (!wave || !app.boss.active) return;
+      if (!options.fromPortal) this.bossWavePending = false;
+      this.bossSummonIds.clear();
+      syncBossState({
+        ...app.boss,
+        active: true,
+        phase: "summoning",
+        waveIndex: index,
+        waveTitle: wave.title,
+        maxHp: wave.units.length,
+        hp: wave.units.length,
+        summonsRemaining: wave.units.length,
+        eliteRemaining: wave.units.filter(unit => unit.rank !== "mob").length,
+        chestReady: false
+      });
+      wave.units.forEach((unit, unitIndex) => {
+        const targetX = clamp(app.boss.x + unit.dx, 96, this.worldWidth - 96);
+        const targetY = clamp(app.boss.y + unit.dy, 120, this.worldHeight - 96);
+        const spawnX = options.fromPortal ? options.portal?.x || app.boss.x : targetX;
+        const spawnY = options.fromPortal ? options.portal?.y || app.boss.y + 120 : targetY;
+        const slime = this.spawnLeafSlime({
+          id: `ch1-boss-${wave.id}-${unit.rank}-${unitIndex}`,
+          x: spawnX,
+          y: spawnY,
+          targetX,
+          targetY,
+          emerging: !!options.fromPortal,
+          emergeDelay: unitIndex * BOSS_PORTAL_STAGGER_MS,
+          group: BOSS_SUMMON_GROUP,
+          bossSummon: true,
+          elite: unit.rank !== "mob",
+          bossWaveId: wave.id,
+          bossWaveTitle: wave.title,
+          rank: unit.rank,
+          label: unit.label,
+          textureKey: unit.textureKey,
+          staticImage: unit.staticImage,
+          tint: unit.tint,
+          scale: unit.scale,
+          maxHp: unit.maxHp,
+          damage: unit.damage,
+          creditDefense: unit.creditDefense,
+          rewardExp: unit.rewardExp,
+          rewardCredits: unit.rewardCredits,
+          dropId: unit.dropId,
+          dropName: unit.dropName
+        });
+        if (slime) this.bossSummonIds.add(slime.slimeId);
+      });
+      showToast(`第 ${index + 1} 波：${wave.title}召唤物出现`);
+      this.updateBossSummonState();
+    }
+
+    updateBossSummonState() {
+      if (!app.boss.active || app.boss.phase !== "summoning") return;
+      const alive = (this.leafSlimes?.getChildren?.() || []).filter(slime =>
+        slime?.active && slime.groupId === BOSS_SUMMON_GROUP && slime.state !== "dead" && slime.state !== "vanish"
+      );
+      syncBossState({
+        ...app.boss,
+        hp: alive.length,
+        summonsRemaining: alive.length,
+        eliteRemaining: alive.filter(slime => slime.isElite).length
+      });
+      if (alive.length > 0 || this.bossWavePending) return;
+      const nextIndex = Number(app.boss.waveIndex || 0) + 1;
+      if (nextIndex < BOSS_SUMMON_WAVES.length) {
+        this.bossWavePending = true;
+        const nextWave = BOSS_SUMMON_WAVES[nextIndex];
+        syncBossState({
+          ...app.boss,
+          phase: "between",
+          waveIndex: nextIndex,
+          waveTitle: nextWave.title,
+          hp: 0,
+          summonsRemaining: 0,
+          eliteRemaining: 0
+        });
+        showToast(`${BOSS_SUMMON_WAVES[nextIndex - 1].title}已清除，下一波即将开始`);
+        this.time.delayedCall(900, () => this.beginBossWaveSequence(nextIndex));
+        return;
+      }
+      this.prepareBossChest();
+    }
+
+    prepareBossChest() {
+      if (!app.boss.active || app.boss.phase === "chest") return;
+      const chestX = clamp(app.boss.x + 18, 120, this.worldWidth - 120);
+      const chestY = clamp(app.boss.y + 160, 120, this.worldHeight - 120);
+      this.bossSprite?.setVisible(false).setActive(false);
+      this.bossChest
+        ?.setPosition(chestX, chestY)
+        .setVisible(true)
+        .setActive(true)
+        .setDepth(chestY + 16);
+      syncBossState({ ...app.boss, active: false, hp: 0, phase: "chest", chestReady: true });
+      showToast("召唤物已清除，Boss 宝箱出现了");
+      renderMinimap(this);
     }
 
     findLeafSlime(id) {
@@ -1462,7 +3006,12 @@
     getMapLeafSlimeSpawns() {
       const spawns = this.mapData?.enemySpawns || this.mapData?.slimeSpawns;
       if (Array.isArray(spawns) && spawns.length) {
-        return spawns.filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+        return spawns.filter(point => {
+          if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return false;
+          if (point.activeAfter && !hasFlag(point.activeAfter)) return false;
+          if (point.group && this.getEncounter(point.group)?.setFlagsOnClear?.some(flag => hasFlag(flag))) return false;
+          return true;
+        });
       }
       const spawn = this.mapData?.spawn || { x: this.worldWidth / 2, y: this.worldHeight / 2 };
       return [
@@ -1476,9 +3025,11 @@
     spawnMapLeafSlimes() {
       this.getMapLeafSlimeSpawns().forEach(point => {
         this.spawnLeafSlime({
+          ...point,
           id: point.id,
           x: point.x,
-          y: point.y
+          y: point.y,
+          group: point.group
         });
       });
     }
@@ -1500,6 +3051,61 @@
       return points[activeSlimes.length % points.length];
     }
 
+    playEnemyAnimation(slime, action, restart = false) {
+      if (!slime?.active || slime.staticImage) return;
+      const key = `${slime.textureKey || LEAF_SLIME_KEY}-${action}`;
+      if (this.anims.exists(key)) slime.play(key, restart);
+    }
+
+    getEnemyRankStyle(slime) {
+      if (slime.rank === "rare") return { frame: 0xf3c75d, fill: 0xffcf5d, text: "#ffe9a8", width: 78, height: 9 };
+      if (slime.rank === "elite") return { frame: 0x8f72d6, fill: 0xb889ff, text: "#dbcfff", width: 66, height: 8 };
+      return { frame: 0x3f5368, fill: 0x42c98a, text: "#ffffff", width: 56, height: 6 };
+    }
+
+    createEnemyHud(slime) {
+      const style = this.getEnemyRankStyle(slime);
+      const y = slime.y + slime.hudOffsetY;
+      slime.hpFrame = this.add.rectangle(slime.x, y, style.width + 6, style.height + 6, 0x241b2e, 0.72)
+        .setStrokeStyle(slime.rank === "rare" ? 2 : 1, style.frame, 0.95)
+        .setDepth(slime.y + 36);
+      slime.hpBg = this.add.rectangle(slime.x, y, style.width, style.height, 0x1d1826, 0.72)
+        .setDepth(slime.y + 37);
+      slime.hpFill = this.add.rectangle(slime.x - style.width / 2, y, style.width, Math.max(3, style.height - 2), style.fill, 0.95)
+        .setOrigin(0, 0.5)
+        .setDepth(slime.y + 38);
+      if (slime.rank !== "mob" || slime.displayLabel) {
+        slime.nameLabel = this.add.text(slime.x, y - 12, slime.displayLabel || (slime.rank === "rare" ? "稀有精英" : "精英"), {
+          fontFamily: "Microsoft YaHei, sans-serif",
+          fontSize: slime.rank === "rare" ? "12px" : "11px",
+          fontStyle: "700",
+          color: style.text,
+          stroke: "#241b2e",
+          strokeThickness: 3
+        }).setOrigin(0.5, 1).setDepth(slime.y + 39);
+      }
+    }
+
+    refreshEnemyHpBar(slime) {
+      if (!slime?.active || !slime.hpFill) return;
+      const style = this.getEnemyRankStyle(slime);
+      const ratio = clamp((slime.hp || 0) / Math.max(1, slime.maxHp || 1), 0, 1);
+      slime.hpFill.setDisplaySize(Math.max(1, style.width * ratio), Math.max(3, style.height - 2));
+      const visible = slime.state !== "dead" && slime.state !== "vanish" && slime.state !== "emerging";
+      [slime.hpFrame, slime.hpBg, slime.hpFill, slime.nameLabel].forEach(item => item?.setVisible(visible));
+    }
+
+    updateEnemyHud(slime) {
+      if (!slime?.active || !slime.hpFrame) return;
+      const style = this.getEnemyRankStyle(slime);
+      const y = slime.y + slime.hudOffsetY;
+      slime.hpFrame.setPosition(slime.x, y).setDepth(slime.y + 36);
+      slime.hpBg.setPosition(slime.x, y).setDepth(slime.y + 37);
+      slime.hpFill.setPosition(slime.x - style.width / 2, y).setDepth(slime.y + 38);
+      slime.nameLabel?.setPosition(slime.x, y - 12).setDepth(slime.y + 39);
+      this.refreshEnemyHpBar(slime);
+    }
+
     spawnLeafSlime(options = {}) {
       if (!this.actor || !this.leafSlimes) return null;
       const slimeId = String(options.id || makeId());
@@ -1509,25 +3115,106 @@
         ? { x: options.x, y: options.y }
         : this.getNextLeafSlimePoint();
       if (!point) return null;
-      const x = clamp(point.x, 900, this.worldWidth - 160);
-      const y = clamp(point.y, 900, this.worldHeight - 220);
-      const slime = this.leafSlimes.create(x, y, LEAF_SLIME_KEY, 0)
+      const x = clamp(point.x, 72, Math.max(72, this.worldWidth - 72));
+      const y = clamp(point.y, 96, Math.max(96, this.worldHeight - 96));
+      const rank = options.rank || (options.elite ? "elite" : "mob");
+      const elite = !!options.elite || rank === "elite" || rank === "rare";
+      const visualScale = Number(options.scale) || (elite ? 1.18 : 0.9);
+      const textureKey = options.textureKey || LEAF_SLIME_KEY;
+      const slime = this.leafSlimes.create(x, y, textureKey, options.staticImage ? undefined : 0)
         .setOrigin(0.5, 0.72)
-        .setScale(0.9)
+        .setScale(visualScale)
         .setDepth(y + 6);
       slime.slimeId = slimeId;
       slime.ownerId = options.ownerId || app.profile?.id || "";
-      slime.body.setSize(54, 34);
-      slime.body.setOffset(37, 70);
+      slime.groupId = options.group || "";
+      slime.isBossSummon = !!options.bossSummon;
+      slime.isElite = elite;
+      slime.rank = rank;
+      slime.bossWaveId = options.bossWaveId || "";
+      slime.bossWaveTitle = options.bossWaveTitle || "";
+      slime.displayLabel = options.label || "";
+      slime.rewardExp = Number(options.rewardExp) || 0;
+      slime.rewardCredits = Number(options.rewardCredits) || 0;
+      slime.dropId = options.dropId || "";
+      slime.dropName = options.dropName || "";
+      slime.baseTint = Number(options.tint) || (elite ? 0xffd56b : 0xffffff);
+      slime.textureKey = textureKey;
+      slime.staticImage = !!options.staticImage;
+      slime.maxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
+      slime.hp = clamp(Number(options.hp ?? slime.maxHp), 0, slime.maxHp);
+      slime.damage = Math.max(1, Number(options.damage) || (rank === "rare" ? 16 : rank === "elite" ? 12 : 8));
+      slime.creditDefense = Math.max(0, Number(options.creditDefense || 0));
+      slime.hudOffsetY = options.staticImage ? Number(options.hudOffsetY || -Math.max(104, slime.displayHeight * 0.62)) : -104;
+      if (options.staticImage) {
+        const bodyWidth = Number(options.bodyWidth) || Math.max(38, Math.min(124, slime.width * 0.26));
+        const bodyHeight = Number(options.bodyHeight) || Math.max(28, Math.min(82, slime.height * 0.15));
+        const bodyOffsetX = Number.isFinite(options.bodyOffsetX) ? options.bodyOffsetX : (slime.width - bodyWidth) / 2;
+        const bodyOffsetY = Number.isFinite(options.bodyOffsetY) ? options.bodyOffsetY : slime.height * 0.72 - bodyHeight / 2;
+        slime.body.setSize(bodyWidth, bodyHeight);
+        slime.body.setOffset(bodyOffsetX, bodyOffsetY);
+      } else {
+        slime.body.setSize(54, 34);
+        slime.body.setOffset(37, 70);
+      }
       slime.body.setAllowGravity(false);
       slime.body.setCollideWorldBounds(true);
       slime.state = "move";
       slime.nextHopAt = 0;
       slime.lastAttackAt = -LEAF_SLIME_ATTACK_COOLDOWN;
       slime.actionToken = 0;
-      slime.play(`${LEAF_SLIME_KEY}-move`);
+      this.playEnemyAnimation(slime, "move", true);
+      if (slime.staticImage) {
+        this.tweens.add({
+          targets: slime,
+          angle: rank === "mob" ? 2.5 : 1.5,
+          duration: 880 + Math.random() * 240,
+          ease: "Sine.easeInOut",
+          yoyo: true,
+          repeat: -1
+        });
+      }
+      if (slime.baseTint !== 0xffffff) slime.setTint(slime.baseTint);
       slime.shadow = this.add.ellipse(slime.x, slime.y + 12, 58, 18, 0x182313, 0.18)
         .setDepth(slime.y - 24);
+      this.createEnemyHud(slime);
+      this.refreshEnemyHpBar(slime);
+      if (options.emerging) {
+        slime.state = "emerging";
+        slime.body.enable = false;
+        slime.setAlpha(0);
+        slime.setScale(visualScale * 0.45);
+        [slime.shadow, slime.hpBg, slime.hpFrame, slime.hpFill, slime.nameLabel].forEach(item => item?.setVisible(false));
+        const targetX = Number.isFinite(options.targetX) ? options.targetX : x;
+        const targetY = Number.isFinite(options.targetY) ? options.targetY : y;
+        const delay = Math.max(0, Number(options.emergeDelay || 0));
+        this.time.delayedCall(delay, () => {
+          if (!slime.active || slime.state !== "emerging") return;
+          slime.setAlpha(1);
+          this.tweens.add({
+            targets: slime,
+            x: targetX,
+            y: targetY,
+            scale: visualScale,
+            duration: BOSS_PORTAL_EGRESS_MS,
+            ease: "Sine.easeOut",
+            onUpdate: () => {
+              slime.setDepth(slime.y + 6);
+              slime.shadow?.setPosition(slime.x, slime.y + 12).setDepth(slime.y - 24);
+              this.updateEnemyHud(slime);
+            },
+            onComplete: () => {
+              if (!slime.active || slime.state !== "emerging") return;
+              slime.body.enable = true;
+              slime.body.reset(targetX, targetY);
+              slime.state = "move";
+              [slime.shadow, slime.hpBg, slime.hpFrame, slime.hpFill, slime.nameLabel].forEach(item => item?.setVisible(true));
+              this.playEnemyAnimation(slime, "move", true);
+              this.refreshEnemyHpBar(slime);
+            }
+          });
+        });
+      }
       this.syncedSlimeIds.add(slimeId);
       if (options.broadcast && app.connected) {
         app.multiplayer.sendSlimeSpawn({ id: slimeId, x, y });
@@ -1555,6 +3242,10 @@
       if (!slime) return;
       this.syncedSlimeIds.delete(slime.slimeId);
       slime.shadow?.destroy();
+      slime.hpBg?.destroy();
+      slime.hpFrame?.destroy();
+      slime.hpFill?.destroy();
+      slime.nameLabel?.destroy();
       slime.destroy();
     }
 
@@ -1742,13 +3433,8 @@
     castUltimate() {
       if (!this.actor || app.profile.characterId !== "lina" || app.profile.hp <= 0) return;
       if (this.isCat || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold) return;
-      const now = this.time.now;
-      if (now - this.lastUltimateAt < ULTIMATE_COOLDOWN) {
-        const remain = Math.ceil((ULTIMATE_COOLDOWN - (now - this.lastUltimateAt)) / 1000);
-        showToast(`大招冷却中：${remain}s`);
-        return;
-      }
-      this.lastUltimateAt = now;
+      if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
+      this.lastUltimateAt = this.time.now;
       this.isCasting = true;
       this.isActionLocked = true;
       this.networkAction = "attack";
@@ -1793,11 +3479,11 @@
       let hitSomething = false;
       const slimes = this.leafSlimes?.getChildren?.() || [];
       for (const slime of slimes) {
-        if (!slime?.active || slime.state === "dead" || slime.state === "vanish") continue;
+        if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) continue;
         const dx = slime.x - cx;
         const dy = (slime.y + LEAF_SLIME_HIT_OFFSET_Y) - cy;
         if ((dx * dx) / (ULTIMATE_RADIUS_X * ULTIMATE_RADIUS_X) + (dy * dy) / (ULTIMATE_RADIUS_Y * ULTIMATE_RADIUS_Y) <= 1) {
-          this.playLeafSlimeHit(slime);
+          this.playLeafSlimeHit(slime, ULTIMATE_DAMAGE, { kind: "magic", noEnergyGain: true });
           hitSomething = true;
         }
       }
@@ -1824,10 +3510,10 @@
       let hitSomething = false;
       const slimes = this.leafSlimes?.getChildren?.() || [];
       for (const slime of slimes) {
-        if (!slime?.active || slime.state === "dead" || slime.state === "vanish") continue;
+        if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) continue;
         const distance = Phaser.Math.Distance.Between(hitX, hitY, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
         if (distance <= MELEE.radius + LEAF_SLIME_HIT_RADIUS) {
-          this.playLeafSlimeHit(slime);
+          this.playLeafSlimeHit(slime, Number(app.profile.attackPower || MELEE.damage), { kind: "physical", energyGain: ENERGY_MELEE_HIT_GAIN });
           hitSomething = true;
         }
       }
@@ -1886,7 +3572,10 @@
       projectile.visualBaseDepth = this.actor.y + 18;
       projectile.visualRotation = Math.atan2(vec.y, vec.x);
       projectile.impactAnimationKey = this.getProjectileAnimationKey(equipment, "impact");
-      projectile.damage = app.profile.characterId === "lina" ? (charged ? 34 : 22) : 18;
+      projectile.damage = app.profile.characterId === "lina"
+        ? (charged ? Math.round(Number(app.profile.magicPower || 22) * 1.55) : Number(app.profile.magicPower || 22))
+        : Number(app.profile.attackPower || 18);
+      projectile.charged = charged;
       projectile.trail = [];
       const projectileOrigin = charged
         ? (equipment.chargedProjectileOrigin || equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN)
@@ -1966,13 +3655,13 @@
       if (!slime?.active) return;
       this.destroyProjectile(projectile, true);
       if (slime.state === "dead" || slime.state === "vanish") return;
-      this.playLeafSlimeHit(slime);
+      this.playLeafSlimeHit(slime, projectile.damage || 18, { kind: "magic", charged: !!projectile.charged });
     }
 
     checkLeafSlimeProjectileHit(projectile) {
       const slimes = this.leafSlimes?.getChildren?.() || [];
       for (const slime of slimes) {
-        if (!slime?.active || slime.state === "dead" || slime.state === "vanish") continue;
+        if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) continue;
         const hitX = slime.x;
         const hitY = slime.y + LEAF_SLIME_HIT_OFFSET_Y;
         const distance = Phaser.Math.Distance.Between(projectile.x, projectile.y, hitX, hitY);
@@ -1983,17 +3672,141 @@
       return false;
     }
 
-    playLeafSlimeHit(slime) {
+    rollPlayerDamage(baseDamage, target, kind = "magic") {
+      const creditDefense = Number(target?.creditDefense || 0);
+      const creditMultiplier = creditDefense
+        ? clamp(Math.max(1, Number(app.profile?.credits || 0)) / creditDefense, CREDIT_DEFENSE_MIN, CREDIT_DEFENSE_MAX)
+        : 1;
+      const critical = Math.random() < PLAYER_CRIT_CHANCE;
+      const critMultiplier = critical
+        ? (kind === "physical" ? PLAYER_PHYSICAL_CRIT_MULTIPLIER : PLAYER_MAGIC_CRIT_MULTIPLIER)
+        : 1;
+      const amount = Math.max(1, Math.round(Number(baseDamage || 1) * creditMultiplier * critMultiplier));
+      return { amount, critical, creditMultiplier };
+    }
+
+    showFloatingText(x, y, text, options = {}) {
+      const node = this.add.text(x, y, text, {
+        fontFamily: "Microsoft YaHei, sans-serif",
+        fontSize: options.size || "18px",
+        fontStyle: "900",
+        color: options.color || "#ffffff",
+        stroke: options.stroke || "#241b2e",
+        strokeThickness: options.strokeThickness ?? 5
+      }).setOrigin(0.5).setDepth((options.depth ?? y) + 80);
+      const rise = options.rise ?? 54;
+      this.tweens.add({
+        targets: node,
+        y: y - rise,
+        x: x + (options.drift || Phaser.Math.Between(-16, 16)),
+        scale: options.scale || 1.05,
+        alpha: 0,
+        duration: options.duration || 760,
+        ease: "Cubic.easeOut",
+        onComplete: () => node.destroy()
+      });
+      return node;
+    }
+
+    playHealEffect(x, y) {
+      const ring = this.add.circle(x, y - 40, 18, 0x42c98a, 0.22).setStrokeStyle(3, 0xd7fff0, 0.84).setDepth(y + 56);
+      const sparkle = this.add.star(x, y - 74, 5, 6, 18, 0xd7fff0, 0.82).setDepth(y + 58);
+      this.tweens.add({ targets: ring, radius: 54, alpha: 0, duration: 520, ease: "Sine.easeOut", onComplete: () => ring.destroy() });
+      this.tweens.add({ targets: sparkle, y: y - 108, angle: 80, alpha: 0, duration: 620, ease: "Sine.easeOut", onComplete: () => sparkle.destroy() });
+    }
+
+    playShieldEffect(x, y, blocked = false) {
+      const color = blocked ? 0xfff2a6 : SHIELD_BLOCK_COLOR;
+      const shield = this.add.ellipse(x, y - 45, 70, 92, color, blocked ? 0.18 : 0.13)
+        .setStrokeStyle(blocked ? 4 : 2, color, blocked ? 0.9 : 0.62)
+        .setDepth(y + 62);
+      this.tweens.add({
+        targets: shield,
+        scaleX: blocked ? 1.25 : 1.08,
+        scaleY: blocked ? 1.18 : 1.08,
+        alpha: 0,
+        duration: blocked ? 340 : 620,
+        ease: "Sine.easeOut",
+        onComplete: () => shield.destroy()
+      });
+    }
+
+    refreshEnergyHudOnly() {
+      if (!app.profile) return;
+      const maxEnergy = Math.max(1, Number(app.profile.maxEnergy || ENERGY_DEFAULT_MAX));
+      const energy = clamp(Number(app.profile.energy || 0), 0, maxEnergy);
+      const energyBar = $("#energyBar");
+      const energyText = $("#energyText");
+      if (energyBar) energyBar.style.width = `${Math.round(energy / maxEnergy * 100)}%`;
+      if (energyText) energyText.textContent = `${Math.round(energy)} / ${Math.round(maxEnergy)}`;
+    }
+
+    restoreEnergy(amount = 0, x = this.actor?.x, y = this.actor?.y, options = {}) {
+      if (!app.profile) return 0;
+      const maxEnergy = Math.max(1, Number(app.profile.maxEnergy || ENERGY_DEFAULT_MAX));
+      const before = clamp(Number(app.profile.energy || 0), 0, maxEnergy);
+      app.profile.energy = clamp(before + Math.max(0, Number(amount) || 0), 0, maxEnergy);
+      const gained = app.profile.energy - before;
+      if (gained > 0 && Number.isFinite(x) && Number.isFinite(y)) {
+        this.showFloatingText(x, y - 92, `+${Math.ceil(gained)} EN`, { color: "#9ff7ff", size: "14px", rise: 34, duration: 540 });
+      }
+      if (options.silent) this.refreshEnergyHudOnly();
+      else renderHud();
+      return gained;
+    }
+
+    spendEnergy(cost = 0, label = "技能") {
+      if (!app.profile) return false;
+      const maxEnergy = Math.max(1, Number(app.profile.maxEnergy || ENERGY_DEFAULT_MAX));
+      app.profile.energy = clamp(Number(app.profile.energy || 0), 0, maxEnergy);
+      if (app.profile.energy < cost) {
+        showToast(`${label}需要 ${cost} 能量`);
+        return false;
+      }
+      app.profile.energy -= cost;
+      renderHud();
+      return true;
+    }
+
+    playLeafSlimeHit(slime, baseDamage = MELEE.damage, options = {}) {
+      if (slime.state === "hit" || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return;
+      const result = this.rollPlayerDamage(baseDamage, slime, options.kind || "magic");
+      slime.hp = Math.max(0, Number(slime.hp || 0) - result.amount);
+      if (!options.noEnergyGain) {
+        this.restoreEnergy(options.energyGain ?? (options.charged ? ENERGY_CHARGED_HIT_GAIN : ENERGY_HIT_GAIN), slime.x, slime.y);
+      }
+      this.refreshEnemyHpBar(slime);
+      this.showFloatingText(
+        slime.x,
+        slime.y + slime.hudOffsetY - 18,
+        `${result.critical ? "暴击 " : ""}-${result.amount}`,
+        {
+          color: result.critical ? "#ffd86b" : "#fff7e6",
+          size: result.critical ? "25px" : "18px",
+          scale: result.critical ? 1.32 : 1.05,
+          rise: result.critical ? 76 : 54
+        }
+      );
       slime.actionToken = (slime.actionToken || 0) + 1;
       const token = slime.actionToken;
+      const defeated = slime.hp <= 0;
       slime.state = "hit";
       slime.body.setVelocity(0, 0);
       slime.setTint(0xfff0b0);
-      slime.play(`${LEAF_SLIME_KEY}-hit`, true);
-      slime.once("animationcomplete", () => {
+      this.playEnemyAnimation(slime, "hit", true);
+      const finishHit = () => {
         if (!slime.active || slime.actionToken !== token) return;
-        this.killLeafSlime(slime);
-      });
+        if (defeated) {
+          this.killLeafSlime(slime);
+          return;
+        }
+        slime.state = "move";
+        slime.clearTint();
+        if (slime.baseTint && slime.baseTint !== 0xffffff) slime.setTint(slime.baseTint);
+        this.playEnemyAnimation(slime, "move", true);
+      };
+      if (slime.staticImage) this.time.delayedCall(180, finishHit);
+      else slime.once("animationcomplete", finishHit);
     }
 
     killLeafSlime(slime) {
@@ -2007,13 +3820,31 @@
       slime.body.setVelocity(0, 0);
       slime.body.enable = false;
       slime.clearTint();
-      slime.play(`${LEAF_SLIME_KEY}-dead`, true);
-      app.profile.exp += 12;
+      this.playEnemyAnimation(slime, "dead", true);
+      const expGain = Number(slime.rewardExp) || (slime.isElite ? 34 : slime.isBossSummon ? 14 : 12);
+      const levels = grantExperience(expGain);
+      if (slime.rewardCredits) app.profile.credits += Number(slime.rewardCredits) || 0;
+      let gotCard = false;
+      if (!slime.isBossSummon) gotCard = collectProtocolCard("ch1_card_schema_lock");
+      if (slime.dropId) {
+        app.profile.inventory = Array.isArray(app.profile.inventory) ? app.profile.inventory : [];
+        app.profile.inventory.push({
+          id: slime.dropId,
+          name: slime.dropName || slime.dropId,
+          qty: 1,
+          source: slime.rank === "rare" ? "rare_elite" : "elite"
+        });
+      }
       renderHud();
-      showToast("击败叶灵怪，EXP +12");
-      slime.once("animationcomplete", () => {
+      const levelText = levels ? `，等级 +${levels}` : "";
+      if (slime.dropId) showToast(`击败${slime.displayLabel || "精英"}，EXP +${expGain}${levelText}，${slime.dropName || "掉落物"} +1`);
+      else showToast(gotCard ? `击败叶灵怪，EXP +${expGain}${levelText}，协议卡 +1` : `击败召唤小怪，EXP +${expGain}${levelText}`);
+      if (slime.groupId === BOSS_SUMMON_GROUP) this.updateBossSummonState();
+      else this.checkEncounterClear(slime.groupId);
+      const beginVanish = () => {
         if (!slime.active || slime.actionToken !== token) return;
         slime.state = "vanish";
+        [slime.hpBg, slime.hpFrame, slime.hpFill, slime.nameLabel].forEach(item => item?.destroy());
         this.tweens.add({
           targets: slime,
           alpha: 0.12,
@@ -2026,15 +3857,28 @@
             slime.destroy();
           }
         });
-      });
+      };
+      if (slime.staticImage) this.time.delayedCall(220, beginVanish);
+      else slime.once("animationcomplete", beginVanish);
     }
 
     damagePlayer(amount) {
       if (app.profile.hp <= 0) return;
-      app.profile.hp = Math.max(0, app.profile.hp - amount);
+      let incoming = Math.max(0, Number(amount) || 0);
+      const blocked = Math.min(Math.max(0, Number(app.profile.shield || 0)), incoming);
+      if (blocked > 0) {
+        app.profile.shield = Math.max(0, Number(app.profile.shield || 0) - blocked);
+        incoming -= blocked;
+        this.playShieldEffect(this.actor.x, this.actor.y, true);
+        this.showFloatingText(this.actor.x, this.actor.y - 116, `格挡 ${Math.ceil(blocked)}`, { color: "#bff7ff", size: "17px", rise: 48 });
+      }
+      if (incoming > 0) {
+        app.profile.hp = Math.max(0, app.profile.hp - incoming);
+        this.showFloatingText(this.actor.x, this.actor.y - 124, `-${Math.ceil(incoming)}`, { color: "#ff9ab4", size: "20px", rise: 58 });
+      }
       renderHud();
       app.audio.hit();
-      this.playActorHitReaction();
+      if (incoming > 0) this.playActorHitReaction();
       if (app.profile.hp <= 0) {
         this.isDead = true;
         this.isCatJumping = false;
@@ -2107,7 +3951,7 @@
       slime.state = "attack";
       const vec = normalizeVector(dx, dy);
       slime.setFlipX(dx < 0);
-      slime.play(`${LEAF_SLIME_KEY}-attack`, true);
+      this.playEnemyAnimation(slime, "attack", true);
       slime.body.setVelocity(
         vec.x * (LEAF_SLIME_ATTACK_DISTANCE / LEAF_SLIME_ATTACK_DURATION * 1000),
         vec.y * (LEAF_SLIME_ATTACK_DISTANCE / LEAF_SLIME_ATTACK_DURATION * 1000)
@@ -2115,7 +3959,7 @@
       this.time.delayedCall(180, () => {
         if (!slime.active || slime.actionToken !== token || !this.actor?.active) return;
         const hitDistance = Phaser.Math.Distance.Between(slime.x, slime.y, this.actor.x, this.actor.y);
-        if (hitDistance <= LEAF_SLIME_ATTACK_RANGE + 24) this.damagePlayer(8);
+        if (hitDistance <= LEAF_SLIME_ATTACK_RANGE + 24) this.damagePlayer(slime.damage || 8);
       });
       this.time.delayedCall(LEAF_SLIME_ATTACK_DURATION, () => {
         if (!slime.active || slime.actionToken !== token) return;
@@ -2134,7 +3978,7 @@
       const hopDistance = Math.min(LEAF_SLIME_HOP_DISTANCE, Math.max(18, distance - LEAF_SLIME_ATTACK_RANGE + 12));
       slime.state = "hop";
       slime.setFlipX(dx < 0);
-      slime.play(`${LEAF_SLIME_KEY}-move`, true);
+      this.playEnemyAnimation(slime, "move", true);
       slime.body.setVelocity(vec.x * (hopDistance / LEAF_SLIME_HOP_DURATION * 1000), vec.y * (hopDistance / LEAF_SLIME_HOP_DURATION * 1000));
       this.time.delayedCall(LEAF_SLIME_HOP_DURATION, () => {
         if (!slime.active || slime.actionToken !== token) return;
@@ -2149,7 +3993,8 @@
       slimes.forEach(slime => {
         if (!slime?.active || !this.actor?.active) return;
         slime.setDepth(slime.y + 6);
-        if (["hit", "dead", "vanish", "attack", "hop"].includes(slime.state)) return;
+        this.updateEnemyHud(slime);
+        if (["hit", "dead", "vanish", "attack", "hop", "emerging"].includes(slime.state)) return;
         const dx = this.actor.x - slime.x;
         const dy = this.actor.y - slime.y;
         const distance = Math.hypot(dx, dy);
@@ -2165,27 +4010,32 @@
 
     healPlayer() {
       if (!app.profile) return;
-      const now = performance.now();
-      if (now - app.lastHealAt < 9000) {
-        showToast("樱光护盾正在冷却");
-        return;
-      }
-      app.lastHealAt = now;
+      if (!this.spendEnergy(HEAL_COST, "治疗")) return;
+      const before = app.profile.hp;
       app.profile.hp = Math.min(app.profile.maxHp, app.profile.hp + 42);
+      const healed = app.profile.hp - before;
+      app.profile.shield = Math.min(Math.max(36, app.profile.maxHp * 0.28), Number(app.profile.shield || 0) + 36);
       if (app.profile.hp > 0 && this.isDead) {
         this.revivePlayer();
         return;
       }
       app.audio.heal();
+      this.playHealEffect(this.actor?.x || 0, this.actor?.y || 0);
+      this.playShieldEffect(this.actor?.x || 0, this.actor?.y || 0, false);
+      if (healed > 0) this.showFloatingText(this.actor.x, this.actor.y - 122, `+${Math.ceil(healed)}`, { color: "#7dffbd", size: "20px", rise: 56 });
+      this.showFloatingText(this.actor.x, this.actor.y - 96, `护盾 +36`, { color: "#bff7ff", size: "15px", rise: 42 });
       renderHud();
-      const button = $("#healButton");
-      button.classList.add("cooling");
-      window.setTimeout(() => button.classList.remove("cooling"), 9000);
     }
 
     handleHotkey(event) {
+      if (isTextEntryActive() || isTextEntryTarget(event.target)) return;
       if (event.repeat) return;
       const key = String(event.key || "").toLowerCase();
+      if (key === "enter") {
+        setPanelCollapsed("publicChat", false);
+        $("#chatInput")?.focus();
+        return;
+      }
       const keyDirections = {
         w: [0, -1],
         arrowup: [0, -1],
@@ -2201,11 +4051,8 @@
       if (key === "k") this.castUltimate();
       if (key === "h") this.healPlayer();
       if (key === "l") this.toggleTransformState();
+      if (key === "e") this.triggerInteraction();
       if (key === "u") this.playActorHitReaction();
-      if (key === "c") {
-        if (this.spawnLeafSlime({ broadcast: true })) showToast("新增一只叶灵怪");
-      }
-      if (key === "x") this.startBoss();
       if (key === "i") {
         if (this.isDead || app.profile.hp <= 0) this.revivePlayer();
         else this.damagePlayer(999);
@@ -2213,15 +4060,20 @@
     }
 
     handleKeyUp(event) {
+      if (isTextEntryActive() || isTextEntryTarget(event.target)) {
+        this.releasePrimaryActionHold();
+        return;
+      }
       const key = String(event.key || "").toLowerCase();
       if (key === "j" || key === " ") this.releasePrimaryActionHold();
     }
 
     getMoveVector() {
-      const right = this.keys.D.isDown || this.keys.RIGHT.isDown;
-      const left = this.keys.A.isDown || this.keys.LEFT.isDown;
-      const down = this.keys.S.isDown || this.keys.DOWN.isDown;
-      const up = this.keys.W.isDown || this.keys.UP.isDown;
+      const keyboardLocked = isTextEntryActive();
+      const right = !keyboardLocked && (this.keys.D.isDown || this.keys.RIGHT.isDown);
+      const left = !keyboardLocked && (this.keys.A.isDown || this.keys.LEFT.isDown);
+      const down = !keyboardLocked && (this.keys.S.isDown || this.keys.DOWN.isDown);
+      const up = !keyboardLocked && (this.keys.W.isDown || this.keys.UP.isDown);
       const dx = (right ? 1 : 0) - (left ? 1 : 0);
       const dy = (down ? 1 : 0) - (up ? 1 : 0);
       const touch = app.touchMove || { dx: 0, dy: 0 };
@@ -2281,20 +4133,16 @@
 
     applyBossDamage(damage) {
       if (!app.boss.active || app.boss.hp <= 0) return;
-      if (app.connected) app.multiplayer.sendBossHit(damage);
-      else syncBossState({ ...app.boss, hp: Math.max(0, app.boss.hp - damage), active: app.boss.hp - damage > 0 });
+      showToast("教授本体不参与战斗，先清除他召唤出的精英与小怪");
       app.audio.hit();
-      this.cameras.main.shake(80, 0.002);
-      if (app.boss.hp - damage <= 0 && !app.connected) claimBossReward();
     }
 
     updateBoss(time) {
       if (!app.boss.active || app.boss.hp <= 0 || !this.bossSprite.visible) return;
       this.bossSprite.setDepth(this.bossSprite.y + 18);
-      const distance = Phaser.Math.Distance.Between(this.actor.x, this.actor.y, app.boss.x, app.boss.y);
-      if (distance < BOSS.touchRange && time - this.lastBossHitAt > BOSS.attackCooldown) {
+      if (time - this.lastBossHitAt > BOSS.attackCooldown) {
         this.lastBossHitAt = time;
-        this.damagePlayer(BOSS.damage);
+        this.updateBossSummonState();
       }
     }
 
@@ -2408,7 +4256,7 @@
           .setVisible(!this.isDead);
       }
       this.leafSlimes?.children.each(slime => {
-        const visible = !!slime?.active && slime.state !== "dead" && slime.state !== "vanish";
+        const visible = !!slime?.active && slime.state !== "dead" && slime.state !== "vanish" && slime.state !== "emerging";
         slime.shadow
           ?.setVisible(visible)
           .setAlpha(visible ? Math.max(0.06, 0.18 * (slime.alpha ?? 1)) : 0)
@@ -2417,8 +4265,9 @@
       });
     }
 
-    update(time) {
+    update(time, delta = 16) {
       if (!this.actor) return;
+      this.restoreEnergy((Number(delta) || 16) / 1000 * ENERGY_REGEN_PER_SECOND, NaN, NaN, { silent: true });
       if (this.isActionLocked || this.isDead) {
         this.actor.body.setVelocity(0, 0);
       } else if (app.profile.hp > 0) {
@@ -2439,6 +4288,8 @@
       this.updateProjectiles();
       this.updateLeafSlimes();
       this.updateBoss(time);
+      this.updateInteractionPrompt();
+      renderMinimap(this);
       this.updateRemotePlayers();
       this.updateActorShadows();
       if (app.connected && time - this.lastNetworkSendAt > 90) {
@@ -2458,25 +4309,25 @@
     app.boss.active = false;
     app.boss.hp = 0;
     app.profile.credits += BOSS.rewardCredits;
-    app.profile.exp += BOSS.rewardExp;
-    if (app.profile.exp >= 100) {
-      app.profile.level += 1;
-      app.profile.exp -= 100;
-      app.profile.maxHp += 18;
-      app.profile.hp = app.profile.maxHp;
-    }
+    grantExperience(BOSS.rewardExp);
     renderHud();
     renderBossHud();
+    markChapterBossCleared();
     app.scene?.syncBoss();
-    showToast("通过 AI 陆教授考核，第一章 Boss MVP 完成");
+    renderChapterClearPanel(true);
+    showToast("开启 Boss 宝箱，第一章陆教授考核完成");
   }
 
   function startGame(profile) {
     app.profile = normalizeProfile(profile);
+    app.chapterOne = loadChapterState();
     saveProfile(app.profile);
     renderReviveDialog(false);
-    $("#startOverlay").classList.add("hidden");
-    app.audio.switchMode("game");
+    renderChapterClearPanel(false);
+    beginEntryLoading();
+    app.audio.start("login", true);
+    app.audio.enterGame();
+    resetChat();
     renderHud();
     if (!app.game) {
       app.game = new Phaser.Game({
@@ -2498,11 +4349,14 @@
           autoCenter: Phaser.Scale.NO_CENTER
         }
       });
+    } else {
+      finishEntryLoadingWhenReady();
     }
   }
 
   function exitGame() {
     renderReviveDialog(false);
+    renderChapterClearPanel(false);
     app.touchMove = { active: false, dx: 0, dy: 0 };
     if (app.profile) saveProfile(app.profile);
     app.multiplayer?.close();
@@ -2514,8 +4368,11 @@
     app.connected = false;
     app.boss = { ...BOSS };
     app.bossRewardClaimed = false;
+    app.chapterOne = { protocolCards: 0, bossCleared: false };
     renderNetwork("未连接", false);
     renderBossHud();
+    renderChapterHud();
+    resetChat();
     if (app.profile && Number(app.profile.slot) >= 0) {
       app.characters = (app.characters || []).map(item =>
         Number(item.slot) === Number(app.profile.slot)
@@ -2563,6 +4420,16 @@
     app.touchMove = { active: false, dx: 0, dy: 0 };
     const knob = $("#moveKnob");
     if (knob) knob.style.transform = "translate(-50%, -50%)";
+  }
+
+  function bindTextEntryGuards() {
+    if (textEntryGuardBound) return;
+    textEntryGuardBound = true;
+    ["keydown", "keyup"].forEach(eventName => {
+      document.addEventListener(eventName, event => {
+        if (isTextEntryTarget(event.target) && event.target.closest?.(".game-stage")) event.stopPropagation();
+      }, true);
+    });
   }
 
   function bindMobileControls() {
@@ -2660,13 +4527,16 @@
     };
 
     bindHoldAction("#mobileAttackButton", () => app.scene?.beginPrimaryActionHold(), () => app.scene?.releasePrimaryActionHold());
+    bindAction("#mobileUltimateButton", () => app.scene?.castUltimate());
     bindAction("#mobileTransformButton", () => app.scene?.toggleTransformState());
-    bindAction("#mobileHealButton", () => healPlayer());
+    bindAction("#mobileSpecialButton", () => healPlayer());
   }
 
   function bindUi() {
     const saved = loadProfile();
     setAuthMode("login");
+    initializeHudPanels();
+    bindPanelToggles();
     if (saved?.account) $("#loginAccountInput").value = saved.account;
 
     const startAudioOnGesture = () => app.audio.start("login", true);
@@ -2813,18 +4683,20 @@
       });
     }
     $("#healButton").addEventListener("click", () => healPlayer());
-    $("#spawnButton").addEventListener("click", () => {
-      if (app.scene?.spawnLeafSlime({ broadcast: true })) showToast("新增一只叶灵怪");
-    });
-    $("#bossButton").addEventListener("click", () => app.scene?.startBoss());
     $("#reconnectButton").addEventListener("click", () => app.multiplayer?.connect());
     $("#exitButton").addEventListener("click", () => exitGame());
     $("#reviveButton").addEventListener("click", () => app.scene?.revivePlayer());
     $("#stayDownButton").addEventListener("click", () => renderReviveDialog(false));
+    $("#chapterClearCloseButton")?.addEventListener("click", () => renderChapterClearPanel(false));
     $("#fullscreenButton").addEventListener("click", async () => {
       if (document.fullscreenElement) await document.exitFullscreen();
       else await $(".game-stage").requestFullscreen();
     });
+    $("#chatForm")?.addEventListener("submit", event => {
+      event.preventDefault();
+      submitChat();
+    });
+    bindTextEntryGuards();
     bindMobileControls();
   }
 

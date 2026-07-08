@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import math
 import mimetypes
 import os
 import re
@@ -28,6 +29,26 @@ WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_-]{3,18}$")
 CHARACTER_IDS = {"lina", "ayu"}
 CHARACTER_LIMIT = 5
+PROFILE_EXTRA_STRING_FIELDS = {"chapterId", "mapId", "spawnId"}
+PROFILE_EXTRA_JSON_FIELDS = {"flags", "quests", "inventory", "equipment", "collections"}
+PROFILE_EXTRA_JSON_MAX_BYTES = 12 * 1024
+PROFILE_EXTRA_DEPTH = 5
+PROFILE_EXTRA_ITEMS_LIMIT = 80
+PROFILE_EXTRA_KEY_LIMIT = 64
+PROFILE_EXTRA_STRING_LIMIT = 256
+MAX_WS_MESSAGE_BYTES = max(1024, int(os.environ.get("MAX_WS_MESSAGE_BYTES", "4096")))
+MAX_WS_FRAME_BYTES = max(1024, int(os.environ.get("MAX_WS_FRAME_BYTES", str(MAX_WS_MESSAGE_BYTES))))
+WS_RATE_WINDOW_SECONDS = 5.0
+MAX_WS_MESSAGES_PER_WINDOW = 120
+MAX_CHAT_MESSAGES = max(0, int(os.environ.get("MAX_CHAT_MESSAGES", "60")))
+CHAT_RATE_WINDOW = max(1.0, float(os.environ.get("CHAT_RATE_WINDOW", "10")))
+CHAT_RATE_LIMIT = max(1, int(os.environ.get("CHAT_RATE_LIMIT", "5")))
+CHAT_HISTORY_LIMIT = max(0, int(os.environ.get("CHAT_HISTORY_LIMIT", str(MAX_CHAT_MESSAGES))))
+CHAT_TEXT_LIMIT = max(1, int(os.environ.get("CHAT_TEXT_LIMIT", "180")))
+CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
+MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
+CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
 
 BASE_PROFILE = {
     "level": 1,
@@ -35,16 +56,36 @@ BASE_PROFILE = {
     "credits": 0,
     "maxHp": 160,
     "hp": 160,
+    "maxEnergy": 150,
+    "energy": 150,
+    "shield": 0,
+    "attackPower": 26,
+    "magicPower": 22,
+    "chapterId": "chapter1",
+    "mapId": "ch1_m01_classroom_spawn",
+    "spawnId": "entry",
+    "flags": {},
+    "quests": {},
+    "inventory": [],
+    "equipment": [],
+    "collections": {},
 }
 
 DEFAULT_BOSS = {
     "id": "boss_ai_prof",
-    "name": "AI 陆教授考核镜像",
-    "maxHp": 420,
-    "hp": 420,
+    "name": "陆教授协议考核",
+    "maxHp": 5,
+    "hp": 0,
     "active": False,
     "x": 0,
     "y": 0,
+    "phase": "idle",
+    "waveIndex": 0,
+    "waveTitle": "",
+    "wavesTotal": 3,
+    "summonsRemaining": 0,
+    "eliteRemaining": 0,
+    "chestReady": False,
 }
 
 CONTENT_TYPES = {
@@ -222,6 +263,67 @@ def clean_number(value: object, fallback: int, low: int, high: int) -> int:
     return max(low, min(high, number))
 
 
+def clean_limited_text(value: object, limit: int) -> str:
+    text = CONTROL_CHAR_RE.sub("", str(value or "")).strip()
+    return text[:limit]
+
+
+def sanitize_profile_json_value(value: object, depth: int = 0) -> object:
+    if depth > PROFILE_EXTRA_DEPTH:
+        return None
+    if value is None or isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return value if math.isfinite(float(value)) else None
+    if isinstance(value, str):
+        return clean_limited_text(value, PROFILE_EXTRA_STRING_LIMIT)
+    if isinstance(value, list):
+        clean_items = []
+        for item in value[:PROFILE_EXTRA_ITEMS_LIMIT]:
+            clean_item = sanitize_profile_json_value(item, depth + 1)
+            if clean_item is not None:
+                clean_items.append(clean_item)
+        return clean_items
+    if isinstance(value, dict):
+        clean_items = {}
+        for key, item in list(value.items())[:PROFILE_EXTRA_ITEMS_LIMIT]:
+            clean_key = clean_limited_text(key, PROFILE_EXTRA_KEY_LIMIT)
+            if not clean_key:
+                continue
+            clean_item = sanitize_profile_json_value(item, depth + 1)
+            if clean_item is not None:
+                clean_items[clean_key] = clean_item
+        return clean_items
+    return None
+
+
+def sanitize_profile_extra_json(value: object) -> object:
+    clean_value = sanitize_profile_json_value(value)
+    if clean_value is None:
+        return None
+    try:
+        size = len(json.dumps(clean_value, ensure_ascii=False).encode("utf-8"))
+    except (TypeError, ValueError):
+        return None
+    if size > PROFILE_EXTRA_JSON_MAX_BYTES:
+        return None
+    return clean_value
+
+
+def sanitize_profile_extras(profile: dict) -> dict:
+    extras = {}
+    for field in PROFILE_EXTRA_STRING_FIELDS:
+        if field in profile and profile[field] is not None:
+            extras[field] = clean_limited_text(profile[field], PROFILE_EXTRA_STRING_LIMIT)
+    for field in PROFILE_EXTRA_JSON_FIELDS:
+        if field not in profile:
+            continue
+        clean_value = sanitize_profile_extra_json(profile[field])
+        if clean_value is not None:
+            extras[field] = clean_value
+    return extras
+
+
 def default_profile(user: sqlite3.Row) -> dict:
     return {
         "id": f"u{user['id']}",
@@ -234,9 +336,16 @@ def default_profile(user: sqlite3.Row) -> dict:
 
 
 def sanitize_profile(profile: dict, user: sqlite3.Row) -> dict:
+    if not isinstance(profile, dict):
+        profile = {}
     base = default_profile(user)
     max_hp = clean_number(profile.get("maxHp"), base["maxHp"], 1, 9999)
-    return {
+    previous_max_energy = clean_number(profile.get("maxEnergy"), base["maxEnergy"], 1, 9999)
+    max_energy = max(base["maxEnergy"], previous_max_energy)
+    incoming_energy = clean_number(profile.get("energy"), min(base["energy"], max_energy), 0, max_energy)
+    if previous_max_energy < base["maxEnergy"] and incoming_energy >= previous_max_energy:
+        incoming_energy = max_energy
+    safe_profile = {
         "id": base["id"],
         "account": base["account"],
         "name": clean_name(profile.get("name"), base["name"]),
@@ -247,7 +356,15 @@ def sanitize_profile(profile: dict, user: sqlite3.Row) -> dict:
         "credits": clean_number(profile.get("credits"), base["credits"], 0, 99999),
         "maxHp": max_hp,
         "hp": clean_number(profile.get("hp"), min(base["hp"], max_hp), 0, max_hp),
+        "maxEnergy": max_energy,
+        "energy": incoming_energy,
+        "shield": clean_number(profile.get("shield"), base["shield"], 0, 9999),
+        "attackPower": clean_number(profile.get("attackPower"), base["attackPower"], 1, 9999),
+        "magicPower": clean_number(profile.get("magicPower"), base["magicPower"], 1, 9999),
     }
+    safe_profile.update(sanitize_profile_extras(base))
+    safe_profile.update(sanitize_profile_extras(profile))
+    return safe_profile
 
 
 def load_profile(user: sqlite3.Row) -> dict:
@@ -376,8 +493,8 @@ def handle_character_select(user: sqlite3.Row, payload: dict) -> tuple[int, dict
     character = character_to_dict(row)
     if character["hp"] <= 0:
         character["hp"] = character["maxHp"]
-    profile = save_profile(
-        user,
+    selected_profile = load_profile(user)
+    selected_profile.update(
         {
             "name": character["name"],
             "characterId": character["characterId"],
@@ -387,8 +504,9 @@ def handle_character_select(user: sqlite3.Row, payload: dict) -> tuple[int, dict
             "credits": character["credits"],
             "maxHp": character["maxHp"],
             "hp": character["hp"],
-        },
+        }
     )
+    profile = save_profile(user, selected_profile)
     return 200, {"profile": profile}
 
 
@@ -442,8 +560,10 @@ def get_room(name: str = "zhonghe-plaza") -> dict:
             "peers": {},
             "boss": dict(DEFAULT_BOSS),
             "slimes": {},
+            "chat": [],
         }
     rooms[name].setdefault("slimes", {})
+    rooms[name].setdefault("chat", [])
     return rooms[name]
 
 
@@ -457,6 +577,8 @@ class WsClient:
         self.id = ""
         self.room_name = ""
         self.player: dict = {}
+        self.message_times: list[float] = []
+        self.chat_times: list[float] = []
 
 
 def ws_frame(payload: bytes, opcode: int = 0x1) -> bytes:
@@ -512,6 +634,8 @@ def read_ws_message(sock: socket.socket) -> str | None:
             if not extended:
                 return None
             length = struct.unpack("!Q", extended)[0]
+        if length > MAX_WS_FRAME_BYTES:
+            return None
 
         mask = read_exact(sock, 4) if masked else b""
         payload = read_exact(sock, length) if length else b""
@@ -529,6 +653,8 @@ def read_ws_message(sock: socket.socket) -> str | None:
                 return None
             continue
         if opcode == 0x1:
+            if len(payload) > MAX_WS_MESSAGE_BYTES:
+                return None
             return payload.decode("utf-8", errors="ignore")
 
 
@@ -541,6 +667,31 @@ def broadcast(room_name: str, payload: dict, except_client: WsClient | None = No
         ]
     for target in targets:
         send_ws(target, payload)
+
+
+def allow_rate(timestamps: list[float], limit: int, window_seconds: float) -> bool:
+    now = time.time()
+    cutoff = now - window_seconds
+    while timestamps and timestamps[0] < cutoff:
+        timestamps.pop(0)
+    if len(timestamps) >= limit:
+        return False
+    timestamps.append(now)
+    return True
+
+
+def clean_chat_text(value: object) -> str:
+    if not isinstance(value, (str, int, float)):
+        return ""
+    text = CONTROL_CHAR_RE.sub("", str(value))
+    text = CHAT_TAG_RE.sub(" ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text[:CHAT_TEXT_LIMIT]
+
+
+def user_by_id(user_id: int) -> sqlite3.Row | None:
+    with db() as conn:
+        return conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 
 def leave_client(client: WsClient) -> None:
@@ -576,6 +727,7 @@ def player_state_from_message(user: sqlite3.Row, profile: dict, incoming: dict) 
         "action": str(incoming.get("action") or "idle")[:24],
         "hp": clean_number(incoming.get("hp"), profile["hp"], 0, profile["maxHp"]),
         "maxHp": clean_number(incoming.get("maxHp"), profile["maxHp"], 1, 9999),
+        "shield": clean_number(incoming.get("shield"), profile.get("shield", 0), 0, 9999),
         "updatedAt": int(time.time() * 1000),
     }
 
@@ -624,8 +776,20 @@ def handle_join(client: WsClient, message: dict) -> None:
         peers = [peer for peer_id, peer in room["peers"].items() if peer_id != client.id]
         boss = dict(room["boss"])
         slimes = list(room["slimes"].values())
+        chat = list(room["chat"][-CHAT_HISTORY_LIMIT:])
 
-    send_ws(client, {"type": "welcome", "id": client.id, "peers": peers, "boss": boss, "slimes": slimes})
+    send_ws(
+        client,
+        {
+            "type": "welcome",
+            "id": client.id,
+            "peers": peers,
+            "boss": boss,
+            "slimes": slimes,
+            "chat": chat,
+            "recentChat": chat,
+        },
+    )
     broadcast(room_name, {"type": "peerJoined", "player": player}, client)
 
 
@@ -656,6 +820,13 @@ def handle_boss_start(client: WsClient, message: dict) -> None:
     boss["active"] = True
     boss["x"] = clean_number(incoming.get("x"), 3200, 0, 20000)
     boss["y"] = clean_number(incoming.get("y"), 3200, 0, 20000)
+    boss["phase"] = clean_limited_text(incoming.get("phase", boss.get("phase", "summoning")), 32)
+    boss["waveIndex"] = clean_number(incoming.get("waveIndex"), 0, 0, 12)
+    boss["waveTitle"] = clean_limited_text(incoming.get("waveTitle", ""), 64)
+    boss["wavesTotal"] = clean_number(incoming.get("wavesTotal"), boss.get("wavesTotal", 3), 1, 12)
+    boss["summonsRemaining"] = clean_number(incoming.get("summonsRemaining"), boss["hp"], 0, 99)
+    boss["eliteRemaining"] = clean_number(incoming.get("eliteRemaining"), 1, 0, 9)
+    boss["chestReady"] = bool(incoming.get("chestReady", False))
     with state_lock:
         get_room(client.room_name)["boss"] = boss
     broadcast(client.room_name, {"type": "bossState", "boss": boss})
@@ -674,7 +845,7 @@ def handle_boss_hit(client: WsClient, message: dict) -> None:
         boss["hp"] = max(0, int(boss.get("hp", 0)) - damage)
         if boss["hp"] <= 0:
             boss["active"] = False
-            notice = "AI 陆教授考核镜像已被击破"
+            notice = "陆教授协议考核召唤物已清除"
         boss_state = dict(boss)
     if notice:
         broadcast(client.room_name, {"type": "notice", "text": notice})
@@ -727,10 +898,61 @@ def handle_slime_remove(client: WsClient, message: dict) -> None:
     broadcast(client.room_name, {"type": "slimeRemove", "id": slime_id}, client)
 
 
+def handle_chat_send(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name:
+        return
+    if not allow_rate(client.chat_times, MAX_CHAT_MESSAGES_PER_WINDOW, CHAT_RATE_WINDOW_SECONDS):
+        send_ws(client, {"type": "chatError", "code": "rate_limited", "text": "Please slow down."})
+        return
+
+    text = clean_chat_text(message.get("text", message.get("message", "")))
+    if not text:
+        return
+
+    user = user_by_id(client.user_id)
+    if user:
+        profile = load_profile(user)
+        name = clean_name(profile.get("name"), client.player.get("name") or client.id)
+        character_id = clean_character(profile.get("characterId"), client.player.get("characterId", "lina"))
+        player_id = profile["id"]
+    else:
+        name = clean_name(client.player.get("name"), client.id)
+        character_id = clean_character(client.player.get("characterId"), "lina")
+        player_id = client.id
+
+    chat_message = {
+        "id": f"chat-{int(time.time() * 1000)}-{secrets.token_urlsafe(4)}",
+        "room": client.room_name,
+        "playerId": player_id,
+        "name": name,
+        "characterId": character_id,
+        "text": text,
+        "createdAt": int(time.time() * 1000),
+    }
+
+    with state_lock:
+        room = get_room(client.room_name)
+        room["chat"].append(chat_message)
+        if CHAT_HISTORY_LIMIT <= 0:
+            room["chat"].clear()
+        elif len(room["chat"]) > CHAT_HISTORY_LIMIT:
+            del room["chat"][:-CHAT_HISTORY_LIMIT]
+
+    broadcast(client.room_name, {"type": "chatMessage", "message": chat_message})
+
+
 def handle_ws_message(client: WsClient, raw: str) -> None:
+    if len(raw.encode("utf-8")) > MAX_WS_MESSAGE_BYTES:
+        client.alive = False
+        return
+    if not allow_rate(client.message_times, MAX_WS_MESSAGES_PER_WINDOW, WS_RATE_WINDOW_SECONDS):
+        send_ws(client, {"type": "rateLimited", "code": "message_rate"})
+        return
     try:
         message = json.loads(raw)
     except json.JSONDecodeError:
+        return
+    if not isinstance(message, dict):
         return
     message_type = message.get("type")
     if message_type == "join":
@@ -745,6 +967,8 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
         handle_slime_spawn(client, message)
     elif message_type == "slimeRemove":
         handle_slime_remove(client, message)
+    elif message_type == "chatSend":
+        handle_chat_send(client, message)
 
 
 class GameHandler(BaseHTTPRequestHandler):
