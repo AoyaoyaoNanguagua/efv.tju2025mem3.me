@@ -9,6 +9,7 @@
   const PROJECTILE_FRAME_SIZE = 362;
   const PROJECTILE_MAX_RANGE = MAP_TILE_SIZE * 6;
   const PROJECTILE_SPEED_SCALE = 0.94;
+  const PLAYER_PROJECTILE_SPEED_MULTIPLIER = 1.2;
   const PROJECTILE_VISUAL_SCALE_MULTIPLIER = 2;
   const PROJECTILE_HITBOX_SCALE_MULTIPLIER = 2;
   const PROJECTILE_HEAD_ORIGIN = { x: 236 / PROJECTILE_FRAME_SIZE, y: 209 / PROJECTILE_FRAME_SIZE };
@@ -34,7 +35,7 @@
     { key: "ch1-m01-foreground-atlas-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-foreground-atlas-v4-4096x4096.png" },
     { key: "ch1-m01-wall-overlay-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.png" },
     { key: "ch1-m01-wall-overlay-front-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.png" },
-    { key: "ch1-map-prompt-archive-bg", path: "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v2-2048.png" },
+    { key: "ch1-map-prompt-archive-bg", path: "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v3-6144x2048.png" },
     { key: "ch1-map-agent-lab-bg", path: "assets/chapter1/maps/ch1_m03_agent_lab/background/ch1-map-agent-lab-bg-v2-2048.png" },
     { key: "ch1-map-library-lawn-boss-bg", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/background/ch1-map-library-lawn-boss-bg-v2-2048.png" },
     { key: "ch1-m01-spawn-r0-c0", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c0.png" },
@@ -43,10 +44,18 @@
     { key: "ch1-m01-spawn-r1-c0", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c0.png" },
     { key: "ch1-m01-spawn-r1-c1", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c1.png" },
     { key: "ch1-m01-spawn-r1-c2", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c2.png" },
-    { key: "ch1-process-nw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-nw-v1.png" },
-    { key: "ch1-process-ne", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-ne-v1.png" },
-    { key: "ch1-process-sw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-sw-v1.png" },
-    { key: "ch1-process-se", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-se-v1.png" },
+    { key: "ch1-m02-archive-v3-r0-c0", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c0.png" },
+    { key: "ch1-m02-archive-v3-r0-c1", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c1.png" },
+    { key: "ch1-m02-archive-v3-r0-c2", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c2.png" },
+    { key: "ch1-m02-archive-v3-r0-c3", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c3.png" },
+    { key: "ch1-m02-archive-v3-r0-c4", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c4.png" },
+    { key: "ch1-m02-archive-v3-r0-c5", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c5.png" },
+    { key: "ch1-m02-archive-v3-r1-c0", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c0.png" },
+    { key: "ch1-m02-archive-v3-r1-c1", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c1.png" },
+    { key: "ch1-m02-archive-v3-r1-c2", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c2.png" },
+    { key: "ch1-m02-archive-v3-r1-c3", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c3.png" },
+    { key: "ch1-m02-archive-v3-r1-c4", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c4.png" },
+    { key: "ch1-m02-archive-v3-r1-c5", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c5.png" },
     { key: "ch1-m03-agent-nw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-nw-v1.png" },
     { key: "ch1-m03-agent-ne", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-ne-v1.png" },
     { key: "ch1-m03-agent-sw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-sw-v1.png" },
@@ -115,6 +124,10 @@
   const MAP_TRANSFER_RING_IMAGE = "assets/chapter1/vfx/ch1-map-transfer-ring-sheet-v1.png";
   const MAP_TRANSFER_RING_FRAME_WIDTH = 128;
   const MAP_TRANSFER_RING_FRAME_HEIGHT = 128;
+  const QUEST_INTERACTION_MARKER_KEY = "ch1-quest-interaction-marker";
+  const QUEST_INTERACTION_MARKER_IMAGE = "assets/game/vfx/quest-interaction-marker-sheet-v1.png";
+  const QUEST_INTERACTION_MARKER_FRAME_WIDTH = 96;
+  const QUEST_INTERACTION_MARKER_FRAME_HEIGHT = 96;
   const BOSS_VOID_PORTAL_KEY = "ch1-boss-void-portal";
   const BOSS_VOID_PORTAL_IMAGE = "assets/chapter1/vfx/ch1-boss-void-portal-sheet-v1.png";
   const BOSS_VOID_PORTAL_FRAME_WIDTH = 256;
@@ -145,6 +158,12 @@
   const LEAF_SLIME_KEY = "play-leaf-slime";
   const LEAF_SLIME_FRAME_SIZE = 128;
   const LEAF_SLIME_COLS = 6;
+  const M02_COPY_SHADOW_KEY = "ch1-m02-copy-paste-shadow";
+  const M02_TONE_DRIFT_KEY = "ch1-m02-tone-drift-archivist";
+  const CHAPTER_ONE_ENEMY_SPRITES = [
+    { key: M02_COPY_SHADOW_KEY, path: "assets/game/enemies/m02-copy-paste-shadow-sprites-v1.png" },
+    { key: M02_TONE_DRIFT_KEY, path: "assets/game/enemies/m02-tone-drift-archivist-sprites-v1.png" }
+  ];
   const LEAF_SLIME_DETECT_RANGE = MAP_TILE_SIZE * 6;
   const LEAF_SLIME_ATTACK_RANGE = 64;
   const LEAF_SLIME_ATTACK_COOLDOWN = 1250;
@@ -229,6 +248,9 @@
   const CHARGE_LOOP_FRAMES = [1, 2, 3];
   const ULTIMATE_CAST_FRAMES = [0, 1, 2, 3, 1, 2, 3];
   const SIX_FRAMES = [0, 1, 2, 3, 4, 5];
+  const LINA_ATTACK_VISUAL_SCALE = 1.1;
+  const ACTOR_DEFAULT_VISUAL_SCALE = 1;
+  const PEER_DEFAULT_VISUAL_SCALE = 0.96;
 
   const ACTIONS = [
     { id: "idle", row: 0, fps: 7, repeat: -1, frames: FOUR_FRAMES },
@@ -1851,9 +1873,16 @@
     }
 
     cast() { this.tone(740, 0.12, "triangle", 0.07); }
-    projectileFly() {
-      this.sweep(760, 1560, 0.12, "triangle", 0.05);
-      window.setTimeout(() => this.tone(1240, 0.045, "sine", 0.025), 45);
+    projectileFly(charged = false) {
+      if (charged) {
+        this.sweep(520, 1960, 0.18, "triangle", 0.064);
+        this.tone(220, 0.1, "sine", 0.028);
+        window.setTimeout(() => this.tone(1560, 0.07, "sine", 0.035), 55);
+        window.setTimeout(() => this.noise(0.12, 0.016, "highpass", 1800), 80);
+        return;
+      }
+      this.sweep(820, 1840, 0.11, "triangle", 0.054);
+      window.setTimeout(() => this.tone(1320, 0.045, "sine", 0.026), 42);
     }
     ultimateWind() {
       this.noise(0.62, 0.038, "bandpass", 620);
@@ -2091,6 +2120,12 @@
         frameWidth: LEAF_SLIME_FRAME_SIZE,
         frameHeight: LEAF_SLIME_FRAME_SIZE
       });
+      CHAPTER_ONE_ENEMY_SPRITES.forEach(item => {
+        this.load.spritesheet(item.key, item.path, {
+          frameWidth: LEAF_SLIME_FRAME_SIZE,
+          frameHeight: LEAF_SLIME_FRAME_SIZE
+        });
+      });
       this.load.image(BOSS_KEY, BOSS_IMAGE);
       CHAPTER_ONE_ENEMY_IMAGES.forEach(item => this.load.image(item.key, item.path));
       this.load.spritesheet(MAP_PORTAL_KEY, MAP_PORTAL_IMAGE, {
@@ -2100,6 +2135,10 @@
       this.load.spritesheet(MAP_TRANSFER_RING_KEY, MAP_TRANSFER_RING_IMAGE, {
         frameWidth: MAP_TRANSFER_RING_FRAME_WIDTH,
         frameHeight: MAP_TRANSFER_RING_FRAME_HEIGHT
+      });
+      this.load.spritesheet(QUEST_INTERACTION_MARKER_KEY, QUEST_INTERACTION_MARKER_IMAGE, {
+        frameWidth: QUEST_INTERACTION_MARKER_FRAME_WIDTH,
+        frameHeight: QUEST_INTERACTION_MARKER_FRAME_HEIGHT
       });
       this.load.spritesheet(BOSS_VOID_PORTAL_KEY, BOSS_VOID_PORTAL_IMAGE, {
         frameWidth: BOSS_VOID_PORTAL_FRAME_WIDTH,
@@ -2453,9 +2492,12 @@
               .setAlpha(0.9)
               .setDepth(node.y - 2)
               .play("ch1-map-transfer-ring-loop")
-            : this.add.circle(node.x, node.y, 15, 0xf3c75d, 0.28)
-            .setStrokeStyle(2, 0xffffff, 0.72)
-            .setDepth(node.y + 3);
+            : this.add.sprite(node.x, node.y - 6, QUEST_INTERACTION_MARKER_KEY)
+              .setOrigin(0.5, 0.72)
+              .setScale(Number(node.markerScale) || 0.78)
+              .setAlpha(0.94)
+              .setDepth(node.y + 3)
+              .play("ch1-quest-interaction-marker-loop");
         const label = this.add.text(node.x, node.y - 30, node.label || "交互", {
           fontFamily: "Microsoft YaHei, sans-serif",
           fontSize: "12px",
@@ -2714,21 +2756,23 @@
     }
 
     prepareLeafSlimeAnimations() {
-      const texture = this.textures.get(LEAF_SLIME_KEY);
-      texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
-      [
-        { key: "move", row: 0, frameRate: 12, repeat: 0 },
-        { key: "attack", row: 1, frameRate: 13, repeat: 0 },
-        { key: "hit", row: 2, frameRate: 15, repeat: 0 },
-        { key: "dead", row: 3, frameRate: 9, repeat: 0 }
-      ].forEach(config => {
-        const key = `${LEAF_SLIME_KEY}-${config.key}`;
-        if (this.anims.exists(key)) return;
-        this.anims.create({
-          key,
-          frames: this.anims.generateFrameNumbers(LEAF_SLIME_KEY, { frames: this.getLeafSlimeFrames(config.row) }),
-          frameRate: config.frameRate,
-          repeat: config.repeat
+      [LEAF_SLIME_KEY, ...CHAPTER_ONE_ENEMY_SPRITES.map(item => item.key)].forEach(textureKey => {
+        const texture = this.textures.get(textureKey);
+        texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
+        [
+          { key: "move", row: 0, frameRate: 12, repeat: 0 },
+          { key: "attack", row: 1, frameRate: 13, repeat: 0 },
+          { key: "hit", row: 2, frameRate: 15, repeat: 0 },
+          { key: "dead", row: 3, frameRate: 9, repeat: 0 }
+        ].forEach(config => {
+          const key = `${textureKey}-${config.key}`;
+          if (this.anims.exists(key)) return;
+          this.anims.create({
+            key,
+            frames: this.anims.generateFrameNumbers(textureKey, { frames: this.getLeafSlimeFrames(config.row) }),
+            frameRate: config.frameRate,
+            repeat: config.repeat
+          });
         });
       });
     }
@@ -2737,6 +2781,7 @@
       [
         { textureKey: MAP_PORTAL_KEY, animationKey: "ch1-map-portal-loop", frameRate: 9, end: 7 },
         { textureKey: MAP_TRANSFER_RING_KEY, animationKey: "ch1-map-transfer-ring-loop", frameRate: 7, end: 3 },
+        { textureKey: QUEST_INTERACTION_MARKER_KEY, animationKey: "ch1-quest-interaction-marker-loop", frameRate: 7, end: 3 },
         { textureKey: BOSS_VOID_PORTAL_KEY, animationKey: "ch1-boss-void-portal-loop", frameRate: 12, end: 7 }
       ].forEach(({ textureKey, animationKey, frameRate, end }) => {
         const texture = this.textures.get(textureKey);
@@ -2803,7 +2848,7 @@
       const character = getCharacter(app.profile.characterId);
       this.actor = this.physics.add.sprite(spawn.x, spawn.y, character.id, 0)
         .setOrigin(0.5, character.baseline / FRAME_SIZE)
-        .setScale(1)
+        .setScale(ACTOR_DEFAULT_VISUAL_SCALE)
         .setDepth(spawn.y + 8);
       this.actor.body.setSize(34, 42);
       this.actor.body.setOffset(56, 92);
@@ -2811,6 +2856,23 @@
       this.actor.play(`${character.id}-idle`, true);
       this.actorShadow = this.add.ellipse(this.actor.x, this.actor.y + 3, 34, 11, 0x182313, 0.16)
         .setDepth(this.actor.y - 24);
+    }
+
+    setActorVisualScale(scale = ACTOR_DEFAULT_VISUAL_SCALE) {
+      if (!this.actor) return;
+      this.actor.setScale(scale);
+      if (this.actor.body) {
+        this.actor.body.setSize(34, 42);
+        this.actor.body.setOffset(56, 92);
+      }
+    }
+
+    setLinaAttackVisualScale() {
+      if (app.profile.characterId === "lina" && !this.isCat) this.setActorVisualScale(LINA_ATTACK_VISUAL_SCALE);
+    }
+
+    resetActorVisualScale() {
+      this.setActorVisualScale(ACTOR_DEFAULT_VISUAL_SCALE);
     }
 
     clearRuntimeMapObjects() {
@@ -3393,6 +3455,7 @@
     playLoop(actionId) {
       if (!this.actor || this.isCasting || this.isDead || this.isActionLocked) return;
       if (this.isCatJumping) return;
+      this.resetActorVisualScale();
       const character = getCharacter(app.profile.characterId);
       if (this.isCat && actionId === "idle") {
         this.actor.anims.stop();
@@ -3443,6 +3506,7 @@
       this.primaryHold = null;
       this.chargeHoldTimer?.remove?.(false);
       this.chargeHoldTimer = null;
+      this.resetActorVisualScale();
     }
 
     triggerPrimaryActionImmediate() {
@@ -3465,6 +3529,7 @@
       this.isCasting = true;
       this.networkAction = "attack";
       this.actor.setTexture("lina");
+      this.setLinaAttackVisualScale();
       this.actor.play("lina-attack-charge-start", true);
       this.chargeHoldTimer?.remove?.(false);
       this.chargeHoldTimer = this.time.delayedCall(CHARGE_HOLD_THRESHOLD, () => {
@@ -3491,12 +3556,14 @@
       this.fireProjectile({ charged: hold.charged });
       this.isCasting = false;
       this.actor.setTexture(app.profile.characterId);
+      this.resetActorVisualScale();
       if (!this.isDead) this.playLoop("idle");
     }
 
     playCatJump() {
       if (!this.actor || this.isDead || this.isActionLocked || this.isCatJumping) return;
       const character = getCharacter(app.profile.characterId);
+      this.resetActorVisualScale();
       this.isCat = true;
       this.isCatJumping = true;
       this.networkAction = "catJump";
@@ -3511,6 +3578,7 @@
     toggleTransformState() {
       if (!this.actor || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold || this.isTransforming) return;
       const character = getCharacter(app.profile.characterId);
+      this.resetActorVisualScale();
       this.isTransforming = true;
       this.networkAction = "transform";
       this.actor.setTexture(character.id);
@@ -3541,12 +3609,14 @@
       const character = getCharacter(app.profile.characterId);
       this.isCasting = true;
       this.networkAction = "attack";
+      this.setLinaAttackVisualScale();
       this.actor.play(this.getAttackAnimationKey(), true);
       if (isMelee) this.time.delayedCall(110, () => this.dealMeleeDamage());
       else this.time.delayedCall(95, () => this.fireProjectile());
       this.actor.once("animationcomplete", () => {
         this.isCasting = false;
         this.actor.setTexture(character.id);
+        this.resetActorVisualScale();
         if (!this.isDead) this.playLoop("idle");
       });
     }
@@ -3575,6 +3645,7 @@
       this.networkAction = "attack";
       this.actor.body.setVelocity(0, 0);
       this.actor.setTexture("lina");
+      this.setLinaAttackVisualScale();
       this.actor.play("lina-ultimate-cast", true);
       this.playUltimateCyclone();
     }
@@ -3605,6 +3676,7 @@
         this.isCasting = false;
         this.isActionLocked = false;
         this.actor.setTexture(app.profile.characterId);
+        this.resetActorVisualScale();
         this.returnToBaseLoop();
       });
     }
@@ -3685,7 +3757,7 @@
       const vec = directionVector(direction);
       this.lastAimVector = vec;
       const castOrigin = this.getCastOrigin(vec);
-      const projectileSpeed = equipment.speed * PROJECTILE_SPEED_SCALE;
+      const projectileSpeed = equipment.speed * PROJECTILE_SPEED_SCALE * PLAYER_PROJECTILE_SPEED_MULTIPLIER;
       const flightFrame = equipment.projectileFrame + (charged ? 1 : 0);
       const projectile = this.projectiles.create(castOrigin.x, castOrigin.y, "play-projectile-hitbox");
       projectile.setVisible(false);
@@ -3721,7 +3793,7 @@
         .setRotation(projectile.visualRotation)
         .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
       this.flashCast(castOrigin.x, castOrigin.y, equipment.color, projectile.visualBaseDepth + 1);
-      app.audio.projectileFly();
+      app.audio.projectileFly(charged);
     }
 
     getCastOrigin(vec) {
@@ -3741,8 +3813,10 @@
       const character = getCharacter(app.profile.characterId);
       const originX = (this.actor.originX ?? 0.5) * FRAME_SIZE;
       const originY = (this.actor.originY ?? (character.baseline / FRAME_SIZE)) * FRAME_SIZE;
-      const localX = (socket.x - originX) * (this.actor.flipX ? -1 : 1);
-      const localY = socket.y - originY;
+      const visualScaleX = Math.abs(this.actor.scaleX || ACTOR_DEFAULT_VISUAL_SCALE);
+      const visualScaleY = Math.abs(this.actor.scaleY || ACTOR_DEFAULT_VISUAL_SCALE);
+      const localX = (socket.x - originX) * visualScaleX * (this.actor.flipX ? -1 : 1);
+      const localY = (socket.y - originY) * visualScaleY;
       const rotation = this.actor.rotation || 0;
       const cos = Math.cos(rotation);
       const sin = Math.sin(rotation);
@@ -4295,7 +4369,7 @@
       if (!remote) {
         const sprite = this.add.sprite(peer.x, peer.y, character.id, 0)
           .setOrigin(0.5, character.baseline / FRAME_SIZE)
-          .setScale(0.96)
+          .setScale(PEER_DEFAULT_VISUAL_SCALE)
           .setAlpha(0.88)
           .setDepth(peer.y + 8);
         sprite.play(`${character.id}-idle`);
@@ -4350,6 +4424,7 @@
       }
       if (remote.down) {
         remote.sprite.clearTint();
+        remote.sprite.setScale(PEER_DEFAULT_VISUAL_SCALE);
         const deathKey = `${peer.characterId}-death-once`;
         if (this.anims.exists(deathKey) && remote.sprite.anims.currentAnim?.key !== deathKey) remote.sprite.play(deathKey, true);
         return;
@@ -4360,6 +4435,10 @@
       const action = ["attack", "hit", "transform", "catRun", "catJump"].includes(requested)
         ? requested
         : moving ? "walk" : "idle";
+      const peerScale = peer.characterId === "lina" && action === "attack"
+        ? PEER_DEFAULT_VISUAL_SCALE * LINA_ATTACK_VISUAL_SCALE
+        : PEER_DEFAULT_VISUAL_SCALE;
+      remote.sprite.setScale(peerScale);
       const animKey = `${peer.characterId}-${["attack", "hit", "transform", "catJump"].includes(action) ? `${action}-once` : action}`;
       if (this.anims.exists(animKey) && remote.sprite.anims.currentAnim?.key !== animKey) remote.sprite.play(animKey, true);
     }
