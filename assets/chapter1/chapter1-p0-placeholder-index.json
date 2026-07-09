@@ -1,0 +1,162 @@
+{
+  "$schema": "https://efv.local/schemas/asset-placeholder-index-v0.json",
+  "id": "chapter1_p0_placeholder_index",
+  "slug": "chapter1-p0-placeholder-index",
+  "chapterId": "chapter1",
+  "version": "0.2.0",
+  "status": "runtime-assets-active",
+  "existingReusedAssets": [
+    {
+      "id": "reuse-zhonghe-ground-tileset",
+      "type": "tileset",
+      "path": "assets/maps/tilesets/zhonghe-plaza-ground-tileset-v1.png",
+      "usedBy": [
+        "ch1_m01_classroom_spawn"
+      ]
+    },
+    {
+      "id": "reuse-zhonghe-props-atlas",
+      "type": "prop-atlas",
+      "path": "assets/maps/props/zhonghe-plaza-props-atlas-v1.png",
+      "usedBy": [
+        "ch1_m01_classroom_spawn"
+      ]
+    },
+    {
+      "id": "reuse-zhonghe-macro-props",
+      "type": "prop-atlas",
+      "path": "assets/maps/props/zhonghe-plaza-macro-props-v1.png",
+      "usedBy": [
+        "ch1_m01_classroom_spawn"
+      ]
+    },
+    {
+      "id": "reuse-leaf-poring-enemy",
+      "type": "enemy-sprite",
+      "path": "assets/enemies/leaf-poring-sprites-v2.png",
+      "usedBy": [
+        "demand-bug",
+        "copy-paste-shadow"
+      ]
+    }
+  ],
+  "placeholderAssets": [
+    {
+      "id": "ch1-m01-classroom-concept",
+      "type": "concept-map",
+      "targetPath": "assets/chapter1/maps/ch1-m01-classroom-spawn/concept/ch1-m01-classroom-spawn-concept-v1.png",
+      "substitute": "assets/maps/playable/zhonghe-plaza-layered-preview-v1.png",
+      "status": "needed-after-data-lock",
+      "productionBatch": "batch-02"
+    },
+    {
+      "id": "ch1-m01-classroom-assembled-preview",
+      "type": "assembled-preview",
+      "targetPath": "assets/chapter1/maps/ch1-m01-classroom-spawn/assembled/ch1-m01-classroom-spawn-assembled-v1.png",
+      "substitute": "assets/maps/playable/zhonghe-plaza-layered-preview-v1.png",
+      "status": "needed-after-map-materialization",
+      "productionBatch": "batch-03"
+    },
+    {
+      "id": "ch1-m02-prompt-archive-concept",
+      "type": "concept-map",
+      "targetPath": "assets/chapter1/maps/ch1-m02-prompt-archive/concept/ch1-m02-prompt-archive-concept-v1.png",
+      "substitute": "assets/maps/playable/zhonghe-plaza-layered-preview-v1.png",
+      "status": "placeholder",
+      "productionBatch": "batch-02"
+    },
+    {
+      "id": "ch1-m03-agent-lab-concept",
+      "type": "concept-map",
+      "targetPath": "assets/chapter1/maps/ch1-m03-agent-lab/concept/ch1-m03-agent-lab-concept-v1.png",
+      "substitute": "assets/maps/playable/zhonghe-plaza-layered-preview-v1.png",
+      "status": "placeholder",
+      "productionBatch": "batch-02"
+    },
+    {
+      "id": "ch1-m04-library-lawn-boss-concept",
+      "type": "concept-map",
+      "targetPath": "assets/chapter1/maps/ch1-m04-library-lawn-boss/concept/ch1-m04-library-lawn-boss-concept-v1.png",
+      "substitute": "assets/maps/playable/zhonghe-plaza-layered-preview-v1.png",
+      "status": "placeholder",
+      "productionBatch": "batch-05"
+    },
+    {
+      "id": "ch1-enemy-demand-bug-sprites",
+      "type": "enemy-sprite",
+      "targetPath": "assets/chapter1/enemies/ch1-demand-bug-sprites-v1.png",
+      "substitute": "assets/enemies/leaf-poring-sprites-v2.png",
+      "status": "fallback-usable",
+      "productionBatch": "batch-06"
+    },
+    {
+      "id": "ch1-enemy-copy-paste-shadow-sprites",
+      "type": "enemy-sprite",
+      "targetPath": "assets/chapter1/enemies/ch1-copy-paste-shadow-sprites-v1.png",
+      "substitute": "assets/enemies/leaf-poring-sprites-v2.png",
+      "status": "fallback-usable",
+      "productionBatch": "batch-06"
+    },
+    {
+      "id": "ch1-boss-ai-professor-exam-sprites",
+      "type": "boss-sprite",
+      "targetPath": "assets/chapter1/boss/ch1-ai-professor-exam-sprites-v1.png",
+      "substitute": "assets/chapter1/boss/ai-professor-summoner-game-cutout-v1.png",
+      "status": "runtime-cutout-active",
+      "productionBatch": "batch-07"
+    },
+    {
+      "id": "ch1-protocol-card-icons",
+      "type": "ui-icons",
+      "targetPath": "assets/chapter1/ui/ch1-protocol-card-icons-v1.png",
+      "substitute": "assets/effects/lina-projectiles-atlas-v2.png",
+      "status": "placeholder",
+      "productionBatch": "batch-01"
+    }
+  ],
+  "generatedRuntimeAssets": [
+    {
+      "id": "ch1-ai-professor-summoner-game-cutout-v1",
+      "type": "boss-image",
+      "path": "assets/chapter1/boss/ai-professor-summoner-game-cutout-v1.png",
+      "source": "docs/asset-guides/ai-professor-summoner-concept-v1.png",
+      "usedBy": [
+        "ch1_boss_ai_professor_exam"
+      ]
+    },
+    {
+      "id": "ch1-boss-wave-enemy-cutouts",
+      "type": "enemy-images",
+      "path": "assets/chapter1/enemies/ch1-enemy-*-cutout-v*.png",
+      "source": "docs/asset-guides/boss-wave-*-concept-*.png",
+      "usedBy": [
+        "ch1_final_professor_summons"
+      ]
+    },
+    {
+      "id": "ch1-map-runtime-chunks",
+      "type": "map-chunks",
+      "path": "assets/chapter1/maps/*/chunks/*.png",
+      "usedBy": [
+        "chapter1-maps-v1.json"
+      ]
+    },
+    {
+      "id": "ch1-map-and-boss-portals",
+      "type": "vfx-spritesheets",
+      "path": "assets/chapter1/vfx/ch1-*-portal-sheet-v1.png",
+      "usedBy": [
+        "map-exits",
+        "boss-summon-waves"
+      ]
+    },
+    {
+      "id": "ch1-quickbar-icons-sheet-v1",
+      "type": "ui-icons",
+      "path": "assets/chapter1/ui/ch1-quickbar-icons-sheet-v1.png",
+      "usedBy": [
+        "bottom-quickbar"
+      ]
+    }
+  ]
+}

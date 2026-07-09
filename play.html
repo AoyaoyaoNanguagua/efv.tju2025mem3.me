@@ -143,40 +143,106 @@
           <p id="createHint" class="hint" aria-live="polite"></p>
         </div>
       </div>
+
+      <div id="entryLoadingStage" class="stage stage-entry-loading" hidden>
+        <div class="entry-loading-shade" aria-hidden="true"></div>
+        <div class="entry-loading-panel" role="status" aria-live="polite">
+          <p class="eyebrow">ENTERING THIRD ACADEMY</p>
+          <h2>正在进入学术喵校园</h2>
+          <div class="entry-progress-track"><i id="entryLoadingBar"></i></div>
+          <div class="entry-progress-row">
+            <span id="entryLoadingText">正在开启学院传送协议</span>
+            <b id="entryLoadingPercent">0%</b>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="game-stage">
       <div id="gameRoot" class="game-root" aria-label="正式开发游戏区域"></div>
+      <div id="interactionPrompt" class="interaction-prompt" aria-live="polite" aria-hidden="true"></div>
 
-      <aside class="status-panel" aria-label="玩家状态">
-        <div class="profile-line">
-          <strong id="hudName">同济学术喵</strong>
-          <span id="networkStatus">未连接</span>
-        </div>
-        <div class="bar-line">
-          <span>HP</span>
-          <div class="meter"><i id="hpBar"></i></div>
-          <b id="hpText">160 / 160</b>
-        </div>
-        <div class="meta-row">
-          <span id="levelText">Lv.1</span>
-          <span id="creditText">学分 0</span>
-          <span id="expText">EXP 0</span>
-        </div>
-        <div class="skill-row">
-          <button id="attackButton" class="skill active" type="button">J 晶光飞弹</button>
-          <button id="healButton" class="skill" type="button">H 樱光护盾</button>
-        </div>
-        <div id="peerList" class="peer-list"></div>
+      <div class="left-hud-stack">
+        <aside class="status-panel" aria-label="玩家状态">
+          <div class="profile-line">
+            <strong id="hudName">同济学术喵</strong>
+            <span id="networkStatus">未连接</span>
+          </div>
+          <div class="bar-line">
+            <span>HP</span>
+            <div class="meter"><i id="hpBar"></i></div>
+            <b id="hpText">160 / 160</b>
+          </div>
+          <div class="bar-line energy-line">
+            <span>EN</span>
+            <div class="meter energy-meter"><i id="energyBar"></i></div>
+            <b id="energyText">100 / 100</b>
+          </div>
+          <div class="meta-row">
+            <span id="levelText">Lv.1</span>
+            <span id="creditText">学分 0</span>
+            <span id="expText">EXP 0</span>
+          </div>
+          <div class="skill-row">
+            <button id="attackButton" class="skill active" type="button" data-skill-icon="attack"><small>J</small><span>晶光飞弹</span></button>
+            <button id="healButton" class="skill" type="button" data-skill-icon="heal"><small>H</small><span>樱光护盾</span></button>
+          </div>
+          <div id="peerList" class="peer-list"></div>
+        </aside>
+
+        <section id="chapterHud" class="chapter-hud" aria-label="第一章任务与收集">
+          <div class="chapter-head">
+            <span>第一章纵切</span>
+            <strong>AI 与协议革命</strong>
+          </div>
+          <div id="chapterTaskList" class="chapter-task-list"></div>
+          <div class="protocol-card-row">
+            <span>协议卡</span>
+            <div class="protocol-card-meter"><i id="protocolCardBar"></i></div>
+            <b id="protocolCardText">0 / 3</b>
+          </div>
+        </section>
+
+        <section id="publicChat" class="public-chat" aria-label="同舟星愿公共频道">
+          <header class="chat-head">
+            <span>同舟星愿</span>
+            <strong>公共频道</strong>
+          </header>
+          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+          <form id="chatForm" class="chat-form" autocomplete="off">
+            <input id="chatInput" name="chat" maxlength="80" placeholder="输入公共频道消息" aria-label="公共频道消息">
+            <button id="chatSendButton" type="submit">发送</button>
+          </form>
+        </section>
+      </div>
+
+      <aside class="right-hud-stack" aria-label="导航信息">
+        <section id="minimapPanel" class="minimap-panel" aria-label="新手村小地图">
+          <header class="minimap-head">
+            <span>新手村地图</span>
+            <strong id="minimapStatus">任务导航</strong>
+          </header>
+          <div class="minimap-frame">
+            <canvas id="minimapCanvas" width="244" height="148"></canvas>
+          </div>
+          <div class="minimap-legend" aria-hidden="true">
+            <span><i class="marker-player"></i>你</span>
+            <span><i class="marker-task"></i>任务</span>
+            <span><i class="marker-battle"></i>战斗</span>
+            <span><i class="marker-exit"></i>出口</span>
+            <span><i class="marker-boss"></i>Boss</span>
+          </div>
+        </section>
       </aside>
 
       <nav class="quickbar" aria-label="快捷操作">
-        <button id="musicToggle" type="button">音乐 开</button>
-        <button id="spawnButton" type="button">C 增加怪物</button>
-        <button id="bossButton" type="button">X 生成 Boss</button>
-        <button id="reconnectButton" type="button">重连同步</button>
-        <button id="fullscreenButton" type="button">全屏</button>
-        <button id="exitButton" type="button">退出游戏</button>
+        <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest"><small>T</small><span>任务</span></button>
+        <button id="chatToggleButton" type="button" data-panel-toggle="publicChat" data-icon="chat"><small>Enter</small><span>频道</span></button>
+        <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map"><small>M</small><span>地图</span></button>
+        <button id="musicToggle" type="button" data-icon="music"><small>B</small><span>音乐</span></button>
+        <button id="reconnectButton" type="button" data-icon="reconnect"><small>R</small><span>同步</span></button>
+        <button id="fullscreenButton" type="button" data-icon="fullscreen"><small>F</small><span>全屏</span></button>
+        <button id="exitButton" type="button" data-icon="exit"><small>Esc</small><span>退出</span></button>
       </nav>
 
       <section id="mobileControls" class="mobile-controls" aria-label="移动端操作">
@@ -185,18 +251,33 @@
         </div>
         <div class="mobile-actions" aria-label="移动端技能">
           <button id="mobileAttackButton" class="mobile-action primary-action" type="button">攻击</button>
+          <button id="mobileUltimateButton" class="mobile-action" type="button">大招</button>
           <button id="mobileTransformButton" class="mobile-action" type="button">变身</button>
-          <button id="mobileHealButton" class="mobile-action" type="button">恢复</button>
+          <button id="mobileSpecialButton" class="mobile-action" type="button">特殊</button>
         </div>
       </section>
 
       <section id="bossPanel" class="boss-panel" aria-label="Boss 状态" aria-hidden="true">
         <div>
-          <span>最终 Boss</span>
-          <strong>AI 陆教授考核镜像</strong>
+          <span>第一章 Boss</span>
+          <strong>陆教授协议考核</strong>
         </div>
         <div class="boss-meter"><i id="bossHpBar"></i></div>
         <b id="bossHpText">420 / 420</b>
+      </section>
+
+      <section id="chapterClearPanel" class="chapter-clear-panel" aria-label="第一章通关结算" aria-hidden="true">
+        <div class="chapter-clear-card">
+          <span>CHAPTER CLEAR</span>
+          <strong>AI 与协议革命</strong>
+          <p>协议卡校验完成，陆教授的 Boss 宝箱已经开启。</p>
+          <div class="chapter-clear-rewards">
+            <b>EXP +80</b>
+            <b>学分 +8</b>
+            <b>协议卡 <i id="chapterClearCards">0 / 3</i></b>
+          </div>
+          <button id="chapterClearCloseButton" class="primary" type="button">继续探索</button>
+        </div>
       </section>
 
       <section id="reviveDialog" class="revive-dialog" aria-label="复活确认" aria-hidden="true">
@@ -211,6 +292,12 @@
       </section>
 
       <div id="toast" class="toast" aria-live="polite"></div>
+      <div id="mapLoadingOverlay" class="map-loading-overlay" aria-live="polite" aria-hidden="true">
+        <div class="map-loading-panel">
+          <span id="mapLoadingTitle">正在前往新区域</span>
+          <div class="map-loading-track"><i id="mapLoadingBar"></i></div>
+        </div>
+      </div>
     </section>
   </main>
 

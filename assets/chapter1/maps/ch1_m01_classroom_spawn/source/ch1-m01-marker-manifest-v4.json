@@ -1,0 +1,690 @@
+{
+  "$schema": "https://efv.local/schemas/ch1-marker-manifest-v1.json",
+  "id": "ch1-m01-marker-manifest-v4",
+  "mapId": "ch1_m01_classroom_spawn",
+  "runtimeSize": {
+    "w": 3072,
+    "h": 2048
+  },
+  "sourceSize": {
+    "w": 6144,
+    "h": 4096
+  },
+  "coordinateSystem": "runtime coordinates; marker concept image is 2x",
+  "markers": [
+    {
+      "markerId": "B01",
+      "type": "notice/sign",
+      "runtimePropId": "m01_blackboard_a_v4",
+      "x": 1536,
+      "y": 370,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 490,
+        "h": 300
+      },
+      "collisionFootprint": {
+        "x": 1306,
+        "y": 306,
+        "w": 460,
+        "h": 64
+      },
+      "depthY": 370,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "P01",
+      "type": "podium/platform",
+      "runtimePropId": "m01_protocol_podium_v4",
+      "x": 1536,
+      "y": 700,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 211,
+        "h": 240
+      },
+      "collisionFootprint": {
+        "x": 1434,
+        "y": 635,
+        "w": 205,
+        "h": 65
+      },
+      "depthY": 700,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "L01",
+      "type": "lamp/light",
+      "runtimePropId": "m01_lamp_a_v4",
+      "x": 1350,
+      "y": 765,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 91,
+        "h": 210
+      },
+      "collisionFootprint": {
+        "x": 1320,
+        "y": 723,
+        "w": 60,
+        "h": 42
+      },
+      "depthY": 765,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "L02",
+      "type": "lamp/light",
+      "runtimePropId": "m01_lamp_b_v4",
+      "x": 1725,
+      "y": 765,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 92,
+        "h": 210
+      },
+      "collisionFootprint": {
+        "x": 1695,
+        "y": 723,
+        "w": 60,
+        "h": 42
+      },
+      "depthY": 765,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "G02",
+      "type": "globe/decor",
+      "runtimePropId": "m01_crystal_pedestal_v4",
+      "x": 1260,
+      "y": 520,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 110,
+        "h": 174
+      },
+      "collisionFootprint": {
+        "x": 1220,
+        "y": 478,
+        "w": 80,
+        "h": 42
+      },
+      "depthY": 520,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "G03",
+      "type": "globe/decor",
+      "runtimePropId": "m01_statue_pedestal_v4",
+      "x": 1810,
+      "y": 520,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 108,
+        "h": 190
+      },
+      "collisionFootprint": {
+        "x": 1770,
+        "y": 478,
+        "w": 80,
+        "h": 42
+      },
+      "depthY": 520,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D01",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_a_v4",
+      "x": 830,
+      "y": 775,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 270,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 705,
+        "y": 671,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 775,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D02",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_b_v4",
+      "x": 1092,
+      "y": 775,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 270,
+        "h": 203
+      },
+      "collisionFootprint": {
+        "x": 967,
+        "y": 671,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 775,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D03",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_c_v4",
+      "x": 830,
+      "y": 1050,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 263,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 705,
+        "y": 946,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1050,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D04",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_d_v4",
+      "x": 1092,
+      "y": 1050,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 263,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 967,
+        "y": 946,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1050,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D05",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_a_2_v4",
+      "x": 830,
+      "y": 1330,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 270,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 705,
+        "y": 1226,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1330,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D06",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_b_2_v4",
+      "x": 1092,
+      "y": 1330,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 270,
+        "h": 203
+      },
+      "collisionFootprint": {
+        "x": 967,
+        "y": 1226,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1330,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D07",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_c_2_v4",
+      "x": 1972,
+      "y": 775,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 263,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 1847,
+        "y": 671,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 775,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D08",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_d_2_v4",
+      "x": 2242,
+      "y": 775,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 263,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 2117,
+        "y": 671,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 775,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D09",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_a_3_v4",
+      "x": 1972,
+      "y": 1050,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 270,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 1847,
+        "y": 946,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1050,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D10",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_b_3_v4",
+      "x": 2242,
+      "y": 1050,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 270,
+        "h": 203
+      },
+      "collisionFootprint": {
+        "x": 2117,
+        "y": 946,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1050,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D11",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_c_3_v4",
+      "x": 1972,
+      "y": 1330,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 263,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 1847,
+        "y": 1226,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1330,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "D12",
+      "type": "desk/table",
+      "runtimePropId": "m01_desk_d_3_v4",
+      "x": 2242,
+      "y": 1330,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 263,
+        "h": 205
+      },
+      "collisionFootprint": {
+        "x": 2117,
+        "y": 1226,
+        "w": 250,
+        "h": 104
+      },
+      "depthY": 1330,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "S01",
+      "type": "bookshelf/cabinet",
+      "runtimePropId": "m01_bookshelf_a_v4",
+      "x": 640,
+      "y": 555,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 208,
+        "h": 230
+      },
+      "collisionFootprint": {
+        "x": 548,
+        "y": 500,
+        "w": 185,
+        "h": 55
+      },
+      "depthY": 555,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "S02",
+      "type": "bookshelf/cabinet",
+      "runtimePropId": "m01_bookshelf_b_v4",
+      "x": 2435,
+      "y": 555,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 209,
+        "h": 230
+      },
+      "collisionFootprint": {
+        "x": 2342,
+        "y": 500,
+        "w": 185,
+        "h": 55
+      },
+      "depthY": 555,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "N01",
+      "type": "notice/sign",
+      "runtimePropId": "m01_notice_board_v4",
+      "x": 2480,
+      "y": 1445,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 180,
+        "h": 155
+      },
+      "collisionFootprint": {
+        "x": 2405,
+        "y": 1403,
+        "w": 150,
+        "h": 42
+      },
+      "depthY": 1445,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "G01",
+      "type": "globe/decor",
+      "runtimePropId": "m01_globe_v4",
+      "x": 565,
+      "y": 1490,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 101,
+        "h": 150
+      },
+      "collisionFootprint": {
+        "x": 529,
+        "y": 1448,
+        "w": 72,
+        "h": 42
+      },
+      "depthY": 1490,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "N02",
+      "type": "notice/sign",
+      "runtimePropId": "m01_banner_a_v4",
+      "x": 1230,
+      "y": 395,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 82,
+        "h": 182
+      },
+      "collisionFootprint": {},
+      "depthY": 255,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "N03",
+      "type": "notice/sign",
+      "runtimePropId": "m01_banner_b_v4",
+      "x": 1840,
+      "y": 395,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 82,
+        "h": 182
+      },
+      "collisionFootprint": {},
+      "depthY": 255,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "I01",
+      "type": "interaction node",
+      "runtimePropId": "m01_bookpile_a_v4",
+      "x": 1454,
+      "y": 1310,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 119,
+        "h": 115
+      },
+      "collisionFootprint": {
+        "x": 1406,
+        "y": 1276,
+        "w": 95,
+        "h": 34
+      },
+      "depthY": 1310,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "I02",
+      "type": "interaction node",
+      "runtimePropId": "m01_bookpile_b_v4",
+      "x": 1626,
+      "y": 1310,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 97,
+        "h": 115
+      },
+      "collisionFootprint": {
+        "x": 1578,
+        "y": 1276,
+        "w": 95,
+        "h": 34
+      },
+      "depthY": 1310,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "R01",
+      "type": "rail/boundary prop",
+      "runtimePropId": "m01_screen_a_v4",
+      "x": 600,
+      "y": 1165,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 210,
+        "h": 180
+      },
+      "collisionFootprint": {
+        "x": 510,
+        "y": 1121,
+        "w": 180,
+        "h": 44
+      },
+      "depthY": 1165,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "R02",
+      "type": "rail/boundary prop",
+      "runtimePropId": "m01_screen_b_v4",
+      "x": 2470,
+      "y": 1165,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 165,
+        "h": 180
+      },
+      "collisionFootprint": {
+        "x": 2390,
+        "y": 1121,
+        "w": 160,
+        "h": 44
+      },
+      "depthY": 1165,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "C01",
+      "type": "bench/seat",
+      "runtimePropId": "m01_bench_a_v4",
+      "x": 1025,
+      "y": 1500,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 208,
+        "h": 130
+      },
+      "collisionFootprint": {
+        "x": 912,
+        "y": 1458,
+        "w": 225,
+        "h": 42
+      },
+      "depthY": 1500,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "C02",
+      "type": "bench/seat",
+      "runtimePropId": "m01_bench_b_v4",
+      "x": 2015,
+      "y": 1500,
+      "anchor": "bottom-center",
+      "targetRuntimeSize": {
+        "w": 207,
+        "h": 130
+      },
+      "collisionFootprint": {
+        "x": 1902,
+        "y": 1458,
+        "w": 225,
+        "h": 42
+      },
+      "depthY": 1500,
+      "notes": "v4 landscape prop placement"
+    },
+    {
+      "markerId": "INT01",
+      "type": "interaction node",
+      "x": 1536,
+      "y": 270,
+      "anchor": "center",
+      "targetRuntimeSize": {
+        "w": 180,
+        "h": 180
+      },
+      "collisionFootprint": {},
+      "depthY": 270,
+      "notes": "syllabus board trigger"
+    },
+    {
+      "markerId": "INT02",
+      "type": "interaction node",
+      "x": 1536,
+      "y": 680,
+      "anchor": "center",
+      "targetRuntimeSize": {
+        "w": 170,
+        "h": 170
+      },
+      "collisionFootprint": {},
+      "depthY": 680,
+      "notes": "protocol card pickup"
+    },
+    {
+      "markerId": "INT03",
+      "type": "interaction node",
+      "x": 1536,
+      "y": 1310,
+      "anchor": "center",
+      "targetRuntimeSize": {
+        "w": 220,
+        "h": 220
+      },
+      "collisionFootprint": {},
+      "depthY": 1310,
+      "notes": "bug-note encounter trigger"
+    },
+    {
+      "markerId": "SP",
+      "type": "spawn",
+      "x": 1536,
+      "y": 1905,
+      "anchor": "center",
+      "targetRuntimeSize": {
+        "w": 140,
+        "h": 140
+      },
+      "collisionFootprint": {},
+      "depthY": 1905,
+      "notes": "player spawn"
+    },
+    {
+      "markerId": "E01",
+      "type": "exit/portal",
+      "x": 1536,
+      "y": 1805,
+      "anchor": "center",
+      "targetRuntimeSize": {
+        "w": 190,
+        "h": 190
+      },
+      "collisionFootprint": {},
+      "depthY": 1805,
+      "notes": "open transfer gap to ch1_m02_prompt_archive"
+    },
+    {
+      "markerId": "CMB01",
+      "type": "combat space",
+      "x": 1536,
+      "y": 1280,
+      "anchor": "center",
+      "targetRuntimeSize": {
+        "w": 660,
+        "h": 460
+      },
+      "collisionFootprint": {},
+      "depthY": 1280,
+      "notes": "first enemy-wave kite area"
+    }
+  ]
+}
