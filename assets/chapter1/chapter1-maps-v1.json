@@ -1,6 +1,6 @@
 {
   "$schema": "https://efv.local/schemas/chapter-map-registry-v1.json",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "chapterId": "chapter1",
   "defaultMapId": "ch1_m01_classroom_spawn",
   "maps": {
@@ -10,42 +10,60 @@
       "chapterId": "chapter1",
       "background": {
         "key": "ch1-map-classroom-spawn-bg",
-        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-bg-v2-2048.png",
-        "width": 2048,
+        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-base-v4-3072x2048.png",
+        "width": 3072,
         "height": 2048,
         "chunks": [
           {
-            "id": "ch1-m01-spawn-nw",
-            "key": "ch1-m01-spawn-nw",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-nw-v1.png",
+            "id": "ch1-m01-spawn-r0-c0",
+            "key": "ch1-m01-spawn-r0-c0",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c0.png",
             "x": 0,
             "y": 0,
             "width": 1024,
             "height": 1024
           },
           {
-            "id": "ch1-m01-spawn-ne",
-            "key": "ch1-m01-spawn-ne",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-ne-v1.png",
+            "id": "ch1-m01-spawn-r0-c1",
+            "key": "ch1-m01-spawn-r0-c1",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c1.png",
             "x": 1024,
             "y": 0,
             "width": 1024,
             "height": 1024
           },
           {
-            "id": "ch1-m01-spawn-sw",
-            "key": "ch1-m01-spawn-sw",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-sw-v1.png",
+            "id": "ch1-m01-spawn-r0-c2",
+            "key": "ch1-m01-spawn-r0-c2",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c2.png",
+            "x": 2048,
+            "y": 0,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m01-spawn-r1-c0",
+            "key": "ch1-m01-spawn-r1-c0",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c0.png",
             "x": 0,
             "y": 1024,
             "width": 1024,
             "height": 1024
           },
           {
-            "id": "ch1-m01-spawn-se",
-            "key": "ch1-m01-spawn-se",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-se-v1.png",
+            "id": "ch1-m01-spawn-r1-c1",
+            "key": "ch1-m01-spawn-r1-c1",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c1.png",
             "x": 1024,
+            "y": 1024,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m01-spawn-r1-c2",
+            "key": "ch1-m01-spawn-r1-c2",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c2.png",
+            "x": 2048,
             "y": 1024,
             "width": 1024,
             "height": 1024
@@ -54,8 +72,8 @@
       },
       "spawn": {
         "id": "ch1_m01_spawn_player_start",
-        "x": 1024,
-        "y": 1720,
+        "x": 1536,
+        "y": 1905,
         "facing": "N",
         "setFlags": [
           "ch1_intro_entered_classroom"
@@ -64,91 +82,98 @@
       "spawnPoints": [
         {
           "id": "ch1_m01_spawn_player_start",
-          "x": 1024,
-          "y": 1716,
+          "x": 1536,
+          "y": 1905,
           "facing": "N"
         },
         {
           "id": "ch1_m01_spawn_from_archive",
-          "x": 1800,
-          "y": 1040,
-          "facing": "W"
+          "x": 1536,
+          "y": 1815,
+          "facing": "S"
         }
       ],
       "camera": {
-        "startX": 1024,
-        "startY": 1220
+        "startX": 1536,
+        "startY": 1180
       },
       "obstacles": [
         {
-          "id": "m01_north_wall",
+          "id": "m01_v4_world_north_edge",
           "x": 0,
           "y": 0,
-          "w": 2048,
-          "h": 140
+          "w": 3072,
+          "h": 36
         },
         {
-          "id": "m01_west_wall",
+          "id": "m01_v4_world_south_edge",
+          "x": 0,
+          "y": 2012,
+          "w": 3072,
+          "h": 36
+        },
+        {
+          "id": "m01_v4_world_west_edge",
           "x": 0,
           "y": 0,
-          "w": 110,
+          "w": 36,
           "h": 2048
         },
         {
-          "id": "m01_east_wall",
-          "x": 1938,
+          "id": "m01_v4_world_east_edge",
+          "x": 3036,
           "y": 0,
-          "w": 110,
+          "w": 36,
           "h": 2048
         },
         {
-          "id": "m01_south_boundary",
-          "x": 0,
-          "y": 1938,
-          "w": 2048,
-          "h": 110
+          "id": "m01_v5_north_wall_body",
+          "x": 370,
+          "y": 275,
+          "w": 2332,
+          "h": 120
         },
         {
-          "id": "m01_west_desks",
-          "x": 230,
-          "y": 640,
-          "w": 430,
-          "h": 360
+          "id": "m01_v5_west_wall_body",
+          "x": 285,
+          "y": 300,
+          "w": 220,
+          "h": 1390
         },
         {
-          "id": "m01_east_desks",
-          "x": 1380,
-          "y": 640,
-          "w": 430,
-          "h": 360
+          "id": "m01_v5_east_wall_body",
+          "x": 2568,
+          "y": 300,
+          "w": 220,
+          "h": 1390
         },
         {
-          "id": "m01_lectern",
-          "x": 780,
-          "y": 380,
-          "w": 500,
-          "h": 180
+          "id": "m01_v5_south_wall_left_body",
+          "x": 365,
+          "y": 1580,
+          "w": 950,
+          "h": 165
         },
         {
-          "id": "m01_protocol_stand",
-          "x": 900,
-          "y": 760,
-          "w": 250,
-          "h": 160
+          "id": "m01_v5_south_wall_right_body",
+          "x": 1760,
+          "y": 1580,
+          "w": 950,
+          "h": 165
         },
         {
-          "id": "m01_courtyard_left_planter",
-          "x": 250,
-          "y": 1380,
-          "w": 270,
-          "h": 160
+          "id": "m01_v5_south_gate_left_post",
+          "x": 1302,
+          "y": 1515,
+          "w": 125,
+          "h": 245
         },
         {
-          "id": "m01_courtyard_right_planter",
-          "x": 1528,
-          "y": 1380,
-          "w": 270,
-          "h": 160
+          "id": "m01_v5_south_gate_right_post",
+          "x": 1645,
+          "y": 1515,
+          "w": 125,
+          "h": 245
         }
       ],
       "interactionNodes": [
@@ -156,9 +181,9 @@
           "id": "ch1_m01_node_syllabus_terminal",
           "type": "inspect",
           "label": "课程协议板",
-          "x": 1024,
-          "y": 430,
-          "radius": 120,
+          "x": 1536,
+          "y": 270,
+          "radius": 112,
           "dialogueId": "ch1_m01_dialogue_intro",
           "setFlags": [
             "ch1_intro_read_syllabus",
@@ -172,9 +197,9 @@
           "id": "ch1_m01_node_protocol_deck",
           "type": "collect",
           "label": "协议卡讲台",
-          "x": 1024,
-          "y": 720,
-          "radius": 110,
+          "x": 1536,
+          "y": 680,
+          "radius": 96,
           "requiresFlags": [
             "ch1_intro_read_syllabus"
           ],
@@ -191,9 +216,9 @@
           "id": "ch1_m01_node_bug_notes",
           "type": "spawn",
           "label": "错乱笔记堆",
-          "x": 1410,
-          "y": 1320,
-          "radius": 140,
+          "x": 1536,
+          "y": 1310,
+          "radius": 130,
           "requiresFlags": [
             "ch1_intro_card_claimed"
           ],
@@ -207,8 +232,8 @@
       "enemySpawns": [
         {
           "id": "ch1-m01-demand-bug-west",
-          "x": 650,
-          "y": 1368,
+          "x": 1230,
+          "y": 1280,
           "group": "ch1_m01_encounter_bug_notes",
           "activeAfter": "ch1_m01_bug_notes_disturbed",
           "rank": "mob",
@@ -218,8 +243,8 @@
         },
         {
           "id": "ch1-m01-demand-bug-east",
-          "x": 1390,
-          "y": 1378,
+          "x": 1840,
+          "y": 1280,
           "group": "ch1_m01_encounter_bug_notes",
           "activeAfter": "ch1_m01_bug_notes_disturbed",
           "rank": "mob",
@@ -229,8 +254,8 @@
         },
         {
           "id": "ch1-m01-demand-bug-center",
-          "x": 1024,
-          "y": 1230,
+          "x": 1536,
+          "y": 1160,
           "group": "ch1_m01_encounter_bug_notes",
           "activeAfter": "ch1_m01_bug_notes_disturbed",
           "rank": "mob",
@@ -255,9 +280,9 @@
           "id": "ch1_m01_exit_to_m02",
           "type": "teleport",
           "label": "提示词资料室",
-          "x": 1870,
-          "y": 1024,
-          "radius": 120,
+          "x": 1536,
+          "y": 1805,
+          "radius": 115,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_classroom",
           "requiresFlags": [
@@ -289,51 +314,886 @@
       ],
       "foregroundOverlays": [
         {
-          "id": "m01_door_lintel",
-          "x": 820,
-          "y": 1490,
-          "w": 420,
-          "h": 250,
-          "depth": 1760
+          "id": "m01_wall_overlay_back_v5",
+          "textureKey": "ch1-m01-wall-overlay-v5",
+          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.png",
+          "x": 0,
+          "y": 0,
+          "w": 3072,
+          "h": 2048,
+          "sourceX": 0,
+          "sourceY": 0,
+          "depth": -10,
+          "alpha": 1
         },
         {
-          "id": "m01_left_bookshelf_top",
-          "x": 120,
-          "y": 360,
-          "w": 430,
-          "h": 390,
-          "depth": 980
-        },
-        {
-          "id": "m01_right_bookshelf_top",
-          "x": 1500,
-          "y": 360,
-          "w": 430,
-          "h": 390,
-          "depth": 980
-        },
-        {
-          "id": "m01_front_planters",
-          "x": 220,
-          "y": 1320,
-          "w": 370,
-          "h": 280,
-          "depth": 1640
-        },
-        {
-          "id": "m01_front_planters_right",
-          "x": 1450,
-          "y": 1320,
-          "w": 370,
-          "h": 280,
-          "depth": 1640
+          "id": "m01_wall_overlay_front_v5",
+          "textureKey": "ch1-m01-wall-overlay-front-v5",
+          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.png",
+          "x": 0,
+          "y": 0,
+          "w": 3072,
+          "h": 2048,
+          "sourceX": 0,
+          "sourceY": 0,
+          "depth": 2200,
+          "alpha": 1
         }
       ],
       "minimapImage": {
-        "key": "ch1-map-classroom-spawn-bg",
-        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-bg-v2-2048.png",
-        "width": 2048,
+        "key": "ch1-map-classroom-spawn-assembled-v4",
+        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-v4-3072x2048.png",
+        "width": 3072,
         "height": 2048
+      },
+      "propAtlases": [
+        {
+          "id": "m01-v4",
+          "key": "ch1-m01-props-atlas-v4",
+          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png",
+          "frames": {
+            "m01_desk_a_v4": {
+              "x": 40,
+              "y": 40,
+              "w": 270,
+              "h": 205
+            },
+            "m01_desk_b_v4": {
+              "x": 354,
+              "y": 40,
+              "w": 270,
+              "h": 203
+            },
+            "m01_desk_c_v4": {
+              "x": 668,
+              "y": 40,
+              "w": 263,
+              "h": 205
+            },
+            "m01_desk_d_v4": {
+              "x": 975,
+              "y": 40,
+              "w": 263,
+              "h": 205
+            },
+            "m01_lamp_a_v4": {
+              "x": 1282,
+              "y": 40,
+              "w": 91,
+              "h": 210
+            },
+            "m01_lamp_b_v4": {
+              "x": 1417,
+              "y": 40,
+              "w": 92,
+              "h": 210
+            },
+            "m01_protocol_podium_v4": {
+              "x": 1553,
+              "y": 40,
+              "w": 211,
+              "h": 240
+            },
+            "m01_bookshelf_a_v4": {
+              "x": 1808,
+              "y": 40,
+              "w": 208,
+              "h": 230
+            },
+            "m01_bookshelf_b_v4": {
+              "x": 2060,
+              "y": 40,
+              "w": 209,
+              "h": 230
+            },
+            "m01_banner_a_v4": {
+              "x": 2313,
+              "y": 40,
+              "w": 82,
+              "h": 182
+            },
+            "m01_banner_b_v4": {
+              "x": 2439,
+              "y": 40,
+              "w": 82,
+              "h": 182
+            },
+            "m01_notice_board_v4": {
+              "x": 2565,
+              "y": 40,
+              "w": 180,
+              "h": 155
+            },
+            "m01_globe_v4": {
+              "x": 2789,
+              "y": 40,
+              "w": 101,
+              "h": 150
+            },
+            "m01_bookpile_a_v4": {
+              "x": 2934,
+              "y": 40,
+              "w": 119,
+              "h": 115
+            },
+            "m01_bookpile_b_v4": {
+              "x": 3097,
+              "y": 40,
+              "w": 97,
+              "h": 115
+            },
+            "m01_blackboard_a_v4": {
+              "x": 3238,
+              "y": 40,
+              "w": 490,
+              "h": 300
+            },
+            "m01_screen_a_v4": {
+              "x": 3772,
+              "y": 40,
+              "w": 210,
+              "h": 180
+            },
+            "m01_screen_b_v4": {
+              "x": 40,
+              "y": 384,
+              "w": 165,
+              "h": 180
+            },
+            "m01_bench_a_v4": {
+              "x": 249,
+              "y": 384,
+              "w": 208,
+              "h": 130
+            },
+            "m01_bench_b_v4": {
+              "x": 501,
+              "y": 384,
+              "w": 207,
+              "h": 130
+            },
+            "m01_crystal_pedestal_v4": {
+              "x": 752,
+              "y": 384,
+              "w": 110,
+              "h": 174
+            },
+            "m01_statue_pedestal_v4": {
+              "x": 906,
+              "y": 384,
+              "w": 108,
+              "h": 190
+            }
+          }
+        }
+      ],
+      "foregroundAtlases": [
+        {
+          "id": "m01-foreground-v4",
+          "key": "ch1-m01-foreground-atlas-v4",
+          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-foreground-atlas-v4-4096x4096.png",
+          "frames": {
+            "m01_desk_a_v4": {
+              "x": 40,
+              "y": 40,
+              "w": 270,
+              "h": 205
+            },
+            "m01_desk_b_v4": {
+              "x": 354,
+              "y": 40,
+              "w": 270,
+              "h": 203
+            },
+            "m01_desk_c_v4": {
+              "x": 668,
+              "y": 40,
+              "w": 263,
+              "h": 205
+            },
+            "m01_desk_d_v4": {
+              "x": 975,
+              "y": 40,
+              "w": 263,
+              "h": 205
+            },
+            "m01_lamp_a_v4": {
+              "x": 1282,
+              "y": 40,
+              "w": 91,
+              "h": 210
+            },
+            "m01_lamp_b_v4": {
+              "x": 1417,
+              "y": 40,
+              "w": 92,
+              "h": 210
+            },
+            "m01_protocol_podium_v4": {
+              "x": 1553,
+              "y": 40,
+              "w": 211,
+              "h": 240
+            },
+            "m01_bookshelf_a_v4": {
+              "x": 1808,
+              "y": 40,
+              "w": 208,
+              "h": 230
+            },
+            "m01_bookshelf_b_v4": {
+              "x": 2060,
+              "y": 40,
+              "w": 209,
+              "h": 230
+            },
+            "m01_banner_a_v4": {
+              "x": 2313,
+              "y": 40,
+              "w": 82,
+              "h": 182
+            },
+            "m01_banner_b_v4": {
+              "x": 2439,
+              "y": 40,
+              "w": 82,
+              "h": 182
+            },
+            "m01_notice_board_v4": {
+              "x": 2565,
+              "y": 40,
+              "w": 180,
+              "h": 155
+            },
+            "m01_globe_v4": {
+              "x": 2789,
+              "y": 40,
+              "w": 101,
+              "h": 150
+            },
+            "m01_bookpile_a_v4": {
+              "x": 2934,
+              "y": 40,
+              "w": 119,
+              "h": 115
+            },
+            "m01_bookpile_b_v4": {
+              "x": 3097,
+              "y": 40,
+              "w": 97,
+              "h": 115
+            },
+            "m01_blackboard_a_v4": {
+              "x": 3238,
+              "y": 40,
+              "w": 490,
+              "h": 300
+            },
+            "m01_screen_a_v4": {
+              "x": 3772,
+              "y": 40,
+              "w": 210,
+              "h": 180
+            },
+            "m01_screen_b_v4": {
+              "x": 40,
+              "y": 384,
+              "w": 165,
+              "h": 180
+            },
+            "m01_bench_a_v4": {
+              "x": 249,
+              "y": 384,
+              "w": 208,
+              "h": 130
+            },
+            "m01_bench_b_v4": {
+              "x": 501,
+              "y": 384,
+              "w": 207,
+              "h": 130
+            },
+            "m01_crystal_pedestal_v4": {
+              "x": 752,
+              "y": 384,
+              "w": 110,
+              "h": 174
+            },
+            "m01_statue_pedestal_v4": {
+              "x": 906,
+              "y": 384,
+              "w": 108,
+              "h": 190
+            }
+          }
+        }
+      ],
+      "props": [
+        {
+          "id": "m01_blackboard_a_v4",
+          "frame": "m01_blackboard_a_v4",
+          "atlas": "m01-v4",
+          "x": 1536,
+          "y": 370,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1306,
+            "y": 306,
+            "w": 460,
+            "h": 64
+          }
+        },
+        {
+          "id": "m01_protocol_podium_v4",
+          "frame": "m01_protocol_podium_v4",
+          "atlas": "m01-v4",
+          "x": 1536,
+          "y": 700,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1434,
+            "y": 635,
+            "w": 205,
+            "h": 65
+          }
+        },
+        {
+          "id": "m01_lamp_a_v4",
+          "frame": "m01_lamp_a_v4",
+          "atlas": "m01-v4",
+          "x": 1350,
+          "y": 765,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1320,
+            "y": 723,
+            "w": 60,
+            "h": 42
+          }
+        },
+        {
+          "id": "m01_lamp_b_v4",
+          "frame": "m01_lamp_b_v4",
+          "atlas": "m01-v4",
+          "x": 1725,
+          "y": 765,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1695,
+            "y": 723,
+            "w": 60,
+            "h": 42
+          }
+        },
+        {
+          "id": "m01_crystal_pedestal_v4",
+          "frame": "m01_crystal_pedestal_v4",
+          "atlas": "m01-v4",
+          "x": 1260,
+          "y": 520,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1220,
+            "y": 478,
+            "w": 80,
+            "h": 42
+          }
+        },
+        {
+          "id": "m01_statue_pedestal_v4",
+          "frame": "m01_statue_pedestal_v4",
+          "atlas": "m01-v4",
+          "x": 1810,
+          "y": 520,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1770,
+            "y": 478,
+            "w": 80,
+            "h": 42
+          }
+        },
+        {
+          "id": "m01_desk_a_v4",
+          "frame": "m01_desk_a_v4",
+          "atlas": "m01-v4",
+          "x": 830,
+          "y": 775,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 705,
+            "y": 671,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_b_v4",
+          "frame": "m01_desk_b_v4",
+          "atlas": "m01-v4",
+          "x": 1092,
+          "y": 775,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 967,
+            "y": 671,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_c_v4",
+          "frame": "m01_desk_c_v4",
+          "atlas": "m01-v4",
+          "x": 830,
+          "y": 1050,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 705,
+            "y": 946,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_d_v4",
+          "frame": "m01_desk_d_v4",
+          "atlas": "m01-v4",
+          "x": 1092,
+          "y": 1050,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 967,
+            "y": 946,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_a_2_v4",
+          "frame": "m01_desk_a_v4",
+          "atlas": "m01-v4",
+          "x": 830,
+          "y": 1330,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 705,
+            "y": 1226,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_b_2_v4",
+          "frame": "m01_desk_b_v4",
+          "atlas": "m01-v4",
+          "x": 1092,
+          "y": 1330,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 967,
+            "y": 1226,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_c_2_v4",
+          "frame": "m01_desk_c_v4",
+          "atlas": "m01-v4",
+          "x": 1972,
+          "y": 775,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1847,
+            "y": 671,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_d_2_v4",
+          "frame": "m01_desk_d_v4",
+          "atlas": "m01-v4",
+          "x": 2242,
+          "y": 775,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 2117,
+            "y": 671,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_a_3_v4",
+          "frame": "m01_desk_a_v4",
+          "atlas": "m01-v4",
+          "x": 1972,
+          "y": 1050,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1847,
+            "y": 946,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_b_3_v4",
+          "frame": "m01_desk_b_v4",
+          "atlas": "m01-v4",
+          "x": 2242,
+          "y": 1050,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 2117,
+            "y": 946,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_c_3_v4",
+          "frame": "m01_desk_c_v4",
+          "atlas": "m01-v4",
+          "x": 1972,
+          "y": 1330,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1847,
+            "y": 1226,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_desk_d_3_v4",
+          "frame": "m01_desk_d_v4",
+          "atlas": "m01-v4",
+          "x": 2242,
+          "y": 1330,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 2117,
+            "y": 1226,
+            "w": 250,
+            "h": 104
+          }
+        },
+        {
+          "id": "m01_bookshelf_a_v4",
+          "frame": "m01_bookshelf_a_v4",
+          "atlas": "m01-v4",
+          "x": 640,
+          "y": 555,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 548,
+            "y": 500,
+            "w": 185,
+            "h": 55
+          }
+        },
+        {
+          "id": "m01_bookshelf_b_v4",
+          "frame": "m01_bookshelf_b_v4",
+          "atlas": "m01-v4",
+          "x": 2435,
+          "y": 555,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 2342,
+            "y": 500,
+            "w": 185,
+            "h": 55
+          }
+        },
+        {
+          "id": "m01_notice_board_v4",
+          "frame": "m01_notice_board_v4",
+          "atlas": "m01-v4",
+          "x": 2480,
+          "y": 1445,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 2405,
+            "y": 1403,
+            "w": 150,
+            "h": 42
+          }
+        },
+        {
+          "id": "m01_globe_v4",
+          "frame": "m01_globe_v4",
+          "atlas": "m01-v4",
+          "x": 565,
+          "y": 1490,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 529,
+            "y": 1448,
+            "w": 72,
+            "h": 42
+          }
+        },
+        {
+          "id": "m01_banner_a_v4",
+          "frame": "m01_banner_a_v4",
+          "atlas": "m01-v4",
+          "x": 1230,
+          "y": 395,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": -140
+        },
+        {
+          "id": "m01_banner_b_v4",
+          "frame": "m01_banner_b_v4",
+          "atlas": "m01-v4",
+          "x": 1840,
+          "y": 395,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": -140
+        },
+        {
+          "id": "m01_bookpile_a_v4",
+          "frame": "m01_bookpile_a_v4",
+          "atlas": "m01-v4",
+          "x": 1454,
+          "y": 1310,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1406,
+            "y": 1276,
+            "w": 95,
+            "h": 34
+          }
+        },
+        {
+          "id": "m01_bookpile_b_v4",
+          "frame": "m01_bookpile_b_v4",
+          "atlas": "m01-v4",
+          "x": 1626,
+          "y": 1310,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1578,
+            "y": 1276,
+            "w": 95,
+            "h": 34
+          }
+        },
+        {
+          "id": "m01_screen_a_v4",
+          "frame": "m01_screen_a_v4",
+          "atlas": "m01-v4",
+          "x": 600,
+          "y": 1165,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 510,
+            "y": 1121,
+            "w": 180,
+            "h": 44
+          }
+        },
+        {
+          "id": "m01_screen_b_v4",
+          "frame": "m01_screen_b_v4",
+          "atlas": "m01-v4",
+          "x": 2470,
+          "y": 1165,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 2390,
+            "y": 1121,
+            "w": 160,
+            "h": 44
+          }
+        },
+        {
+          "id": "m01_bench_a_v4",
+          "frame": "m01_bench_a_v4",
+          "atlas": "m01-v4",
+          "x": 1025,
+          "y": 1500,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 912,
+            "y": 1458,
+            "w": 225,
+            "h": 42
+          }
+        },
+        {
+          "id": "m01_bench_b_v4",
+          "frame": "m01_bench_b_v4",
+          "atlas": "m01-v4",
+          "x": 2015,
+          "y": 1500,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "scale": 1,
+          "depthOffset": 0,
+          "collision": {
+            "x": 1902,
+            "y": 1458,
+            "w": 225,
+            "h": 42
+          }
+        }
+      ],
+      "assetPackage": {
+        "id": "ch1-m01-formal-landscape-v4",
+        "status": "active-runtime",
+        "manifest": "assets/chapter1/maps/ch1_m01_classroom_spawn/ch1-m01-layered-map-manifest-v4.json",
+        "markerManifest": "assets/chapter1/maps/ch1_m01_classroom_spawn/source/ch1-m01-marker-manifest-v4.json",
+        "qaOverlay": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-qa-v4-3072x2048.png"
       }
     },
     "ch1_m02_prompt_archive": {

@@ -28,14 +28,21 @@
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
   const CHAPTER_ONE_MAP_BACKGROUNDS = [
-    { key: "ch1-map-classroom-spawn-bg", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-bg-v2-2048.png" },
+    { key: "ch1-map-classroom-spawn-bg", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-base-v4-3072x2048.png" },
+    { key: "ch1-map-classroom-spawn-assembled-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-v4-3072x2048.png" },
+    { key: "ch1-m01-props-atlas-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png" },
+    { key: "ch1-m01-foreground-atlas-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-foreground-atlas-v4-4096x4096.png" },
+    { key: "ch1-m01-wall-overlay-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.png" },
+    { key: "ch1-m01-wall-overlay-front-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.png" },
     { key: "ch1-map-prompt-archive-bg", path: "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v2-2048.png" },
     { key: "ch1-map-agent-lab-bg", path: "assets/chapter1/maps/ch1_m03_agent_lab/background/ch1-map-agent-lab-bg-v2-2048.png" },
     { key: "ch1-map-library-lawn-boss-bg", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/background/ch1-map-library-lawn-boss-bg-v2-2048.png" },
-    { key: "ch1-m01-spawn-nw", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-nw-v1.png" },
-    { key: "ch1-m01-spawn-ne", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-ne-v1.png" },
-    { key: "ch1-m01-spawn-sw", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-sw-v1.png" },
-    { key: "ch1-m01-spawn-se", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-spawn-se-v1.png" },
+    { key: "ch1-m01-spawn-r0-c0", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c0.png" },
+    { key: "ch1-m01-spawn-r0-c1", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c1.png" },
+    { key: "ch1-m01-spawn-r0-c2", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c2.png" },
+    { key: "ch1-m01-spawn-r1-c0", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c0.png" },
+    { key: "ch1-m01-spawn-r1-c1", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c1.png" },
+    { key: "ch1-m01-spawn-r1-c2", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c2.png" },
     { key: "ch1-process-nw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-nw-v1.png" },
     { key: "ch1-process-ne", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-ne-v1.png" },
     { key: "ch1-process-sw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-sw-v1.png" },
@@ -49,10 +56,65 @@
     { key: "ch1-m04-boss-sw", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-sw-v1.png" },
     { key: "ch1-m04-boss-se", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-se-v1.png" }
   ];
+  const DYNAMIC_MAP_IMAGE_KEYS = new Set([
+    MAP_PROP_ATLAS_KEY,
+    MAP_MACRO_PROP_ATLAS_KEY,
+    ...CHAPTER_ONE_MAP_BACKGROUNDS.map(item => item.key)
+  ]);
+
+  function normalizeMapAssetAtlases(mapData, fieldName) {
+    const raw = mapData?.[fieldName];
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw
+        .filter(item => item && typeof item === "object")
+        .map((item, index) => ({ id: item.id || item.key || item.textureKey || `${fieldName}-${index}`, ...item }));
+    }
+    if (typeof raw !== "object") return [];
+    if (raw.path || raw.key || raw.textureKey) {
+      return [{ id: raw.id || raw.key || raw.textureKey || fieldName, ...raw }];
+    }
+    return Object.entries(raw)
+      .filter(([, item]) => item)
+      .map(([id, item]) => {
+        if (typeof item === "string") return { id, key: id, path: item };
+        if (typeof item !== "object") return null;
+        return { id, ...item };
+      })
+      .filter(Boolean);
+  }
+
+  function collectChapterMapAssetAtlases(registry) {
+    const maps = registry?.maps || {};
+    const images = new Map();
+    Object.values(maps).forEach(mapData => {
+      ["propAtlases", "foregroundAtlases"].forEach(fieldName => {
+        normalizeMapAssetAtlases(mapData, fieldName).forEach(atlas => {
+          const key = atlas.key || atlas.textureKey || atlas.id;
+          if (!key || !atlas.path || images.has(key)) return;
+          images.set(key, { key, path: atlas.path });
+        });
+      });
+    });
+    return Array.from(images.values());
+  }
+
+  function queueChapterMapAssetAtlases(scene, registry) {
+    collectChapterMapAssetAtlases(registry).forEach(item => {
+      if (DYNAMIC_MAP_IMAGE_KEYS.has(item.key) || scene.textures.exists(item.key)) return;
+      DYNAMIC_MAP_IMAGE_KEYS.add(item.key);
+      scene.load.image(item.key, item.path);
+    });
+  }
+
   const MAP_PORTAL_KEY = "ch1-map-teleport-portal";
   const MAP_PORTAL_IMAGE = "assets/chapter1/vfx/ch1-map-teleport-portal-sheet-v1.png";
   const MAP_PORTAL_FRAME_WIDTH = 192;
   const MAP_PORTAL_FRAME_HEIGHT = 192;
+  const MAP_TRANSFER_RING_KEY = "ch1-map-transfer-ring";
+  const MAP_TRANSFER_RING_IMAGE = "assets/chapter1/vfx/ch1-map-transfer-ring-sheet-v1.png";
+  const MAP_TRANSFER_RING_FRAME_WIDTH = 128;
+  const MAP_TRANSFER_RING_FRAME_HEIGHT = 128;
   const BOSS_VOID_PORTAL_KEY = "ch1-boss-void-portal";
   const BOSS_VOID_PORTAL_IMAGE = "assets/chapter1/vfx/ch1-boss-void-portal-sheet-v1.png";
   const BOSS_VOID_PORTAL_FRAME_WIDTH = 256;
@@ -1507,17 +1569,22 @@
   }
 
   let mapLoadingTimer = null;
-  function showMapLoading(title = "正在穿过传送门") {
+  function showMapLoading(title = "正在前往新区域") {
     const overlay = $("#mapLoadingOverlay");
     const label = $("#mapLoadingTitle");
     const bar = $("#mapLoadingBar");
     if (!overlay || !bar) return;
     window.clearTimeout(mapLoadingTimer);
     if (label) label.textContent = title;
-    bar.style.width = "8%";
+    bar.style.transition = "none";
+    bar.style.width = "0%";
+    void bar.offsetWidth;
     overlay.classList.add("open");
     overlay.setAttribute("aria-hidden", "false");
-    requestAnimationFrame(() => { bar.style.width = "78%"; });
+    requestAnimationFrame(() => {
+      bar.style.transition = "";
+      bar.style.width = "78%";
+    });
   }
 
   function hideMapLoading() {
@@ -1525,6 +1592,7 @@
     const bar = $("#mapLoadingBar");
     if (!overlay || !bar) return;
     window.clearTimeout(mapLoadingTimer);
+    bar.style.transition = "";
     bar.style.width = "100%";
     mapLoadingTimer = window.setTimeout(() => {
       overlay.classList.remove("open");
@@ -2001,6 +2069,10 @@
       this.load.tilemapTiledJSON(MAP_TILEMAP_KEY, MAP_DATA_PATH);
       this.load.json(MAP_DATA_KEY, MAP_DATA_PATH);
       this.load.json(CHAPTER_ONE_MAP_DATA_KEY, CHAPTER_ONE_MAP_DATA_PATH);
+      this.load.on("filecomplete", (key, type, data) => {
+        if (key !== CHAPTER_ONE_MAPS_KEY) return;
+        queueChapterMapAssetAtlases(this, data || this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {});
+      });
       this.load.json(CHAPTER_ONE_MAPS_KEY, CHAPTER_ONE_MAPS_PATH);
       CHAPTER_ONE_MAP_BACKGROUNDS.forEach(item => this.load.image(item.key, item.path));
       this.load.spritesheet(PROJECTILE_TEXTURE_KEY, PROJECTILE_ATLAS, {
@@ -2024,6 +2096,10 @@
       this.load.spritesheet(MAP_PORTAL_KEY, MAP_PORTAL_IMAGE, {
         frameWidth: MAP_PORTAL_FRAME_WIDTH,
         frameHeight: MAP_PORTAL_FRAME_HEIGHT
+      });
+      this.load.spritesheet(MAP_TRANSFER_RING_KEY, MAP_TRANSFER_RING_IMAGE, {
+        frameWidth: MAP_TRANSFER_RING_FRAME_WIDTH,
+        frameHeight: MAP_TRANSFER_RING_FRAME_HEIGHT
       });
       this.load.spritesheet(BOSS_VOID_PORTAL_KEY, BOSS_VOID_PORTAL_IMAGE, {
         frameWidth: BOSS_VOID_PORTAL_FRAME_WIDTH,
@@ -2066,6 +2142,9 @@
       this.primaryHold = null;
       this.chargeHoldTimer = null;
       this.lastUltimateAt = 0;
+      this.collisionDebugVisible = false;
+      this.collisionDebugGraphics = null;
+      this.collisionDebugRects = [];
 
       this.renderTileMap();
       this.prepareMapPropFrames();
@@ -2084,7 +2163,7 @@
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.leafSlimes = this.physics.add.group({ allowGravity: false });
       this.projectileGraphics = this.add.graphics().setDepth(40);
-      this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,K,H,L,U,I,C,X,SPACE");
+      this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,K,H,L,U,I,C,X,Q,SPACE");
 
       this.createActor();
       this.createBoss();
@@ -2206,7 +2285,15 @@
     prepareMapPropFrames() {
       [
         { key: MAP_PROP_ATLAS_KEY, frames: this.mapData?.propFrames || {} },
-        { key: MAP_MACRO_PROP_ATLAS_KEY, frames: this.mapData?.macroPropFrames || {} }
+        { key: MAP_MACRO_PROP_ATLAS_KEY, frames: this.mapData?.macroPropFrames || {} },
+        ...normalizeMapAssetAtlases(this.mapData, "propAtlases").map(atlas => ({
+          key: atlas.key || atlas.textureKey || atlas.id,
+          frames: atlas.frames || {}
+        })),
+        ...normalizeMapAssetAtlases(this.mapData, "foregroundAtlases").map(atlas => ({
+          key: atlas.key || atlas.textureKey || atlas.id,
+          frames: atlas.frames || {}
+        }))
       ].forEach(({ key, frames }) => {
         const texture = this.textures.get(key);
         if (!texture) return;
@@ -2217,7 +2304,11 @@
     }
 
     getMapPropAtlasKey(item) {
-      return item.atlas === "macro" ? MAP_MACRO_PROP_ATLAS_KEY : MAP_PROP_ATLAS_KEY;
+      if (item.atlas === "macro") return MAP_MACRO_PROP_ATLAS_KEY;
+      if (!item.atlas || item.atlas === "default") return MAP_PROP_ATLAS_KEY;
+      const localAtlas = normalizeMapAssetAtlases(this.mapData, "propAtlases")
+        .find(atlas => item.atlas === atlas.id || item.atlas === atlas.key || item.atlas === atlas.textureKey);
+      return localAtlas?.key || localAtlas?.textureKey || item.atlas;
     }
 
     renderMapProps() {
@@ -2227,10 +2318,11 @@
         const atlasKey = this.getMapPropAtlasKey(item);
         if (!frame || !this.textures.get(atlasKey)?.has(frame)) return;
         const origin = item.origin || {};
+        const visualScale = clamp(Number(item.scale ?? 1) || 1, 0.05, 1);
         const prop = this.add.image(item.x, item.y, atlasKey, frame)
           .setOrigin(origin.x ?? 0.5, origin.y ?? 1)
-          .setScale(item.scale ?? 1)
-          .setDepth(item.y + (item.depthOffset || 0));
+          .setScale(visualScale)
+          .setDepth(Number.isFinite(Number(item.depthY)) ? Number(item.depthY) : item.y + (item.depthOffset || 0));
         this.mapProps.push(prop);
       });
     }
@@ -2255,10 +2347,11 @@
         if (!textureKey || !this.textures.exists(textureKey)) return;
         const sourceX = Number.isFinite(item.sourceX) ? item.sourceX : item.x - (Number(chunk?.x) || 0);
         const sourceY = Number.isFinite(item.sourceY) ? item.sourceY : item.y - (Number(chunk?.y) || 0);
-        const overlay = this.add.image(item.x, item.y, textureKey)
+        const texture = this.textures.get(textureKey);
+        const frameKey = item.frameKey || `${this.mapData?.id || "map"}-${item.id}-foreground`;
+        if (texture && !texture.has(frameKey)) texture.add(frameKey, 0, sourceX, sourceY, item.w, item.h);
+        const overlay = this.add.image(item.x, item.y, textureKey, frameKey)
           .setOrigin(0, 0)
-          .setCrop(sourceX, sourceY, item.w, item.h)
-          .setDisplaySize(item.w, item.h)
           .setDepth(Number(item.depth) || item.y + item.h + 40)
           .setAlpha(Number(item.alpha) || 1);
         this.foregroundOverlays.push(overlay);
@@ -2266,11 +2359,42 @@
     }
 
     drawObstacles() {
-      (this.mapData.obstacles || []).forEach(item => {
+      const propObstacles = (this.mapData?.props || [])
+        .map(prop => {
+          const collision = prop.collisionFootprint || prop.collision;
+          return collision ? { id: `${prop.id || prop.frame || "prop"}_collision`, ...collision } : null;
+        })
+        .filter(Boolean);
+      const obstacleRects = [
+        ...(this.mapData.obstacles || []),
+        ...propObstacles
+      ];
+      this.collisionDebugRects = obstacleRects;
+      obstacleRects.forEach(item => {
         const zone = this.add.zone(item.x + item.w / 2, item.y + item.h / 2, item.w, item.h);
         this.physics.add.existing(zone, true);
         this.obstacleGroup.add(zone);
       });
+      this.renderCollisionDebug();
+    }
+
+    renderCollisionDebug() {
+      this.collisionDebugGraphics?.destroy();
+      this.collisionDebugGraphics = this.add.graphics()
+        .setDepth(100000)
+        .setVisible(!!this.collisionDebugVisible);
+      this.collisionDebugGraphics.lineStyle(3, 0xff405c, 0.95);
+      this.collisionDebugGraphics.fillStyle(0xff405c, 0.18);
+      (this.collisionDebugRects || []).forEach(item => {
+        this.collisionDebugGraphics.fillRect(item.x, item.y, item.w, item.h);
+        this.collisionDebugGraphics.strokeRect(item.x, item.y, item.w, item.h);
+      });
+    }
+
+    toggleCollisionDebug() {
+      this.collisionDebugVisible = !this.collisionDebugVisible;
+      this.renderCollisionDebug();
+      showToast(this.collisionDebugVisible ? "碰撞显示：开" : "碰撞显示：关");
     }
 
     bindMapColliders() {
@@ -2315,14 +2439,21 @@
       });
       this.interactionMarkers = [];
       this.interactionNodes.forEach(node => {
-        const marker = node.type === "teleport"
+        const marker = node.type === "teleport" && node.visual === "portal"
           ? this.add.sprite(node.x, node.y + 5, MAP_PORTAL_KEY)
             .setOrigin(0.5, 0.62)
             .setScale(Number(node.portalScale) || 0.72)
             .setAlpha(0.88)
             .setDepth(node.y + 2)
             .play("ch1-map-portal-loop")
-          : this.add.circle(node.x, node.y, 15, 0xf3c75d, 0.28)
+          : node.type === "teleport"
+            ? this.add.sprite(node.x, node.y + 2, MAP_TRANSFER_RING_KEY)
+              .setOrigin(0.5, 0.5)
+              .setScale(Number(node.ringScale) || 0.92)
+              .setAlpha(0.9)
+              .setDepth(node.y - 2)
+              .play("ch1-map-transfer-ring-loop")
+            : this.add.circle(node.x, node.y, 15, 0xf3c75d, 0.28)
             .setStrokeStyle(2, 0xffffff, 0.72)
             .setDepth(node.y + 3);
         const label = this.add.text(node.x, node.y - 30, node.label || "交互", {
@@ -2604,15 +2735,16 @@
 
     preparePortalAnimations() {
       [
-        { textureKey: MAP_PORTAL_KEY, animationKey: "ch1-map-portal-loop", frameRate: 9 },
-        { textureKey: BOSS_VOID_PORTAL_KEY, animationKey: "ch1-boss-void-portal-loop", frameRate: 12 }
-      ].forEach(({ textureKey, animationKey, frameRate }) => {
+        { textureKey: MAP_PORTAL_KEY, animationKey: "ch1-map-portal-loop", frameRate: 9, end: 7 },
+        { textureKey: MAP_TRANSFER_RING_KEY, animationKey: "ch1-map-transfer-ring-loop", frameRate: 7, end: 3 },
+        { textureKey: BOSS_VOID_PORTAL_KEY, animationKey: "ch1-boss-void-portal-loop", frameRate: 12, end: 7 }
+      ].forEach(({ textureKey, animationKey, frameRate, end }) => {
         const texture = this.textures.get(textureKey);
         texture?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
         if (this.anims.exists(animationKey)) return;
         this.anims.create({
           key: animationKey,
-          frames: this.anims.generateFrameNumbers(textureKey, { start: 0, end: 7 }),
+          frames: this.anims.generateFrameNumbers(textureKey, { start: 0, end }),
           frameRate,
           repeat: -1
         });
@@ -2697,6 +2829,9 @@
       this.mapBackgroundChunks = [];
       this.mapBackground?.destroy();
       this.mapBackground = null;
+      this.collisionDebugGraphics?.destroy();
+      this.collisionDebugGraphics = null;
+      this.collisionDebugRects = [];
       this.obstacleGroup?.clear(true, true);
       this.projectiles?.children?.each(projectile => this.destroyProjectile(projectile, false));
       this.leafSlimes?.children?.each(slime => {
@@ -4051,6 +4186,7 @@
       if (key === "k") this.castUltimate();
       if (key === "h") this.healPlayer();
       if (key === "l") this.toggleTransformState();
+      if (key === "q") this.toggleCollisionDebug();
       if (key === "e") this.triggerInteraction();
       if (key === "u") this.playActorHitReaction();
       if (key === "i") {
