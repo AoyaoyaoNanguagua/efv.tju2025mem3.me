@@ -1,93 +1,36 @@
-# ch1-m01-classroom-spawn Usage
+# M01 Classroom Spawn Runtime Guide
 
-## Batch Info
+## Runtime Source
 
-- `batch_id`: chapter1-p0-map-data
-- `map_id`: `ch1_m01_classroom_spawn`
-- `data_file`: `assets/chapter1/ch1-m01-classroom-spawn.json`
-- `chapter_manifest`: `assets/chapter1/chapter1-p0-runtime.json`
-- `current_status`: usable P0 data, existing-art fallback
-- `tile_size`: 64 x 64
-- `world_size`: 3072 x 2048 px
-- `ground_scheme`: compact tile plan using existing Zhonghe tileset
+- Map id: `ch1_m01_classroom_spawn`
+- Registry: `assets/chapter1/chapter1-maps-v1.json`
+- World size: `3072 x 2048`
+- The old standalone M01 JSON and production manifests were removed on 2026-07-10. The chapter registry is the only runtime source.
 
-## Runtime Asset Inputs
+## Active Assets
 
 | purpose | path |
 | --- | --- |
-| ground tileset | `assets/maps/tilesets/zhonghe-plaza-ground-tileset-v1.png` |
-| tile index reference | `assets/maps/tilesets/zhonghe-plaza-tilemap-v3.json` |
-| prop atlas | `assets/maps/props/zhonghe-plaza-props-atlas-v1.png` |
-| macro prop atlas | `assets/maps/props/zhonghe-plaza-macro-props-v1.png` |
-| enemy fallback | `assets/enemies/leaf-poring-sprites-v2.png` |
-| boss fallback, route reference only | `assets/enemies/autumn-ruin-portrait-v1.png` |
+| minimap / assembled view | `assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-v4-3072x2048.png` |
+| repeated floor chunk | `assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png` |
+| prop atlas | `assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png` |
+| wall back overlay | `assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.png` |
+| wall front overlay | `assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.png` |
 
-## Map Restore Notes
+The six M01 floor positions intentionally reuse the same texture. Do not copy the file six times.
 
-The map is a classroom-shaped layout built from a compact `tilePlan` plus direct runtime fields:
+## Spawn Rules
 
-| layer | purpose |
-| --- | --- |
-| `ground` | floor bands, entry steps, center teaching medallion |
-| `terrain_edges` | boundary trims and wall shadow |
-| `building` | north wall and board/window band |
-
-The first integration pass can skip materializing tile layers and still use the compatible fields for spawn, props, obstacles, and enemy points. A later pass can expand `tilePlan.layers[].rects` into flat Tiled `data` arrays.
-
-## Coordinates
-
-| point | id | x | y | note |
-| --- | --- | ---: | ---: | --- |
-| player spawn | `ch1_m01_spawn_player_start` | 1536 | 1696 | south door, facing north |
-| syllabus terminal | `ch1_m01_node_syllabus_terminal` | 1536 | 560 | starts the chapter task |
-| protocol deck | `ch1_m01_node_protocol_deck` | 1536 | 816 | grants first two cards |
-| optional board | `ch1_m01_node_attendance_board` | 544 | 660 | small credit reward |
-| bug notes | `ch1_m01_node_bug_notes` | 2020 | 1390 | starts first enemy wave |
-| exit to m02 | `ch1_m01_exit_corridor_to_m02` | 2752 | 832 | requires cards and cleared wave |
-
-## Quest Flags
-
-| flag | set by |
-| --- | --- |
-| `ch1_intro_entered_classroom` | player spawn |
-| `ch1_intro_read_syllabus` | syllabus terminal |
-| `ch1_task_fix_prompt_chain_active` | syllabus terminal |
-| `ch1_intro_card_claimed` | protocol deck |
-| `ch1_m01_bug_notes_disturbed` | bug-note trigger |
-| `ch1_m01_bug_notes_cleared` | all m01 enemy spawns defeated |
-| `ch1_m01_cleared` | exit to m02 used |
-| `ch1_m02_unlocked` | exit to m02 used |
-
-## Protocol Cards
-
-| card id | pickup | effect |
+| case | spawn id | position |
 | --- | --- | --- |
-| `ch1_card_context_window` | syllabus terminal / protocol deck | reveals hidden interaction notes |
-| `ch1_card_traceable_instruction` | protocol deck | marks quest nodes and prevents duplicate collection |
-| `ch1_card_schema_lock` | later m02 placeholder | gates the m03 lab |
+| New character / normal entry | `ch1_m01_spawn_player_start` | `(1536, 1220)`, center of the classroom |
+| Return from M02 | `ch1_m01_spawn_from_archive` | `(1536, 1885)`, lower transfer point |
 
-## Combat Points
+The professor NPC uses `assets/game/characters/npcs/ai-professor-npc-idle-sheet-v1.png`. Reusable enemies, bosses and VFX must stay under `assets/game/`; they must not be copied into this map folder.
 
-| enemy id | runtime type | x | y | active after |
-| --- | --- | ---: | ---: | --- |
-| `ch1-m01-demand-bug-west` | `leafSlime` | 1072 | 1376 | `ch1_m01_bug_notes_disturbed` |
-| `ch1-m01-demand-bug-center` | `leafSlime` | 1536 | 1220 | `ch1_m01_bug_notes_disturbed` |
-| `ch1-m01-demand-bug-east` | `leafSlime` | 2000 | 1376 | `ch1_m01_bug_notes_disturbed` |
+## Editing Checklist
 
-The wave clears when all three are defeated, then sets `ch1_m01_bug_notes_cleared`. Until bespoke Chapter 1 enemy art exists, all three points reuse the current leaf-poring slime sheet.
-
-## Exit And Boss Route
-
-The m01 exit sends the player to `ch1_m02_prompt_archive` at `ch1_m02_spawn_south_gate`. The full P0 route is:
-
-`ch1_m01_classroom_spawn` -> `ch1_m02_prompt_archive` -> `ch1_m03_agent_lab` -> `ch1_m04_library_lawn_boss`
-
-The final boss point is `ch1_m04_boss_ai_professor_exam`, using runtime boss id `boss_ai_prof` and fallback image `assets/enemies/autumn-ruin-portrait-v1.png`. Defeating it sets `ch1_final_boss_defeated` and `ch1_complete`.
-
-## QA Checklist
-
-- JSON parses with Node.
-- All reused asset paths exist.
-- All m01 enemy spawn coordinates are inside `runtime.world`.
-- `exitPoints[0].targetMapId` exists in `chapter1-p0-runtime.json`.
-- No changes are required in `play.js` for this data-only patch.
+1. Edit map data only in `assets/chapter1/chapter1-maps-v1.json`.
+2. Keep interaction nodes on reachable walkable positions and outside obstacle rectangles.
+3. Use a matching prop frame for every task label; do not use a generic quest marker as the task object.
+4. Run `node scripts/audit-assets.mjs` after changing paths or files.

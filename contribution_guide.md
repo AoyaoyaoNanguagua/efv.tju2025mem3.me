@@ -137,9 +137,9 @@ contrib/2025000000/local-preview.html
 素材文件名使用英文小写、数字和连字符：
 
 ```text
-book-mite-sprites-v1.png
-archive-senior-portrait-v1.png
-notice-board-prop-v1.png
+biting-magic-book-sprites-v1.png
+ai-professor-npc-idle-sheet-v1.png
+ch1-m01-props-atlas-v4-4096x4096.png
 leaf-courtyard-tileset-v1.png
 ```
 
@@ -201,9 +201,9 @@ JS 入口只做注册，不改主程序。
   "zone": "zhonghe-plaza",
   "entry": "2025000000-level.js",
   "assets": {
-    "monsters": ["assets/enemies/book-mite-sprites-v1.png"],
-    "npcs": ["assets/npc/archive-senior-portrait-v1.png"],
-    "props": ["assets/props/notice-board-v1.png"],
+    "monsters": ["assets/game/enemies/animated/biting-magic-book-sprites-v1.png"],
+    "npcs": ["assets/game/characters/npcs/ai-professor-npc-idle-sheet-v1.png"],
+    "props": ["assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png"],
     "tilesets": []
   },
   "data": {
@@ -237,7 +237,7 @@ JS 入口只做注册，不改主程序。
       "type": "prop",
       "x": 4920,
       "y": 3520,
-      "asset": "assets/props/notice-board-v1.png",
+      "asset": "assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png",
       "note": "示例可交互物件点位"
     }
   ]
@@ -445,11 +445,11 @@ create() {
 ```json
 {
   "sprite": {
-    "path": "assets/enemies/book-mite-sprites-v1.png",
+    "path": "assets/game/enemies/animated/biting-magic-book-sprites-v1.png",
     "frameWidth": 128,
     "frameHeight": 128,
-    "columns": 4,
-    "rows": 3,
+    "columns": 6,
+    "rows": 4,
     "animations": {
       "idle": { "row": 0, "frames": [0, 1, 2, 3], "fps": 6, "loop": true },
       "move": { "row": 1, "frames": [0, 1, 2, 3], "fps": 8, "loop": true },
@@ -497,8 +497,8 @@ assets/maps/playable/previews/zhonghe-plaza-tilemap-playtest-v1-game-view.png
 assets/maps/playable/previews/zhonghe-plaza-ground-material-atlas-imagegen-v1.png
 assets/maps/playable/previews/zhonghe-plaza-ground-style-imagegen-v1.png
 assets/maps/props/zhonghe-plaza-props-atlas-v1.png
-assets/enemies/leaf-poring-portrait-v2.png
-assets/enemies/leaf-poring-sprites-v2.png
+assets/game/enemies/portraits/leaf-poring-portrait-v2.png
+assets/game/enemies/animated/leaf-poring-sprites-v2.png
 ```
 
 这些素材的用途：
@@ -510,8 +510,8 @@ assets/enemies/leaf-poring-sprites-v2.png
 - `assets/maps/playable/previews/zhonghe-plaza-ground-material-atlas-imagegen-v1.png`：地图瓦片材质。
 - `assets/maps/playable/previews/zhonghe-plaza-ground-style-imagegen-v1.png`：地图整体风格。
 - `assets/maps/props/zhonghe-plaza-props-atlas-v1.png`：props 形状和摆放风格。
-- `assets/enemies/leaf-poring-portrait-v2.png`：怪物头像方向。
-- `assets/enemies/leaf-poring-sprites-v2.png`：怪物动作方向。
+- `assets/game/enemies/portraits/leaf-poring-portrait-v2.png`：怪物头像方向。
+- `assets/game/enemies/animated/leaf-poring-sprites-v2.png`：怪物动作方向。
 
 ## 17. 给 AI 的对话模板
 
@@ -573,7 +573,7 @@ assets/enemies/leaf-poring-sprites-v2.png
 assets/portraits/lina.png
 assets/sprites/lina-sprites-v10-anchored-expanded.png
 assets/maps/props/zhonghe-plaza-props-atlas-v1.png
-assets/enemies/leaf-poring-portrait-v2.png
+assets/game/enemies/portraits/leaf-poring-portrait-v2.png
 assets/maps/playable/previews/zhonghe-plaza-tilemap-playtest-v1-game-view.png
 ```
 
