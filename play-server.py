@@ -29,7 +29,7 @@ WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_-]{3,18}$")
 CHARACTER_IDS = {"lina", "ayu"}
 CHARACTER_LIMIT = 5
-PROFILE_EXTRA_STRING_FIELDS = {"chapterId", "mapId", "spawnId"}
+PROFILE_EXTRA_STRING_FIELDS = {"chapterId", "mapId", "spawnId", "characterRecordId"}
 PROFILE_EXTRA_JSON_FIELDS = {"flags", "quests", "inventory", "equipment", "collections"}
 PROFILE_EXTRA_JSON_MAX_BYTES = 12 * 1024
 PROFILE_EXTRA_DEPTH = 5
@@ -63,7 +63,7 @@ BASE_PROFILE = {
     "magicPower": 22,
     "chapterId": "chapter1",
     "mapId": "ch1_m01_classroom_spawn",
-    "spawnId": "entry",
+    "spawnId": "ch1_m01_spawn_player_start",
     "flags": {},
     "quests": {},
     "inventory": [],
@@ -173,6 +173,7 @@ def init_db() -> None:
               credits INTEGER NOT NULL DEFAULT 0,
               max_hp INTEGER NOT NULL DEFAULT 160,
               hp INTEGER NOT NULL DEFAULT 160,
+              profile_json TEXT,
               created_at REAL NOT NULL,
               updated_at REAL NOT NULL,
               UNIQUE(user_id, slot),
@@ -180,6 +181,45 @@ def init_db() -> None:
             )
             """
         )
+        character_columns = {
+            row["name"] for row in conn.execute("PRAGMA table_info(characters)").fetchall()
+        }
+        if "profile_json" not in character_columns:
+            conn.execute("ALTER TABLE characters ADD COLUMN profile_json TEXT")
+            legacy_saves = conn.execute("SELECT user_id, profile_json FROM saves").fetchall()
+            for legacy_save in legacy_saves:
+                try:
+                    profile = json.loads(legacy_save["profile_json"])
+                    if not isinstance(profile, dict):
+                        continue
+                    slot = int(profile.get("slot", -1))
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    continue
+                character = conn.execute(
+                    "SELECT * FROM characters WHERE user_id = ? AND slot = ?",
+                    (legacy_save["user_id"], slot),
+                ).fetchone()
+                if not character:
+                    continue
+                has_fresh_stats = (
+                    int(character["level"]) == BASE_PROFILE["level"]
+                    and int(character["exp"]) == BASE_PROFILE["exp"]
+                    and int(character["credits"]) == BASE_PROFILE["credits"]
+                )
+                if has_fresh_stats and profile.get("mapId") != BASE_PROFILE["mapId"]:
+                    profile = {
+                        "id": profile.get("id", f"u{legacy_save['user_id']}"),
+                        "account": profile.get("account", ""),
+                        "name": character["name"],
+                        "characterId": character["character_id"],
+                        "slot": slot,
+                        **BASE_PROFILE,
+                    }
+                profile["characterRecordId"] = str(character["id"])
+                conn.execute(
+                    "UPDATE characters SET profile_json = ? WHERE id = ?",
+                    (json.dumps(profile, ensure_ascii=False), character["id"]),
+                )
 
 
 def json_response(handler: BaseHTTPRequestHandler, status: int, payload: dict) -> None:
@@ -380,6 +420,7 @@ def load_profile(user: sqlite3.Row) -> dict:
 
 def save_profile(user: sqlite3.Row, profile: dict) -> dict:
     safe_profile = sanitize_profile(profile, user)
+    profile_json = json.dumps(safe_profile, ensure_ascii=False)
     now = time.time()
     with db() as conn:
         conn.execute(
@@ -390,18 +431,23 @@ def save_profile(user: sqlite3.Row, profile: dict) -> dict:
               profile_json = excluded.profile_json,
               updated_at = excluded.updated_at
             """,
-            (user["id"], json.dumps(safe_profile, ensure_ascii=False), now),
+            (user["id"], profile_json, now),
         )
         conn.execute(
             "UPDATE users SET nickname = ?, character_id = ?, updated_at = ? WHERE id = ?",
             (safe_profile["name"], safe_profile["characterId"], now, user["id"]),
         )
-        if safe_profile["slot"] >= 0:
+        try:
+            character_record_id = int(safe_profile.get("characterRecordId", ""))
+        except (TypeError, ValueError):
+            character_record_id = -1
+        if safe_profile["slot"] >= 0 and character_record_id >= 0:
             conn.execute(
                 """
                 UPDATE characters
-                SET character_id = ?, name = ?, level = ?, exp = ?, credits = ?, max_hp = ?, hp = ?, updated_at = ?
-                WHERE user_id = ? AND slot = ?
+                SET character_id = ?, name = ?, level = ?, exp = ?, credits = ?, max_hp = ?, hp = ?,
+                    profile_json = ?, updated_at = ?
+                WHERE id = ? AND user_id = ? AND slot = ?
                 """,
                 (
                     safe_profile["characterId"],
@@ -411,7 +457,9 @@ def save_profile(user: sqlite3.Row, profile: dict) -> dict:
                     safe_profile["credits"],
                     safe_profile["maxHp"],
                     safe_profile["hp"],
+                    profile_json,
                     now,
+                    character_record_id,
                     user["id"],
                     safe_profile["slot"],
                 ),
@@ -436,6 +484,21 @@ def character_to_dict(row: sqlite3.Row) -> dict:
     }
 
 
+def load_character_profile(user: sqlite3.Row, row: sqlite3.Row) -> dict:
+    character = character_to_dict(row)
+    profile = default_profile(user)
+    if row["profile_json"]:
+        try:
+            saved_profile = json.loads(row["profile_json"])
+            if isinstance(saved_profile, dict):
+                profile.update(saved_profile)
+        except json.JSONDecodeError:
+            pass
+    profile.update(character)
+    profile["characterRecordId"] = str(row["id"])
+    return sanitize_profile(profile, user)
+
+
 def list_characters(user: sqlite3.Row) -> list[dict]:
     with db() as conn:
         rows = conn.execute(
@@ -456,12 +519,27 @@ def handle_character_create(user: sqlite3.Row, payload: dict) -> tuple[int, dict
     name = clean_name(payload.get("name"), DEFAULT_CHARACTER_NAMES.get(requested, user["nickname"]))
     now = time.time()
     with db() as conn:
-        conn.execute(
+        cursor = conn.execute(
             """
-            INSERT INTO characters(user_id, slot, character_id, name, level, exp, credits, max_hp, hp, created_at, updated_at)
-            VALUES (?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?)
+            INSERT INTO characters(
+              user_id, slot, character_id, name, level, exp, credits, max_hp, hp,
+              profile_json, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, 1, 0, 0, ?, ?, NULL, ?, ?)
             """,
             (user["id"], slot, requested, name, BASE_PROFILE["maxHp"], BASE_PROFILE["hp"], now, now),
+        )
+        profile = default_profile(user)
+        profile.update({
+            "name": name,
+            "characterId": requested,
+            "slot": slot,
+            "characterRecordId": str(cursor.lastrowid),
+        })
+        fresh_profile = sanitize_profile(profile, user)
+        conn.execute(
+            "UPDATE characters SET profile_json = ? WHERE id = ?",
+            (json.dumps(fresh_profile, ensure_ascii=False), cursor.lastrowid),
         )
     return 200, {"slot": slot, "characters": list_characters(user)}
 
@@ -490,22 +568,9 @@ def handle_character_select(user: sqlite3.Row, payload: dict) -> tuple[int, dict
         ).fetchone()
     if not row:
         return 404, {"error": "角色不存在。"}
-    character = character_to_dict(row)
-    if character["hp"] <= 0:
-        character["hp"] = character["maxHp"]
-    selected_profile = load_profile(user)
-    selected_profile.update(
-        {
-            "name": character["name"],
-            "characterId": character["characterId"],
-            "slot": slot,
-            "level": character["level"],
-            "exp": character["exp"],
-            "credits": character["credits"],
-            "maxHp": character["maxHp"],
-            "hp": character["hp"],
-        }
-    )
+    selected_profile = load_character_profile(user, row)
+    if selected_profile["hp"] <= 0:
+        selected_profile["hp"] = selected_profile["maxHp"]
     profile = save_profile(user, selected_profile)
     return 200, {"profile": profile}
 
