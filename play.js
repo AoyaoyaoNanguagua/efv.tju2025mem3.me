@@ -26,6 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260710-m01-props-wander`;
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -78,6 +79,7 @@
         key: overlay.textureKey || overlay.key || overlay.id
       });
     });
+    (mapData?.interactionNodes || []).forEach(node => addImage(node.markerImage));
     return Array.from(images.values());
   }
 
@@ -2181,6 +2183,8 @@
       this.syncedSlimeIds = new Set();
       this.bossSummonIds = new Set();
       this.bossWavePending = false;
+      this.ambientEnemyRefreshTimer = null;
+      this.ambientEnemySequence = 0;
     }
 
     preload() {
@@ -2198,7 +2202,7 @@
           app.profile?.mapId
         );
       });
-      this.load.json(CHAPTER_ONE_MAPS_KEY, CHAPTER_ONE_MAPS_PATH);
+      this.load.json(CHAPTER_ONE_MAPS_KEY, CHAPTER_ONE_MAPS_REQUEST_PATH);
       this.load.spritesheet(PROJECTILE_TEXTURE_KEY, PROJECTILE_ATLAS, {
         frameWidth: PROJECTILE_FRAME_SIZE,
         frameHeight: PROJECTILE_FRAME_SIZE
@@ -2304,6 +2308,7 @@
       this.createMapNpcs();
       this.createInteractionNodes();
       this.spawnMapLeafSlimes();
+      this.scheduleAmbientEnemyRefresh();
 
       this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
       this.bindMapColliders();
@@ -2558,8 +2563,31 @@
         "chapter-clear": 0x9ee7b2
       };
       const color = colors[node.type] || 0x8bdff2;
-      return this.add.ellipse(x, y, width, height, color, 0.12)
-        .setStrokeStyle(1.5, color, 0.34)
+      const markerKey = node.markerImage?.key || node.markerTextureKey;
+      if (markerKey && this.textures.exists(markerKey)) {
+        const shadow = this.add.ellipse(
+          0,
+          Number(node.markerShadowOffsetY) || 4,
+          Number(node.markerShadowWidth) || width,
+          Number(node.markerShadowHeight) || Math.max(18, height * 0.52),
+          0x21182d,
+          Number(node.markerShadowAlpha) || 0.22
+        );
+        const glow = this.add.ellipse(
+          0,
+          Number(node.markerGlowOffsetY) || 1,
+          Number(node.markerGlowWidth) || width * 1.08,
+          Number(node.markerGlowHeight) || height,
+          color,
+          Number(node.markerGlowAlpha) || 0.1
+        );
+        const sprite = this.add.image(0, Number(node.markerOffsetY) || 0, markerKey)
+          .setOrigin(Number(node.markerOriginX) || 0.5, Number(node.markerOriginY) || 0.86)
+          .setScale(Number(node.markerScale) || 0.3);
+        return this.add.container(x, y, [glow, shadow, sprite])
+          .setDepth(Number(node.hintDepth) || y + 2);
+      }
+      return this.add.ellipse(x, y, width, height, color, 0.09)
         .setDepth(Number(node.hintDepth) || y - 2);
     }
 
@@ -2866,7 +2894,7 @@
         const texture = this.textures.get(textureKey);
         texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
         [
-          { key: "move", row: 0, frameRate: 12, repeat: 0 },
+          { key: "move", row: 0, frameRate: 10, repeat: -1 },
           { key: "attack", row: 1, frameRate: 13, repeat: 0 },
           { key: "hit", row: 2, frameRate: 15, repeat: 0 },
           { key: "dead", row: 3, frameRate: 9, repeat: 0 }
@@ -3006,7 +3034,7 @@
           .setScale(Number(item.scale) || 0.6)
           .setDepth(Number(item.depth) || y + 4);
         const animationKey = item.animationKey || (textureKey === PROFESSOR_NPC_KEY ? PROFESSOR_NPC_IDLE_ANIMATION : "");
-        if (animationKey && this.anims.exists(animationKey)) sprite.play(animationKey);
+        if (item.animate !== false && animationKey && this.anims.exists(animationKey)) sprite.play(animationKey);
         const label = item.showLabel === false
           ? null
           : this.add.text(x, y + (Number(item.labelOffsetY) || -158), item.label || "NPC", {
@@ -3022,6 +3050,8 @@
     }
 
     clearRuntimeMapObjects() {
+      this.ambientEnemyRefreshTimer?.remove(false);
+      this.ambientEnemyRefreshTimer = null;
       this.mapProps?.forEach(prop => prop.destroy());
       this.mapProps = [];
       this.foregroundOverlays?.forEach(item => item.destroy());
@@ -3126,6 +3156,7 @@
           this.createMapNpcs();
           this.createInteractionNodes();
           this.spawnMapLeafSlimes();
+          this.scheduleAmbientEnemyRefresh();
           saveProfile(app.profile);
           renderChapterHud();
           renderMinimap(this);
@@ -3419,6 +3450,80 @@
       });
     }
 
+    getAmbientEnemyRefreshConfig() {
+      const config = this.mapData?.ambientEnemyRefresh;
+      return config && Array.isArray(config.enemies) && config.enemies.length ? config : null;
+    }
+
+    pointBlockedForAmbientEnemy(x, y, padding = 58) {
+      if ((this.collisionDebugRects || []).some(rect =>
+        x >= rect.x - padding
+        && x <= rect.x + rect.w + padding
+        && y >= rect.y - padding
+        && y <= rect.y + rect.h + padding
+      )) return true;
+      if ((this.mapNpcs || []).some(npc => Math.hypot(x - npc.sprite.x, y - npc.sprite.y) < 150)) return true;
+      return (this.interactionNodes || []).some(node => Math.hypot(x - node.x, y - node.y) < 125);
+    }
+
+    getRandomAmbientEnemyPoint(config) {
+      const bounds = config.spawnBounds || {};
+      const left = clamp(Number(bounds.x) || 96, 72, this.worldWidth - 72);
+      const top = clamp(Number(bounds.y) || 96, 96, this.worldHeight - 96);
+      const right = clamp(left + (Number(bounds.width) || this.worldWidth - left * 2), left, this.worldWidth - 72);
+      const bottom = clamp(top + (Number(bounds.height) || this.worldHeight - top * 2), top, this.worldHeight - 96);
+      const avoidPlayerRadius = Math.max(160, Number(config.avoidPlayerRadius) || 280);
+      for (let attempt = 0; attempt < 28; attempt += 1) {
+        const x = Phaser.Math.Between(Math.ceil(left), Math.floor(right));
+        const y = Phaser.Math.Between(Math.ceil(top), Math.floor(bottom));
+        if (this.actor && Math.hypot(x - this.actor.x, y - this.actor.y) < avoidPlayerRadius) continue;
+        if (this.pointBlockedForAmbientEnemy(x, y)) continue;
+        return { x, y };
+      }
+      return null;
+    }
+
+    spawnAmbientEnemyWave() {
+      const config = this.getAmbientEnemyRefreshConfig();
+      if (!config || this.mapTransitioning || !this.actor?.active) return 0;
+      const alive = (this.leafSlimes?.getChildren?.() || []).filter(enemy =>
+        enemy?.active && enemy.ambientWander && enemy.state !== "dead" && enemy.state !== "vanish"
+      ).length;
+      const available = Math.max(0, (Number(config.maxAlive) || 9) - alive);
+      if (!available) return 0;
+      const minimum = Math.max(1, Number(config.minCount) || 1);
+      const maximum = Math.max(minimum, Number(config.maxCount) || 3);
+      const count = Math.min(available, Phaser.Math.Between(minimum, maximum));
+      let spawned = 0;
+      for (let index = 0; index < count; index += 1) {
+        const point = this.getRandomAmbientEnemyPoint(config);
+        if (!point) continue;
+        const enemy = Phaser.Utils.Array.GetRandom(config.enemies);
+        this.ambientEnemySequence += 1;
+        if (this.spawnLeafSlime({
+          ...enemy,
+          ...point,
+          id: `ambient-${this.getCurrentMapId()}-${this.ambientEnemySequence}`,
+          ambientWander: true,
+          passiveWander: true,
+          smoothMovement: true
+        })) spawned += 1;
+      }
+      return spawned;
+    }
+
+    scheduleAmbientEnemyRefresh() {
+      this.ambientEnemyRefreshTimer?.remove(false);
+      this.ambientEnemyRefreshTimer = null;
+      const config = this.getAmbientEnemyRefreshConfig();
+      if (!config) return;
+      this.ambientEnemyRefreshTimer = this.time.addEvent({
+        delay: Math.max(10000, Number(config.intervalMs) || 60000),
+        loop: true,
+        callback: () => this.spawnAmbientEnemyWave()
+      });
+    }
+
     getNextLeafSlimePoint() {
       if (!this.leafSlimes) return null;
       const points = this.getMapLeafSlimeSpawns();
@@ -3476,7 +3581,10 @@
       const style = this.getEnemyRankStyle(slime);
       const ratio = clamp((slime.hp || 0) / Math.max(1, slime.maxHp || 1), 0, 1);
       slime.hpFill.setDisplaySize(Math.max(1, style.width * ratio), Math.max(3, style.height - 2));
-      const visible = slime.state !== "dead" && slime.state !== "vanish" && slime.state !== "emerging";
+      const visible = slime.state !== "dead"
+        && slime.state !== "vanish"
+        && slime.state !== "emerging"
+        && (!slime.hideHudUntilProvoked || this.time.now < slime.provokedUntil);
       [slime.hpFrame, slime.hpBg, slime.hpFill, slime.nameLabel].forEach(item => item?.setVisible(visible));
     }
 
@@ -3526,6 +3634,19 @@
       slime.baseTint = Number(options.tint) || (elite ? 0xffd56b : 0xffffff);
       slime.textureKey = textureKey;
       slime.staticImage = !!options.staticImage;
+      slime.smoothMovement = options.smoothMovement === true
+        || textureKey === MAGIC_BROOM_KEY
+        || textureKey === BITING_MAGIC_BOOK_KEY;
+      slime.ambientWander = !!options.ambientWander;
+      slime.passiveWander = !!options.passiveWander;
+      slime.provokedUntil = 0;
+      slime.hideHudUntilProvoked = slime.passiveWander;
+      slime.wanderSpeed = Math.max(18, Number(options.wanderSpeed) || (textureKey === BITING_MAGIC_BOOK_KEY ? 30 : 34));
+      slime.chaseSpeed = Math.max(slime.wanderSpeed, Number(options.chaseSpeed) || (textureKey === BITING_MAGIC_BOOK_KEY ? 44 : 48));
+      slime.aggroRange = Math.max(120, Number(options.aggroRange) || 300);
+      slime.wanderTargetX = x;
+      slime.wanderTargetY = y;
+      slime.wanderUntil = 0;
       slime.maxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
       slime.hp = clamp(Number(options.hp ?? slime.maxHp), 0, slime.maxHp);
       slime.damage = Math.max(1, Number(options.damage) || (rank === "rare" ? 16 : rank === "elite" ? 12 : 8));
@@ -4167,6 +4288,7 @@
 
     playLeafSlimeHit(slime, baseDamage = MELEE.damage, options = {}) {
       if (slime.state === "hit" || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return;
+      slime.provokedUntil = this.time.now + 12000;
       const result = this.rollPlayerDamage(baseDamage, slime, options.kind || "magic");
       slime.hp = Math.max(0, Number(slime.hp || 0) - result.amount);
       if (!options.noEnergyGain) {
@@ -4363,6 +4485,7 @@
         slime.body.setVelocity(0, 0);
         slime.state = "move";
         slime.nextHopAt = this.time.now + LEAF_SLIME_HOP_REST;
+        this.playEnemyAnimation(slime, "move", true);
       });
     }
 
@@ -4385,7 +4508,59 @@
       });
     }
 
-    updateLeafSlimes() {
+    chooseSmoothEnemyWanderTarget(slime) {
+      const config = this.getAmbientEnemyRefreshConfig() || {};
+      const bounds = config.spawnBounds || {};
+      const left = clamp(Number(bounds.x) || 96, 72, this.worldWidth - 72);
+      const top = clamp(Number(bounds.y) || 96, 96, this.worldHeight - 96);
+      const right = clamp(left + (Number(bounds.width) || this.worldWidth - left * 2), left, this.worldWidth - 72);
+      const bottom = clamp(top + (Number(bounds.height) || this.worldHeight - top * 2), top, this.worldHeight - 96);
+      for (let attempt = 0; attempt < 18; attempt += 1) {
+        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        const distance = Phaser.Math.Between(120, 310);
+        const x = clamp(slime.x + Math.cos(angle) * distance, left, right);
+        const y = clamp(slime.y + Math.sin(angle) * distance, top, bottom);
+        if (this.pointBlockedForAmbientEnemy(x, y, 34)) continue;
+        slime.wanderTargetX = x;
+        slime.wanderTargetY = y;
+        slime.wanderUntil = this.time.now + Phaser.Math.Between(2200, 4600);
+        return;
+      }
+      slime.wanderTargetX = slime.x;
+      slime.wanderTargetY = slime.y;
+      slime.wanderUntil = this.time.now + 900;
+    }
+
+    updateSmoothEnemyMotion(slime, dx, dy, distance, delta = 16) {
+      const provoked = !slime.passiveWander || this.time.now < slime.provokedUntil;
+      if (provoked && distance <= LEAF_SLIME_ATTACK_RANGE) {
+        this.triggerLeafSlimeAttack(slime, dx, dy);
+        return;
+      }
+      let targetDx;
+      let targetDy;
+      let speed;
+      if (provoked && distance <= slime.aggroRange) {
+        targetDx = dx;
+        targetDy = dy;
+        speed = slime.chaseSpeed;
+      } else {
+        const wanderDistance = Math.hypot(slime.wanderTargetX - slime.x, slime.wanderTargetY - slime.y);
+        if (this.time.now >= slime.wanderUntil || wanderDistance < 24) this.chooseSmoothEnemyWanderTarget(slime);
+        targetDx = slime.wanderTargetX - slime.x;
+        targetDy = slime.wanderTargetY - slime.y;
+        speed = slime.wanderSpeed;
+      }
+      const vec = normalizeVector(targetDx, targetDy);
+      const blend = 1 - Math.exp(-6 * Math.max(1, Number(delta) || 16) / 1000);
+      const velocityX = Phaser.Math.Linear(slime.body.velocity.x, vec.x * speed, blend);
+      const velocityY = Phaser.Math.Linear(slime.body.velocity.y, vec.y * speed, blend);
+      slime.body.setVelocity(velocityX, velocityY);
+      if (Math.abs(velocityX) > 2) slime.setFlipX(velocityX < 0);
+      this.playEnemyAnimation(slime, "move");
+    }
+
+    updateLeafSlimes(time, delta = 16) {
       const slimes = this.leafSlimes?.getChildren?.() || [];
       slimes.forEach(slime => {
         if (!slime?.active || !this.actor?.active) return;
@@ -4395,6 +4570,10 @@
         const dx = this.actor.x - slime.x;
         const dy = this.actor.y - slime.y;
         const distance = Math.hypot(dx, dy);
+        if (slime.smoothMovement) {
+          this.updateSmoothEnemyMotion(slime, dx, dy, distance, delta);
+          return;
+        }
         if (distance > LEAF_SLIME_DETECT_RANGE) {
           slime.body.setVelocity(0, 0);
           return;
@@ -4689,7 +4868,7 @@
       }
       this.actor.setDepth(this.actor.y + 8);
       this.updateProjectiles();
-      this.updateLeafSlimes();
+      this.updateLeafSlimes(time, delta);
       this.updateBoss(time);
       this.updateInteractionPrompt();
       renderMinimap(this);
