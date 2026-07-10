@@ -9,6 +9,7 @@
   const PROJECTILE_FRAME_SIZE = 362;
   const PROJECTILE_MAX_RANGE = MAP_TILE_SIZE * 6;
   const PROJECTILE_SPEED_SCALE = 0.94;
+  const PLAYER_PROJECTILE_SPEED_MULTIPLIER = 1.2;
   const PROJECTILE_VISUAL_SCALE_MULTIPLIER = 2;
   const PROJECTILE_HITBOX_SCALE_MULTIPLIER = 2;
   const PROJECTILE_HEAD_ORIGIN = { x: 236 / PROJECTILE_FRAME_SIZE, y: 209 / PROJECTILE_FRAME_SIZE };
@@ -23,34 +24,33 @@
   const MAP_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-props-atlas-v1.png";
   const MAP_MACRO_PROP_ATLAS_PATH = "assets/maps/props/zhonghe-plaza-macro-props-v1.png";
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
-  const CHAPTER_ONE_MAP_DATA_KEY = "play-ch1-m01-classroom-data";
-  const CHAPTER_ONE_MAP_DATA_PATH = "assets/chapter1/ch1-m01-classroom-spawn.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
   const CHAPTER_ONE_MAP_BACKGROUNDS = [
-    { key: "ch1-map-classroom-spawn-bg", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-base-v4-3072x2048.png" },
     { key: "ch1-map-classroom-spawn-assembled-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-v4-3072x2048.png" },
     { key: "ch1-m01-props-atlas-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png" },
-    { key: "ch1-m01-foreground-atlas-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-foreground-atlas-v4-4096x4096.png" },
     { key: "ch1-m01-wall-overlay-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.png" },
     { key: "ch1-m01-wall-overlay-front-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.png" },
-    { key: "ch1-map-prompt-archive-bg", path: "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v2-2048.png" },
+    { key: "ch1-map-prompt-archive-bg", path: "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v3-6144x2048.png" },
     { key: "ch1-map-agent-lab-bg", path: "assets/chapter1/maps/ch1_m03_agent_lab/background/ch1-map-agent-lab-bg-v2-2048.png" },
     { key: "ch1-map-library-lawn-boss-bg", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/background/ch1-map-library-lawn-boss-bg-v2-2048.png" },
-    { key: "ch1-m01-spawn-r0-c0", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c0.png" },
-    { key: "ch1-m01-spawn-r0-c1", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c1.png" },
-    { key: "ch1-m01-spawn-r0-c2", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c2.png" },
-    { key: "ch1-m01-spawn-r1-c0", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c0.png" },
-    { key: "ch1-m01-spawn-r1-c1", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c1.png" },
-    { key: "ch1-m01-spawn-r1-c2", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c2.png" },
-    { key: "ch1-process-nw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-nw-v1.png" },
-    { key: "ch1-process-ne", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-ne-v1.png" },
-    { key: "ch1-process-sw", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-sw-v1.png" },
-    { key: "ch1-process-se", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-se-v1.png" },
-    { key: "ch1-m03-agent-nw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-nw-v1.png" },
-    { key: "ch1-m03-agent-ne", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-ne-v1.png" },
-    { key: "ch1-m03-agent-sw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-sw-v1.png" },
-    { key: "ch1-m03-agent-se", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-se-v1.png" },
+    { key: "ch1-m01-base-v4-floor-tile", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png" },
+    { key: "ch1-m02-archive-v3-r0-c0", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c0.png" },
+    { key: "ch1-m02-archive-v3-r0-c1", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c1.png" },
+    { key: "ch1-m02-archive-v3-r0-c2", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c2.png" },
+    { key: "ch1-m02-archive-v3-r0-c3", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c3.png" },
+    { key: "ch1-m02-archive-v3-r0-c4", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c4.png" },
+    { key: "ch1-m02-archive-v3-r0-c5", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c5.png" },
+    { key: "ch1-m02-archive-v3-r1-c0", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c0.png" },
+    { key: "ch1-m02-archive-v3-r1-c1", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c1.png" },
+    { key: "ch1-m02-archive-v3-r1-c2", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c2.png" },
+    { key: "ch1-m02-archive-v3-r1-c3", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c3.png" },
+    { key: "ch1-m02-archive-v3-r1-c4", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c4.png" },
+    { key: "ch1-m02-archive-v3-r1-c5", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c5.png" },
+    { key: "ch1-m03-agent-nw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-nw.png" },
+    { key: "ch1-m03-agent-ne", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-ne.png" },
+    { key: "ch1-m03-agent-sw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-sw.png" },
+    { key: "ch1-m03-agent-se", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-se.png" },
     { key: "ch1-m04-boss-nw", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-nw-v1.png" },
     { key: "ch1-m04-boss-ne", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-ne-v1.png" },
     { key: "ch1-m04-boss-sw", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-sw-v1.png" },
@@ -108,19 +108,17 @@
   }
 
   const MAP_PORTAL_KEY = "ch1-map-teleport-portal";
-  const MAP_PORTAL_IMAGE = "assets/chapter1/vfx/ch1-map-teleport-portal-sheet-v1.png";
+  const MAP_PORTAL_IMAGE = "assets/game/vfx/ch1-map-teleport-portal-sheet-v1.png";
   const MAP_PORTAL_FRAME_WIDTH = 192;
   const MAP_PORTAL_FRAME_HEIGHT = 192;
   const MAP_TRANSFER_RING_KEY = "ch1-map-transfer-ring";
-  const MAP_TRANSFER_RING_IMAGE = "assets/chapter1/vfx/ch1-map-transfer-ring-sheet-v1.png";
+  const MAP_TRANSFER_RING_IMAGE = "assets/game/vfx/ch1-map-transfer-ring-sheet-v1.png";
   const MAP_TRANSFER_RING_FRAME_WIDTH = 128;
   const MAP_TRANSFER_RING_FRAME_HEIGHT = 128;
   const BOSS_VOID_PORTAL_KEY = "ch1-boss-void-portal";
-  const BOSS_VOID_PORTAL_IMAGE = "assets/chapter1/vfx/ch1-boss-void-portal-sheet-v1.png";
+  const BOSS_VOID_PORTAL_IMAGE = "assets/game/vfx/ch1-boss-void-portal-sheet-v1.png";
   const BOSS_VOID_PORTAL_FRAME_WIDTH = 256;
   const BOSS_VOID_PORTAL_FRAME_HEIGHT = 256;
-  const QUICKBAR_ICONS_IMAGE = "assets/chapter1/ui/ch1-quickbar-icons-sheet-v1.png";
-
   const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v2.png";
   const PROJECTILE_TEXTURE_KEY = "play-lina-projectiles";
   const ULTIMATE_BACK_ATLAS = "assets/effects/lina-ultimate-cyclone-back-v1.png";
@@ -141,10 +139,25 @@
   const ULTIMATE_DAMAGE = 48;
   const ULTIMATE_RADIUS_X = 430;
   const ULTIMATE_RADIUS_Y = 220;
-  const LEAF_SLIME_SHEET = "assets/enemies/leaf-poring-sprites-v2.png";
+  const LEAF_SLIME_SHEET = "assets/game/enemies/animated/leaf-poring-sprites-v2.png";
   const LEAF_SLIME_KEY = "play-leaf-slime";
   const LEAF_SLIME_FRAME_SIZE = 128;
   const LEAF_SLIME_COLS = 6;
+  const MAGIC_BROOM_KEY = "ch1-runaway-magic-broom";
+  const BITING_MAGIC_BOOK_KEY = "ch1-biting-magic-book";
+  const M02_COPY_SHADOW_KEY = "ch1-m02-copy-paste-shadow";
+  const M02_TONE_DRIFT_KEY = "ch1-m02-tone-drift-archivist";
+  const CHAPTER_ONE_ENEMY_SPRITES = [
+    { key: MAGIC_BROOM_KEY, path: "assets/game/enemies/animated/runaway-magic-broom-sprites-v1.png" },
+    { key: BITING_MAGIC_BOOK_KEY, path: "assets/game/enemies/animated/biting-magic-book-sprites-v1.png" },
+    { key: M02_COPY_SHADOW_KEY, path: "assets/game/enemies/animated/m02-copy-paste-shadow-sprites-v1.png" },
+    { key: M02_TONE_DRIFT_KEY, path: "assets/game/enemies/animated/m02-tone-drift-archivist-sprites-v1.png" }
+  ];
+  const PROFESSOR_NPC_KEY = "ch1-ai-professor-npc";
+  const PROFESSOR_NPC_IMAGE = "assets/game/characters/npcs/ai-professor-npc-idle-sheet-v1.png";
+  const PROFESSOR_NPC_FRAME_WIDTH = 192;
+  const PROFESSOR_NPC_FRAME_HEIGHT = 256;
+  const PROFESSOR_NPC_IDLE_ANIMATION = "ch1-ai-professor-npc-idle";
   const LEAF_SLIME_DETECT_RANGE = MAP_TILE_SIZE * 6;
   const LEAF_SLIME_ATTACK_RANGE = 64;
   const LEAF_SLIME_ATTACK_COOLDOWN = 1250;
@@ -158,7 +171,7 @@
   const LEAF_SLIME_HIT_RADIUS = 52;
 
   const BOSS_KEY = "play-ai-professor-boss";
-  const BOSS_IMAGE = "assets/chapter1/boss/ai-professor-summoner-game-cutout-v1.png";
+  const BOSS_IMAGE = "assets/game/bosses/ai-professor-summoner-game-cutout-v1.png";
   const BOSS_VISUAL_SCALE = 0.42;
   const QUANTUM_SCHOLAR_KEY = "ch1-enemy-quantum-scholar-rare";
   const QUANTUM_FAMILIAR_KEY = "ch1-enemy-quantum-familiar-elite";
@@ -170,15 +183,15 @@
   const AIAGENT_DIGITAL_CAT_KEY = "ch1-enemy-aiagent-digital-cat-elite";
   const AIAGENT_BOTCAT_KEY = "ch1-enemy-aiagent-botcat-mob";
   const CHAPTER_ONE_ENEMY_IMAGES = [
-    { key: QUANTUM_SCHOLAR_KEY, path: "assets/chapter1/enemies/ch1-enemy-quantum-scholar-rare-cutout-v1.png" },
-    { key: QUANTUM_FAMILIAR_KEY, path: "assets/chapter1/enemies/ch1-enemy-quantum-familiar-elite-cutout-v1.png" },
-    { key: QUANTUM_PAPER_KEY, path: "assets/chapter1/enemies/ch1-enemy-quantum-paper-mob-cutout-v1.png" },
-    { key: BLOCKCHAIN_CHAINBEAST_KEY, path: "assets/chapter1/enemies/ch1-enemy-blockchain-chainbeast-rare-cutout-v2.png" },
-    { key: BLOCKCHAIN_LOCK_KEY, path: "assets/chapter1/enemies/ch1-enemy-blockchain-lock-elite-cutout-v1.png" },
-    { key: BLOCKCHAIN_SPIDER_KEY, path: "assets/chapter1/enemies/ch1-enemy-blockchain-spider-mob-cutout-v1.png" },
-    { key: AIAGENT_CYBERMAGE_KEY, path: "assets/chapter1/enemies/ch1-enemy-aiagent-cybermage-rare-cutout-v1.png" },
-    { key: AIAGENT_DIGITAL_CAT_KEY, path: "assets/chapter1/enemies/ch1-enemy-aiagent-digital-cat-elite-cutout-v2.png" },
-    { key: AIAGENT_BOTCAT_KEY, path: "assets/chapter1/enemies/ch1-enemy-aiagent-botcat-mob-cutout-v1.png" }
+    { key: QUANTUM_SCHOLAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-scholar-rare-cutout-v1.png" },
+    { key: QUANTUM_FAMILIAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-familiar-elite-cutout-v1.png" },
+    { key: QUANTUM_PAPER_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-paper-mob-cutout-v1.png" },
+    { key: BLOCKCHAIN_CHAINBEAST_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-blockchain-chainbeast-rare-cutout-v2.png" },
+    { key: BLOCKCHAIN_LOCK_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-blockchain-lock-elite-cutout-v1.png" },
+    { key: BLOCKCHAIN_SPIDER_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-blockchain-spider-mob-cutout-v1.png" },
+    { key: AIAGENT_CYBERMAGE_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-cybermage-rare-cutout-v1.png" },
+    { key: AIAGENT_DIGITAL_CAT_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-digital-cat-elite-cutout-v2.png" },
+    { key: AIAGENT_BOTCAT_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-botcat-mob-cutout-v1.png" }
   ];
   const BOSS_PORTAL_OPEN_MS = 520;
   const BOSS_PORTAL_EGRESS_MS = 820;
@@ -229,6 +242,9 @@
   const CHARGE_LOOP_FRAMES = [1, 2, 3];
   const ULTIMATE_CAST_FRAMES = [0, 1, 2, 3, 1, 2, 3];
   const SIX_FRAMES = [0, 1, 2, 3, 4, 5];
+  const LINA_ATTACK_VISUAL_SCALE = 1.1;
+  const ACTOR_DEFAULT_VISUAL_SCALE = 1;
+  const PEER_DEFAULT_VISUAL_SCALE = 0.96;
 
   const ACTIONS = [
     { id: "idle", row: 0, fps: 7, repeat: -1, frames: FOUR_FRAMES },
@@ -1851,9 +1867,16 @@
     }
 
     cast() { this.tone(740, 0.12, "triangle", 0.07); }
-    projectileFly() {
-      this.sweep(760, 1560, 0.12, "triangle", 0.05);
-      window.setTimeout(() => this.tone(1240, 0.045, "sine", 0.025), 45);
+    projectileFly(charged = false) {
+      if (charged) {
+        this.sweep(520, 1960, 0.18, "triangle", 0.064);
+        this.tone(220, 0.1, "sine", 0.028);
+        window.setTimeout(() => this.tone(1560, 0.07, "sine", 0.035), 55);
+        window.setTimeout(() => this.noise(0.12, 0.016, "highpass", 1800), 80);
+        return;
+      }
+      this.sweep(820, 1840, 0.11, "triangle", 0.054);
+      window.setTimeout(() => this.tone(1320, 0.045, "sine", 0.026), 42);
     }
     ultimateWind() {
       this.noise(0.62, 0.038, "bandpass", 620);
@@ -2068,7 +2091,6 @@
       this.load.image(MAP_MACRO_PROP_ATLAS_KEY, MAP_MACRO_PROP_ATLAS_PATH);
       this.load.tilemapTiledJSON(MAP_TILEMAP_KEY, MAP_DATA_PATH);
       this.load.json(MAP_DATA_KEY, MAP_DATA_PATH);
-      this.load.json(CHAPTER_ONE_MAP_DATA_KEY, CHAPTER_ONE_MAP_DATA_PATH);
       this.load.on("filecomplete", (key, type, data) => {
         if (key !== CHAPTER_ONE_MAPS_KEY) return;
         queueChapterMapAssetAtlases(this, data || this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {});
@@ -2090,6 +2112,16 @@
       this.load.spritesheet(LEAF_SLIME_KEY, LEAF_SLIME_SHEET, {
         frameWidth: LEAF_SLIME_FRAME_SIZE,
         frameHeight: LEAF_SLIME_FRAME_SIZE
+      });
+      CHAPTER_ONE_ENEMY_SPRITES.forEach(item => {
+        this.load.spritesheet(item.key, item.path, {
+          frameWidth: LEAF_SLIME_FRAME_SIZE,
+          frameHeight: LEAF_SLIME_FRAME_SIZE
+        });
+      });
+      this.load.spritesheet(PROFESSOR_NPC_KEY, PROFESSOR_NPC_IMAGE, {
+        frameWidth: PROFESSOR_NPC_FRAME_WIDTH,
+        frameHeight: PROFESSOR_NPC_FRAME_HEIGHT
       });
       this.load.image(BOSS_KEY, BOSS_IMAGE);
       CHAPTER_ONE_ENEMY_IMAGES.forEach(item => this.load.image(item.key, item.path));
@@ -2118,7 +2150,6 @@
       app.scene = this;
       this.cameras.main.roundPixels = true;
       this.baseMapData = this.cache.json.get(MAP_DATA_KEY) || {};
-      this.chapterMapData = this.cache.json.get(CHAPTER_ONE_MAP_DATA_KEY) || {};
       this.chapterMapRegistry = this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {};
       this.mapData = this.composeRuntimeMapData();
       this.remotePlayers = new Map();
@@ -2156,6 +2187,7 @@
       this.prepareProjectileAnimations();
       this.prepareUltimateAnimations();
       this.prepareLeafSlimeAnimations();
+      this.prepareNpcAnimations();
       this.preparePortalAnimations();
       this.ensureProjectileHitboxTexture();
       this.ensureBossChestTexture();
@@ -2167,6 +2199,7 @@
 
       this.createActor();
       this.createBoss();
+      this.createMapNpcs();
       this.createInteractionNodes();
       this.spawnMapLeafSlimes();
 
@@ -2213,23 +2246,7 @@
     composeRuntimeMapData(mapId = this.getCurrentMapId()) {
       const maps = this.getChapterMapRegistry();
       if (maps[mapId]) return { ...maps[mapId] };
-      const chapter = this.chapterMapData || {};
-      return {
-        ...this.baseMapData,
-        ...chapter,
-        layers: this.baseMapData.layers,
-        tilesets: this.baseMapData.tilesets,
-        width: this.baseMapData.width,
-        height: this.baseMapData.height,
-        tilewidth: this.baseMapData.tilewidth,
-        tileheight: this.baseMapData.tileheight,
-        propFrames: chapter.propFrames || this.baseMapData.propFrames || {},
-        macroPropFrames: chapter.macroPropFrames || this.baseMapData.macroPropFrames || {},
-        props: chapter.props || this.baseMapData.props || [],
-        obstacles: chapter.obstacles || this.baseMapData.obstacles || [],
-        enemySpawns: chapter.enemySpawns || this.baseMapData.enemySpawns || [],
-        spawn: chapter.spawn || this.baseMapData.spawn
-      };
+      return { ...this.baseMapData };
     }
 
     renderTileMap() {
@@ -2323,6 +2340,7 @@
           .setOrigin(origin.x ?? 0.5, origin.y ?? 1)
           .setScale(visualScale)
           .setDepth(Number.isFinite(Number(item.depthY)) ? Number(item.depthY) : item.y + (item.depthOffset || 0));
+        prop.mapPropId = item.id || frame;
         this.mapProps.push(prop);
       });
     }
@@ -2426,6 +2444,30 @@
       return `${node.id}_done`;
     }
 
+    createStaticInteractionHint(node) {
+      if (node.npcId || node.visualType === "npc") return null;
+      const x = Number.isFinite(Number(node.hintX)) ? Number(node.hintX) : node.x;
+      const y = Number.isFinite(Number(node.hintY)) ? Number(node.hintY) : node.y;
+      const width = Math.max(48, Number(node.hintWidth) || 112);
+      const height = Math.max(18, Number(node.hintHeight) || 38);
+      const colors = {
+        spawn: 0xc89cff,
+        boss: 0xffd47d,
+        "chapter-clear": 0x9ee7b2
+      };
+      const color = colors[node.type] || 0x8bdff2;
+      return this.add.ellipse(x, y, width, height, color, 0.12)
+        .setStrokeStyle(1.5, color, 0.34)
+        .setDepth(Number(node.hintDepth) || y - 2);
+    }
+
+    setInteractionMarkerCompleted(node) {
+      if (!node?.once || !hasFlag(this.nodeDoneFlag(node))) return;
+      const entry = (this.interactionMarkers || []).find(item => item.node === node);
+      entry?.marker?.setVisible(false);
+      entry?.label?.setVisible(false);
+    }
+
     createInteractionNodes() {
       const seen = new Set();
       this.interactionNodes = [
@@ -2453,18 +2495,21 @@
               .setAlpha(0.9)
               .setDepth(node.y - 2)
               .play("ch1-map-transfer-ring-loop")
-            : this.add.circle(node.x, node.y, 15, 0xf3c75d, 0.28)
-            .setStrokeStyle(2, 0xffffff, 0.72)
-            .setDepth(node.y + 3);
-        const label = this.add.text(node.x, node.y - 30, node.label || "交互", {
-          fontFamily: "Microsoft YaHei, sans-serif",
-          fontSize: "12px",
-          fontStyle: "700",
-          color: "#30263d",
-          backgroundColor: "rgba(255,255,255,.72)",
-          padding: { x: 6, y: 3 }
-        }).setOrigin(0.5, 1).setDepth(node.y + 4);
+            : this.createStaticInteractionHint(node);
+        const labelX = Number.isFinite(Number(node.labelX)) ? Number(node.labelX) : (Number(node.hintX) || node.x);
+        const labelY = Number.isFinite(Number(node.labelY)) ? Number(node.labelY) : (Number(node.hintY) || node.y) - 24;
+        const label = node.showLabel === false
+          ? null
+          : this.add.text(labelX, labelY, node.label || "交互", {
+            fontFamily: "Microsoft YaHei, sans-serif",
+            fontSize: "12px",
+            fontStyle: "700",
+            color: "#30263d",
+            backgroundColor: "rgba(255,255,255,.78)",
+            padding: { x: 6, y: 3 }
+          }).setOrigin(0.5, 1).setDepth(Number(node.labelDepth) || labelY + 8);
         this.interactionMarkers.push({ node, marker, label });
+        this.setInteractionMarkerCompleted(node);
       });
     }
 
@@ -2542,6 +2587,7 @@
         return;
       }
       this.applyNodeRewards(node);
+      this.setInteractionMarkerCompleted(node);
       if (node.dialogueId) this.showDialogue(node.dialogueId);
       if (node.spawnEncounterId) this.spawnEncounter(node.spawnEncounterId);
       if (node.type === "boss") {
@@ -2714,22 +2760,36 @@
     }
 
     prepareLeafSlimeAnimations() {
-      const texture = this.textures.get(LEAF_SLIME_KEY);
-      texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
-      [
-        { key: "move", row: 0, frameRate: 12, repeat: 0 },
-        { key: "attack", row: 1, frameRate: 13, repeat: 0 },
-        { key: "hit", row: 2, frameRate: 15, repeat: 0 },
-        { key: "dead", row: 3, frameRate: 9, repeat: 0 }
-      ].forEach(config => {
-        const key = `${LEAF_SLIME_KEY}-${config.key}`;
-        if (this.anims.exists(key)) return;
-        this.anims.create({
-          key,
-          frames: this.anims.generateFrameNumbers(LEAF_SLIME_KEY, { frames: this.getLeafSlimeFrames(config.row) }),
-          frameRate: config.frameRate,
-          repeat: config.repeat
+      [LEAF_SLIME_KEY, ...CHAPTER_ONE_ENEMY_SPRITES.map(item => item.key)].forEach(textureKey => {
+        const texture = this.textures.get(textureKey);
+        texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
+        [
+          { key: "move", row: 0, frameRate: 12, repeat: 0 },
+          { key: "attack", row: 1, frameRate: 13, repeat: 0 },
+          { key: "hit", row: 2, frameRate: 15, repeat: 0 },
+          { key: "dead", row: 3, frameRate: 9, repeat: 0 }
+        ].forEach(config => {
+          const key = `${textureKey}-${config.key}`;
+          if (this.anims.exists(key)) return;
+          this.anims.create({
+            key,
+            frames: this.anims.generateFrameNumbers(textureKey, { frames: this.getLeafSlimeFrames(config.row) }),
+            frameRate: config.frameRate,
+            repeat: config.repeat
+          });
         });
+      });
+    }
+
+    prepareNpcAnimations() {
+      const texture = this.textures.get(PROFESSOR_NPC_KEY);
+      texture?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
+      if (this.anims.exists(PROFESSOR_NPC_IDLE_ANIMATION)) return;
+      this.anims.create({
+        key: PROFESSOR_NPC_IDLE_ANIMATION,
+        frames: this.anims.generateFrameNumbers(PROFESSOR_NPC_KEY, { start: 0, end: 3 }),
+        frameRate: 5,
+        repeat: -1
       });
     }
 
@@ -2803,7 +2863,7 @@
       const character = getCharacter(app.profile.characterId);
       this.actor = this.physics.add.sprite(spawn.x, spawn.y, character.id, 0)
         .setOrigin(0.5, character.baseline / FRAME_SIZE)
-        .setScale(1)
+        .setScale(ACTOR_DEFAULT_VISUAL_SCALE)
         .setDepth(spawn.y + 8);
       this.actor.body.setSize(34, 42);
       this.actor.body.setOffset(56, 92);
@@ -2811,6 +2871,52 @@
       this.actor.play(`${character.id}-idle`, true);
       this.actorShadow = this.add.ellipse(this.actor.x, this.actor.y + 3, 34, 11, 0x182313, 0.16)
         .setDepth(this.actor.y - 24);
+    }
+
+    setActorVisualScale(scale = ACTOR_DEFAULT_VISUAL_SCALE) {
+      if (!this.actor) return;
+      this.actor.setScale(scale);
+      if (this.actor.body) {
+        this.actor.body.setSize(34, 42);
+        this.actor.body.setOffset(56, 92);
+      }
+    }
+
+    setLinaAttackVisualScale() {
+      if (app.profile.characterId === "lina" && !this.isCat) this.setActorVisualScale(LINA_ATTACK_VISUAL_SCALE);
+    }
+
+    resetActorVisualScale() {
+      this.setActorVisualScale(ACTOR_DEFAULT_VISUAL_SCALE);
+    }
+
+    createMapNpcs() {
+      this.mapNpcs = [];
+      (this.mapData?.npcs || []).forEach(item => {
+        const textureKey = item.textureKey || PROFESSOR_NPC_KEY;
+        if (!this.textures.exists(textureKey)) return;
+        const x = Number(item.x) || 0;
+        const y = Number(item.y) || 0;
+        const shadow = this.add.ellipse(x, y + 6, Number(item.shadowWidth) || 84, Number(item.shadowHeight) || 24, 0x24425c, 0.18)
+          .setDepth(y - 1);
+        const sprite = this.add.sprite(x, y, textureKey, 0)
+          .setOrigin(Number(item.originX) || 0.5, Number(item.originY) || 0.92)
+          .setScale(Number(item.scale) || 0.6)
+          .setDepth(Number(item.depth) || y + 4);
+        const animationKey = item.animationKey || (textureKey === PROFESSOR_NPC_KEY ? PROFESSOR_NPC_IDLE_ANIMATION : "");
+        if (animationKey && this.anims.exists(animationKey)) sprite.play(animationKey);
+        const label = item.showLabel === false
+          ? null
+          : this.add.text(x, y + (Number(item.labelOffsetY) || -158), item.label || "NPC", {
+            fontFamily: "Microsoft YaHei, sans-serif",
+            fontSize: "13px",
+            fontStyle: "700",
+            color: "#2d2438",
+            backgroundColor: "rgba(255,255,255,.82)",
+            padding: { x: 7, y: 3 }
+          }).setOrigin(0.5, 1).setDepth(Number(item.depth) || y + 6);
+        this.mapNpcs.push({ item, shadow, sprite, label });
+      });
     }
 
     clearRuntimeMapObjects() {
@@ -2823,6 +2929,12 @@
         item.label?.destroy();
       });
       this.interactionMarkers = [];
+      this.mapNpcs?.forEach(item => {
+        item.shadow?.destroy();
+        item.sprite?.destroy();
+        item.label?.destroy();
+      });
+      this.mapNpcs = [];
       this.mapLayers?.forEach(layer => layer?.destroy?.());
       this.mapLayers = [];
       this.mapBackgroundChunks?.forEach(chunk => chunk.destroy());
@@ -2881,6 +2993,7 @@
         this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
         this.cameras.main.pan(spawn.x, spawn.y, 320, "Sine.easeInOut");
         this.bindMapColliders();
+        this.createMapNpcs();
         this.createInteractionNodes();
         this.spawnMapLeafSlimes();
         saveProfile(app.profile);
@@ -3393,6 +3506,7 @@
     playLoop(actionId) {
       if (!this.actor || this.isCasting || this.isDead || this.isActionLocked) return;
       if (this.isCatJumping) return;
+      this.resetActorVisualScale();
       const character = getCharacter(app.profile.characterId);
       if (this.isCat && actionId === "idle") {
         this.actor.anims.stop();
@@ -3443,6 +3557,7 @@
       this.primaryHold = null;
       this.chargeHoldTimer?.remove?.(false);
       this.chargeHoldTimer = null;
+      this.resetActorVisualScale();
     }
 
     triggerPrimaryActionImmediate() {
@@ -3465,6 +3580,7 @@
       this.isCasting = true;
       this.networkAction = "attack";
       this.actor.setTexture("lina");
+      this.setLinaAttackVisualScale();
       this.actor.play("lina-attack-charge-start", true);
       this.chargeHoldTimer?.remove?.(false);
       this.chargeHoldTimer = this.time.delayedCall(CHARGE_HOLD_THRESHOLD, () => {
@@ -3491,12 +3607,14 @@
       this.fireProjectile({ charged: hold.charged });
       this.isCasting = false;
       this.actor.setTexture(app.profile.characterId);
+      this.resetActorVisualScale();
       if (!this.isDead) this.playLoop("idle");
     }
 
     playCatJump() {
       if (!this.actor || this.isDead || this.isActionLocked || this.isCatJumping) return;
       const character = getCharacter(app.profile.characterId);
+      this.resetActorVisualScale();
       this.isCat = true;
       this.isCatJumping = true;
       this.networkAction = "catJump";
@@ -3511,6 +3629,7 @@
     toggleTransformState() {
       if (!this.actor || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold || this.isTransforming) return;
       const character = getCharacter(app.profile.characterId);
+      this.resetActorVisualScale();
       this.isTransforming = true;
       this.networkAction = "transform";
       this.actor.setTexture(character.id);
@@ -3541,12 +3660,14 @@
       const character = getCharacter(app.profile.characterId);
       this.isCasting = true;
       this.networkAction = "attack";
+      this.setLinaAttackVisualScale();
       this.actor.play(this.getAttackAnimationKey(), true);
       if (isMelee) this.time.delayedCall(110, () => this.dealMeleeDamage());
       else this.time.delayedCall(95, () => this.fireProjectile());
       this.actor.once("animationcomplete", () => {
         this.isCasting = false;
         this.actor.setTexture(character.id);
+        this.resetActorVisualScale();
         if (!this.isDead) this.playLoop("idle");
       });
     }
@@ -3575,6 +3696,7 @@
       this.networkAction = "attack";
       this.actor.body.setVelocity(0, 0);
       this.actor.setTexture("lina");
+      this.setLinaAttackVisualScale();
       this.actor.play("lina-ultimate-cast", true);
       this.playUltimateCyclone();
     }
@@ -3605,6 +3727,7 @@
         this.isCasting = false;
         this.isActionLocked = false;
         this.actor.setTexture(app.profile.characterId);
+        this.resetActorVisualScale();
         this.returnToBaseLoop();
       });
     }
@@ -3685,7 +3808,7 @@
       const vec = directionVector(direction);
       this.lastAimVector = vec;
       const castOrigin = this.getCastOrigin(vec);
-      const projectileSpeed = equipment.speed * PROJECTILE_SPEED_SCALE;
+      const projectileSpeed = equipment.speed * PROJECTILE_SPEED_SCALE * PLAYER_PROJECTILE_SPEED_MULTIPLIER;
       const flightFrame = equipment.projectileFrame + (charged ? 1 : 0);
       const projectile = this.projectiles.create(castOrigin.x, castOrigin.y, "play-projectile-hitbox");
       projectile.setVisible(false);
@@ -3721,7 +3844,7 @@
         .setRotation(projectile.visualRotation)
         .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
       this.flashCast(castOrigin.x, castOrigin.y, equipment.color, projectile.visualBaseDepth + 1);
-      app.audio.projectileFly();
+      app.audio.projectileFly(charged);
     }
 
     getCastOrigin(vec) {
@@ -3741,8 +3864,10 @@
       const character = getCharacter(app.profile.characterId);
       const originX = (this.actor.originX ?? 0.5) * FRAME_SIZE;
       const originY = (this.actor.originY ?? (character.baseline / FRAME_SIZE)) * FRAME_SIZE;
-      const localX = (socket.x - originX) * (this.actor.flipX ? -1 : 1);
-      const localY = socket.y - originY;
+      const visualScaleX = Math.abs(this.actor.scaleX || ACTOR_DEFAULT_VISUAL_SCALE);
+      const visualScaleY = Math.abs(this.actor.scaleY || ACTOR_DEFAULT_VISUAL_SCALE);
+      const localX = (socket.x - originX) * visualScaleX * (this.actor.flipX ? -1 : 1);
+      const localY = (socket.y - originY) * visualScaleY;
       const rotation = this.actor.rotation || 0;
       const cos = Math.cos(rotation);
       const sin = Math.sin(rotation);
@@ -4295,7 +4420,7 @@
       if (!remote) {
         const sprite = this.add.sprite(peer.x, peer.y, character.id, 0)
           .setOrigin(0.5, character.baseline / FRAME_SIZE)
-          .setScale(0.96)
+          .setScale(PEER_DEFAULT_VISUAL_SCALE)
           .setAlpha(0.88)
           .setDepth(peer.y + 8);
         sprite.play(`${character.id}-idle`);
@@ -4350,6 +4475,7 @@
       }
       if (remote.down) {
         remote.sprite.clearTint();
+        remote.sprite.setScale(PEER_DEFAULT_VISUAL_SCALE);
         const deathKey = `${peer.characterId}-death-once`;
         if (this.anims.exists(deathKey) && remote.sprite.anims.currentAnim?.key !== deathKey) remote.sprite.play(deathKey, true);
         return;
@@ -4360,6 +4486,10 @@
       const action = ["attack", "hit", "transform", "catRun", "catJump"].includes(requested)
         ? requested
         : moving ? "walk" : "idle";
+      const peerScale = peer.characterId === "lina" && action === "attack"
+        ? PEER_DEFAULT_VISUAL_SCALE * LINA_ATTACK_VISUAL_SCALE
+        : PEER_DEFAULT_VISUAL_SCALE;
+      remote.sprite.setScale(peerScale);
       const animKey = `${peer.characterId}-${["attack", "hit", "transform", "catJump"].includes(action) ? `${action}-once` : action}`;
       if (this.anims.exists(animKey) && remote.sprite.anims.currentAnim?.key !== animKey) remote.sprite.play(animKey, true);
     }

@@ -122,7 +122,7 @@
       "assets/sprites/lina-sprites-v10-anchored-expanded.png",
       "assets/maps/playable/previews/zhonghe-plaza-ground-style-imagegen-v1.png",
       "assets/maps/props/zhonghe-plaza-props-atlas-v1.png",
-      "assets/enemies/leaf-poring-portrait-v2.png"
+      "assets/game/enemies/portraits/leaf-poring-portrait-v2.png"
     ],
     artPrompt: "为《学术喵的奇幻之旅：樱花同济篇》生成可接入的 2D 游戏素材。风格为同济校园樱花季、学术幻想、轻量 JRPG；线稿清晰，色彩柔和但不要灰暗，边缘干净，角色和怪物使用透明背景，地图素材适合俯视 2D 瓦片。避免真实校徽、商业商标、照片质感、厚重暗黑风和难以切片的复杂透视。"
   };

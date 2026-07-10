@@ -611,7 +611,7 @@ https://efv.tju2025mem3.me/index.html
             <tr>
               <td>素材文件名</td>
               <td>英文小写、数字、连字符</td>
-              <td><code>book-mite-sprites-v1.png</code></td>
+              <td><code>biting-magic-book-sprites-v1.png</code></td>
             </tr>
           </tbody>
         </table>
@@ -635,9 +635,9 @@ https://efv.tju2025mem3.me/index.html
   "zone": "zhonghe-plaza",
   "entry": "2025000000-level.js",
   "assets": {
-    "monsters": ["assets/enemies/book-mite-sprites-v1.png"],
-    "npcs": ["assets/npc/archive-senior-portrait-v1.png"],
-    "props": ["assets/props/notice-board-v1.png"],
+    "monsters": ["assets/game/enemies/animated/biting-magic-book-sprites-v1.png"],
+    "npcs": ["assets/game/characters/npcs/ai-professor-npc-idle-sheet-v1.png"],
+    "props": ["assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png"],
     "tilesets": []
   },
   "data": {
@@ -804,11 +804,11 @@ create() {
           <figcaption><strong>Props 图集</strong>灯、花坛、树、长椅、路牌等物件要能独立摆放，并在 data 里写碰撞建议。</figcaption>
         </figure>
         <figure class="asset-tile contain">
-          <img src="assets/enemies/leaf-poring-portrait-v2.png" alt="叶团怪物头像">
+          <img src="assets/game/enemies/portraits/leaf-poring-portrait-v2.png" alt="叶团怪物头像">
           <figcaption><strong>怪物方向</strong>可爱但有玩法辨识度，轮廓清楚，攻击方式、出现区域和掉落物要写进 data。</figcaption>
         </figure>
         <figure class="asset-tile contain">
-          <img src="assets/enemies/leaf-poring-sprites-v2.png" alt="叶团怪物精灵表">
+          <img src="assets/game/enemies/animated/leaf-poring-sprites-v2.png" alt="叶团怪物精灵表">
           <figcaption><strong>怪物精灵</strong>怪物、NPC、技能特效不强制 8 帧。根据 AI 稳定性和设计对象特点选择帧数，但要写清每个动作对应哪几帧。</figcaption>
         </figure>
       </div>
@@ -839,7 +839,7 @@ create() {
           <li><code>assets/maps/playable/previews/zhonghe-plaza-tilemap-playtest-v1-game-view.png</code>：游戏实际视角。</li>
           <li><code>assets/maps/playable/previews/zhonghe-plaza-ground-material-atlas-imagegen-v1.png</code>：地图瓦片材质。</li>
           <li><code>assets/maps/props/zhonghe-plaza-props-atlas-v1.png</code>：props 形状和摆放风格。</li>
-          <li><code>assets/enemies/leaf-poring-portrait-v2.png</code>、<code>assets/enemies/leaf-poring-sprites-v2.png</code>：怪物头像和动作参考。</li>
+          <li><code>assets/game/enemies/portraits/leaf-poring-portrait-v2.png</code>、<code>assets/game/enemies/animated/leaf-poring-sprites-v2.png</code>：怪物头像和动作参考。</li>
         </ul>
       </div>
       <div class="grid two">
@@ -916,7 +916,7 @@ props 要能独立摆放；每张图都要说明用途和推荐文件名。
 assets/portraits/lina.png
 assets/sprites/lina-sprites-v10-anchored-expanded.png
 assets/maps/props/zhonghe-plaza-props-atlas-v1.png
-assets/enemies/leaf-poring-portrait-v2.png
+assets/game/enemies/portraits/leaf-poring-portrait-v2.png
 assets/maps/playable/previews/zhonghe-plaza-tilemap-playtest-v1-game-view.png</code></pre>
         </article>
         <article class="card">

@@ -103,8 +103,8 @@ contrib/学号/
 - assets/maps/playable/previews/zhonghe-plaza-ground-material-atlas-imagegen-v1.png
 - assets/maps/playable/previews/zhonghe-plaza-ground-style-imagegen-v1.png
 - assets/maps/props/zhonghe-plaza-props-atlas-v1.png
-- assets/enemies/leaf-poring-portrait-v2.png
-- assets/enemies/leaf-poring-sprites-v2.png
+- assets/game/enemies/portraits/leaf-poring-portrait-v2.png
+- assets/game/enemies/animated/leaf-poring-sprites-v2.png
 
 推荐给同学的开场提示词：
 “这是我们小组作业总体项目。请先学习项目资料，然后我想先试一下官方角色能不能拉到我本地开始测试，再策划我的关卡怎么设计。我的学号是【改成自己的学号】。你来组织文件结构，目前先看看官方 API 成不成，让角色在我电脑上能做动作。如果本地没有 Python，请帮我安装 3.10/3.11 以及必要环境；如果网络连接不好，请使用国内镜像。当能看到官方角色在我本地跑起来时，我们开始讨论我的关卡设计。”

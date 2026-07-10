@@ -9,15 +9,15 @@
       "title": "第一协议教室",
       "chapterId": "chapter1",
       "background": {
-        "key": "ch1-map-classroom-spawn-bg",
-        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-base-v4-3072x2048.png",
+        "key": "ch1-m01-base-v4-floor-tile",
+        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
         "width": 3072,
         "height": 2048,
         "chunks": [
           {
             "id": "ch1-m01-spawn-r0-c0",
-            "key": "ch1-m01-spawn-r0-c0",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c0.png",
+            "key": "ch1-m01-base-v4-floor-tile",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
             "x": 0,
             "y": 0,
             "width": 1024,
@@ -25,8 +25,8 @@
           },
           {
             "id": "ch1-m01-spawn-r0-c1",
-            "key": "ch1-m01-spawn-r0-c1",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c1.png",
+            "key": "ch1-m01-base-v4-floor-tile",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
             "x": 1024,
             "y": 0,
             "width": 1024,
@@ -34,8 +34,8 @@
           },
           {
             "id": "ch1-m01-spawn-r0-c2",
-            "key": "ch1-m01-spawn-r0-c2",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r0-c2.png",
+            "key": "ch1-m01-base-v4-floor-tile",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
             "x": 2048,
             "y": 0,
             "width": 1024,
@@ -43,8 +43,8 @@
           },
           {
             "id": "ch1-m01-spawn-r1-c0",
-            "key": "ch1-m01-spawn-r1-c0",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c0.png",
+            "key": "ch1-m01-base-v4-floor-tile",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
             "x": 0,
             "y": 1024,
             "width": 1024,
@@ -52,8 +52,8 @@
           },
           {
             "id": "ch1-m01-spawn-r1-c1",
-            "key": "ch1-m01-spawn-r1-c1",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c1.png",
+            "key": "ch1-m01-base-v4-floor-tile",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
             "x": 1024,
             "y": 1024,
             "width": 1024,
@@ -61,8 +61,8 @@
           },
           {
             "id": "ch1-m01-spawn-r1-c2",
-            "key": "ch1-m01-spawn-r1-c2",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-r1-c2.png",
+            "key": "ch1-m01-base-v4-floor-tile",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
             "x": 2048,
             "y": 1024,
             "width": 1024,
@@ -73,7 +73,7 @@
       "spawn": {
         "id": "ch1_m01_spawn_player_start",
         "x": 1536,
-        "y": 1905,
+        "y": 1220,
         "facing": "N",
         "setFlags": [
           "ch1_intro_entered_classroom"
@@ -83,14 +83,14 @@
         {
           "id": "ch1_m01_spawn_player_start",
           "x": 1536,
-          "y": 1905,
+          "y": 1220,
           "facing": "N"
         },
         {
           "id": "ch1_m01_spawn_from_archive",
           "x": 1536,
-          "y": 1815,
-          "facing": "S"
+          "y": 1885,
+          "facing": "N"
         }
       ],
       "camera": {
@@ -176,14 +176,55 @@
           "h": 245
         }
       ],
+      "npcs": [
+        {
+          "id": "ch1_m01_npc_professor",
+          "label": "陆教授",
+          "textureKey": "ch1-ai-professor-npc",
+          "animationKey": "ch1-ai-professor-npc-idle",
+          "x": 1536,
+          "y": 1030,
+          "scale": 0.6,
+          "showLabel": false,
+          "labelOffsetY": -160,
+          "shadowWidth": 86,
+          "shadowHeight": 24
+        }
+      ],
       "interactionNodes": [
+        {
+          "id": "ch1_m01_node_professor_intro",
+          "type": "npc",
+          "label": "与陆教授交谈",
+          "x": 1536,
+          "y": 1115,
+          "radius": 170,
+          "npcId": "ch1_m01_npc_professor",
+          "visualType": "npc",
+          "showLabel": false,
+          "dialogueId": "ch1_m01_dialogue_professor_intro",
+          "setFlags": [
+            "ch1_intro_met_professor"
+          ]
+        },
         {
           "id": "ch1_m01_node_syllabus_terminal",
           "type": "inspect",
           "label": "课程协议板",
           "x": 1536,
-          "y": 270,
-          "radius": 112,
+          "y": 480,
+          "radius": 150,
+          "visualPropId": "m01_blackboard_a_v4",
+          "visualType": "map-prop",
+          "hintX": 1536,
+          "hintY": 440,
+          "hintWidth": 240,
+          "hintHeight": 54,
+          "labelX": 1536,
+          "labelY": 422,
+          "requiresFlags": [
+            "ch1_intro_met_professor"
+          ],
           "dialogueId": "ch1_m01_dialogue_intro",
           "setFlags": [
             "ch1_intro_read_syllabus",
@@ -198,8 +239,16 @@
           "type": "collect",
           "label": "协议卡讲台",
           "x": 1536,
-          "y": 680,
-          "radius": 96,
+          "y": 815,
+          "radius": 145,
+          "visualPropId": "m01_protocol_podium_v4",
+          "visualType": "map-prop",
+          "hintX": 1536,
+          "hintY": 770,
+          "hintWidth": 180,
+          "hintHeight": 48,
+          "labelX": 1536,
+          "labelY": 752,
           "requiresFlags": [
             "ch1_intro_read_syllabus"
           ],
@@ -217,8 +266,19 @@
           "type": "spawn",
           "label": "错乱笔记堆",
           "x": 1536,
-          "y": 1310,
-          "radius": 130,
+          "y": 1430,
+          "radius": 170,
+          "visualPropIds": [
+            "m01_bookpile_a_v4",
+            "m01_bookpile_b_v4"
+          ],
+          "visualType": "map-prop",
+          "hintX": 1536,
+          "hintY": 1370,
+          "hintWidth": 190,
+          "hintHeight": 52,
+          "labelX": 1536,
+          "labelY": 1350,
           "requiresFlags": [
             "ch1_intro_card_claimed"
           ],
@@ -232,23 +292,27 @@
       "enemySpawns": [
         {
           "id": "ch1-m01-demand-bug-west",
-          "x": 1230,
-          "y": 1280,
+          "x": 1270,
+          "y": 1210,
           "group": "ch1_m01_encounter_bug_notes",
           "activeAfter": "ch1_m01_bug_notes_disturbed",
+          "textureKey": "ch1-runaway-magic-broom",
           "rank": "mob",
-          "label": "需求噪点",
+          "label": "失控魔法扫把",
+          "scale": 0.94,
           "maxHp": 58,
           "damage": 7
         },
         {
           "id": "ch1-m01-demand-bug-east",
-          "x": 1840,
-          "y": 1280,
+          "x": 1800,
+          "y": 1210,
           "group": "ch1_m01_encounter_bug_notes",
           "activeAfter": "ch1_m01_bug_notes_disturbed",
+          "textureKey": "ch1-biting-magic-book",
           "rank": "mob",
-          "label": "格式噪点",
+          "label": "咬人书",
+          "scale": 0.94,
           "maxHp": 58,
           "damage": 7
         },
@@ -258,8 +322,10 @@
           "y": 1160,
           "group": "ch1_m01_encounter_bug_notes",
           "activeAfter": "ch1_m01_bug_notes_disturbed",
+          "textureKey": "ch1-biting-magic-book",
           "rank": "mob",
-          "label": "遗漏注脚",
+          "label": "错页咬人书",
+          "scale": 1.02,
           "maxHp": 68,
           "damage": 8
         }
@@ -282,7 +348,7 @@
           "label": "提示词资料室",
           "x": 1536,
           "y": 1805,
-          "radius": 115,
+          "radius": 70,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_classroom",
           "requiresFlags": [
@@ -297,6 +363,13 @@
         }
       ],
       "dialogues": [
+        {
+          "id": "ch1_m01_dialogue_professor_intro",
+          "speaker": "陆教授",
+          "lines": [
+            "先到北侧课程协议板确认任务，再从讲台领取协议卡。南侧错乱笔记里藏着失控扫把和咬人书。"
+          ]
+        },
         {
           "id": "ch1_m01_dialogue_intro",
           "speaker": "课程协议板",
@@ -489,9 +562,9 @@
       ],
       "foregroundAtlases": [
         {
-          "id": "m01-foreground-v4",
-          "key": "ch1-m01-foreground-atlas-v4",
-          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-foreground-atlas-v4-4096x4096.png",
+          "id": "m01-v4",
+          "key": "ch1-m01-props-atlas-v4",
+          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png",
           "frames": {
             "m01_desk_a_v4": {
               "x": 40,
@@ -1187,57 +1260,122 @@
             "h": 42
           }
         }
-      ],
-      "assetPackage": {
-        "id": "ch1-m01-formal-landscape-v4",
-        "status": "active-runtime",
-        "manifest": "assets/chapter1/maps/ch1_m01_classroom_spawn/ch1-m01-layered-map-manifest-v4.json",
-        "markerManifest": "assets/chapter1/maps/ch1_m01_classroom_spawn/source/ch1-m01-marker-manifest-v4.json",
-        "qaOverlay": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-qa-v4-3072x2048.png"
-      }
+      ]
     },
     "ch1_m02_prompt_archive": {
       "id": "ch1_m02_prompt_archive",
-      "title": "提示词资料室",
+      "title": "提示词资料长廊",
       "chapterId": "chapter1",
       "background": {
         "key": "ch1-map-prompt-archive-bg",
-        "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v2-2048.png",
-        "width": 2048,
+        "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v3-6144x2048.png",
+        "width": 6144,
         "height": 2048,
         "chunks": [
           {
-            "id": "ch1-process-nw",
-            "key": "ch1-process-nw",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-nw-v1.png",
+            "id": "ch1-m02-archive-v3-r0-c0",
+            "key": "ch1-m02-archive-v3-r0-c0",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c0.png",
             "x": 0,
             "y": 0,
             "width": 1024,
             "height": 1024
           },
           {
-            "id": "ch1-process-ne",
-            "key": "ch1-process-ne",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-ne-v1.png",
+            "id": "ch1-m02-archive-v3-r0-c1",
+            "key": "ch1-m02-archive-v3-r0-c1",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c1.png",
             "x": 1024,
             "y": 0,
             "width": 1024,
             "height": 1024
           },
           {
-            "id": "ch1-process-sw",
-            "key": "ch1-process-sw",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-sw-v1.png",
+            "id": "ch1-m02-archive-v3-r0-c2",
+            "key": "ch1-m02-archive-v3-r0-c2",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c2.png",
+            "x": 2048,
+            "y": 0,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r0-c3",
+            "key": "ch1-m02-archive-v3-r0-c3",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c3.png",
+            "x": 3072,
+            "y": 0,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r0-c4",
+            "key": "ch1-m02-archive-v3-r0-c4",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c4.png",
+            "x": 4096,
+            "y": 0,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r0-c5",
+            "key": "ch1-m02-archive-v3-r0-c5",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c5.png",
+            "x": 5120,
+            "y": 0,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r1-c0",
+            "key": "ch1-m02-archive-v3-r1-c0",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c0.png",
             "x": 0,
             "y": 1024,
             "width": 1024,
             "height": 1024
           },
           {
-            "id": "ch1-process-se",
-            "key": "ch1-process-se",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-process-se-v1.png",
+            "id": "ch1-m02-archive-v3-r1-c1",
+            "key": "ch1-m02-archive-v3-r1-c1",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c1.png",
             "x": 1024,
+            "y": 1024,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r1-c2",
+            "key": "ch1-m02-archive-v3-r1-c2",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c2.png",
+            "x": 2048,
+            "y": 1024,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r1-c3",
+            "key": "ch1-m02-archive-v3-r1-c3",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c3.png",
+            "x": 3072,
+            "y": 1024,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r1-c4",
+            "key": "ch1-m02-archive-v3-r1-c4",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c4.png",
+            "x": 4096,
+            "y": 1024,
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "id": "ch1-m02-archive-v3-r1-c5",
+            "key": "ch1-m02-archive-v3-r1-c5",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c5.png",
+            "x": 5120,
             "y": 1024,
             "width": 1024,
             "height": 1024
@@ -1246,84 +1384,139 @@
       },
       "spawn": {
         "id": "ch1_m02_spawn_from_classroom",
-        "x": 1024,
-        "y": 1780,
-        "facing": "N"
+        "x": 650,
+        "y": 1115,
+        "facing": "E"
       },
       "spawnPoints": [
         {
           "id": "ch1_m02_spawn_from_classroom",
-          "x": 1024,
-          "y": 1780,
-          "facing": "N"
+          "x": 650,
+          "y": 1115,
+          "facing": "E"
         },
         {
           "id": "ch1_m02_spawn_from_lab",
-          "x": 1600,
-          "y": 880,
+          "x": 5560,
+          "y": 1120,
           "facing": "W"
+        },
+        {
+          "id": "ch1_m02_spawn_center_return",
+          "x": 3050,
+          "y": 1105,
+          "facing": "E"
         }
       ],
       "camera": {
-        "startX": 980,
-        "startY": 1180
+        "startX": 880,
+        "startY": 1115
       },
       "obstacles": [
         {
-          "id": "m02_north_shelves",
+          "id": "m02_v3_north_wall",
           "x": 0,
           "y": 0,
-          "w": 2048,
-          "h": 145
+          "w": 6144,
+          "h": 165
         },
         {
-          "id": "m02_south_boundary",
+          "id": "m02_v3_south_wall",
           "x": 0,
-          "y": 1930,
-          "w": 2048,
-          "h": 118
+          "y": 1870,
+          "w": 6144,
+          "h": 178
         },
         {
-          "id": "m02_west_shelves",
+          "id": "m02_v3_west_wall",
           "x": 0,
+          "y": 0,
+          "w": 150,
+          "h": 2048
+        },
+        {
+          "id": "m02_v3_east_portal_wall",
+          "x": 5940,
+          "y": 0,
+          "w": 204,
+          "h": 2048
+        },
+        {
+          "id": "m02_v3_left_upper_bookshelves",
+          "x": 330,
+          "y": 170,
+          "w": 1650,
+          "h": 315
+        },
+        {
+          "id": "m02_v3_left_lower_archive_desks",
+          "x": 360,
+          "y": 1440,
+          "w": 1500,
+          "h": 330
+        },
+        {
+          "id": "m02_v3_source_check_desk",
+          "x": 2220,
+          "y": 515,
+          "w": 520,
+          "h": 360
+        },
+        {
+          "id": "m02_v3_notice_wall",
+          "x": 2870,
+          "y": 170,
+          "w": 620,
+          "h": 330
+        },
+        {
+          "id": "m02_v3_privacy_filter_stage",
+          "x": 3560,
+          "y": 545,
+          "w": 540,
+          "h": 420
+        },
+        {
+          "id": "m02_v3_bottom_crystal_archive",
+          "x": 2750,
+          "y": 1430,
+          "w": 820,
+          "h": 340
+        },
+        {
+          "id": "m02_v3_server_racks",
+          "x": 4300,
           "y": 180,
-          "w": 210,
-          "h": 1550
+          "w": 620,
+          "h": 340
         },
         {
-          "id": "m02_east_servers",
-          "x": 1840,
-          "y": 180,
-          "w": 208,
-          "h": 1550
+          "id": "m02_v3_south_server_archive",
+          "x": 4300,
+          "y": 1450,
+          "w": 960,
+          "h": 360
         },
         {
-          "id": "m02_archive_table",
-          "x": 430,
-          "y": 600,
-          "w": 360,
-          "h": 230
+          "id": "m02_v3_east_portal_frame_top",
+          "x": 5680,
+          "y": 230,
+          "w": 260,
+          "h": 420
         },
         {
-          "id": "m02_privacy_table",
-          "x": 1110,
-          "y": 610,
-          "w": 350,
-          "h": 225
+          "id": "m02_v3_east_portal_frame_bottom",
+          "x": 5680,
+          "y": 980,
+          "w": 260,
+          "h": 190
         },
         {
-          "id": "m02_center_stack",
-          "x": 790,
-          "y": 1120,
+          "id": "m02_v3_east_round_table",
+          "x": 5520,
+          "y": 1470,
           "w": 430,
-          "h": 160
-        },
-        {
-          "id": "m02_lab_machine_edge",
-          "x": 1430,
-          "y": 250,
-          "w": 300,
-          "h": 280
+          "h": 330
         }
       ],
       "interactionNodes": [
@@ -1331,9 +1524,16 @@
           "id": "ch1_m02_node_archive_npc",
           "type": "inspect",
           "label": "同小智",
-          "x": 560,
-          "y": 980,
-          "radius": 120,
+          "x": 1520,
+          "y": 890,
+          "radius": 140,
+          "visualType": "background-npc",
+          "hintX": 1520,
+          "hintY": 905,
+          "hintWidth": 108,
+          "hintHeight": 38,
+          "labelX": 1520,
+          "labelY": 880,
           "dialogueId": "ch1_m02_dialogue_npc",
           "setFlags": [
             "ch1_m02_npc_talked"
@@ -1342,10 +1542,17 @@
         {
           "id": "ch1_m02_node_citation_table",
           "type": "collect",
-          "label": "引用资料桌",
-          "x": 740,
-          "y": 910,
-          "radius": 120,
+          "label": "引用核验台",
+          "x": 2470,
+          "y": 1010,
+          "radius": 165,
+          "visualType": "background-prop",
+          "hintX": 2470,
+          "hintY": 905,
+          "hintWidth": 188,
+          "hintHeight": 48,
+          "labelX": 2470,
+          "labelY": 885,
           "requiresFlags": [
             "ch1_m02_npc_talked"
           ],
@@ -1355,17 +1562,49 @@
           "setFlags": [
             "ch1_m02_schema_lock_claimed"
           ],
+          "rewardCredits": 1,
+          "once": true
+        },
+        {
+          "id": "ch1_m02_node_privacy_filter",
+          "type": "inspect",
+          "label": "隐私过滤仪",
+          "x": 3825,
+          "y": 1090,
+          "radius": 170,
+          "visualType": "background-prop",
+          "hintX": 3825,
+          "hintY": 995,
+          "hintWidth": 196,
+          "hintHeight": 52,
+          "labelX": 3825,
+          "labelY": 974,
+          "requiresFlags": [
+            "ch1_m02_schema_lock_claimed"
+          ],
+          "dialogueId": "ch1_m02_dialogue_privacy_filter",
+          "setFlags": [
+            "ch1_m02_privacy_filter_checked"
+          ],
+          "rewardCredits": 1,
           "once": true
         },
         {
           "id": "ch1_m02_node_copy_shadow",
           "type": "spawn",
-          "label": "复制粘贴影",
-          "x": 1320,
-          "y": 1260,
-          "radius": 150,
+          "label": "复制阴影裂隙",
+          "x": 5170,
+          "y": 1070,
+          "radius": 175,
+          "visualType": "rift",
+          "hintX": 5170,
+          "hintY": 1070,
+          "hintWidth": 176,
+          "hintHeight": 58,
+          "labelX": 5170,
+          "labelY": 1046,
           "requiresFlags": [
-            "ch1_m02_schema_lock_claimed"
+            "ch1_m02_privacy_filter_checked"
           ],
           "spawnEncounterId": "ch1_m02_encounter_copy_shadow",
           "setFlags": [
@@ -1377,38 +1616,51 @@
       "enemySpawns": [
         {
           "id": "ch1-m02-copy-shadow-a",
-          "x": 690,
-          "y": 1430,
+          "x": 4870,
+          "y": 1015,
           "group": "ch1_m02_encounter_copy_shadow",
           "activeAfter": "ch1_m02_copy_shadow_disturbed",
+          "textureKey": "ch1-m02-copy-paste-shadow",
           "rank": "mob",
           "label": "复制影子",
-          "maxHp": 78,
-          "damage": 9
+          "scale": 0.92,
+          "maxHp": 86,
+          "damage": 10,
+          "rewardExp": 14,
+          "rewardCredits": 1
         },
         {
           "id": "ch1-m02-copy-shadow-b",
-          "x": 1320,
-          "y": 1450,
+          "x": 5280,
+          "y": 880,
           "group": "ch1_m02_encounter_copy_shadow",
           "activeAfter": "ch1_m02_copy_shadow_disturbed",
+          "textureKey": "ch1-m02-copy-paste-shadow",
           "rank": "mob",
           "label": "引用游魂",
-          "maxHp": 84,
-          "damage": 10
+          "scale": 0.96,
+          "maxHp": 92,
+          "damage": 10,
+          "rewardExp": 15,
+          "rewardCredits": 1
         },
         {
           "id": "ch1-m02-copy-shadow-c",
-          "x": 1020,
-          "y": 1190,
+          "x": 5370,
+          "y": 1245,
           "group": "ch1_m02_encounter_copy_shadow",
           "activeAfter": "ch1_m02_copy_shadow_disturbed",
+          "textureKey": "ch1-m02-tone-drift-archivist",
           "rank": "elite",
           "label": "口径偏移",
-          "maxHp": 156,
-          "damage": 12,
-          "rewardCredits": 2,
-          "rewardExp": 26
+          "scale": 1.06,
+          "maxHp": 188,
+          "damage": 13,
+          "creditDefense": 6,
+          "rewardCredits": 3,
+          "rewardExp": 32,
+          "dropId": "ch1_drop_citation_seal_fragment",
+          "dropName": "引用封印碎片"
         }
       ],
       "encounters": [
@@ -1418,8 +1670,8 @@
           "setFlagsOnClear": [
             "ch1_m02_copy_shadow_cleared"
           ],
-          "rewardCredits": 3,
-          "rewardExp": 28
+          "rewardCredits": 4,
+          "rewardExp": 36
         }
       ],
       "exitPoints": [
@@ -1427,9 +1679,9 @@
           "id": "ch1_m02_exit_back_m01",
           "type": "teleport",
           "label": "返回教室",
-          "x": 1024,
-          "y": 1880,
-          "radius": 100,
+          "x": 410,
+          "y": 1115,
+          "radius": 80,
           "targetMapId": "ch1_m01_classroom_spawn",
           "targetSpawnId": "ch1_m01_spawn_from_archive"
         },
@@ -1437,9 +1689,11 @@
           "id": "ch1_m02_exit_to_m03",
           "type": "teleport",
           "label": "Agent 机房",
-          "x": 1660,
-          "y": 870,
-          "radius": 115,
+          "x": 5835,
+          "y": 815,
+          "radius": 90,
+          "visual": "portal",
+          "portalScale": 0.82,
           "targetMapId": "ch1_m03_agent_lab",
           "targetSpawnId": "ch1_m03_spawn_from_archive",
           "requiresFlags": [
@@ -1447,7 +1701,8 @@
           ],
           "setFlags": [
             "ch1_m03_unlocked"
-          ]
+          ],
+          "lockedDialogueId": "ch1_m02_dialogue_exit_locked"
         }
       ],
       "dialogues": [
@@ -1455,50 +1710,34 @@
           "id": "ch1_m02_dialogue_npc",
           "speaker": "同小智",
           "lines": [
-            "资料要能追溯，隐私要先过滤。先检查引用资料桌。"
+            "资料要能追溯，隐私要先过滤。先去核验引用，再检查过滤仪。"
+          ]
+        },
+        {
+          "id": "ch1_m02_dialogue_privacy_filter",
+          "speaker": "隐私过滤仪",
+          "lines": [
+            "过滤阵列已经校准。右侧档案走廊的复制阴影开始暴露。"
+          ]
+        },
+        {
+          "id": "ch1_m02_dialogue_exit_locked",
+          "speaker": "机房传送门",
+          "lines": [
+            "传送门仍被复制阴影污染，先清理右侧异常区。"
           ]
         }
       ],
-      "foregroundOverlays": [
-        {
-          "id": "m02_archway_lintel",
-          "x": 880,
-          "y": 1600,
-          "w": 360,
-          "h": 270,
-          "depth": 1900
-        },
-        {
-          "id": "m02_west_shelf_top",
-          "x": 0,
-          "y": 260,
-          "w": 360,
-          "h": 520,
-          "depth": 940
-        },
-        {
-          "id": "m02_east_server_top",
-          "x": 1590,
-          "y": 260,
-          "w": 430,
-          "h": 560,
-          "depth": 980
-        },
-        {
-          "id": "m02_central_stack_top",
-          "x": 770,
-          "y": 1010,
-          "w": 500,
-          "h": 220,
-          "depth": 1280
-        }
-      ],
+      "foregroundOverlays": [],
       "minimapImage": {
         "key": "ch1-map-prompt-archive-bg",
-        "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v2-2048.png",
-        "width": 2048,
+        "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v3-6144x2048.png",
+        "width": 6144,
         "height": 2048
-      }
+      },
+      "version": "0.6.0-map-v3-wide",
+      "summary": "Wide stitched prompt archive map, about twice m01 width, with source-check, privacy-filter, and copy-shadow combat route.",
+      "recommendedCredits": 6
     },
     "ch1_m03_agent_lab": {
       "id": "ch1_m03_agent_lab",
@@ -1513,7 +1752,7 @@
           {
             "id": "ch1-m03-agent-nw",
             "key": "ch1-m03-agent-nw",
-            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-nw-v1.png",
+            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-nw.png",
             "x": 0,
             "y": 0,
             "width": 1024,
@@ -1522,7 +1761,7 @@
           {
             "id": "ch1-m03-agent-ne",
             "key": "ch1-m03-agent-ne",
-            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-ne-v1.png",
+            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-ne.png",
             "x": 1024,
             "y": 0,
             "width": 1024,
@@ -1531,7 +1770,7 @@
           {
             "id": "ch1-m03-agent-sw",
             "key": "ch1-m03-agent-sw",
-            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-sw-v1.png",
+            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-sw.png",
             "x": 0,
             "y": 1024,
             "width": 1024,
@@ -1540,7 +1779,7 @@
           {
             "id": "ch1-m03-agent-se",
             "key": "ch1-m03-agent-se",
-            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-process-se-v1.png",
+            "path": "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-se.png",
             "x": 1024,
             "y": 1024,
             "width": 1024,
@@ -1550,21 +1789,21 @@
       },
       "spawn": {
         "id": "ch1_m03_spawn_from_archive",
-        "x": 520,
+        "x": 650,
         "y": 900,
         "facing": "E"
       },
       "spawnPoints": [
         {
           "id": "ch1_m03_spawn_from_archive",
-          "x": 520,
+          "x": 650,
           "y": 900,
           "facing": "E"
         },
         {
           "id": "ch1_m03_spawn_from_boss_lawn",
-          "x": 1680,
-          "y": 1620,
+          "x": 1570,
+          "y": 1520,
           "facing": "N"
         }
       ],
@@ -1636,8 +1875,15 @@
           "type": "inspect",
           "label": "Agent 控制台",
           "x": 1180,
-          "y": 650,
-          "radius": 130,
+          "y": 820,
+          "radius": 170,
+          "visualType": "background-prop",
+          "hintX": 1180,
+          "hintY": 770,
+          "hintWidth": 196,
+          "hintHeight": 52,
+          "labelX": 1180,
+          "labelY": 748,
           "dialogueId": "ch1_m03_dialogue_console",
           "setFlags": [
             "ch1_m03_agent_console_checked"
@@ -1650,6 +1896,13 @@
           "x": 1024,
           "y": 1110,
           "radius": 165,
+          "visualType": "projection",
+          "hintX": 1024,
+          "hintY": 1110,
+          "hintWidth": 172,
+          "hintHeight": 58,
+          "labelX": 1024,
+          "labelY": 1086,
           "requiresFlags": [
             "ch1_m03_agent_console_checked"
           ],
@@ -1717,7 +1970,7 @@
           "label": "返回资料室",
           "x": 460,
           "y": 900,
-          "radius": 110,
+          "radius": 80,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_lab"
         },
@@ -1727,7 +1980,7 @@
           "label": "图书馆草坪",
           "x": 1700,
           "y": 1620,
-          "radius": 130,
+          "radius": 90,
           "targetMapId": "ch1_m04_library_lawn_boss",
           "targetSpawnId": "ch1_m04_spawn_lawn_gate",
           "requiresFlags": [
@@ -1919,6 +2172,13 @@
           "x": 1024,
           "y": 720,
           "radius": 180,
+          "visualType": "boss-point",
+          "hintX": 1024,
+          "hintY": 720,
+          "hintWidth": 180,
+          "hintHeight": 58,
+          "labelX": 1024,
+          "labelY": 696,
           "requiresFlags": [
             "ch1_m03_small_boss_cleared"
           ],
@@ -1931,8 +2191,15 @@
           "type": "chapter-clear",
           "label": "章节完成点",
           "x": 1024,
-          "y": 380,
-          "radius": 120,
+          "y": 500,
+          "radius": 150,
+          "visualType": "background-prop",
+          "hintX": 1024,
+          "hintY": 458,
+          "hintWidth": 164,
+          "hintHeight": 48,
+          "labelX": 1024,
+          "labelY": 438,
           "requiresFlags": [
             "ch1_final_boss_defeated"
           ],

@@ -16,7 +16,7 @@
   --parchment-2: rgba(244, 226, 196, .86);
   --ui-edge: rgba(122, 91, 48, .34);
   --ui-edge-dark: rgba(53, 39, 60, .22);
-  --ui-skin: url("assets/chapter1/ui/ch1-ui-hud-skin-sheet-v1.png");
+  --ui-skin: url("assets/ui/hud/ch1-ui-hud-skin-sheet-v1.png");
 }
 
 * { box-sizing: border-box; }
@@ -1576,7 +1576,7 @@ h1 {
   height: 26px;
   border: 1px solid rgba(255, 255, 255, .62);
   border-radius: 6px;
-  background-image: url("assets/chapter1/ui/ch1-quickbar-icons-sheet-v1.png");
+  background-image: url("assets/ui/hud/ch1-quickbar-icons-sheet-v1.png");
   background-size: 312px 26px;
   background-repeat: no-repeat;
   box-shadow: inset 0 0 0 1px rgba(72, 48, 36, .12);
@@ -1663,7 +1663,7 @@ h1 {
   content: "";
   width: 28px;
   height: 28px;
-  background-image: url("assets/chapter1/ui/ch1-quickbar-icons-sheet-v1.png");
+  background-image: url("assets/ui/hud/ch1-quickbar-icons-sheet-v1.png");
   background-repeat: no-repeat;
   background-size: 336px 28px;
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .55));
