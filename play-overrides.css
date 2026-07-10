@@ -1,0 +1,125 @@
+/* Final-order HUD rules: keep every panel on one clean nine-slice layer. */
+:root {
+  --hud-frame: url("assets/ui/hud/ch1-ui-panel-frame-9slice-v2.png");
+  --hud-frame-slice: 42 42 42 42;
+  --hud-frame-width: 20px;
+}
+
+.status-panel,
+.chapter-hud,
+.minimap-panel,
+.boss-panel,
+.interaction-prompt,
+.toast,
+.inventory-panel,
+.bottom-dock {
+  border: var(--hud-frame-width) solid transparent;
+  border-image: var(--hud-frame) var(--hud-frame-slice) / var(--hud-frame-width) stretch;
+  border-radius: 0;
+  background: rgba(249, 239, 216, .96);
+  background-clip: padding-box;
+  backdrop-filter: none;
+}
+
+.status-panel::before,
+.status-panel::after,
+.chapter-hud::before,
+.chapter-hud::after,
+.minimap-panel::before,
+.minimap-panel::after,
+.boss-panel::before,
+.boss-panel::after,
+.interaction-prompt::before,
+.interaction-prompt::after,
+.toast::before,
+.toast::after {
+  content: none;
+}
+
+.bottom-dock .public-chat,
+.bottom-dock .quickbar {
+  border: 0;
+  border-image: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.chapter-hud.collapsed,
+.minimap-panel.collapsed {
+  box-sizing: border-box;
+  height: 58px;
+  min-height: 58px;
+  padding: 0 2px;
+}
+
+.chapter-hud.collapsed {
+  width: 184px;
+}
+
+.minimap-panel.collapsed {
+  width: 150px;
+}
+
+.chapter-hud.collapsed .chapter-head,
+.minimap-panel.collapsed .minimap-head {
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+}
+
+.chapter-hud.collapsed .chapter-kicker,
+.minimap-panel.collapsed .minimap-head span {
+  display: none;
+}
+
+.chapter-hud.collapsed .chapter-head strong,
+.minimap-panel.collapsed .minimap-head strong {
+  display: block;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .bottom-dock,
+  .bottom-dock:has(.public-chat.collapsed) {
+    bottom: max(178px, calc(env(safe-area-inset-bottom) + 166px));
+  }
+
+  html.touch-ui .bottom-dock .quickbar,
+  .bottom-dock .quickbar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    max-width: none;
+    transform: none;
+  }
+
+  .boss-panel,
+  .interaction-prompt {
+    bottom: max(300px, calc(env(safe-area-inset-bottom) + 288px));
+  }
+}
+
+@media (max-width: 760px) and (orientation: landscape) {
+  .bottom-dock,
+  .bottom-dock:has(.public-chat.collapsed) {
+    bottom: max(6px, env(safe-area-inset-bottom));
+  }
+
+  html.touch-ui .bottom-dock .quickbar,
+  .bottom-dock .quickbar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 190px;
+    max-width: none;
+  }
+
+  .boss-panel,
+  .interaction-prompt {
+    bottom: 104px;
+  }
+}

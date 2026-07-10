@@ -38,7 +38,7 @@ for (const matches of hashes.values()) {
   if (matches.length > 1) issues.push(`Exact duplicate files: ${matches.join(", ")}`);
 }
 
-const allowedMapDirectories = new Set(["background", "chunks", "foreground", "props"]);
+const allowedMapDirectories = new Set(["background", "chunks", "foreground", "props", "tiles"]);
 for (const file of assetFiles) {
   const rel = relative(assetRoot, file).split(sep).join("/");
   const parts = rel.split("/");

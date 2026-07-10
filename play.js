@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260710-m01-quest-ui`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260710-m2-ui-v2`;
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -69,6 +69,7 @@
     };
     addImage(mapData?.background);
     (mapData?.background?.chunks || []).forEach(addImage);
+    (mapData?.props || []).forEach(addImage);
     addImage(mapData?.minimapImage);
     ["propAtlases", "foregroundAtlases"].forEach(fieldName => {
       normalizeMapAssetAtlases(mapData, fieldName).forEach(addImage);
@@ -201,6 +202,17 @@
   const BOSS_CHEST_FLAG = "ch1_boss_chest_opened";
   const CHAT_HISTORY_LIMIT = 40;
   const CHAT_TEXT_LIMIT = 80;
+  const WORLD_DROP_TTL_MS = 5 * 60 * 1000;
+  const WORLD_DROP_BLINK_MS = 20 * 1000;
+  const WORLD_DROP_PICKUP_RADIUS = 92;
+  const WORLD_DROP_MATERIAL_KEY = "play-world-drop-material";
+  const WORLD_DROP_MATERIAL_IMAGE = "assets/ui/hud/ch1-drop-material-icon-v1.png";
+  const WORLD_DROP_EQUIPMENT_KEY = "play-world-drop-equipment";
+  const WORLD_DROP_EQUIPMENT_IMAGE = "assets/ui/hud/ch1-drop-equipment-icon-v1.png";
+  const INVENTORY_CAPACITY = 30;
+  const EQUIPMENT_CAPACITY = 10;
+  const MINIMAP_UPDATE_INTERVAL_MS = 140;
+  const INTERACTION_UPDATE_INTERVAL_MS = 90;
   const ENTRY_LOADING_MIN_MS = 5000;
   const MINIMAP_COLORS = {
     player: "#ffffff",
@@ -348,6 +360,100 @@
     magicPower: 22
   };
 
+  const ITEM_CATALOG = {
+    "ch1_material_margin_note": {
+      id: "ch1_material_margin_note",
+      name: "批注纸角",
+      type: "material",
+      quality: "common",
+      description: "从错页与失控讲义上脱落的纸角，可出售或用于后续合成。"
+    },
+    "ch1_material_protocol_ink": {
+      id: "ch1_material_protocol_ink",
+      name: "协议墨滴",
+      type: "material",
+      quality: "excellent",
+      description: "残留着微弱协议波动的墨滴，可用于任务或合成。"
+    },
+    "ch1_material_campus_token": {
+      id: "ch1_material_campus_token",
+      name: "旧饭卡芯片",
+      type: "material",
+      quality: "common",
+      description: "校园旧设备中常见的芯片，可出售换取校园币。"
+    },
+    "ch1_boost_academic_bookmark": {
+      id: "ch1_boost_academic_bookmark",
+      name: "晨读书签",
+      type: "equipment",
+      quality: "excellent",
+      damageBonus: 0.05,
+      description: "增益装备。放入增益栏后，最终伤害提高 5%。"
+    },
+    "ch1_boost_focus_badge": {
+      id: "ch1_boost_focus_badge",
+      name: "专注校徽",
+      type: "equipment",
+      quality: "rare",
+      damageBonus: 0.08,
+      description: "增益装备。放入增益栏后，最终伤害提高 8%。"
+    },
+    "ch1_drop_citation_seal_fragment": {
+      id: "ch1_drop_citation_seal_fragment",
+      name: "引用封印碎片",
+      type: "material",
+      quality: "rare",
+      description: "从资料长廊的复制阴影中剥离的封印碎片，记录着已修复的引用链。"
+    }
+  };
+
+  const SKILL_DEFINITIONS = {
+    lina: {
+      attack: {
+        name: "晶光飞弹",
+        key: "J",
+        description: "魔法伤害 = 魔力 × 100%；长按蓄力后为魔力 × 155%。魔法暴击造成 200% 伤害，命中回复 8 EN，蓄力命中回复 18 EN。"
+      },
+      ultimate: {
+        name: "学风旋流",
+        key: "K",
+        description: `消耗 ${ULTIMATE_COST} EN，对身边椭圆范围内的目标造成 ${ULTIMATE_DAMAGE} 点魔法伤害。魔法暴击造成 200% 伤害。`
+      },
+      heal: {
+        name: "樱光护盾",
+        key: "H",
+        description: `消耗 ${HEAL_COST} EN，恢复 42 HP，并获得 36 点护盾；护盾优先抵消受到的伤害。`
+      },
+      transform: {
+        name: "学术猫形态",
+        key: "L",
+        description: "切换猫形态。移动速度 = 人形速度 × 200%，主要攻击变为向前跳跃。"
+      }
+    },
+    ayu: {
+      attack: {
+        name: "光刃挥砍",
+        key: "J",
+        description: "物理伤害 = 攻击力 × 100%。物理暴击造成 150% 伤害，命中回复 6 EN。"
+      },
+      ultimate: {
+        name: "星轨环斩",
+        key: "K",
+        description: `消耗 ${ULTIMATE_COST} EN，对周围目标造成攻击力 × 180% 的物理伤害。物理暴击造成 150% 伤害。`
+      },
+      heal: {
+        name: "樱光护盾",
+        key: "H",
+        description: `消耗 ${HEAL_COST} EN，恢复 42 HP，并获得 36 点护盾；护盾优先抵消受到的伤害。`
+      },
+      transform: {
+        name: "学术猫形态",
+        key: "L",
+        description: "切换猫形态。移动速度 = 人形速度 × 200%，主要攻击变为向前跳跃。"
+      }
+    }
+  };
+
   const BOSS = {
     id: "boss_ai_prof",
     name: "陆教授的协议考核",
@@ -461,6 +567,7 @@
     chapterOne: { protocolCards: 0, bossCleared: false },
     dialogue: null,
     chat: { messages: [] },
+    selectedInventoryItem: null,
     lastHealAt: -Infinity,
     connected: false,
     touchMove: { active: false, dx: 0, dy: 0 }
@@ -488,6 +595,48 @@
     return Array.isArray(value) ? value.map(item => String(item)).filter(Boolean) : [];
   }
 
+  function normalizeInventoryItem(item = {}) {
+    const definition = ITEM_CATALOG[String(item.id || "")] || {};
+    return {
+      ...definition,
+      ...item,
+      id: String(item.id || definition.id || "unknown_item"),
+      name: String(item.name || definition.name || item.id || "未知物品").slice(0, 32),
+      type: String(item.type || definition.type || "material"),
+      quality: String(item.quality || definition.quality || "common"),
+      description: String(item.description || definition.description || "校园探索中获得的物品。").slice(0, 180),
+      qty: Math.max(1, Math.floor(Number(item.qty) || 1))
+    };
+  }
+
+  function addInventoryItem(item = {}) {
+    if (!app.profile) return false;
+    app.profile.inventory = Array.isArray(app.profile.inventory)
+      ? app.profile.inventory.map(normalizeInventoryItem)
+      : [];
+    const incoming = normalizeInventoryItem(item);
+    const existing = app.profile.inventory.find(entry =>
+      entry.id === incoming.id && entry.type === incoming.type && entry.quality === incoming.quality
+    );
+    if (existing) existing.qty += incoming.qty;
+    else if (app.profile.inventory.length < INVENTORY_CAPACITY) app.profile.inventory.push(incoming);
+    else {
+      showToast("背包已满，先整理物品再拾取");
+      return false;
+    }
+    saveProfile(app.profile);
+    renderInventory();
+    return true;
+  }
+
+  function equippedDamageMultiplier() {
+    if (!app.profile) return 1;
+    const bonus = (Array.isArray(app.profile.equipment) ? app.profile.equipment : [])
+      .map(normalizeInventoryItem)
+      .reduce((sum, item) => sum + Math.max(0, Number(item.damageBonus) || 0), 0);
+    return 1 + bonus;
+  }
+
   function ensureProfileProgress(profile) {
     const previousMaxEnergy = Math.max(1, Number(profile.maxEnergy || ENERGY_DEFAULT_MAX));
     const incomingEnergy = Number(profile.energy ?? previousMaxEnergy);
@@ -510,8 +659,8 @@
       profile.flags.ch1_m01_task_accepted = true;
     }
     profile.quests = plainObject(profile.quests);
-    profile.inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
-    profile.equipment = Array.isArray(profile.equipment) ? profile.equipment : [];
+    profile.inventory = Array.isArray(profile.inventory) ? profile.inventory.map(normalizeInventoryItem) : [];
+    profile.equipment = Array.isArray(profile.equipment) ? profile.equipment.map(normalizeInventoryItem).slice(0, EQUIPMENT_CAPACITY) : [];
     profile.collections = plainObject(profile.collections);
     profile.collections.protocolCards = stringArray(profile.collections.protocolCards);
     return profile;
@@ -999,11 +1148,175 @@
     }
   }
 
+  function getSkillDefinition(skillId) {
+    const characterId = app.profile?.characterId || "lina";
+    return SKILL_DEFINITIONS[characterId]?.[skillId] || SKILL_DEFINITIONS.lina[skillId];
+  }
+
+  function renderSkillButtons() {
+    document.querySelectorAll(".skill[data-skill-id]").forEach(button => {
+      const definition = getSkillDefinition(button.dataset.skillId);
+      if (!definition) return;
+      const shortcut = button.querySelector("small");
+      if (shortcut) shortcut.textContent = definition.key;
+      button.setAttribute("aria-label", `${definition.name}，快捷键 ${definition.key}`);
+    });
+  }
+
+  function hideSkillTooltip(force = false) {
+    if (app.skillTooltipPinned && !force) return;
+    app.skillTooltipPinned = false;
+    const tooltip = $("#skillTooltip");
+    if (!tooltip) return;
+    tooltip.classList.remove("open");
+    tooltip.setAttribute("aria-hidden", "true");
+  }
+
+  function showSkillTooltip(button, pinned = false) {
+    const tooltip = $("#skillTooltip");
+    const stage = $(".game-stage");
+    const definition = getSkillDefinition(button?.dataset.skillId);
+    if (!tooltip || !stage || !button || !definition) return;
+    clearChildren(tooltip);
+    const title = document.createElement("strong");
+    title.textContent = `${definition.name} · ${definition.key}`;
+    const description = document.createElement("p");
+    description.textContent = definition.description;
+    tooltip.append(title, description);
+    tooltip.classList.add("open");
+    tooltip.setAttribute("aria-hidden", "false");
+    app.skillTooltipPinned = !!pinned;
+
+    const stageRect = stage.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const left = clamp(buttonRect.left - stageRect.left, 8, Math.max(8, stageRect.width - tooltipRect.width - 8));
+    const preferredTop = buttonRect.bottom - stageRect.top + 8;
+    const top = preferredTop + tooltipRect.height <= stageRect.height - 8
+      ? preferredTop
+      : Math.max(8, buttonRect.top - stageRect.top - tooltipRect.height - 8);
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  }
+
+  function itemIconPath(item) {
+    return item?.type === "equipment"
+      ? WORLD_DROP_EQUIPMENT_IMAGE
+      : WORLD_DROP_MATERIAL_IMAGE;
+  }
+
+  function makeInventorySlot(item, source, index) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `inventory-slot${item ? "" : " empty"}`;
+    if (!item) {
+      button.disabled = true;
+      button.setAttribute("aria-label", "空物品格");
+      return button;
+    }
+    const normalized = normalizeInventoryItem(item);
+    button.dataset.quality = normalized.quality;
+    button.dataset.source = source;
+    button.dataset.index = String(index);
+    button.setAttribute("aria-label", `${normalized.name}，数量 ${normalized.qty}`);
+    const selected = app.selectedInventoryItem?.source === source && app.selectedInventoryItem?.index === index;
+    button.setAttribute("aria-pressed", String(selected));
+    const icon = document.createElement("img");
+    icon.src = itemIconPath(normalized);
+    icon.alt = "";
+    icon.setAttribute("aria-hidden", "true");
+    const quantity = document.createElement("b");
+    quantity.textContent = normalized.qty > 1 ? String(normalized.qty) : "";
+    button.append(icon, quantity);
+    button.addEventListener("click", () => {
+      app.selectedInventoryItem = { source, index };
+      renderInventory();
+    });
+    return button;
+  }
+
+  function getSelectedInventoryItem() {
+    if (!app.profile || !app.selectedInventoryItem) return null;
+    const { source, index } = app.selectedInventoryItem;
+    const list = source === "equipment" ? app.profile.equipment : app.profile.inventory;
+    const item = Array.isArray(list) ? list[index] : null;
+    return item ? { item: normalizeInventoryItem(item), source, index } : null;
+  }
+
+  function renderInventoryDetail() {
+    const detail = $("#inventoryDetail");
+    const selected = getSelectedInventoryItem();
+    if (!detail) return;
+    detail.hidden = !selected;
+    if (!selected) return;
+    $("#inventoryDetailName").textContent = selected.item.name;
+    $("#inventoryDetailText").textContent = selected.item.description;
+    const action = $("#inventoryActionButton");
+    const canEquip = selected.source === "inventory" && selected.item.type === "equipment";
+    const canUnequip = selected.source === "equipment";
+    action.hidden = !(canEquip || canUnequip);
+    action.textContent = canUnequip ? "卸下" : "装备";
+  }
+
+  function renderInventory() {
+    if (!app.profile) return;
+    app.profile.inventory = Array.isArray(app.profile.inventory) ? app.profile.inventory.map(normalizeInventoryItem) : [];
+    app.profile.equipment = Array.isArray(app.profile.equipment) ? app.profile.equipment.map(normalizeInventoryItem).slice(0, EQUIPMENT_CAPACITY) : [];
+    const inventoryGrid = $("#inventoryGrid");
+    const equipmentGrid = $("#equipmentGrid");
+    if (!inventoryGrid || !equipmentGrid) return;
+    clearChildren(inventoryGrid);
+    clearChildren(equipmentGrid);
+    for (let index = 0; index < EQUIPMENT_CAPACITY; index += 1) {
+      equipmentGrid.appendChild(makeInventorySlot(app.profile.equipment[index] || null, "equipment", index));
+    }
+    for (let index = 0; index < INVENTORY_CAPACITY; index += 1) {
+      inventoryGrid.appendChild(makeInventorySlot(app.profile.inventory[index] || null, "inventory", index));
+    }
+    $("#equipmentCount").textContent = `${app.profile.equipment.length} / ${EQUIPMENT_CAPACITY}`;
+    $("#inventoryCount").textContent = `${app.profile.inventory.length} / ${INVENTORY_CAPACITY}`;
+    renderInventoryDetail();
+  }
+
+  function setInventoryOpen(open) {
+    const panel = $("#inventoryPanel");
+    const button = $("#inventoryToggleButton");
+    if (!panel) return;
+    panel.classList.toggle("collapsed", !open);
+    panel.setAttribute("aria-hidden", String(!open));
+    button?.setAttribute("aria-pressed", String(open));
+    if (open) renderInventory();
+    else app.selectedInventoryItem = null;
+  }
+
+  function toggleSelectedInventoryItem() {
+    const selected = getSelectedInventoryItem();
+    if (!selected || !app.profile) return;
+    if (selected.source === "inventory") {
+      if (selected.item.type !== "equipment") return;
+      if (app.profile.equipment.length >= EQUIPMENT_CAPACITY) {
+        showToast("增益栏已满");
+        return;
+      }
+      const inventoryItem = app.profile.inventory[selected.index];
+      app.profile.equipment.push({ ...selected.item, qty: 1, instanceId: makeId() });
+      inventoryItem.qty -= 1;
+      if (inventoryItem.qty <= 0) app.profile.inventory.splice(selected.index, 1);
+      showToast(`已装备：${selected.item.name}`);
+    } else {
+      const [equipmentItem] = app.profile.equipment.splice(selected.index, 1);
+      addInventoryItem({ ...equipmentItem, qty: 1 });
+      showToast(`已卸下：${selected.item.name}`);
+    }
+    app.selectedInventoryItem = null;
+    saveProfile(app.profile);
+    renderInventory();
+  }
+
   function renderHud() {
     if (!app.profile) return;
     $("#hudName").textContent = app.profile.name;
-    const attackLabel = $("#attackButton")?.querySelector("span");
-    if (attackLabel) attackLabel.textContent = app.profile.characterId === "ayu" ? "光刃挥砍" : "晶光飞弹";
+    renderSkillButtons();
     $("#levelText").textContent = `Lv.${app.profile.level}`;
     $("#creditText").textContent = `学分 ${app.profile.credits}`;
     $("#expText").textContent = `EXP ${app.profile.exp}`;
@@ -1242,6 +1555,8 @@
   function renderInteractionPrompt(text = "") {
     const node = $("#interactionPrompt");
     if (!node) return;
+    if (node.dataset.text === text) return;
+    node.dataset.text = text;
     node.textContent = text;
     node.classList.toggle("open", !!text);
     node.setAttribute("aria-hidden", String(!text));
@@ -1257,11 +1572,24 @@
     if (button) button.disabled = !app.profile;
   }
 
+  function returnToGameFromChat() {
+    const input = $("#chatInput");
+    input?.blur();
+    const root = $("#gameRoot");
+    if (root) {
+      root.tabIndex = -1;
+      root.focus({ preventScroll: true });
+    }
+  }
+
   function submitChat() {
     const input = $("#chatInput");
     if (!input) return;
     const text = normalizeChatText(input.value);
-    if (!text) return;
+    if (!text) {
+      returnToGameFromChat();
+      return;
+    }
     if (!app.profile) {
       renderChatError("请先进入角色后再发送公共频道消息。");
       return;
@@ -1272,6 +1600,7 @@
       return;
     }
     input.value = "";
+    returnToGameFromChat();
   }
 
   function resetChat() {
@@ -1324,9 +1653,10 @@
 
   function initializeHudPanels() {
     setPanelCollapsed("chapterHud", true);
-    setPanelCollapsed("publicChat", true);
     const compact = window.matchMedia("(max-width: 760px)").matches;
+    setPanelCollapsed("publicChat", compact);
     setPanelCollapsed("minimapPanel", compact);
+    setInventoryOpen(false);
   }
 
   function bindPanelToggles() {
@@ -1854,7 +2184,12 @@
       this.step = 0;
       this.gameNotes = [261.63, 329.63, 392, 523.25, 493.88, 392, 349.23, 392];
       this.loginTrackUrl = "assets/audio/efv-login.mp3";
+      this.gameTrackUrl = "assets/audio/efv-p1m0m3.mp3";
       this.loginTrack = null;
+      this.gameTrack = new Audio(this.gameTrackUrl);
+      this.gameTrack.loop = true;
+      this.gameTrack.preload = "auto";
+      this.gameTrack.volume = 0.46;
       this.loginObjectUrl = "";
       this.loginLoading = false;
       this.loginReady = false;
@@ -1880,11 +2215,18 @@
         return;
       }
       if (this.mode === "login") {
+        this.pauseGameTrack();
         this.stopGamePulse();
         this.playLoginTrack(userGesture);
         return;
       }
       this.pauseLoginTrack();
+      if (this.shouldPlayChapterTrack()) {
+        this.stopGamePulse();
+        this.playGameTrack();
+        return;
+      }
+      this.pauseGameTrack();
       if (!this.ctx) return;
       if (!this.timer) {
         this.timer = window.setInterval(() => this.playPulse(), 500);
@@ -1900,6 +2242,7 @@
     stop() {
       this.stopGamePulse();
       this.pauseLoginTrack();
+      this.pauseGameTrack();
     }
 
     switchMode(mode) {
@@ -2003,6 +2346,34 @@
       this.loginTrack?.pause();
     }
 
+    shouldPlayChapterTrack(mapId = app.profile?.mapId) {
+      return /^ch1_m0[1-3]_/.test(String(mapId || ""));
+    }
+
+    async playGameTrack() {
+      if (!this.enabled || this.mode !== "game" || !this.shouldPlayChapterTrack()) return;
+      try {
+        await this.gameTrack.play();
+      } catch {
+        // The next player gesture will retry through start().
+      }
+    }
+
+    pauseGameTrack() {
+      this.gameTrack?.pause();
+    }
+
+    syncMap(mapId = app.profile?.mapId) {
+      if (this.mode !== "game") return;
+      if (this.shouldPlayChapterTrack(mapId)) {
+        this.stopGamePulse();
+        this.playGameTrack();
+        return;
+      }
+      this.pauseGameTrack();
+      this.start("game");
+    }
+
     tone(freq, duration = 0.2, type = "sine", gain = 0.055) {
       if (!this.enabled || !this.ctx) return;
       const now = this.ctx.currentTime;
@@ -2087,7 +2458,19 @@
       this.tone(92, 0.22, "sawtooth", 0.05);
       window.setTimeout(() => this.tone(260, 0.08, "triangle", 0.045), 35);
     }
-    hit() { this.tone(160, 0.13, "sawtooth", 0.05); }
+    hit() {
+      this.noise(0.09, 0.035, "bandpass", 1320);
+      this.tone(210, 0.1, "square", 0.045);
+    }
+    enemyAttack() {
+      this.sweep(330, 92, 0.2, "sawtooth", 0.075);
+      this.noise(0.15, 0.05, "lowpass", 620);
+    }
+    playerHit() {
+      this.noise(0.14, 0.065, "lowpass", 440);
+      this.tone(118, 0.16, "square", 0.065);
+      window.setTimeout(() => this.tone(82, 0.11, "sawtooth", 0.038), 38);
+    }
     dialogueOpen() {
       this.noise(0.34, 0.026, "bandpass", 1050);
       this.sweep(260, 620, 0.28, "triangle", 0.032);
@@ -2119,6 +2502,7 @@
     constructor() {
       this.ws = null;
       this.peers = new Map();
+      this.drops = new Map();
       this.url = "";
     }
 
@@ -2158,6 +2542,8 @@
       if (this.ws) this.ws.close();
       this.ws = null;
       this.peers.clear();
+      this.drops.clear();
+      app.scene?.clearWorldDrops();
       renderPeers(this.peers);
     }
 
@@ -2216,6 +2602,18 @@
       this.send({ type: "slimeRemove", id });
     }
 
+    sendDropSpawn(drop) {
+      this.send({ type: "dropSpawn", drop });
+    }
+
+    sendDropCollect(id) {
+      this.send({ type: "dropCollect", id });
+    }
+
+    syncDropsForCurrentMap() {
+      app.scene?.syncWorldDrops(Array.from(this.drops.values()));
+    }
+
     handleMessage(raw) {
       let message = null;
       try {
@@ -2238,14 +2636,19 @@
       }
       if (message.type === "welcome") {
         this.peers.clear();
+        this.drops.clear();
         (message.peers || []).forEach(peer => {
           if (peer.id !== app.profile.id) this.peers.set(peer.id, peer);
         });
         if (Array.isArray(message.chat)) renderChatHistory(message.chat);
         if (message.boss) syncBossState(message.boss);
         if (Array.isArray(message.slimes)) app.scene?.syncSlimes(message.slimes);
+        (Array.isArray(message.drops) ? message.drops : []).forEach(drop => {
+          if (drop?.id) this.drops.set(String(drop.id), drop);
+        });
         renderPeers(this.peers);
         app.scene?.syncAllPeers(this.peers);
+        this.syncDropsForCurrentMap();
       }
       if (message.type === "chatMessage") {
         handleChatMessage(message);
@@ -2274,6 +2677,20 @@
       if (message.type === "slimeRemove" && message.id) {
         app.scene?.syncSlimeRemove(message.id);
       }
+      if (message.type === "dropSpawn" && message.drop?.id) {
+        this.drops.set(String(message.drop.id), message.drop);
+        app.scene?.syncWorldDrop(message.drop);
+      }
+      if (message.type === "dropRemove" && message.id) {
+        this.drops.delete(String(message.id));
+        app.scene?.removeWorldDrop(String(message.id));
+      }
+      if (message.type === "dropCollected" && message.drop) {
+        if (addInventoryItem(message.drop.item || {})) {
+          showToast(`拾取：${message.drop.item?.name || "掉落物"}`);
+        }
+      }
+      if (message.type === "dropError") showToast(message.text || "无法拾取这个掉落物");
       if (message.type === "notice" && message.text) showToast(message.text);
     }
   }
@@ -2297,6 +2714,10 @@
       this.bossWavePending = false;
       this.ambientEnemyRefreshTimer = null;
       this.ambientEnemySequence = 0;
+      this.worldDrops = new Map();
+      this.lastMinimapUpdateAt = 0;
+      this.lastInteractionUpdateAt = 0;
+      this.lastWorldDropUpdateAt = 0;
     }
 
     preload() {
@@ -2304,6 +2725,8 @@
       this.load.image(MAP_TILESET_KEY, MAP_TILESET_PATH);
       this.load.image(MAP_PROP_ATLAS_KEY, MAP_PROP_ATLAS_PATH);
       this.load.image(MAP_MACRO_PROP_ATLAS_KEY, MAP_MACRO_PROP_ATLAS_PATH);
+      this.load.image(WORLD_DROP_MATERIAL_KEY, WORLD_DROP_MATERIAL_IMAGE);
+      this.load.image(WORLD_DROP_EQUIPMENT_KEY, WORLD_DROP_EQUIPMENT_IMAGE);
       this.load.tilemapTiledJSON(MAP_TILEMAP_KEY, MAP_DATA_PATH);
       this.load.json(MAP_DATA_KEY, MAP_DATA_PATH);
       this.load.on("filecomplete", (key, type, data) => {
@@ -2372,6 +2795,7 @@
       this.chapterMapRegistry = this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {};
       this.mapData = this.composeRuntimeMapData();
       this.remotePlayers = new Map();
+      this.worldDrops = new Map();
       this.syncedSlimeIds = new Set();
       this.bossSummonIds = new Set();
       this.bossWavePending = false;
@@ -2414,7 +2838,7 @@
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.leafSlimes = this.physics.add.group({ allowGravity: false });
       this.projectileGraphics = this.add.graphics().setDepth(40);
-      this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,K,H,L,U,I,C,X,Q,SPACE");
+      this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,K,H,L,I,Q,SPACE");
 
       this.createActor();
       this.createBoss();
@@ -2422,6 +2846,7 @@
       this.createInteractionNodes();
       this.spawnMapLeafSlimes();
       this.scheduleAmbientEnemyRefresh();
+      app.multiplayer?.syncDropsForCurrentMap();
 
       this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
       this.bindMapColliders();
@@ -2553,13 +2978,18 @@
       (this.mapData?.props || []).forEach(item => {
         const frame = item.frame;
         const atlasKey = this.getMapPropAtlasKey(item);
-        if (!frame || !this.textures.get(atlasKey)?.has(frame)) return;
+        const textureKey = item.textureKey || item.key || item.id || atlasKey;
+        const hasStandaloneTexture = !frame && textureKey && this.textures.exists(textureKey);
+        if (!hasStandaloneTexture && (!frame || !this.textures.get(atlasKey)?.has(frame))) return;
         const origin = item.origin || {};
         const visualScale = clamp(Number(item.scale ?? 1) || 1, 0.05, 1);
-        const prop = this.add.image(item.x, item.y, atlasKey, frame)
+        const prop = this.add.image(item.x, item.y, hasStandaloneTexture ? textureKey : atlasKey, hasStandaloneTexture ? undefined : frame)
           .setOrigin(origin.x ?? 0.5, origin.y ?? 1)
           .setScale(visualScale)
           .setDepth(Number.isFinite(Number(item.depthY)) ? Number(item.depthY) : item.y + (item.depthOffset || 0));
+        if (Number(item.displayWidth) > 0 && Number(item.displayHeight) > 0) {
+          prop.setDisplaySize(Number(item.displayWidth), Number(item.displayHeight));
+        }
         prop.mapPropId = item.id || frame;
         this.mapProps.push(prop);
       });
@@ -2583,15 +3013,27 @@
         const chunk = this.findBackgroundChunkForRect(item);
         const textureKey = item.textureKey || chunk?.key || this.mapData?.background?.key;
         if (!textureKey || !this.textures.exists(textureKey)) return;
+        if (item.fullImage) {
+          const overlay = this.add.image(item.x, item.y, textureKey)
+            .setOrigin(0, 0)
+            .setDisplaySize(item.w, item.h)
+            .setDepth(Number(item.depth) || -10)
+            .setAlpha(Number.isFinite(Number(item.alpha)) ? Number(item.alpha) : 1);
+          this.foregroundOverlays.push(overlay);
+          return;
+        }
         const sourceX = Number.isFinite(item.sourceX) ? item.sourceX : item.x - (Number(chunk?.x) || 0);
         const sourceY = Number.isFinite(item.sourceY) ? item.sourceY : item.y - (Number(chunk?.y) || 0);
+        const sourceWidth = Number(item.sourceWidth) || item.w;
+        const sourceHeight = Number(item.sourceHeight) || item.h;
         const texture = this.textures.get(textureKey);
         const frameKey = item.frameKey || `${this.mapData?.id || "map"}-${item.id}-foreground`;
-        if (texture && !texture.has(frameKey)) texture.add(frameKey, 0, sourceX, sourceY, item.w, item.h);
+        if (texture && !texture.has(frameKey)) texture.add(frameKey, 0, sourceX, sourceY, sourceWidth, sourceHeight);
         const overlay = this.add.image(item.x, item.y, textureKey, frameKey)
           .setOrigin(0, 0)
+          .setDisplaySize(item.w, item.h)
           .setDepth(Number(item.depth) || item.y + item.h + 40)
-          .setAlpha(Number(item.alpha) || 1);
+          .setAlpha(Number.isFinite(Number(item.alpha)) ? Number(item.alpha) : 1);
         this.foregroundOverlays.push(overlay);
       });
     }
@@ -2693,12 +3135,23 @@
           Number(node.markerGlowHeight) || height,
           color,
           Number(node.markerGlowAlpha) || 0.1
-        );
+        ).setBlendMode(Phaser.BlendModes.ADD);
         const sprite = this.add.image(0, Number(node.markerOffsetY) || 0, markerKey)
           .setOrigin(Number(node.markerOriginX) || 0.5, Number(node.markerOriginY) || 0.86)
           .setScale(Number(node.markerScale) || 0.3);
-        return this.add.container(x, y, [glow, shadow, sprite])
+        const marker = this.add.container(x, y, [glow, shadow, sprite])
           .setDepth(Number(node.hintDepth) || y + 2);
+        this.tweens.add({
+          targets: glow,
+          alpha: Math.max(0.22, Number(node.markerGlowAlpha) || 0.1),
+          scaleX: 1.14,
+          scaleY: 1.18,
+          duration: 1080,
+          yoyo: true,
+          repeat: -1,
+          ease: "Sine.easeInOut"
+        });
+        return marker;
       }
       return this.add.ellipse(x, y, width, height, color, 0.09)
         .setDepth(Number(node.hintDepth) || y - 2);
@@ -2783,6 +3236,21 @@
           nearestDistance = distance;
         }
       }
+      this.worldDrops?.forEach(drop => {
+        const distance = Math.hypot(foot.x - Number(drop.x || 0), foot.y - Number(drop.y || 0));
+        if (distance > WORLD_DROP_PICKUP_RADIUS || distance >= nearestDistance) return;
+        const owned = drop.ownerId === app.profile?.id;
+        nearest = {
+          id: drop.id,
+          dropId: drop.id,
+          type: "worldDrop",
+          ownerId: drop.ownerId,
+          label: owned ? `拾取 ${drop.item?.name || "掉落物"}` : `${drop.ownerName || "其他玩家"}的掉落物`,
+          x: drop.x,
+          y: drop.y
+        };
+        nearestDistance = distance;
+      });
       (this.interactionNodes || []).forEach(node => {
         if (node.once && hasFlag(this.nodeDoneFlag(node))) return;
         if (node.hideUntilUnlocked && !this.flagRequirementsMet(node.requiresFlags)) return;
@@ -2880,6 +3348,10 @@
 
     triggerInteraction(node = this.activeInteraction) {
       if (!node) return;
+      if (node.type === "worldDrop") {
+        this.collectWorldDrop(node.dropId);
+        return;
+      }
       if (node.type === "bossChest") {
         this.openBossChest();
         return;
@@ -2917,10 +3389,12 @@
     openBossChest() {
       if (!this.bossChest?.visible || hasFlag(BOSS_CHEST_FLAG)) return;
       setFlag(BOSS_CHEST_FLAG);
-      app.profile.inventory = Array.isArray(app.profile.inventory) ? app.profile.inventory : [];
-      app.profile.inventory.push({
+      addInventoryItem({
         id: "ch1_drop_professor_boss_chest",
         name: "教授考核宝箱",
+        type: "material",
+        quality: "epic",
+        description: "完成第一章协议考核后获得的纪念宝箱。",
         qty: 1,
         source: "chapter_boss"
       });
@@ -3159,6 +3633,158 @@
       g.destroy();
     }
 
+    qualityColor(quality = "common") {
+      return {
+        common: 0xf4ead5,
+        excellent: 0x66cf8c,
+        rare: 0x63aef0,
+        epic: 0xa67aec,
+        legendary: 0xf0a34f,
+        mythic: 0xe45b66
+      }[quality] || 0xf4ead5;
+    }
+
+    rollEnemyDrop(slime) {
+      if (slime.dropId) {
+        return normalizeInventoryItem({
+          id: slime.dropId,
+          name: slime.dropName || slime.dropId,
+          type: "material",
+          quality: slime.rank === "rare" ? "rare" : "excellent",
+          source: slime.rank === "rare" ? "rare_elite" : "elite"
+        });
+      }
+      const roll = Math.random();
+      if (roll < 0.08) {
+        const equipmentId = Math.random() < 0.22 ? "ch1_boost_focus_badge" : "ch1_boost_academic_bookmark";
+        return normalizeInventoryItem({ ...ITEM_CATALOG[equipmentId], source: slime.isBossSummon ? "boss_summon" : "monster" });
+      }
+      if (roll < 0.56) {
+        const materials = [
+          ITEM_CATALOG.ch1_material_margin_note,
+          ITEM_CATALOG.ch1_material_protocol_ink,
+          ITEM_CATALOG.ch1_material_campus_token
+        ];
+        return normalizeInventoryItem({ ...Phaser.Utils.Array.GetRandom(materials), source: slime.isBossSummon ? "boss_summon" : "monster" });
+      }
+      return null;
+    }
+
+    createWorldDropFromEnemy(slime) {
+      const item = this.rollEnemyDrop(slime);
+      if (!item) return null;
+      const now = Date.now();
+      const drop = {
+        id: `drop-${makeId()}`,
+        ownerId: app.profile?.id || "",
+        ownerName: app.profile?.name || "玩家",
+        mapId: this.getCurrentMapId(),
+        x: Math.round(slime.x + Phaser.Math.Between(-18, 18)),
+        y: Math.round(slime.y + Phaser.Math.Between(-8, 12)),
+        createdAt: now,
+        expiresAt: now + WORLD_DROP_TTL_MS,
+        item
+      };
+      if (app.connected) app.multiplayer?.sendDropSpawn(drop);
+      else this.syncWorldDrop(drop);
+      return item;
+    }
+
+    syncWorldDrop(drop) {
+      if (!drop?.id || !this.actor) return;
+      if (String(drop.mapId || "") !== this.getCurrentMapId()) return;
+      if (Number(drop.expiresAt || 0) <= Date.now()) return;
+      if (this.worldDrops.has(String(drop.id))) return;
+      const item = normalizeInventoryItem(drop.item || {});
+      const color = this.qualityColor(item.quality);
+      const glow = this.add.circle(0, 0, 30, color, 0.13)
+        .setStrokeStyle(2, color, 0.36)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const iconKey = item.type === "equipment" ? WORLD_DROP_EQUIPMENT_KEY : WORLD_DROP_MATERIAL_KEY;
+      const icon = this.add.image(0, 0, iconKey).setDisplaySize(48, 48);
+      const label = this.add.text(0, -31, item.name, {
+        fontFamily: "Microsoft YaHei, sans-serif",
+        fontSize: "11px",
+        fontStyle: "700",
+        color: "#fff7e6",
+        stroke: "#21182e",
+        strokeThickness: 4
+      }).setOrigin(0.5, 1);
+      const container = this.add.container(Number(drop.x) || 0, Number(drop.y) || 0, [glow, icon, label])
+        .setDepth((Number(drop.y) || 0) + 28);
+      this.worldDrops.set(String(drop.id), {
+        ...drop,
+        item,
+        container,
+        glow,
+        baseY: Number(drop.y) || 0,
+        collecting: false
+      });
+    }
+
+    syncWorldDrops(drops = []) {
+      this.clearWorldDrops();
+      drops.forEach(drop => this.syncWorldDrop(drop));
+    }
+
+    removeWorldDrop(id) {
+      const drop = this.worldDrops.get(String(id || ""));
+      if (!drop) return;
+      drop.container?.destroy(true);
+      this.worldDrops.delete(String(id));
+      if (this.activeInteraction?.type === "worldDrop" && this.activeInteraction.dropId === String(id)) {
+        this.activeInteraction = null;
+        renderInteractionPrompt("");
+      }
+    }
+
+    clearWorldDrops() {
+      this.worldDrops.forEach(drop => drop.container?.destroy(true));
+      this.worldDrops.clear();
+    }
+
+    updateWorldDrops(time) {
+      if (time - this.lastWorldDropUpdateAt < 90) return;
+      this.lastWorldDropUpdateAt = time;
+      const now = Date.now();
+      this.worldDrops.forEach((drop, id) => {
+        const remaining = Number(drop.expiresAt || 0) - now;
+        if (remaining <= 0) {
+          this.removeWorldDrop(id);
+          return;
+        }
+        drop.container.y = drop.baseY + Math.sin((time + String(id).length * 97) / 310) * 4;
+        drop.container.setDepth(drop.container.y + 28);
+        const blinking = remaining <= WORLD_DROP_BLINK_MS;
+        drop.container.setAlpha(blinking ? (Math.floor(time / 240) % 2 ? 0.28 : 1) : 1);
+        drop.glow?.setScale(1 + Math.sin(time / 420) * 0.08);
+      });
+    }
+
+    collectWorldDrop(dropId) {
+      const drop = this.worldDrops.get(String(dropId || ""));
+      if (!drop || drop.collecting) return;
+      if (drop.ownerId !== app.profile?.id) {
+        showToast("这是其他玩家的掉落物，无法拾取");
+        return;
+      }
+      drop.collecting = true;
+      if (app.connected) {
+        app.multiplayer?.sendDropCollect(drop.id);
+        this.time.delayedCall(1200, () => {
+          const current = this.worldDrops.get(drop.id);
+          if (current) current.collecting = false;
+        });
+        return;
+      }
+      if (addInventoryItem(drop.item)) {
+        showToast(`拾取：${drop.item.name}`);
+        this.removeWorldDrop(drop.id);
+      } else {
+        drop.collecting = false;
+      }
+    }
+
     ensureBossPortalTextures() {
       // Boss portals are now image-based VFX spritesheets loaded in preload().
     }
@@ -3325,6 +3951,7 @@
       this.mapBackgroundChunks = [];
       this.mapBackground?.destroy();
       this.mapBackground = null;
+      this.clearWorldDrops();
       this.collisionDebugGraphics?.destroy();
       this.collisionDebugGraphics = null;
       this.collisionDebugRects = [];
@@ -3389,6 +4016,7 @@
           (node.setFlags || []).forEach(flag => setFlag(flag));
           app.profile.mapId = targetMapId;
           app.profile.spawnId = node.targetSpawnId || maps[targetMapId].spawn?.id || "";
+          app.audio?.syncMap(targetMapId);
           this.clearRuntimeMapObjects();
           this.mapData = this.composeRuntimeMapData(targetMapId);
           this.renderTileMap();
@@ -3409,6 +4037,7 @@
           this.createInteractionNodes();
           this.spawnMapLeafSlimes();
           this.scheduleAmbientEnemyRefresh();
+          app.multiplayer?.syncDropsForCurrentMap();
           saveProfile(app.profile);
           renderChapterHud();
           renderMinimap(this);
@@ -3832,11 +4461,14 @@
       if (!slime?.active || !slime.hpFill) return;
       const style = this.getEnemyRankStyle(slime);
       const ratio = clamp((slime.hp || 0) / Math.max(1, slime.maxHp || 1), 0, 1);
-      slime.hpFill.setDisplaySize(Math.max(1, style.width * ratio), Math.max(3, style.height - 2));
       const visible = slime.state !== "dead"
         && slime.state !== "vanish"
         && slime.state !== "emerging"
         && (!slime.hideHudUntilProvoked || this.time.now < slime.provokedUntil);
+      const fingerprint = `${Math.round(ratio * 1000)}:${visible}`;
+      if (slime.hudFingerprint === fingerprint) return;
+      slime.hudFingerprint = fingerprint;
+      slime.hpFill.setDisplaySize(Math.max(1, style.width * ratio), Math.max(3, style.height - 2));
       [slime.hpFrame, slime.hpBg, slime.hpFill, slime.nameLabel].forEach(item => item?.setVisible(visible));
     }
 
@@ -3844,6 +4476,12 @@
       if (!slime?.active || !slime.hpFrame) return;
       const style = this.getEnemyRankStyle(slime);
       const y = slime.y + slime.hudOffsetY;
+      if (slime.lastHudX === slime.x && slime.lastHudY === y) {
+        this.refreshEnemyHpBar(slime);
+        return;
+      }
+      slime.lastHudX = slime.x;
+      slime.lastHudY = y;
       slime.hpFrame.setPosition(slime.x, y).setDepth(slime.y + 36);
       slime.hpBg.setPosition(slime.x, y).setDepth(slime.y + 37);
       slime.hpFill.setPosition(slime.x - style.width / 2, y).setDepth(slime.y + 38);
@@ -3899,8 +4537,14 @@
       slime.wanderTargetX = x;
       slime.wanderTargetY = y;
       slime.wanderUntil = 0;
-      slime.maxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
-      slime.hp = clamp(Number(options.hp ?? slime.maxHp), 0, slime.maxHp);
+      const configuredMaxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
+      const mobHealthMultiplier = rank === "mob" ? 2 : 1;
+      slime.maxHp = configuredMaxHp * mobHealthMultiplier;
+      const incomingHp = Number(options.hp);
+      const currentHp = Number.isFinite(incomingHp)
+        ? incomingHp * (options.maxHp ? 1 : mobHealthMultiplier)
+        : slime.maxHp;
+      slime.hp = clamp(currentHp, 0, slime.maxHp);
       slime.damage = Math.max(1, Number(options.damage) || (rank === "rare" ? 16 : rank === "elite" ? 12 : 8));
       slime.creditDefense = Math.max(0, Number(options.creditDefense || 0));
       slime.hudOffsetY = options.staticImage ? Number(options.hudOffsetY || -Math.max(104, slime.displayHeight * 0.62)) : -104;
@@ -4197,7 +4841,12 @@
     }
 
     castUltimate() {
-      if (!this.actor || app.profile.characterId !== "lina" || app.profile.hp <= 0) return;
+      if (!this.actor || app.profile.hp <= 0) return;
+      if (app.profile.characterId === "ayu") {
+        this.castAyuUltimate();
+        return;
+      }
+      if (app.profile.characterId !== "lina") return;
       if (this.isCat || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold) return;
       if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
       this.lastUltimateAt = this.time.now;
@@ -4209,6 +4858,47 @@
       this.setLinaAttackVisualScale();
       this.actor.play("lina-ultimate-cast", true);
       this.playUltimateCyclone();
+    }
+
+    castAyuUltimate() {
+      if (this.isCat || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold) return;
+      if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
+      this.isCasting = true;
+      this.isActionLocked = true;
+      this.networkAction = "attack";
+      this.actor.body.setVelocity(0, 0);
+      this.actor.play("ayu-attack-once", true);
+      app.audio.ultimateWind();
+      this.time.delayedCall(150, () => {
+        if (!this.actor?.active || this.isDead) return;
+        for (let index = 0; index < 8; index += 1) {
+          const angle = index / 8 * Math.PI * 2;
+          this.flashSlash(
+            this.actor.x + Math.cos(angle) * 82,
+            this.actor.y - 44 + Math.sin(angle) * 58,
+            angle,
+            this.actor.y + 48
+          );
+        }
+        const baseDamage = Math.round(Number(app.profile.attackPower || MELEE.damage) * 1.8);
+        (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
+          if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
+          if (Phaser.Math.Distance.Between(this.actor.x, this.actor.y - 42, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) <= 250) {
+            this.playLeafSlimeHit(slime, baseDamage, { kind: "physical", noEnergyGain: true });
+          }
+        });
+        if (app.boss.active && app.boss.hp > 0 && Phaser.Math.Distance.Between(this.actor.x, this.actor.y, app.boss.x, app.boss.y) <= 280) {
+          this.applyBossDamage(baseDamage);
+        }
+        app.audio.ultimateBurst();
+        this.cameras.main.shake(160, 0.003);
+      });
+      this.actor.once("animationcomplete", () => {
+        if (!this.actor?.active || this.isDead) return;
+        this.isCasting = false;
+        this.isActionLocked = false;
+        this.returnToBaseLoop();
+      });
     }
 
     playUltimateCyclone() {
@@ -4451,7 +5141,7 @@
       const critMultiplier = critical
         ? (kind === "physical" ? PLAYER_PHYSICAL_CRIT_MULTIPLIER : PLAYER_MAGIC_CRIT_MULTIPLIER)
         : 1;
-      const amount = Math.max(1, Math.round(Number(baseDamage || 1) * creditMultiplier * critMultiplier));
+      const amount = Math.max(1, Math.round(Number(baseDamage || 1) * creditMultiplier * critMultiplier * equippedDamageMultiplier()));
       return { amount, critical, creditMultiplier };
     }
 
@@ -4546,8 +5236,15 @@
       const energy = clamp(Number(app.profile.energy || 0), 0, maxEnergy);
       const energyBar = $("#energyBar");
       const energyText = $("#energyText");
-      if (energyBar) energyBar.style.width = `${Math.round(energy / maxEnergy * 100)}%`;
-      if (energyText) energyText.textContent = `${Math.round(energy)} / ${Math.round(maxEnergy)}`;
+      const percentage = Math.round(energy / maxEnergy * 100);
+      const roundedEnergy = Math.round(energy);
+      const fingerprint = `${percentage}:${roundedEnergy}:${Math.round(maxEnergy)}`;
+      if (energyBar?.dataset.value === fingerprint) return;
+      if (energyBar) {
+        energyBar.dataset.value = fingerprint;
+        energyBar.style.width = `${percentage}%`;
+      }
+      if (energyText) energyText.textContent = `${roundedEnergy} / ${Math.round(maxEnergy)}`;
     }
 
     restoreEnergy(amount = 0, x = this.actor?.x, y = this.actor?.y, options = {}) {
@@ -4641,18 +5338,10 @@
       if (slime.rewardCredits) app.profile.credits += Number(slime.rewardCredits) || 0;
       let gotCard = false;
       if (!slime.isBossSummon) gotCard = collectProtocolCard("ch1_card_schema_lock");
-      if (slime.dropId) {
-        app.profile.inventory = Array.isArray(app.profile.inventory) ? app.profile.inventory : [];
-        app.profile.inventory.push({
-          id: slime.dropId,
-          name: slime.dropName || slime.dropId,
-          qty: 1,
-          source: slime.rank === "rare" ? "rare_elite" : "elite"
-        });
-      }
+      const droppedItem = this.createWorldDropFromEnemy(slime);
       renderHud();
       const levelText = levels ? `，等级 +${levels}` : "";
-      if (slime.dropId) showToast(`击败${slime.displayLabel || "精英"}，EXP +${expGain}${levelText}，${slime.dropName || "掉落物"} +1`);
+      if (droppedItem) showToast(`击败${slime.displayLabel || "怪物"}，EXP +${expGain}${levelText}，掉落 ${droppedItem.name}`);
       else showToast(gotCard ? `击败叶灵怪，EXP +${expGain}${levelText}，协议卡 +1` : `击败召唤小怪，EXP +${expGain}${levelText}`);
       if (slime.groupId === BOSS_SUMMON_GROUP) this.updateBossSummonState();
       else this.checkEncounterClear(slime.groupId);
@@ -4692,7 +5381,7 @@
         this.showFloatingText(this.actor.x, this.actor.y - 124, `-${Math.ceil(incoming)}`, { color: "#ff9ab4", size: "20px", rise: 58 });
       }
       renderHud();
-      app.audio.hit();
+      app.audio.playerHit();
       if (incoming > 0) this.playActorHitReaction();
       if (app.profile.hp <= 0) {
         this.isDead = true;
@@ -4767,6 +5456,7 @@
       const vec = normalizeVector(dx, dy);
       slime.setFlipX(dx < 0);
       this.playEnemyAnimation(slime, "attack", true);
+      app.audio?.enemyAttack();
       slime.body.setVelocity(
         vec.x * (LEAF_SLIME_ATTACK_DISTANCE / LEAF_SLIME_ATTACK_DURATION * 1000),
         vec.y * (LEAF_SLIME_ATTACK_DISTANCE / LEAF_SLIME_ATTACK_DURATION * 1000)
@@ -4904,6 +5594,10 @@
       if (app.dialogue) return;
       if (event.repeat) return;
       const key = String(event.key || "").toLowerCase();
+      if (key === "escape" && !$("#inventoryPanel")?.classList.contains("collapsed")) {
+        setInventoryOpen(false);
+        return;
+      }
       if (key === "enter") {
         setPanelCollapsed("publicChat", false);
         $("#chatInput")?.focus();
@@ -4924,13 +5618,9 @@
       if (key === "k") this.castUltimate();
       if (key === "h") this.healPlayer();
       if (key === "l") this.toggleTransformState();
+      if (key === "i") setInventoryOpen($("#inventoryPanel")?.classList.contains("collapsed"));
       if (key === "q") this.toggleCollisionDebug();
       if (key === "e") this.triggerInteraction();
-      if (key === "u") this.playActorHitReaction();
-      if (key === "i") {
-        if (this.isDead || app.profile.hp <= 0) this.revivePlayer();
-        else this.damagePlayer(999);
-      }
     }
 
     handleKeyUp(event) {
@@ -5167,8 +5857,15 @@
       this.updateProjectiles();
       this.updateLeafSlimes(time, delta);
       this.updateBoss(time);
-      this.updateInteractionPrompt();
-      renderMinimap(this);
+      this.updateWorldDrops(time);
+      if (time - this.lastInteractionUpdateAt >= INTERACTION_UPDATE_INTERVAL_MS) {
+        this.lastInteractionUpdateAt = time;
+        this.updateInteractionPrompt();
+      }
+      if (time - this.lastMinimapUpdateAt >= MINIMAP_UPDATE_INTERVAL_MS) {
+        this.lastMinimapUpdateAt = time;
+        renderMinimap(this);
+      }
       this.updateRemotePlayers();
       this.updateActorShadows();
       if (app.connected && time - this.lastNetworkSendAt > 90) {
@@ -5208,6 +5905,7 @@
     app.audio.enterGame();
     resetChat();
     renderHud();
+    renderInventory();
     if (!app.game) {
       app.game = new Phaser.Game({
         type: Phaser.AUTO,
@@ -5237,6 +5935,7 @@
     if (app.dialogue) closeStoryDialogue(false);
     renderReviveDialog(false);
     renderChapterClearPanel(false);
+    setInventoryOpen(false);
     app.touchMove = { active: false, dx: 0, dy: 0 };
     if (app.profile) saveProfile(app.profile);
     app.multiplayer?.close();
@@ -5308,8 +6007,40 @@
     textEntryGuardBound = true;
     ["keydown", "keyup"].forEach(eventName => {
       document.addEventListener(eventName, event => {
-        if (isTextEntryTarget(event.target) && event.target.closest?.(".game-stage")) event.stopPropagation();
+        if (!isTextEntryTarget(event.target) || !event.target.closest?.(".game-stage")) return;
+        if (eventName === "keydown" && event.target.id === "chatInput") {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            submitChat();
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            event.target.value = "";
+            returnToGameFromChat();
+          }
+        }
+        event.stopPropagation();
       }, true);
+    });
+  }
+
+  function bindSkillTooltips() {
+    document.querySelectorAll(".skill[data-skill-id]").forEach(button => {
+      button.addEventListener("pointerenter", event => {
+        if (event.pointerType !== "touch") showSkillTooltip(button, false);
+      });
+      button.addEventListener("pointerleave", () => hideSkillTooltip(false));
+      button.addEventListener("focus", () => showSkillTooltip(button, false));
+      button.addEventListener("blur", () => hideSkillTooltip(false));
+      button.addEventListener("pointerdown", event => {
+        if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+        showSkillTooltip(button, true);
+        window.clearTimeout(app.skillTooltipTimer);
+        app.skillTooltipTimer = window.setTimeout(() => hideSkillTooltip(true), 3600);
+      });
+    });
+    document.addEventListener("pointerdown", event => {
+      if (event.target.closest?.(".skill[data-skill-id]")) return;
+      hideSkillTooltip(true);
     });
   }
 
@@ -5573,6 +6304,13 @@
       });
     }
     $("#healButton").addEventListener("click", () => healPlayer());
+    $("#ultimateButton")?.addEventListener("click", () => app.scene?.castUltimate());
+    $("#transformButton")?.addEventListener("click", () => app.scene?.toggleTransformState());
+    $("#inventoryToggleButton")?.addEventListener("click", () => {
+      setInventoryOpen($("#inventoryPanel")?.classList.contains("collapsed"));
+    });
+    $("#inventoryCloseButton")?.addEventListener("click", () => setInventoryOpen(false));
+    $("#inventoryActionButton")?.addEventListener("click", () => toggleSelectedInventoryItem());
     $("#reconnectButton").addEventListener("click", () => app.multiplayer?.connect());
     $("#exitButton").addEventListener("click", () => exitGame());
     $("#reviveButton").addEventListener("click", () => app.scene?.revivePlayer());
@@ -5587,7 +6325,14 @@
       event.preventDefault();
       submitChat();
     });
+    $("#chatInput")?.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.currentTarget.value = "";
+      returnToGameFromChat();
+    });
     bindTextEntryGuards();
+    bindSkillTooltips();
     bindMobileControls();
   }
 

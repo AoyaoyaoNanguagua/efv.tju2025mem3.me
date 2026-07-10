@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="play.css?v=20260710-m01-quest-ui">
+  <link rel="stylesheet" href="play.css?v=20260710-m2-ui-v2">
+  <link rel="stylesheet" href="play-overrides.css?v=20260710-m2-ui-v2">
 </head>
 <body>
   <main class="play-shell">
@@ -197,8 +198,10 @@
             <span id="expText">EXP 0</span>
           </div>
           <div class="skill-row">
-            <button id="attackButton" class="skill active" type="button" data-skill-icon="attack"><small>J</small><span>晶光飞弹</span></button>
-            <button id="healButton" class="skill" type="button" data-skill-icon="heal"><small>H</small><span>樱光护盾</span></button>
+            <button id="attackButton" class="skill active" type="button" data-skill-id="attack" data-skill-icon="attack" aria-label="主要攻击"><small>J</small></button>
+            <button id="ultimateButton" class="skill" type="button" data-skill-id="ultimate" data-skill-icon="ultimate" aria-label="终结技能"><small>K</small></button>
+            <button id="healButton" class="skill" type="button" data-skill-id="heal" data-skill-icon="heal" aria-label="治疗护盾"><small>H</small></button>
+            <button id="transformButton" class="skill" type="button" data-skill-id="transform" data-skill-icon="transform" aria-label="猫形态"><small>L</small></button>
           </div>
           <div id="peerList" class="peer-list"></div>
         </aside>
@@ -216,18 +219,9 @@
           </div>
         </section>
 
-        <section id="publicChat" class="public-chat" aria-label="同舟星愿公共频道">
-          <header class="chat-head">
-            <span>同舟星愿</span>
-            <strong>公共频道</strong>
-          </header>
-          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
-          <form id="chatForm" class="chat-form" autocomplete="off">
-            <input id="chatInput" name="chat" maxlength="80" placeholder="输入公共频道消息" aria-label="公共频道消息">
-            <button id="chatSendButton" type="submit">发送</button>
-          </form>
-        </section>
       </div>
+
+      <div id="skillTooltip" class="skill-tooltip" role="tooltip" aria-hidden="true"></div>
 
       <aside class="right-hud-stack" aria-label="导航信息">
         <section id="minimapPanel" class="minimap-panel" aria-label="新手村小地图">
@@ -248,15 +242,63 @@
         </section>
       </aside>
 
-      <nav class="quickbar" aria-label="快捷操作">
-        <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest"><small>T</small><span>任务</span></button>
-        <button id="chatToggleButton" type="button" data-panel-toggle="publicChat" data-icon="chat"><small>Enter</small><span>频道</span></button>
-        <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map"><small>M</small><span>地图</span></button>
-        <button id="musicToggle" type="button" data-icon="music"><small>B</small><span>音乐</span></button>
-        <button id="reconnectButton" type="button" data-icon="reconnect"><small>R</small><span>同步</span></button>
-        <button id="fullscreenButton" type="button" data-icon="fullscreen"><small>F</small><span>全屏</span></button>
-        <button id="exitButton" type="button" data-icon="exit"><small>Esc</small><span>退出</span></button>
-      </nav>
+      <aside id="inventoryPanel" class="inventory-panel collapsed" aria-label="角色背包" aria-hidden="true">
+        <header class="inventory-head">
+          <div>
+            <span>角色资产</span>
+            <strong>背包</strong>
+          </div>
+          <b id="inventoryCount">0 / 30</b>
+          <button id="inventoryCloseButton" type="button" aria-label="关闭背包">×</button>
+        </header>
+        <div class="inventory-scroll">
+          <section class="inventory-section" aria-labelledby="equipmentTitle">
+            <div class="inventory-section-head">
+              <strong id="equipmentTitle">增益栏</strong>
+              <span id="equipmentCount">0 / 10</span>
+            </div>
+            <div id="equipmentGrid" class="inventory-grid equipment-grid"></div>
+          </section>
+          <section class="inventory-section" aria-labelledby="inventoryTitle">
+            <div class="inventory-section-head">
+              <strong id="inventoryTitle">携带物品</strong>
+            </div>
+            <div id="inventoryGrid" class="inventory-grid"></div>
+          </section>
+        </div>
+        <footer id="inventoryDetail" class="inventory-detail" hidden>
+          <div>
+            <strong id="inventoryDetailName"></strong>
+            <p id="inventoryDetailText"></p>
+          </div>
+          <button id="inventoryActionButton" type="button" hidden></button>
+        </footer>
+      </aside>
+
+      <div class="bottom-dock">
+        <section id="publicChat" class="public-chat" aria-label="同舟星愿公共频道">
+          <header class="chat-head">
+            <span>同舟星愿</span>
+            <strong>公共频道</strong>
+          </header>
+          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+          <form id="chatForm" class="chat-form" autocomplete="off">
+            <input id="chatInput" name="chat" maxlength="80" placeholder="输入公共频道消息" aria-label="公共频道消息">
+            <button id="chatSendButton" type="submit">发送</button>
+          </form>
+        </section>
+
+        <nav class="quickbar" aria-label="快捷操作">
+          <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest"><small>T</small><span>任务</span></button>
+          <button id="chatToggleButton" type="button" data-panel-toggle="publicChat" data-icon="chat"><small>Enter</small><span>频道</span></button>
+          <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map"><small>M</small><span>地图</span></button>
+          <button id="inventoryToggleButton" type="button" data-icon="inventory"><small>I</small><span>背包</span></button>
+          <button id="musicToggle" type="button" data-icon="music"><small>B</small><span>音乐</span></button>
+          <button id="reconnectButton" type="button" data-icon="reconnect"><small>R</small><span>同步</span></button>
+          <button id="fullscreenButton" type="button" data-icon="fullscreen"><small>F</small><span>全屏</span></button>
+          <button id="exitButton" type="button" data-icon="exit"><small>Esc</small><span>退出</span></button>
+        </nav>
+      </div>
 
       <section id="mobileControls" class="mobile-controls" aria-label="移动端操作">
         <div id="moveStick" class="move-stick" aria-label="移动摇杆">
@@ -296,7 +338,7 @@
       <section id="reviveDialog" class="revive-dialog" aria-label="复活确认" aria-hidden="true">
         <div class="revive-panel">
           <strong>角色倒下了</strong>
-          <p>是否复活并继续探索校园？也可以按 I 立即复活。</p>
+          <p>是否复活并继续探索校园？</p>
           <div class="revive-actions">
             <button id="reviveButton" class="primary" type="button">复活</button>
             <button id="stayDownButton" type="button">暂不复活</button>
@@ -315,6 +357,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-  <script src="play.js?v=20260710-m01-quest-ui"></script>
+  <script src="play.js?v=20260710-m2-ui-v2"></script>
 </body>
 </html>

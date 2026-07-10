@@ -24,6 +24,8 @@ DB_PATH = ROOT / "play-data.sqlite3"
 PORT = int(os.environ.get("PORT", "8787"))
 MAX_ONLINE = int(os.environ.get("MAX_ONLINE", "20"))
 MAX_SLIMES_PER_ROOM = int(os.environ.get("MAX_SLIMES_PER_ROOM", "24"))
+MAX_DROPS_PER_ROOM = int(os.environ.get("MAX_DROPS_PER_ROOM", "80"))
+DROP_TTL_MS = 5 * 60 * 1000
 SESSION_TTL = 7 * 24 * 60 * 60
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_-]{3,18}$")
@@ -31,7 +33,7 @@ CHARACTER_IDS = {"lina", "ayu"}
 CHARACTER_LIMIT = 5
 PROFILE_EXTRA_STRING_FIELDS = {"chapterId", "mapId", "spawnId", "characterRecordId"}
 PROFILE_EXTRA_JSON_FIELDS = {"flags", "quests", "inventory", "equipment", "collections"}
-PROFILE_EXTRA_JSON_MAX_BYTES = 12 * 1024
+PROFILE_EXTRA_JSON_MAX_BYTES = 24 * 1024
 PROFILE_EXTRA_DEPTH = 5
 PROFILE_EXTRA_ITEMS_LIMIT = 80
 PROFILE_EXTRA_KEY_LIMIT = 64
@@ -49,6 +51,21 @@ CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
 MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
+
+DROP_ITEM_CATALOG = {
+    "ch1_material_margin_note": {"name": "批注纸角", "type": "material", "quality": "common"},
+    "ch1_material_protocol_ink": {"name": "协议墨滴", "type": "material", "quality": "excellent"},
+    "ch1_material_campus_token": {"name": "旧饭卡芯片", "type": "material", "quality": "common"},
+    "ch1_boost_academic_bookmark": {"name": "晨读书签", "type": "equipment", "quality": "excellent", "damageBonus": 0.05},
+    "ch1_boost_focus_badge": {"name": "专注校徽", "type": "equipment", "quality": "rare", "damageBonus": 0.08},
+    "ch1_drop_quantum_probability_core": {"name": "量子概率核心", "type": "material", "quality": "rare"},
+    "ch1_drop_quantum_shard": {"name": "量子相干碎片", "type": "material", "quality": "excellent"},
+    "ch1_drop_chain_forge_core": {"name": "链铸重核", "type": "material", "quality": "rare"},
+    "ch1_drop_blockchain_lock": {"name": "验证锁片", "type": "material", "quality": "excellent"},
+    "ch1_drop_agent_memory_core": {"name": "Agent 记忆核心", "type": "material", "quality": "rare"},
+    "ch1_drop_agent_tool_node": {"name": "工具节点", "type": "material", "quality": "excellent"},
+    "ch1_drop_citation_seal_fragment": {"name": "引用封印碎片", "type": "material", "quality": "rare"},
+}
 
 BASE_PROFILE = {
     "level": 1,
@@ -625,9 +642,11 @@ def get_room(name: str = "zhonghe-plaza") -> dict:
             "peers": {},
             "boss": dict(DEFAULT_BOSS),
             "slimes": {},
+            "drops": {},
             "chat": [],
         }
     rooms[name].setdefault("slimes", {})
+    rooms[name].setdefault("drops", {})
     rooms[name].setdefault("chat", [])
     return rooms[name]
 
@@ -776,6 +795,7 @@ def leave_client(client: WsClient) -> None:
             if not room["peers"]:
                 room["boss"] = dict(DEFAULT_BOSS)
                 room["slimes"].clear()
+                room["drops"].clear()
         client.alive = False
     if left_room and left_id:
         broadcast(left_room, {"type": "peerLeft", "id": left_id}, client)
@@ -841,6 +861,15 @@ def handle_join(client: WsClient, message: dict) -> None:
         peers = [peer for peer_id, peer in room["peers"].items() if peer_id != client.id]
         boss = dict(room["boss"])
         slimes = list(room["slimes"].values())
+        now_ms = int(time.time() * 1000)
+        expired_drop_ids = [
+            drop_id
+            for drop_id, drop in room["drops"].items()
+            if int(drop.get("expiresAt", 0)) <= now_ms
+        ]
+        for drop_id in expired_drop_ids:
+            room["drops"].pop(drop_id, None)
+        drops = list(room["drops"].values())
         chat = list(room["chat"][-CHAT_HISTORY_LIMIT:])
 
     send_ws(
@@ -851,6 +880,7 @@ def handle_join(client: WsClient, message: dict) -> None:
             "peers": peers,
             "boss": boss,
             "slimes": slimes,
+            "drops": drops,
             "chat": chat,
             "recentChat": chat,
         },
@@ -963,6 +993,106 @@ def handle_slime_remove(client: WsClient, message: dict) -> None:
     broadcast(client.room_name, {"type": "slimeRemove", "id": slime_id}, client)
 
 
+def clean_drop_id(value: object, fallback: bool = True) -> str:
+    text = str(value or "").strip()[:72]
+    cleaned = re.sub(r"[^A-Za-z0-9_-]", "", text)[:72]
+    if cleaned:
+        return cleaned
+    return f"drop-{secrets.token_urlsafe(9)}" if fallback else ""
+
+
+def clean_drop_item(value: object) -> dict | None:
+    if not isinstance(value, dict):
+        return None
+    item_id = re.sub(r"[^A-Za-z0-9_-]", "", str(value.get("id") or ""))[:64]
+    definition = DROP_ITEM_CATALOG.get(item_id)
+    if not definition:
+        return None
+    item = {
+        "id": item_id,
+        "name": definition["name"],
+        "type": definition["type"],
+        "quality": definition["quality"],
+        "qty": 1,
+        "source": clean_limited_text(value.get("source", "monster"), 32),
+        "description": clean_limited_text(value.get("description", ""), 180),
+    }
+    if definition.get("damageBonus"):
+        item["damageBonus"] = definition["damageBonus"]
+    return item
+
+
+def handle_drop_spawn(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name:
+        return
+    incoming = message.get("drop") or {}
+    if not isinstance(incoming, dict):
+        send_ws(client, {"type": "dropError", "text": "掉落物数据无效。"})
+        return
+    item = clean_drop_item(incoming.get("item"))
+    if not item:
+        send_ws(client, {"type": "dropError", "text": "掉落物数据无效。"})
+        return
+    now_ms = int(time.time() * 1000)
+    drop = {
+        "id": clean_drop_id(incoming.get("id")),
+        "ownerId": client.id,
+        "ownerName": clean_limited_text(client.player.get("name", "玩家"), 16),
+        "mapId": clean_limited_text(incoming.get("mapId", "ch1_m01_classroom_spawn"), 64),
+        "x": clean_number(incoming.get("x"), client.player.get("x", 3200), 0, 20000),
+        "y": clean_number(incoming.get("y"), client.player.get("y", 3200), 0, 20000),
+        "createdAt": now_ms,
+        "expiresAt": now_ms + DROP_TTL_MS,
+        "item": item,
+    }
+    removed_ids: list[str] = []
+    with state_lock:
+        room = get_room(client.room_name)
+        drops = room["drops"]
+        for drop_id, existing in list(drops.items()):
+            if int(existing.get("expiresAt", 0)) <= now_ms:
+                drops.pop(drop_id, None)
+                removed_ids.append(drop_id)
+        if len(drops) >= MAX_DROPS_PER_ROOM:
+            oldest_id = min(drops.values(), key=lambda entry: entry.get("createdAt", 0)).get("id")
+            if oldest_id:
+                drops.pop(oldest_id, None)
+                removed_ids.append(oldest_id)
+        drops[drop["id"]] = drop
+    for removed_id in removed_ids:
+        broadcast(client.room_name, {"type": "dropRemove", "id": removed_id})
+    broadcast(client.room_name, {"type": "dropSpawn", "drop": drop})
+
+
+def handle_drop_collect(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name:
+        return
+    drop_id = clean_drop_id(message.get("id"), fallback=False)
+    if not drop_id:
+        return
+    drop = None
+    error = ""
+    with state_lock:
+        room = get_room(client.room_name)
+        candidate = room["drops"].get(drop_id)
+        if not candidate:
+            error = "这个掉落物已经消失了。"
+        elif int(candidate.get("expiresAt", 0)) <= int(time.time() * 1000):
+            room["drops"].pop(drop_id, None)
+            error = "这个掉落物已经消失了。"
+        elif candidate.get("ownerId") != client.id:
+            error = "这是其他玩家的掉落物，无法拾取。"
+        else:
+            drop = room["drops"].pop(drop_id)
+    if error:
+        send_ws(client, {"type": "dropError", "text": error})
+        if "消失" in error:
+            broadcast(client.room_name, {"type": "dropRemove", "id": drop_id})
+        return
+    send_ws(client, {"type": "dropCollected", "drop": drop})
+    broadcast(client.room_name, {"type": "dropRemove", "id": drop_id})
+
+
 def handle_chat_send(client: WsClient, message: dict) -> None:
     if client.user_id is None or not client.room_name:
         return
@@ -1032,6 +1162,10 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
         handle_slime_spawn(client, message)
     elif message_type == "slimeRemove":
         handle_slime_remove(client, message)
+    elif message_type == "dropSpawn":
+        handle_drop_spawn(client, message)
+    elif message_type == "dropCollect":
+        handle_drop_collect(client, message)
     elif message_type == "chatSend":
         handle_chat_send(client, message)
 
