@@ -26,7 +26,7 @@ The six M01 floor positions intentionally reuse the same texture. Do not copy th
 | New character / normal entry | `ch1_m01_spawn_player_start` | `(1536, 1220)`, center of the classroom |
 | Return from M02 | `ch1_m01_spawn_from_archive` | `(1536, 1885)`, lower transfer point |
 
-The professor NPC uses `assets/game/characters/npcs/ai-professor-npc-idle-sheet-v1.png`. Reusable enemies, bosses and VFX must stay under `assets/game/`; they must not be copied into this map folder.
+The professor NPC uses `assets/game/characters/npcs/ai-professor-npc-idle-sheet-v2.png`: four 192x256 chibi idle frames in one horizontal row, aligned to a shared foot baseline. Reusable enemies, bosses and VFX must stay under `assets/game/`; they must not be copied into this map folder.
 
 ## Editing Checklist
 

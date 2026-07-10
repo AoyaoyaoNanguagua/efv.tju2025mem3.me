@@ -185,12 +185,16 @@
           "x": 1536,
           "y": 1030,
           "scale": 0.74,
-          "originY": 0.97,
-          "animate": false,
+          "originY": 1,
+          "animate": true,
+          "breathe": true,
+          "breatheScale": 1.014,
+          "breatheDuration": 1350,
           "showLabel": false,
           "labelOffsetY": -190,
           "shadowWidth": 98,
-          "shadowHeight": 26
+          "shadowHeight": 24,
+          "shadowOffsetY": 1
         }
       ],
       "interactionNodes": [
@@ -204,10 +208,27 @@
           "npcId": "ch1_m01_npc_professor",
           "visualType": "npc",
           "showLabel": false,
-          "dialogueId": "ch1_m01_dialogue_professor_intro",
-          "setFlags": [
-            "ch1_intro_met_professor"
-          ]
+          "questMarkerOffsetY": -224,
+          "questGiver": {
+            "acceptFlag": "ch1_m01_task_accepted",
+            "completeFlag": "ch1_m01_bug_notes_cleared",
+            "turnInFlag": "ch1_m01_task_turned_in",
+            "acceptDialogueId": "ch1_m01_dialogue_professor_accept",
+            "activeDialogueId": "ch1_m01_dialogue_professor_active",
+            "turnInDialogueId": "ch1_m01_dialogue_professor_turn_in",
+            "completedDialogueId": "ch1_m01_dialogue_professor_completed",
+            "acceptLabel": "接受任务",
+            "turnInLabel": "提交任务",
+            "acceptSetFlags": [
+              "ch1_intro_met_professor"
+            ],
+            "turnInSetFlags": [
+              "ch1_m01_cleared",
+              "ch1_m02_unlocked"
+            ],
+            "rewardExp": 35,
+            "rewardCredits": 3
+          }
         },
         {
           "id": "ch1_m01_node_syllabus_terminal",
@@ -235,8 +256,9 @@
           "labelX": 1250,
           "labelY": 530,
           "requiresFlags": [
-            "ch1_intro_met_professor"
+            "ch1_m01_task_accepted"
           ],
+          "hideUntilUnlocked": true,
           "dialogueId": "ch1_m01_dialogue_intro",
           "setFlags": [
             "ch1_intro_read_syllabus",
@@ -244,7 +266,8 @@
           ],
           "unlockCards": [
             "ch1_card_context_window"
-          ]
+          ],
+          "once": true
         },
         {
           "id": "ch1_m01_node_protocol_deck",
@@ -274,6 +297,7 @@
           "requiresFlags": [
             "ch1_intro_read_syllabus"
           ],
+          "hideUntilUnlocked": true,
           "grantCards": [
             "ch1_card_context_window",
             "ch1_card_traceable_instruction"
@@ -316,6 +340,7 @@
           "requiresFlags": [
             "ch1_intro_card_claimed"
           ],
+          "hideUntilUnlocked": true,
           "spawnEncounterId": "ch1_m01_encounter_bug_notes",
           "setFlags": [
             "ch1_m01_bug_notes_disturbed"
@@ -327,7 +352,7 @@
         "intervalMs": 60000,
         "minCount": 1,
         "maxCount": 3,
-        "maxAlive": 9,
+        "maxAlive": 10,
         "avoidPlayerRadius": 300,
         "spawnBounds": {
           "x": 610,
@@ -419,22 +444,51 @@
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_classroom",
           "requiresFlags": [
-            "ch1_intro_card_claimed",
-            "ch1_m01_bug_notes_cleared"
+            "ch1_m01_task_turned_in"
           ],
           "setFlags": [
-            "ch1_m01_cleared",
-            "ch1_m02_unlocked"
+            "ch1_m02_entered"
           ],
           "lockedDialogueId": "ch1_m01_dialogue_exit_locked"
         }
       ],
       "dialogues": [
         {
-          "id": "ch1_m01_dialogue_professor_intro",
+          "id": "ch1_m01_dialogue_professor_accept",
+          "speaker": "陆教授",
+          "eyebrow": "M01 · 错乱的提示词协议",
+          "lines": [
+            "你来得正好。昨夜，学院的提示词档案发生了一次异常自我改写，几段本应彼此衔接的课程指令被强行剪断了。",
+            "被截断的上下文从协议板渗进教室，把批注、引用和实验记录拼成了会咬人的错误文本，连值勤扫把也开始执行错误命令。",
+            "先检查北侧课程协议板，确认任务的上下文与约束；再从讲台取出协议卡，锁定可追踪的指令链。",
+            "最后清理南侧的错乱笔记。别急着追求漂亮答案，先让每条指令都可验证、可回溯。完成后回来向我交付结果。"
+          ]
+        },
+        {
+          "id": "ch1_m01_dialogue_professor_active",
           "speaker": "陆教授",
           "lines": [
-            "先到北侧课程协议板确认任务，再从讲台领取协议卡。南侧错乱笔记里藏着失控扫把和咬人书。"
+            "协议修复要按顺序进行：课程协议板、讲台协议卡、南侧错乱笔记。",
+            "清理完成后记得回来。只有经过交付与复核，任务才算真正结束。"
+          ]
+        },
+        {
+          "id": "ch1_m01_dialogue_professor_turn_in",
+          "speaker": "陆教授",
+          "eyebrow": "M01 · 修复记录复核",
+          "lines": [
+            "很好，失控扫把已经停下，咬人书也恢复了正确页序。你带回的修复记录比战斗结果更重要。",
+            "这些痕迹说明问题并不来自模型本身，而是上下文在多轮传递中被剪断，随后被错误指令补全。",
+            "你先确认约束，再锁定协议卡，最后处理异常实体，这条处置链能够被下一位研究者完整复核。",
+            "我会为你签发资料室通行许可。记住，可靠协议不是一句咒语，而是一套能被验证、交付和复盘的协作秩序。"
+          ]
+        },
+        {
+          "id": "ch1_m01_dialogue_professor_completed",
+          "speaker": "陆教授",
+          "lines": [
+            "M01 修复记录已经归档，提示词资料室的入口现已开放。",
+            "去那里检查引用链。新的异常往往不是凭空出现，而是从一次看似无害的复制开始。"
           ]
         },
         {
@@ -448,7 +502,7 @@
           "id": "ch1_m01_dialogue_exit_locked",
           "speaker": "走廊门",
           "lines": [
-            "门缝里有微光，但还缺少协议卡和清理标记。"
+            "资料室通行许可尚未签发。清理错乱笔记后，请先返回陆教授处交付任务。"
           ]
         }
       ],

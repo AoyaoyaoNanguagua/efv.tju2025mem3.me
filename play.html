@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
-  <link rel="stylesheet" href="play.css?v=20260710-login-asset-gate">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="play.css?v=20260710-m01-quest-ui">
 </head>
 <body>
   <main class="play-shell">
@@ -162,6 +163,18 @@
       <div id="gameRoot" class="game-root" aria-label="正式开发游戏区域"></div>
       <div id="interactionPrompt" class="interaction-prompt" aria-live="polite" aria-hidden="true"></div>
 
+      <section id="storyDialogue" class="story-dialogue" aria-label="剧情对话" aria-hidden="true">
+        <div class="story-dialogue-panel" role="dialog" aria-modal="true" aria-labelledby="storyDialogueSpeaker">
+          <div class="story-dialogue-head">
+            <span id="storyDialogueEyebrow">ACADEMY QUEST</span>
+            <b id="storyDialogueProgress">1 / 1</b>
+          </div>
+          <strong id="storyDialogueSpeaker">陆教授</strong>
+          <p id="storyDialogueText"></p>
+          <button id="storyDialogueNextButton" class="primary" type="button">继续</button>
+        </div>
+      </section>
+
       <div class="left-hud-stack">
         <aside class="status-panel" aria-label="玩家状态">
           <div class="profile-line">
@@ -302,6 +315,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-  <script src="play.js?v=20260710-m01-props-wander"></script>
+  <script src="play.js?v=20260710-m01-quest-ui"></script>
 </body>
 </html>
