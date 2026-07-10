@@ -26,41 +26,16 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAP_BACKGROUNDS = [
-    { key: "ch1-map-classroom-spawn-assembled-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-v4-3072x2048.png" },
-    { key: "ch1-m01-props-atlas-v4", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/props/ch1-m01-props-atlas-v4-4096x4096.png" },
-    { key: "ch1-m01-wall-overlay-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.png" },
-    { key: "ch1-m01-wall-overlay-front-v5", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.png" },
-    { key: "ch1-map-prompt-archive-bg", path: "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-map-prompt-archive-bg-v3-6144x2048.png" },
-    { key: "ch1-map-agent-lab-bg", path: "assets/chapter1/maps/ch1_m03_agent_lab/background/ch1-map-agent-lab-bg-v2-2048.png" },
-    { key: "ch1-map-library-lawn-boss-bg", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/background/ch1-map-library-lawn-boss-bg-v2-2048.png" },
-    { key: "ch1-m01-base-v4-floor-tile", path: "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png" },
-    { key: "ch1-m02-archive-v3-r0-c0", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c0.png" },
-    { key: "ch1-m02-archive-v3-r0-c1", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c1.png" },
-    { key: "ch1-m02-archive-v3-r0-c2", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c2.png" },
-    { key: "ch1-m02-archive-v3-r0-c3", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c3.png" },
-    { key: "ch1-m02-archive-v3-r0-c4", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c4.png" },
-    { key: "ch1-m02-archive-v3-r0-c5", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r0-c5.png" },
-    { key: "ch1-m02-archive-v3-r1-c0", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c0.png" },
-    { key: "ch1-m02-archive-v3-r1-c1", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c1.png" },
-    { key: "ch1-m02-archive-v3-r1-c2", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c2.png" },
-    { key: "ch1-m02-archive-v3-r1-c3", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c3.png" },
-    { key: "ch1-m02-archive-v3-r1-c4", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c4.png" },
-    { key: "ch1-m02-archive-v3-r1-c5", path: "assets/chapter1/maps/ch1_m02_prompt_archive/chunks/ch1-m02-archive-v3-r1-c5.png" },
-    { key: "ch1-m03-agent-nw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-nw.png" },
-    { key: "ch1-m03-agent-ne", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-ne.png" },
-    { key: "ch1-m03-agent-sw", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-sw.png" },
-    { key: "ch1-m03-agent-se", path: "assets/chapter1/maps/ch1_m03_agent_lab/chunks/ch1-m03-agent-lab-v2-se.png" },
-    { key: "ch1-m04-boss-nw", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-nw-v1.png" },
-    { key: "ch1-m04-boss-ne", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-ne-v1.png" },
-    { key: "ch1-m04-boss-sw", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-sw-v1.png" },
-    { key: "ch1-m04-boss-se", path: "assets/chapter1/maps/ch1_m04_library_lawn_boss/chunks/ch1-m04-boss-se-v1.png" }
-  ];
-  const DYNAMIC_MAP_IMAGE_KEYS = new Set([
-    MAP_PROP_ATLAS_KEY,
-    MAP_MACRO_PROP_ATLAS_KEY,
-    ...CHAPTER_ONE_MAP_BACKGROUNDS.map(item => item.key)
-  ]);
+  const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
+
+  function getQueuedMapImageKeys(scene) {
+    let keys = QUEUED_MAP_IMAGE_KEYS_BY_SCENE.get(scene);
+    if (!keys) {
+      keys = new Set([MAP_PROP_ATLAS_KEY, MAP_MACRO_PROP_ATLAS_KEY]);
+      QUEUED_MAP_IMAGE_KEYS_BY_SCENE.set(scene, keys);
+    }
+    return keys;
+  }
 
   function normalizeMapAssetAtlases(mapData, fieldName) {
     const raw = mapData?.[fieldName];
@@ -84,27 +59,40 @@
       .filter(Boolean);
   }
 
-  function collectChapterMapAssetAtlases(registry) {
-    const maps = registry?.maps || {};
+  function collectMapImageAssets(mapData) {
     const images = new Map();
-    Object.values(maps).forEach(mapData => {
-      ["propAtlases", "foregroundAtlases"].forEach(fieldName => {
-        normalizeMapAssetAtlases(mapData, fieldName).forEach(atlas => {
-          const key = atlas.key || atlas.textureKey || atlas.id;
-          if (!key || !atlas.path || images.has(key)) return;
-          images.set(key, { key, path: atlas.path });
-        });
+    const addImage = item => {
+      const key = item?.key || item?.textureKey || item?.id;
+      if (!key || !item?.path || images.has(key)) return;
+      images.set(key, { key, path: item.path });
+    };
+    addImage(mapData?.background);
+    (mapData?.background?.chunks || []).forEach(addImage);
+    addImage(mapData?.minimapImage);
+    ["propAtlases", "foregroundAtlases"].forEach(fieldName => {
+      normalizeMapAssetAtlases(mapData, fieldName).forEach(addImage);
+    });
+    (mapData?.foregroundOverlays || []).forEach(overlay => {
+      addImage({
+        ...overlay,
+        key: overlay.textureKey || overlay.key || overlay.id
       });
     });
     return Array.from(images.values());
   }
 
-  function queueChapterMapAssetAtlases(scene, registry) {
-    collectChapterMapAssetAtlases(registry).forEach(item => {
-      if (DYNAMIC_MAP_IMAGE_KEYS.has(item.key) || scene.textures.exists(item.key)) return;
-      DYNAMIC_MAP_IMAGE_KEYS.add(item.key);
+  function queueChapterMapAssets(scene, registry, mapId) {
+    const maps = registry?.maps || {};
+    const selectedMapId = maps[mapId] ? mapId : registry?.defaultMapId;
+    const queued = [];
+    const queuedKeys = getQueuedMapImageKeys(scene);
+    collectMapImageAssets(maps[selectedMapId]).forEach(item => {
+      if (queuedKeys.has(item.key) || scene.textures.exists(item.key)) return;
+      queuedKeys.add(item.key);
       scene.load.image(item.key, item.path);
+      queued.push(item);
     });
+    return queued;
   }
 
   const MAP_PORTAL_KEY = "ch1-map-teleport-portal";
@@ -2093,10 +2081,13 @@
       this.load.json(MAP_DATA_KEY, MAP_DATA_PATH);
       this.load.on("filecomplete", (key, type, data) => {
         if (key !== CHAPTER_ONE_MAPS_KEY) return;
-        queueChapterMapAssetAtlases(this, data || this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {});
+        queueChapterMapAssets(
+          this,
+          data || this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {},
+          app.profile?.mapId
+        );
       });
       this.load.json(CHAPTER_ONE_MAPS_KEY, CHAPTER_ONE_MAPS_PATH);
-      CHAPTER_ONE_MAP_BACKGROUNDS.forEach(item => this.load.image(item.key, item.path));
       this.load.spritesheet(PROJECTILE_TEXTURE_KEY, PROJECTILE_ATLAS, {
         frameWidth: PROJECTILE_FRAME_SIZE,
         frameHeight: PROJECTILE_FRAME_SIZE
@@ -2961,6 +2952,31 @@
       syncBossState({ ...BOSS });
     }
 
+    ensureMapAssetsLoaded(mapId) {
+      const queued = queueChapterMapAssets(this, this.chapterMapRegistry, mapId);
+      if (!queued.length) return Promise.resolve();
+      const queuedKeys = new Set(queued.map(item => item.key));
+      const sceneQueuedKeys = getQueuedMapImageKeys(this);
+      return new Promise((resolve, reject) => {
+        const failedKeys = new Set();
+        const onLoadError = file => {
+          if (queuedKeys.has(file?.key)) failedKeys.add(file.key);
+        };
+        const onComplete = () => {
+          this.load.off("loaderror", onLoadError);
+          if (!failedKeys.size) {
+            resolve();
+            return;
+          }
+          failedKeys.forEach(key => sceneQueuedKeys.delete(key));
+          reject(new Error(`Map assets failed: ${Array.from(failedKeys).join(", ")}`));
+        };
+        this.load.on("loaderror", onLoadError);
+        this.load.once("complete", onComplete);
+        this.load.start();
+      });
+    }
+
     transitionToMap(node) {
       const targetMapId = node.targetMapId || this.getCurrentMapId();
       const maps = this.getChapterMapRegistry();
@@ -2973,36 +2989,46 @@
       this.isActionLocked = true;
       this.actor?.body?.setVelocity(0, 0);
       showMapLoading(`前往${maps[targetMapId].title || "新区域"}`);
-      this.time.delayedCall(620, () => {
-        (node.setFlags || []).forEach(flag => setFlag(flag));
-        app.profile.mapId = targetMapId;
-        app.profile.spawnId = node.targetSpawnId || maps[targetMapId].spawn?.id || "";
-        this.clearRuntimeMapObjects();
-        this.mapData = this.composeRuntimeMapData(targetMapId);
-        this.renderTileMap();
-        this.prepareMapPropFrames();
-        this.renderMapProps();
-        this.renderForegroundOverlays();
-        this.drawObstacles();
-        const spawn = this.resolveSpawnPoint(app.profile.spawnId);
-        this.applyMapSpawnFlags(spawn);
-        this.actor.setPosition(spawn.x, spawn.y);
-        this.actor.body.setVelocity(0, 0);
-        this.actor.setCollideWorldBounds(true);
-        this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
-        this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
-        this.cameras.main.pan(spawn.x, spawn.y, 320, "Sine.easeInOut");
-        this.bindMapColliders();
-        this.createMapNpcs();
-        this.createInteractionNodes();
-        this.spawnMapLeafSlimes();
-        saveProfile(app.profile);
-        renderChapterHud();
-        renderMinimap(this);
+      const transitionStartedAt = performance.now();
+      this.ensureMapAssetsLoaded(targetMapId).then(() => {
+        const wait = Math.max(0, 620 - (performance.now() - transitionStartedAt));
+        this.time.delayedCall(wait, () => {
+          (node.setFlags || []).forEach(flag => setFlag(flag));
+          app.profile.mapId = targetMapId;
+          app.profile.spawnId = node.targetSpawnId || maps[targetMapId].spawn?.id || "";
+          this.clearRuntimeMapObjects();
+          this.mapData = this.composeRuntimeMapData(targetMapId);
+          this.renderTileMap();
+          this.prepareMapPropFrames();
+          this.renderMapProps();
+          this.renderForegroundOverlays();
+          this.drawObstacles();
+          const spawn = this.resolveSpawnPoint(app.profile.spawnId);
+          this.applyMapSpawnFlags(spawn);
+          this.actor.setPosition(spawn.x, spawn.y);
+          this.actor.body.setVelocity(0, 0);
+          this.actor.setCollideWorldBounds(true);
+          this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
+          this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
+          this.cameras.main.pan(spawn.x, spawn.y, 320, "Sine.easeInOut");
+          this.bindMapColliders();
+          this.createMapNpcs();
+          this.createInteractionNodes();
+          this.spawnMapLeafSlimes();
+          saveProfile(app.profile);
+          renderChapterHud();
+          renderMinimap(this);
+          this.mapTransitioning = false;
+          this.isActionLocked = false;
+          hideMapLoading();
+          showToast(`进入${this.mapData.title || "新区域"}`);
+        });
+      }).catch(error => {
+        console.error("Map asset loading failed", error);
         this.mapTransitioning = false;
         this.isActionLocked = false;
         hideMapLoading();
-        showToast(`进入${this.mapData.title || "新区域"}`);
+        showToast("地图资源加载失败，请检查网络后重试");
       });
     }
 
