@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260710-m01-props-wander`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260710-m01-quest-ui`;
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -144,7 +144,7 @@
     { key: M02_TONE_DRIFT_KEY, path: "assets/game/enemies/animated/m02-tone-drift-archivist-sprites-v1.png" }
   ];
   const PROFESSOR_NPC_KEY = "ch1-ai-professor-npc";
-  const PROFESSOR_NPC_IMAGE = "assets/game/characters/npcs/ai-professor-npc-idle-sheet-v1.png";
+  const PROFESSOR_NPC_IMAGE = "assets/game/characters/npcs/ai-professor-npc-idle-sheet-v2.png";
   const PROFESSOR_NPC_FRAME_WIDTH = 192;
   const PROFESSOR_NPC_FRAME_HEIGHT = 256;
   const PROFESSOR_NPC_IDLE_ANIMATION = "ch1-ai-professor-npc-idle";
@@ -459,6 +459,7 @@
     boss: { ...BOSS },
     bossRewardClaimed: false,
     chapterOne: { protocolCards: 0, bossCleared: false },
+    dialogue: null,
     chat: { messages: [] },
     lastHealAt: -Infinity,
     connected: false,
@@ -501,6 +502,13 @@
     profile.spawnId = String(profile.spawnId || "ch1_m01_spawn_player_start");
     profile.characterRecordId = String(profile.characterRecordId || "");
     profile.flags = plainObject(profile.flags);
+    if (profile.flags.ch1_m01_cleared) {
+      profile.flags.ch1_m01_task_accepted = true;
+      profile.flags.ch1_m01_task_turned_in = true;
+      profile.flags.ch1_intro_met_professor = true;
+    } else if (profile.flags.ch1_intro_met_professor) {
+      profile.flags.ch1_m01_task_accepted = true;
+    }
     profile.quests = plainObject(profile.quests);
     profile.inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
     profile.equipment = Array.isArray(profile.equipment) ? profile.equipment : [];
@@ -1082,9 +1090,19 @@
   }
 
   function getChapterTasks() {
-    return [
+    if (!hasFlag("ch1_m01_task_accepted")) {
+      return [{ label: "教室：与陆教授交谈并接受任务", done: false }];
+    }
+    const classroomTasks = [
+      { label: "教室：接受陆教授的任务", done: true },
       { label: "教室：检查课程协议板", done: hasFlag("ch1_intro_read_syllabus") },
+      { label: "教室：从讲台领取协议卡", done: hasFlag("ch1_intro_card_claimed") },
       { label: "教室：清理错乱笔记堆", done: hasFlag("ch1_m01_bug_notes_cleared") },
+      { label: "教室：返回陆教授处交付任务", done: hasFlag("ch1_m01_task_turned_in") }
+    ];
+    if (!hasFlag("ch1_m01_task_turned_in")) return classroomTasks;
+    return [
+      ...classroomTasks,
       { label: "资料室：修复引用链", done: hasFlag("ch1_m02_copy_shadow_cleared") },
       { label: "机房：完成路演压力测试", done: hasFlag("ch1_m03_small_boss_cleared") },
       { label: `收集 ${CHAPTER_ONE_PROTOCOL_CARD_GOAL} 张协议卡`, done: getProtocolCardIds().length >= CHAPTER_ONE_PROTOCOL_CARD_GOAL },
@@ -1109,6 +1127,8 @@
     });
     const count = clamp(Number(app.chapterOne.protocolCards || 0), 0, CHAPTER_ONE_PROTOCOL_CARD_GOAL);
     const ratio = CHAPTER_ONE_PROTOCOL_CARD_GOAL ? count / CHAPTER_ONE_PROTOCOL_CARD_GOAL : 0;
+    const protocolRow = $(".protocol-card-row");
+    if (protocolRow) protocolRow.hidden = !hasFlag("ch1_m01_task_accepted");
     $("#protocolCardText").textContent = `${count} / ${CHAPTER_ONE_PROTOCOL_CARD_GOAL}`;
     $("#protocolCardBar").style.width = `${Math.round(ratio * 100)}%`;
   }
@@ -1305,7 +1325,8 @@
   function initializeHudPanels() {
     setPanelCollapsed("chapterHud", true);
     setPanelCollapsed("publicChat", true);
-    setPanelCollapsed("minimapPanel", false);
+    const compact = window.matchMedia("(max-width: 760px)").matches;
+    setPanelCollapsed("minimapPanel", compact);
   }
 
   function bindPanelToggles() {
@@ -1314,8 +1335,18 @@
         const panelId = button.getAttribute("data-panel-toggle");
         const panel = panelId ? $(`#${panelId}`) : null;
         if (!panel) return;
-        setPanelCollapsed(panelId, !panel.classList.contains("collapsed"));
+        const opening = panel.classList.contains("collapsed");
+        if (opening && window.matchMedia("(max-width: 760px)").matches) {
+          ["chapterHud", "publicChat", "minimapPanel"]
+            .filter(id => id !== panelId)
+            .forEach(id => setPanelCollapsed(id, true));
+        }
+        setPanelCollapsed(panelId, !opening);
       });
+    });
+    const compactQuery = window.matchMedia("(max-width: 760px)");
+    compactQuery.addEventListener?.("change", event => {
+      if (event.matches) setPanelCollapsed("minimapPanel", true);
     });
   }
 
@@ -1337,6 +1368,7 @@
     const markers = [];
     (scene.mapData.interactionNodes || []).forEach(node => {
       if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+      if (node.hideUntilUnlocked && !minimapFlagsMet(node.requiresFlags)) return;
       if (node.type === "teleport") {
         markers.push({
           type: "exit",
@@ -1382,6 +1414,7 @@
     });
     (scene.mapData.enemySpawns || []).forEach(point => {
       if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+      if (point.activeAfter && !hasFlag(point.activeAfter)) return;
       if (point.group && minimapEncounterDone(scene, point.group)) return;
       markers.push({
         type: "battle",
@@ -1521,6 +1554,71 @@
     toast.classList.add("show");
     window.clearTimeout(toastTimer);
     toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2400);
+  }
+
+  function renderStoryDialogueLine() {
+    const state = app.dialogue;
+    if (!state) return;
+    const index = clamp(Number(state.index) || 0, 0, state.lines.length - 1);
+    $("#storyDialogueEyebrow").textContent = state.eyebrow;
+    $("#storyDialogueSpeaker").textContent = state.speaker;
+    $("#storyDialogueText").textContent = state.lines[index];
+    $("#storyDialogueProgress").textContent = `${index + 1} / ${state.lines.length}`;
+    $("#storyDialogueNextButton").textContent = index === state.lines.length - 1 ? state.finalLabel : "继续";
+  }
+
+  function closeStoryDialogue(completed = true) {
+    const state = app.dialogue;
+    if (!state) return;
+    app.dialogue = null;
+    const overlay = $("#storyDialogue");
+    overlay?.classList.remove("open");
+    overlay?.setAttribute("aria-hidden", "true");
+    if (app.scene && !app.scene.isDead && !app.scene.mapTransitioning) {
+      app.scene.isActionLocked = !!state.previousActionLocked;
+    }
+    if (completed) state.onComplete?.();
+  }
+
+  function advanceStoryDialogue() {
+    const state = app.dialogue;
+    if (!state) return;
+    if (state.index < state.lines.length - 1) {
+      state.index += 1;
+      renderStoryDialogueLine();
+      app.audio?.dialogueAdvance();
+      return;
+    }
+    closeStoryDialogue(true);
+  }
+
+  function openStoryDialogue(dialogue = {}, options = {}) {
+    const lines = (Array.isArray(dialogue.lines) ? dialogue.lines : [dialogue.line])
+      .map(line => String(line || "").trim())
+      .filter(Boolean);
+    if (!lines.length) return false;
+    if (app.dialogue) closeStoryDialogue(false);
+    app.scene?.cancelPrimaryActionHold?.();
+    app.dialogue = {
+      speaker: String(dialogue.speaker || options.speaker || "提示"),
+      eyebrow: String(options.eyebrow || dialogue.eyebrow || "ACADEMY STORY"),
+      lines,
+      index: 0,
+      finalLabel: String(options.finalLabel || dialogue.finalLabel || "结束对话"),
+      onComplete: options.onComplete,
+      previousActionLocked: !!app.scene?.isActionLocked
+    };
+    if (app.scene) {
+      app.scene.isActionLocked = true;
+      app.scene.actor?.body?.setVelocity?.(0, 0);
+    }
+    const overlay = $("#storyDialogue");
+    overlay?.classList.add("open");
+    overlay?.setAttribute("aria-hidden", "false");
+    renderStoryDialogueLine();
+    app.audio?.dialogueOpen();
+    window.setTimeout(() => $("#storyDialogueNextButton")?.focus({ preventScroll: true }), 60);
+    return true;
   }
 
   let entryLoadingState = null;
@@ -1990,6 +2088,20 @@
       window.setTimeout(() => this.tone(260, 0.08, "triangle", 0.045), 35);
     }
     hit() { this.tone(160, 0.13, "sawtooth", 0.05); }
+    dialogueOpen() {
+      this.noise(0.34, 0.026, "bandpass", 1050);
+      this.sweep(260, 620, 0.28, "triangle", 0.032);
+      window.setTimeout(() => this.noise(0.18, 0.018, "highpass", 1800), 105);
+    }
+    dialogueAdvance() {
+      this.noise(0.08, 0.012, "highpass", 2100);
+      this.tone(680, 0.07, "triangle", 0.025);
+    }
+    questComplete() {
+      this.tone(523.25, 0.18, "triangle", 0.05);
+      window.setTimeout(() => this.tone(659.25, 0.2, "triangle", 0.046), 90);
+      window.setTimeout(() => this.tone(783.99, 0.28, "sine", 0.04), 185);
+    }
     boss() { this.tone(98, 0.42, "sawtooth", 0.055); }
     heal() {
       this.tone(523.25, 0.18, "sine", 0.06);
@@ -2254,6 +2366,7 @@
 
     create() {
       app.scene = this;
+      if (["localhost", "127.0.0.1"].includes(location.hostname)) window.__EFV_TEST_SCENE__ = this;
       this.cameras.main.roundPixels = true;
       this.baseMapData = this.cache.json.get(MAP_DATA_KEY) || {};
       this.chapterMapRegistry = this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {};
@@ -2541,10 +2654,10 @@
       return (this.mapData.dialogues || []).find(item => item.id === id) || null;
     }
 
-    showDialogue(id, fallback = "") {
+    showDialogue(id, fallback = "", options = {}) {
       const dialogue = this.getDialogue(id);
-      const line = dialogue?.lines?.[0] || fallback;
-      if (line) showToast(`${dialogue?.speaker || "提示"}：${line}`);
+      const content = dialogue || (fallback ? { speaker: "提示", lines: [fallback] } : null);
+      if (content) openStoryDialogue(content, options);
     }
 
     nodeDoneFlag(node) {
@@ -2592,10 +2705,18 @@
     }
 
     setInteractionMarkerCompleted(node) {
-      if (!node?.once || !hasFlag(this.nodeDoneFlag(node))) return;
-      const entry = (this.interactionMarkers || []).find(item => item.node === node);
-      entry?.marker?.setVisible(false);
-      entry?.label?.setVisible(false);
+      if (!node) return;
+      this.refreshInteractionMarkerVisibility();
+    }
+
+    refreshInteractionMarkerVisibility() {
+      (this.interactionMarkers || []).forEach(entry => {
+        const locked = !this.flagRequirementsMet(entry.node.requiresFlags);
+        const completed = !!entry.node.once && hasFlag(this.nodeDoneFlag(entry.node));
+        const visible = !completed && !(entry.node.hideUntilUnlocked && locked);
+        entry.marker?.setVisible(visible);
+        entry.label?.setVisible(visible);
+      });
     }
 
     createInteractionNodes() {
@@ -2639,8 +2760,9 @@
             padding: { x: 6, y: 3 }
           }).setOrigin(0.5, 1).setDepth(Number(node.labelDepth) || labelY + 8);
         this.interactionMarkers.push({ node, marker, label });
-        this.setInteractionMarkerCompleted(node);
       });
+      this.refreshInteractionMarkerVisibility();
+      this.refreshNpcQuestMarkers();
     }
 
     getNearestInteraction() {
@@ -2663,6 +2785,7 @@
       }
       (this.interactionNodes || []).forEach(node => {
         if (node.once && hasFlag(this.nodeDoneFlag(node))) return;
+        if (node.hideUntilUnlocked && !this.flagRequirementsMet(node.requiresFlags)) return;
         const distance = Math.hypot(foot.x - node.x, foot.y - node.y);
         if (distance <= (node.radius || 96) && distance < nearestDistance) {
           nearest = node;
@@ -2673,6 +2796,11 @@
     }
 
     updateInteractionPrompt() {
+      if (app.dialogue) {
+        this.activeInteraction = null;
+        renderInteractionPrompt("");
+        return;
+      }
       const node = this.getNearestInteraction();
       this.activeInteraction = node;
       if (!node) {
@@ -2698,10 +2826,66 @@
       renderHud();
     }
 
+    refreshQuestUi() {
+      this.refreshNpcQuestMarkers();
+      this.refreshInteractionMarkerVisibility();
+      renderChapterHud();
+      renderMinimap(this);
+      saveProfile(app.profile);
+    }
+
+    triggerQuestGiver(node) {
+      const quest = node.questGiver || {};
+      const accepted = hasFlag(quest.acceptFlag);
+      const completed = hasFlag(quest.completeFlag);
+      const turnedIn = hasFlag(quest.turnInFlag);
+      if (!accepted) {
+        this.showDialogue(quest.acceptDialogueId || node.dialogueId, "", {
+          eyebrow: quest.acceptEyebrow || "M01 · 任务委托",
+          finalLabel: quest.acceptLabel || "接受任务",
+          onComplete: () => {
+            [quest.acceptFlag, ...(quest.acceptSetFlags || [])].filter(Boolean).forEach(flag => setFlag(flag));
+            this.refreshQuestUi();
+            app.audio?.questComplete();
+            showToast(quest.acceptToast || "已接受任务：修复错乱的提示词协议");
+          }
+        });
+        return;
+      }
+      if (completed && !turnedIn) {
+        this.showDialogue(quest.turnInDialogueId, "任务目标已经完成。", {
+          eyebrow: quest.turnInEyebrow || "M01 · 任务交付",
+          finalLabel: quest.turnInLabel || "提交任务",
+          onComplete: () => {
+            [quest.turnInFlag, ...(quest.turnInSetFlags || [])].filter(Boolean).forEach(flag => setFlag(flag));
+            const rewardExp = Math.max(0, Number(quest.rewardExp) || 0);
+            const rewardCredits = Math.max(0, Number(quest.rewardCredits) || 0);
+            const levels = rewardExp ? grantExperience(rewardExp) : 0;
+            if (rewardCredits) app.profile.credits += rewardCredits;
+            this.refreshQuestUi();
+            renderHud();
+            app.audio?.questComplete();
+            const levelText = levels ? `，等级 +${levels}` : "";
+            showToast(`M01 任务完成，EXP +${rewardExp}，学分 +${rewardCredits}${levelText}`);
+          }
+        });
+        return;
+      }
+      this.showDialogue(
+        turnedIn ? quest.completedDialogueId : quest.activeDialogueId,
+        turnedIn ? "资料室入口已经开放。" : "先按任务顺序完成教室里的协议修复。",
+        { eyebrow: turnedIn ? "M01 · 已完成" : "M01 · 任务进行中", finalLabel: "结束对话" }
+      );
+    }
+
     triggerInteraction(node = this.activeInteraction) {
       if (!node) return;
       if (node.type === "bossChest") {
         this.openBossChest();
+        return;
+      }
+      if (node.questGiver) {
+        this.triggerQuestGiver(node);
         return;
       }
       if (!this.flagRequirementsMet(node.requiresFlags)) {
@@ -2781,7 +2965,12 @@
       if (encounter.rewardCredits) app.profile.credits += Number(encounter.rewardCredits) || 0;
       if (encounter.rewardExp) grantExperience(Number(encounter.rewardExp) || 0);
       renderHud();
-      showToast(`${encounter.title || "遭遇"}完成，出口协议已更新`);
+      this.refreshNpcQuestMarkers();
+      this.refreshInteractionMarkerVisibility();
+      renderMinimap(this);
+      showToast(groupId === "ch1_m01_encounter_bug_notes"
+        ? `${encounter.title || "遭遇"}完成，返回陆教授处交付任务`
+        : `${encounter.title || "遭遇"}完成，区域协议已更新`);
     }
 
     enterChapterBossArena(node) {
@@ -2918,8 +3107,9 @@
       this.anims.create({
         key: PROFESSOR_NPC_IDLE_ANIMATION,
         frames: this.anims.generateFrameNumbers(PROFESSOR_NPC_KEY, { start: 0, end: 3 }),
-        frameRate: 5,
-        repeat: -1
+        frameRate: 3,
+        repeat: -1,
+        yoyo: true
       });
     }
 
@@ -3027,7 +3217,8 @@
         if (!this.textures.exists(textureKey)) return;
         const x = Number(item.x) || 0;
         const y = Number(item.y) || 0;
-        const shadow = this.add.ellipse(x, y + 6, Number(item.shadowWidth) || 84, Number(item.shadowHeight) || 24, 0x24425c, 0.18)
+        const shadowOffsetY = Number.isFinite(Number(item.shadowOffsetY)) ? Number(item.shadowOffsetY) : 6;
+        const shadow = this.add.ellipse(x, y + shadowOffsetY, Number(item.shadowWidth) || 84, Number(item.shadowHeight) || 24, 0x24425c, 0.18)
           .setDepth(y - 1);
         const sprite = this.add.sprite(x, y, textureKey, 0)
           .setOrigin(Number(item.originX) || 0.5, Number(item.originY) || 0.92)
@@ -3035,6 +3226,17 @@
           .setDepth(Number(item.depth) || y + 4);
         const animationKey = item.animationKey || (textureKey === PROFESSOR_NPC_KEY ? PROFESSOR_NPC_IDLE_ANIMATION : "");
         if (item.animate !== false && animationKey && this.anims.exists(animationKey)) sprite.play(animationKey);
+        if (item.breathe !== false) {
+          const scale = Number(item.scale) || 0.6;
+          sprite.breatheTween = this.tweens.add({
+            targets: sprite,
+            scaleY: scale * (Number(item.breatheScale) || 1.014),
+            duration: Number(item.breatheDuration) || 1350,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut"
+          });
+        }
         const label = item.showLabel === false
           ? null
           : this.add.text(x, y + (Number(item.labelOffsetY) || -158), item.label || "NPC", {
@@ -3047,6 +3249,53 @@
           }).setOrigin(0.5, 1).setDepth(Number(item.depth) || y + 6);
         this.mapNpcs.push({ item, shadow, sprite, label });
       });
+    }
+
+    refreshNpcQuestMarkers() {
+      (this.mapNpcs || []).forEach(entry => {
+        if (entry.questMarker) {
+          this.tweens.killTweensOf(entry.questMarker);
+          entry.questMarker.destroy(true);
+          entry.questMarker = null;
+        }
+      });
+      (this.interactionNodes || [])
+        .filter(node => node.questGiver && node.npcId)
+        .forEach(node => {
+          const quest = node.questGiver;
+          const accepted = hasFlag(quest.acceptFlag);
+          const completed = hasFlag(quest.completeFlag);
+          const turnedIn = hasFlag(quest.turnInFlag);
+          const symbol = !accepted ? "!" : (completed && !turnedIn ? "?" : "");
+          if (!symbol) return;
+          const npc = (this.mapNpcs || []).find(entry => entry.item.id === node.npcId);
+          if (!npc) return;
+          const color = symbol === "!" ? 0xf3c75d : 0x5ed2df;
+          const markerY = Number(npc.item.y) + (Number(node.questMarkerOffsetY) || -222);
+          const glow = this.add.circle(0, 0, 29, color, 0.18)
+            .setStrokeStyle(2, color, 0.42);
+          const plate = this.add.circle(0, 0, 20, 0x21182e, 0.94)
+            .setStrokeStyle(3, color, 0.96);
+          const text = this.add.text(0, -1, symbol, {
+            fontFamily: "Microsoft YaHei, sans-serif",
+            fontSize: "28px",
+            fontStyle: "900",
+            color: symbol === "!" ? "#fff1a8" : "#c8fbff",
+            stroke: "#21182e",
+            strokeThickness: 3
+          }).setOrigin(0.5);
+          const marker = this.add.container(Number(npc.item.x), markerY, [glow, plate, text])
+            .setDepth((Number(npc.sprite.depth) || Number(npc.item.y)) + 80);
+          npc.questMarker = marker;
+          this.tweens.add({
+            targets: marker,
+            y: markerY - 7,
+            duration: 780,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut"
+          });
+        });
     }
 
     clearRuntimeMapObjects() {
@@ -3062,6 +3311,9 @@
       });
       this.interactionMarkers = [];
       this.mapNpcs?.forEach(item => {
+        if (item.questMarker) this.tweens.killTweensOf(item.questMarker);
+        if (item.sprite) this.tweens.killTweensOf(item.sprite);
+        item.questMarker?.destroy(true);
         item.shadow?.destroy();
         item.sprite?.destroy();
         item.label?.destroy();
@@ -3489,7 +3741,7 @@
       const alive = (this.leafSlimes?.getChildren?.() || []).filter(enemy =>
         enemy?.active && enemy.ambientWander && enemy.state !== "dead" && enemy.state !== "vanish"
       ).length;
-      const available = Math.max(0, (Number(config.maxAlive) || 9) - alive);
+      const available = Math.max(0, (Number(config.maxAlive) || 10) - alive);
       if (!available) return 0;
       const minimum = Math.max(1, Number(config.minCount) || 1);
       const maximum = Math.max(minimum, Number(config.maxCount) || 3);
@@ -4211,19 +4463,58 @@
         color: options.color || "#ffffff",
         stroke: options.stroke || "#241b2e",
         strokeThickness: options.strokeThickness ?? 5
-      }).setOrigin(0.5).setDepth((options.depth ?? y) + 80);
+      }).setOrigin(0.5).setDepth(options.depth ?? 100000);
       const rise = options.rise ?? 54;
+      const targetScale = options.scale || 1.05;
+      node.setAlpha(1).setScale(options.startScale || targetScale * 1.36);
       this.tweens.add({
         targets: node,
-        y: y - rise,
-        x: x + (options.drift || Phaser.Math.Between(-16, 16)),
-        scale: options.scale || 1.05,
-        alpha: 0,
-        duration: options.duration || 760,
-        ease: "Cubic.easeOut",
-        onComplete: () => node.destroy()
+        scale: targetScale,
+        duration: options.popDuration || 110,
+        ease: "Back.easeOut",
+        onComplete: () => {
+          this.tweens.add({
+            targets: node,
+            y: y - rise,
+            x: x + (options.drift ?? Phaser.Math.Between(-12, 12)),
+            delay: options.hold ?? 150,
+            duration: options.duration || 980,
+            ease: "Cubic.easeOut",
+            onComplete: () => node.destroy()
+          });
+        }
       });
       return node;
+    }
+
+    playEnemyHitImpact(slime, critical = false) {
+      const x = slime.x;
+      const y = slime.y + (Number(slime.hudOffsetY) || -70) + 34;
+      const color = critical ? 0xffd86b : 0xbff7ff;
+      const ring = this.add.circle(x, y, critical ? 22 : 16, color, 0.18)
+        .setStrokeStyle(critical ? 5 : 3, color, 0.94)
+        .setDepth(slime.y + 74);
+      const flash = this.add.star(x, y, 6, critical ? 12 : 8, critical ? 38 : 27, color, 0.82)
+        .setDepth(slime.y + 76);
+      this.tweens.add({
+        targets: ring,
+        radius: critical ? 58 : 44,
+        alpha: 0,
+        duration: critical ? 360 : 280,
+        ease: "Sine.easeOut",
+        onComplete: () => ring.destroy()
+      });
+      this.tweens.add({
+        targets: flash,
+        angle: critical ? 52 : 34,
+        scale: critical ? 1.28 : 1.08,
+        alpha: 0,
+        duration: critical ? 300 : 230,
+        ease: "Cubic.easeOut",
+        onComplete: () => flash.destroy()
+      });
+      this.cameras.main.shake(critical ? 95 : 70, critical ? 0.0042 : 0.0024);
+      app.audio?.hit();
     }
 
     playHealEffect(x, y) {
@@ -4301,11 +4592,16 @@
         `${result.critical ? "暴击 " : ""}-${result.amount}`,
         {
           color: result.critical ? "#ffd86b" : "#fff7e6",
-          size: result.critical ? "25px" : "18px",
-          scale: result.critical ? 1.32 : 1.05,
-          rise: result.critical ? 76 : 54
+          size: result.critical ? "34px" : "26px",
+          scale: result.critical ? 1.25 : 1,
+          startScale: result.critical ? 1.72 : 1.42,
+          strokeThickness: result.critical ? 8 : 7,
+          hold: result.critical ? 240 : 180,
+          duration: result.critical ? 1250 : 1080,
+          rise: result.critical ? 92 : 72
         }
       );
+      this.playEnemyHitImpact(slime, result.critical);
       slime.actionToken = (slime.actionToken || 0) + 1;
       const token = slime.actionToken;
       const defeated = slime.hp <= 0;
@@ -4605,6 +4901,7 @@
 
     handleHotkey(event) {
       if (isTextEntryActive() || isTextEntryTarget(event.target)) return;
+      if (app.dialogue) return;
       if (event.repeat) return;
       const key = String(event.key || "").toLowerCase();
       if (key === "enter") {
@@ -4937,6 +5234,7 @@
   }
 
   function exitGame() {
+    if (app.dialogue) closeStoryDialogue(false);
     renderReviveDialog(false);
     renderChapterClearPanel(false);
     app.touchMove = { active: false, dx: 0, dy: 0 };
@@ -4946,6 +5244,7 @@
       app.game.destroy(true);
       app.game = null;
       app.scene = null;
+      delete window.__EFV_TEST_SCENE__;
     }
     app.connected = false;
     app.boss = { ...BOSS };
@@ -5278,6 +5577,7 @@
     $("#exitButton").addEventListener("click", () => exitGame());
     $("#reviveButton").addEventListener("click", () => app.scene?.revivePlayer());
     $("#stayDownButton").addEventListener("click", () => renderReviveDialog(false));
+    $("#storyDialogueNextButton")?.addEventListener("click", () => advanceStoryDialogue());
     $("#chapterClearCloseButton")?.addEventListener("click", () => renderChapterClearPanel(false));
     $("#fullscreenButton").addEventListener("click", async () => {
       if (document.fullscreenElement) await document.exitFullscreen();
