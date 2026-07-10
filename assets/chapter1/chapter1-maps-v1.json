@@ -184,11 +184,13 @@
           "animationKey": "ch1-ai-professor-npc-idle",
           "x": 1536,
           "y": 1030,
-          "scale": 0.6,
+          "scale": 0.74,
+          "originY": 0.97,
+          "animate": false,
           "showLabel": false,
-          "labelOffsetY": -160,
-          "shadowWidth": 86,
-          "shadowHeight": 24
+          "labelOffsetY": -190,
+          "shadowWidth": 98,
+          "shadowHeight": 26
         }
       ],
       "interactionNodes": [
@@ -211,17 +213,27 @@
           "id": "ch1_m01_node_syllabus_terminal",
           "type": "inspect",
           "label": "课程协议板",
-          "x": 1536,
-          "y": 480,
+          "x": 1250,
+          "y": 610,
           "radius": 150,
           "visualPropId": "m01_blackboard_a_v4",
           "visualType": "map-prop",
-          "hintX": 1536,
-          "hintY": 440,
-          "hintWidth": 240,
-          "hintHeight": 54,
-          "labelX": 1536,
-          "labelY": 422,
+          "markerImage": {
+            "key": "ch1-m01-task-syllabus-board",
+            "path": "assets/game/props/quest/ch1-m01-task-syllabus-board-v1.png"
+          },
+          "markerScale": 0.28,
+          "markerOriginY": 0.91,
+          "markerShadowWidth": 104,
+          "markerShadowHeight": 24,
+          "markerGlowWidth": 122,
+          "markerGlowHeight": 34,
+          "hintX": 1250,
+          "hintY": 610,
+          "hintWidth": 118,
+          "hintHeight": 34,
+          "labelX": 1250,
+          "labelY": 530,
           "requiresFlags": [
             "ch1_intro_met_professor"
           ],
@@ -238,17 +250,27 @@
           "id": "ch1_m01_node_protocol_deck",
           "type": "collect",
           "label": "协议卡讲台",
-          "x": 1536,
-          "y": 815,
+          "x": 1650,
+          "y": 825,
           "radius": 145,
           "visualPropId": "m01_protocol_podium_v4",
           "visualType": "map-prop",
-          "hintX": 1536,
-          "hintY": 770,
-          "hintWidth": 180,
-          "hintHeight": 48,
-          "labelX": 1536,
-          "labelY": 752,
+          "markerImage": {
+            "key": "ch1-m01-task-protocol-lectern",
+            "path": "assets/game/props/quest/ch1-m01-task-protocol-lectern-v1.png"
+          },
+          "markerScale": 0.28,
+          "markerOriginY": 0.92,
+          "markerShadowWidth": 96,
+          "markerShadowHeight": 24,
+          "markerGlowWidth": 112,
+          "markerGlowHeight": 32,
+          "hintX": 1650,
+          "hintY": 825,
+          "hintWidth": 108,
+          "hintHeight": 32,
+          "labelX": 1650,
+          "labelY": 694,
           "requiresFlags": [
             "ch1_intro_read_syllabus"
           ],
@@ -265,20 +287,32 @@
           "id": "ch1_m01_node_bug_notes",
           "type": "spawn",
           "label": "错乱笔记堆",
-          "x": 1536,
-          "y": 1430,
+          "x": 1700,
+          "y": 1420,
           "radius": 170,
           "visualPropIds": [
             "m01_bookpile_a_v4",
             "m01_bookpile_b_v4"
           ],
           "visualType": "map-prop",
-          "hintX": 1536,
-          "hintY": 1370,
-          "hintWidth": 190,
-          "hintHeight": 52,
-          "labelX": 1536,
-          "labelY": 1350,
+          "markerImage": {
+            "key": "ch1-m01-task-glitched-notes",
+            "path": "assets/game/props/quest/ch1-m01-task-glitched-notes-v1.png"
+          },
+          "markerScale": 0.31,
+          "markerOriginY": 0.82,
+          "markerShadowOffsetY": 10,
+          "markerShadowWidth": 126,
+          "markerShadowHeight": 30,
+          "markerGlowOffsetY": 6,
+          "markerGlowWidth": 142,
+          "markerGlowHeight": 42,
+          "hintX": 1700,
+          "hintY": 1420,
+          "hintWidth": 132,
+          "hintHeight": 40,
+          "labelX": 1700,
+          "labelY": 1290,
           "requiresFlags": [
             "ch1_intro_card_claimed"
           ],
@@ -289,6 +323,39 @@
           "once": true
         }
       ],
+      "ambientEnemyRefresh": {
+        "intervalMs": 60000,
+        "minCount": 1,
+        "maxCount": 3,
+        "maxAlive": 9,
+        "avoidPlayerRadius": 300,
+        "spawnBounds": {
+          "x": 610,
+          "y": 580,
+          "width": 1850,
+          "height": 820
+        },
+        "enemies": [
+          {
+            "textureKey": "ch1-runaway-magic-broom",
+            "label": "巡游魔法扫把",
+            "scale": 0.82,
+            "maxHp": 48,
+            "damage": 5,
+            "wanderSpeed": 34,
+            "chaseSpeed": 48
+          },
+          {
+            "textureKey": "ch1-biting-magic-book",
+            "label": "游荡咬人书",
+            "scale": 0.82,
+            "maxHp": 48,
+            "damage": 5,
+            "wanderSpeed": 30,
+            "chaseSpeed": 44
+          }
+        ]
+      },
       "enemySpawns": [
         {
           "id": "ch1-m01-demand-bug-west",
