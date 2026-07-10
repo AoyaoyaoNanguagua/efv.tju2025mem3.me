@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
-  <link rel="stylesheet" href="play.css">
+  <link rel="stylesheet" href="play.css?v=20260710-login-asset-gate">
 </head>
 <body>
   <main class="play-shell">
@@ -37,8 +37,8 @@
               <input id="loginPasswordInput" name="password" type="password" maxlength="32" autocomplete="current-password" placeholder="输入账号密码" required>
             </label>
 
-            <button id="loginButton" class="primary login-submit" type="submit">进入校园</button>
-            <button id="offlineButton" class="ghost login-submit" type="button">离线试玩（无需服务器）</button>
+            <button id="loginButton" class="primary login-submit" type="submit" disabled>进入校园</button>
+            <button id="offlineButton" class="ghost login-submit" type="button" disabled>离线试玩（无需服务器）</button>
             <div class="login-links">
               <span>第一次来？</span>
               <a id="showRegisterLink" href="register.html">注册新账号</a>
@@ -64,7 +64,7 @@
               <input id="registerConfirmInput" name="confirm" type="password" maxlength="32" autocomplete="new-password" placeholder="再输入一次密码" required>
             </label>
 
-            <button id="registerButton" class="primary login-submit" type="submit">创建账号</button>
+            <button id="registerButton" class="primary login-submit" type="submit" disabled>创建账号</button>
             <div class="login-links">
               <span>已有账号？</span>
               <button id="backLoginButton" class="text-link" type="button">返回登录</button>
@@ -302,6 +302,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-  <script src="play.js?v=20260710-lazy-map-assets"></script>
+  <script src="play.js?v=20260710-character-save-isolation"></script>
 </body>
 </html>

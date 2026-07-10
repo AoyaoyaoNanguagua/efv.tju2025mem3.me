@@ -497,6 +497,7 @@
     profile.chapterId = String(profile.chapterId || "chapter1");
     profile.mapId = String(profile.mapId || "ch1_m01_classroom_spawn");
     profile.spawnId = String(profile.spawnId || "ch1_m01_spawn_player_start");
+    profile.characterRecordId = String(profile.characterRecordId || "");
     profile.flags = plainObject(profile.flags);
     profile.quests = plainObject(profile.quests);
     profile.inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
@@ -570,6 +571,7 @@
           chapterId: profile.chapterId,
           mapId: profile.mapId,
           spawnId: profile.spawnId,
+          characterRecordId: profile.characterRecordId,
           flags: plainObject(profile.flags),
           quests: plainObject(profile.quests),
           inventory: Array.isArray(profile.inventory) ? profile.inventory : [],
@@ -619,6 +621,7 @@
       chapterId: profile.chapterId,
       mapId: profile.mapId,
       spawnId: profile.spawnId,
+      characterRecordId: profile.characterRecordId,
       flags: profile.flags,
       quests: profile.quests,
       inventory: profile.inventory,
@@ -1626,6 +1629,122 @@
     return `${protocol}//${location.host}/ws`;
   }
 
+  const LOGIN_BACKGROUND_URL = "assets/ui/start-screen-bg-v4.png";
+  const LOGIN_BACKGROUND_VERSION = "20260710-login-asset-gate";
+  const LOGIN_ASSET_WEIGHTS = { background: 0.78, audio: 0.22 };
+  const loginAssetState = {
+    progress: { background: 0, audio: 0 },
+    ready: { background: false, audio: false },
+    backgroundLoading: false,
+    backgroundObjectUrl: "",
+    retryTimer: null,
+    error: ""
+  };
+
+  function setLoginControlsEnabled(enabled) {
+    ["#loginButton", "#offlineButton", "#registerButton"].forEach(selector => {
+      const button = $(selector);
+      if (button) button.disabled = !enabled;
+    });
+  }
+
+  function loginAssetsReady() {
+    return loginAssetState.ready.background && loginAssetState.ready.audio;
+  }
+
+  function renderLoginAssetProgress() {
+    const bar = $("#loginMusicBar");
+    const text = $("#loginMusicText");
+    const value = $("#loginMusicPercent");
+    const wrap = $("#loginMusicProgress");
+    const ready = loginAssetsReady();
+    const weightedProgress = Object.entries(LOGIN_ASSET_WEIGHTS).reduce(
+      (total, [key, weight]) => total + loginAssetState.progress[key] * weight,
+      0
+    );
+    const progress = ready ? 100 : Math.min(99, Math.round(weightedProgress * 100));
+    if (bar) bar.style.width = `${progress}%`;
+    if (value) value.textContent = `${progress}%`;
+    if (text) {
+      text.textContent = loginAssetState.error
+        || (ready
+          ? "初始素材加载完成"
+          : loginAssetState.ready.background
+            ? "正在加载登录音乐"
+            : "正在加载登录背景");
+    }
+    wrap?.classList.toggle("ready", ready);
+    setLoginControlsEnabled(ready);
+  }
+
+  function setLoginAssetProgress(kind, progress, ready = false) {
+    loginAssetState.progress[kind] = clamp(Number(progress) || 0, 0, 1);
+    if (ready) loginAssetState.ready[kind] = true;
+    renderLoginAssetProgress();
+  }
+
+  async function fetchLoginAsset(url, onProgress) {
+    const response = await fetch(url, { cache: "force-cache" });
+    if (!response.ok) throw new Error(`Login asset unavailable: ${url}`);
+    const total = Number(response.headers.get("content-length") || 0);
+    if (!response.body || !total) {
+      const blob = await response.blob();
+      onProgress(1);
+      return blob;
+    }
+    const reader = response.body.getReader();
+    const chunks = [];
+    let loaded = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.length;
+      onProgress(loaded / total);
+    }
+    return new Blob(chunks, { type: response.headers.get("content-type") || "application/octet-stream" });
+  }
+
+  async function decodeLoginBackground(src) {
+    const image = new Image();
+    await new Promise((resolve, reject) => {
+      image.addEventListener("load", resolve, { once: true });
+      image.addEventListener("error", reject, { once: true });
+      image.src = src;
+    });
+    if (typeof image.decode === "function") await image.decode();
+  }
+
+  async function loadLoginBackground() {
+    window.clearTimeout(loginAssetState.retryTimer);
+    if (loginAssetState.backgroundLoading || loginAssetState.ready.background) return;
+    loginAssetState.backgroundLoading = true;
+    loginAssetState.error = "";
+    renderLoginAssetProgress();
+    let objectUrl = "";
+    try {
+      const blob = await fetchLoginAsset(
+        `${LOGIN_BACKGROUND_URL}?v=${LOGIN_BACKGROUND_VERSION}`,
+        progress => setLoginAssetProgress("background", progress)
+      );
+      objectUrl = URL.createObjectURL(blob);
+      await decodeLoginBackground(objectUrl);
+      if (loginAssetState.backgroundObjectUrl) URL.revokeObjectURL(loginAssetState.backgroundObjectUrl);
+      loginAssetState.backgroundObjectUrl = objectUrl;
+      document.documentElement.style.setProperty("--login-background-image", `url("${objectUrl}")`);
+      setLoginAssetProgress("background", 1, true);
+    } catch (error) {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      console.error("Login background loading failed", error);
+      loginAssetState.progress.background = 0;
+      loginAssetState.error = "登录背景加载失败，正在重试";
+      renderLoginAssetProgress();
+      loginAssetState.retryTimer = window.setTimeout(loadLoginBackground, 1800);
+    } finally {
+      loginAssetState.backgroundLoading = false;
+    }
+  }
+
   class AudioEngine {
     constructor() {
       this.enabled = true;
@@ -1704,15 +1823,7 @@
     }
 
     setLoginProgress(percent, label, ready = false) {
-      const wrap = $("#loginMusicProgress");
-      const bar = $("#loginMusicBar");
-      const text = $("#loginMusicText");
-      const value = $("#loginMusicPercent");
-      const progress = Math.max(0, Math.min(100, Math.round(percent)));
-      if (bar) bar.style.width = `${progress}%`;
-      if (value) value.textContent = `${progress}%`;
-      if (text && label) text.textContent = label;
-      wrap?.classList.toggle("ready", ready);
+      setLoginAssetProgress("audio", Number(percent) / 100, ready);
     }
 
     setupLoginTrack(src, objectUrl = "") {
@@ -4837,6 +4948,7 @@
     });
 
     $("#offlineButton")?.addEventListener("click", () => {
+      if (!loginAssetsReady()) return;
       app.audio?.start("login", true);
       app.offlineMode = true;
       setSession("");
@@ -4846,6 +4958,10 @@
 
     $("#profileForm").addEventListener("submit", async event => {
       event.preventDefault();
+      if (!loginAssetsReady()) {
+        $("#profileHint").textContent = "请等待初始素材加载完成。";
+        return;
+      }
       const username = $("#loginAccountInput").value.trim();
       const password = $("#loginPasswordInput").value;
       const button = $("#loginButton");
@@ -4876,6 +4992,10 @@
     });
     $("#registerForm")?.addEventListener("submit", async event => {
       event.preventDefault();
+      if (!loginAssetsReady()) {
+        $("#registerHint").textContent = "请等待初始素材加载完成。";
+        return;
+      }
       const username = $("#registerAccountInput").value.trim();
       const nickname = $("#registerNicknameInput").value.trim();
       const password = $("#registerPasswordInput").value;
@@ -5000,6 +5120,8 @@
     if (isIOS || isIPadOS) {
       document.documentElement.classList.add("touch-ui");
     }
+    renderLoginAssetProgress();
+    loadLoginBackground();
     app.audio = new AudioEngine();
     app.multiplayer = new MultiplayerClient();
     bindUi();
