@@ -824,6 +824,7 @@ def player_state_from_message(user: sqlite3.Row, profile: dict, incoming: dict) 
         "hp": clean_number(incoming.get("hp"), profile["hp"], 0, profile["maxHp"]),
         "maxHp": clean_number(incoming.get("maxHp"), profile["maxHp"], 1, 9999),
         "shield": clean_number(incoming.get("shield"), profile.get("shield", 0), 0, 9999),
+        "mapId": clean_limited_text(incoming.get("mapId", ""), 64),
         "updatedAt": int(time.time() * 1000),
     }
 
@@ -914,6 +915,119 @@ def handle_update(client: WsClient, message: dict) -> None:
         client.player = player
         get_room(client.room_name)["peers"][client.id] = player
     broadcast(client.room_name, {"type": "peerUpdated", "player": player}, client)
+
+
+def handle_area_heal(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name or not client.id:
+        return
+    amount = clean_number(message.get("amount"), 1, 1, 120)
+    radius = clean_number(message.get("radius"), 64, 32, 320)
+    targets: list[dict] = []
+    with state_lock:
+        room = get_room(client.room_name)
+        caster = room["peers"].get(client.id)
+        if not caster:
+            return
+        caster_x = float(caster.get("x", 0))
+        caster_y = float(caster.get("y", 0))
+        caster_map = str(caster.get("mapId", ""))
+        for peer_id, peer in room["peers"].items():
+            if str(peer.get("mapId", "")) != caster_map:
+                continue
+            dx = float(peer.get("x", 0)) - caster_x
+            dy = float(peer.get("y", 0)) - caster_y
+            if dx * dx + dy * dy > radius * radius:
+                continue
+            max_hp = max(1, float(peer.get("maxHp", 1)))
+            hp = min(max_hp, max(0, float(peer.get("hp", 0))) + amount)
+            peer["hp"] = hp
+            peer["updatedAt"] = int(time.time() * 1000)
+            targets.append({"id": peer_id, "hp": hp, "maxHp": max_hp})
+            target_client = next(
+                (candidate for candidate in clients if candidate.id == peer_id and candidate.room_name == client.room_name),
+                None,
+            )
+            if target_client:
+                target_client.player["hp"] = hp
+    if targets:
+        broadcast(client.room_name, {"type": "areaHeal", "sourceId": client.id, "targets": targets})
+
+
+def handle_healing_chain(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name or not client.id:
+        return
+    healing = clean_number(message.get("healing"), 1, 1, 220)
+    shield_gain = clean_number(message.get("shield"), 1, 1, 160)
+    radius = clean_number(message.get("radius"), 640, 64, 640)
+    jumps = int(clean_number(message.get("jumps"), 5, 1, 5))
+    bounces: list[dict] = []
+    source: dict = {}
+    with state_lock:
+        room = get_room(client.room_name)
+        caster = room["peers"].get(client.id)
+        if not caster:
+            return
+        source = {"x": float(caster.get("x", 0)), "y": float(caster.get("y", 0))}
+        caster_map = str(caster.get("mapId", ""))
+        candidates = [
+            (peer_id, peer)
+            for peer_id, peer in room["peers"].items()
+            if str(peer.get("mapId", "")) == caster_map
+            and (float(peer.get("x", 0)) - source["x"]) ** 2 + (float(peer.get("y", 0)) - source["y"]) ** 2 <= radius * radius
+        ]
+        previous_id = ""
+        for _ in range(jumps):
+            available = [entry for entry in candidates if entry[0] != previous_id] if len(candidates) > 1 else candidates
+            if not available:
+                break
+            wounded = [entry for entry in available if float(entry[1].get("hp", 0)) < float(entry[1].get("maxHp", 1))]
+            if wounded:
+                target_id, target = min(
+                    wounded,
+                    key=lambda entry: float(entry[1].get("hp", 0)) / max(1, float(entry[1].get("maxHp", 1))),
+                )
+            else:
+                target_id, target = min(
+                    available,
+                    key=lambda entry: float(entry[1].get("shield", 0)) / max(1, float(entry[1].get("maxHp", 1))),
+                )
+            max_hp = max(1, float(target.get("maxHp", 1)))
+            hp = max(0, float(target.get("hp", 0)))
+            target_shield = max(0, float(target.get("shield", 0)))
+            before_hp = hp
+            before_shield = target_shield
+            if hp < max_hp:
+                hp = min(max_hp, hp + healing)
+            else:
+                target_shield = min(max_hp * 0.5, target_shield + shield_gain)
+            target["hp"] = hp
+            target["shield"] = target_shield
+            target["updatedAt"] = int(time.time() * 1000)
+            bounces.append(
+                {
+                    "targetId": target_id,
+                    "hp": hp,
+                    "maxHp": max_hp,
+                    "shield": target_shield,
+                    "healed": hp - before_hp,
+                    "shieldGain": target_shield - before_shield,
+                    "x": float(target.get("x", 0)),
+                    "y": float(target.get("y", 0)),
+                }
+            )
+            target_client = next(
+                (candidate for candidate in clients if candidate.id == target_id and candidate.room_name == client.room_name),
+                None,
+            )
+            if target_client:
+                target_client.player["hp"] = hp
+                target_client.player["shield"] = target_shield
+            previous_id = target_id
+    if bounces:
+        broadcast(
+            client.room_name,
+            {"type": "healingChain", "sourceId": client.id, "source": source, "bounces": bounces},
+        )
 
 
 def handle_boss_start(client: WsClient, message: dict) -> None:
@@ -1177,6 +1291,8 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
         handle_drop_spawn(client, message)
     elif message_type == "dropCollect":
         handle_drop_collect(client, message)
+    elif message_type == "healingChain":
+        handle_healing_chain(client, message)
     elif message_type == "chatSend":
         handle_chat_send(client, message)
 

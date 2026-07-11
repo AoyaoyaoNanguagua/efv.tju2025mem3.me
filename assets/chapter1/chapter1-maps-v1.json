@@ -947,13 +947,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 705,
-            "y": 671,
-            "w": 250,
-            "h": 104
+            "x": 717.5,
+            "y": 681.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -966,13 +966,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 967,
-            "y": 671,
-            "w": 250,
-            "h": 104
+            "x": 979.5,
+            "y": 681.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -985,13 +985,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 705,
-            "y": 946,
-            "w": 250,
-            "h": 104
+            "x": 717.5,
+            "y": 956.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1004,13 +1004,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 967,
-            "y": 946,
-            "w": 250,
-            "h": 104
+            "x": 979.5,
+            "y": 956.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1023,13 +1023,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 705,
-            "y": 1226,
-            "w": 250,
-            "h": 104
+            "x": 717.5,
+            "y": 1236.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1042,13 +1042,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 967,
-            "y": 1226,
-            "w": 250,
-            "h": 104
+            "x": 979.5,
+            "y": 1236.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1061,13 +1061,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 1847,
-            "y": 671,
-            "w": 250,
-            "h": 104
+            "x": 1859.5,
+            "y": 681.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1080,13 +1080,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 2117,
-            "y": 671,
-            "w": 250,
-            "h": 104
+            "x": 2129.5,
+            "y": 681.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1099,13 +1099,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 1847,
-            "y": 946,
-            "w": 250,
-            "h": 104
+            "x": 1859.5,
+            "y": 956.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1118,13 +1118,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 2117,
-            "y": 946,
-            "w": 250,
-            "h": 104
+            "x": 2129.5,
+            "y": 956.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1137,13 +1137,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 1847,
-            "y": 1226,
-            "w": 250,
-            "h": 104
+            "x": 1859.5,
+            "y": 1236.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1156,13 +1156,13 @@
             "x": 0.5,
             "y": 1
           },
-          "scale": 1,
+          "scale": 0.9,
           "depthOffset": 0,
           "collision": {
-            "x": 2117,
-            "y": 1226,
-            "w": 250,
-            "h": 104
+            "x": 2129.5,
+            "y": 1236.4,
+            "w": 225,
+            "h": 93.6
           }
         },
         {
@@ -1389,57 +1389,57 @@
       "chapterId": "chapter1",
       "background": {
         "width": 3072,
-        "height": 1536,
+        "height": 1024,
         "chunks": [
           {
-            "id": "ch1-m02-horizontal-left-v6",
-            "key": "ch1-m02-horizontal-left-v6",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-left-v6.png",
+            "id": "ch1-m02-horizontal-left-v7",
+            "key": "ch1-m02-horizontal-left-v7",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-left-v7.png",
             "x": 0,
             "y": 0,
             "width": 1536,
-            "height": 1536
+            "height": 1024
           },
           {
-            "id": "ch1-m02-horizontal-right-v6",
-            "key": "ch1-m02-horizontal-right-v6",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-right-v6.png",
+            "id": "ch1-m02-horizontal-right-v7",
+            "key": "ch1-m02-horizontal-right-v7",
+            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-right-v7.png",
             "x": 1536,
             "y": 0,
             "width": 1536,
-            "height": 1536
+            "height": 1024
           }
         ]
       },
       "spawn": {
         "id": "ch1_m02_spawn_from_classroom",
         "x": 220,
-        "y": 768,
+        "y": 512,
         "facing": "E"
       },
       "spawnPoints": [
         {
           "id": "ch1_m02_spawn_from_classroom",
           "x": 220,
-          "y": 768,
+          "y": 512,
           "facing": "E"
         },
         {
           "id": "ch1_m02_spawn_from_lab",
           "x": 1536,
-          "y": 970,
+          "y": 760,
           "facing": "N"
         },
         {
           "id": "ch1_m02_spawn_center_return",
           "x": 1536,
-          "y": 768,
+          "y": 512,
           "facing": "S"
         }
       ],
       "camera": {
         "startX": 500,
-        "startY": 768
+        "startY": 512
       },
       "props": [],
       "obstacles": [
@@ -1448,35 +1448,35 @@
           "x": 0,
           "y": 0,
           "w": 3072,
-          "h": 470
+          "h": 270
         },
         {
           "id": "m02-south-archive-wall-left",
           "x": 0,
-          "y": 1140,
+          "y": 820,
           "w": 1420,
-          "h": 396
+          "h": 204
         },
         {
           "id": "m02-south-archive-wall-right",
           "x": 1652,
-          "y": 1140,
+          "y": 820,
           "w": 1420,
-          "h": 396
+          "h": 204
         },
         {
           "id": "m02-center-south-gate-left",
           "x": 1420,
-          "y": 1110,
+          "y": 790,
           "w": 55,
-          "h": 426
+          "h": 234
         },
         {
           "id": "m02-center-south-gate-right",
           "x": 1597,
-          "y": 1110,
+          "y": 790,
           "w": 55,
-          "h": 426
+          "h": 234
         }
       ],
       "interactionNodes": [
@@ -1485,15 +1485,15 @@
           "type": "inspect",
           "label": "档案索引台",
           "x": 560,
-          "y": 690,
+          "y": 460,
           "radius": 150,
           "visualType": "background-npc",
           "hintX": 560,
-          "hintY": 625,
+          "hintY": 415,
           "hintWidth": 120,
           "hintHeight": 40,
           "labelX": 560,
-          "labelY": 600,
+          "labelY": 395,
           "dialogueId": "ch1_m02_dialogue_npc",
           "setFlags": [
             "ch1_m02_npc_talked"
@@ -1505,15 +1505,15 @@
           "type": "collect",
           "label": "引用核验台",
           "x": 1270,
-          "y": 790,
+          "y": 527,
           "radius": 165,
           "visualType": "background-prop",
           "hintX": 1270,
-          "hintY": 720,
+          "hintY": 480,
           "hintWidth": 172,
           "hintHeight": 48,
           "labelX": 1270,
-          "labelY": 695,
+          "labelY": 460,
           "requiresFlags": [
             "ch1_m02_npc_talked"
           ],
@@ -1531,15 +1531,15 @@
           "type": "inspect",
           "label": "隐私过滤仪",
           "x": 1980,
-          "y": 690,
+          "y": 460,
           "radius": 165,
           "visualType": "background-prop",
           "hintX": 1980,
-          "hintY": 625,
+          "hintY": 415,
           "hintWidth": 172,
           "hintHeight": 48,
           "labelX": 1980,
-          "labelY": 600,
+          "labelY": 395,
           "requiresFlags": [
             "ch1_m02_schema_lock_claimed"
           ],
@@ -1555,15 +1555,15 @@
           "type": "spawn",
           "label": "复制阴影裂隙",
           "x": 2450,
-          "y": 825,
+          "y": 550,
           "radius": 175,
           "visualType": "rift",
           "hintX": 2450,
-          "hintY": 825,
+          "hintY": 550,
           "hintWidth": 176,
           "hintHeight": 58,
           "labelX": 2450,
-          "labelY": 790,
+          "labelY": 520,
           "requiresFlags": [
             "ch1_m02_privacy_filter_checked"
           ],
@@ -1578,7 +1578,7 @@
         {
           "id": "ch1-m02-copy-shadow-a",
           "x": 2240,
-          "y": 650,
+          "y": 433,
           "group": "ch1_m02_encounter_copy_shadow",
           "activeAfter": "ch1_m02_copy_shadow_disturbed",
           "textureKey": "ch1-m02-copy-paste-shadow",
@@ -1593,7 +1593,7 @@
         {
           "id": "ch1-m02-copy-shadow-b",
           "x": 2380,
-          "y": 965,
+          "y": 643,
           "group": "ch1_m02_encounter_copy_shadow",
           "activeAfter": "ch1_m02_copy_shadow_disturbed",
           "textureKey": "ch1-m02-copy-paste-shadow",
@@ -1608,7 +1608,7 @@
         {
           "id": "ch1-m02-copy-shadow-c",
           "x": 2640,
-          "y": 680,
+          "y": 453,
           "group": "ch1_m02_encounter_copy_shadow",
           "activeAfter": "ch1_m02_copy_shadow_disturbed",
           "textureKey": "ch1-m02-tone-drift-archivist",
@@ -1626,7 +1626,7 @@
         {
           "id": "ch1-m02-copy-shadow-d",
           "x": 2740,
-          "y": 960,
+          "y": 640,
           "group": "ch1_m02_encounter_copy_shadow",
           "activeAfter": "ch1_m02_copy_shadow_disturbed",
           "textureKey": "ch1-m02-copy-paste-shadow",
@@ -1656,7 +1656,7 @@
           "type": "teleport",
           "label": "返回教室",
           "x": 120,
-          "y": 768,
+          "y": 512,
           "radius": 92,
           "targetMapId": "ch1_m01_classroom_spawn",
           "targetSpawnId": "ch1_m01_spawn_from_archive"
@@ -1664,9 +1664,9 @@
         {
           "id": "ch1_m02_exit_to_m03",
           "type": "teleport",
-          "label": "Agent 机房",
+          "label": "学院植物研究花园",
           "x": 1536,
-          "y": 1080,
+          "y": 760,
           "radius": 92,
           "visual": "portal",
           "portalScale": 0.82,
@@ -1706,13 +1706,13 @@
       ],
       "foregroundOverlays": [],
       "minimapImage": {
-        "key": "ch1-m02-horizontal-minimap-v6",
-        "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-minimap-v6.jpg",
+        "key": "ch1-m02-horizontal-minimap-v7",
+        "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-minimap-v7.jpg",
         "width": 768,
-        "height": 384
+        "height": 256
       },
-      "version": "0.9.0-m1style-horizontal",
-      "summary": "M1-style horizontal prompt archive with a restrained tiled floor, continuous library walls, left-to-right objectives, and a gated center-south route to M3.",
+      "version": "1.0.0-archive-horizontal-v7",
+      "summary": "Expanded two-panel academy prompt archive with a seamless horizontal passage, role-scaled furniture, broad combat space, and a center-south route to M3.",
       "recommendedCredits": 6
     },
     "ch1_m03_agent_lab": {
@@ -1720,8 +1720,8 @@
       "title": "樱庭生态园",
       "chapterId": "chapter1",
       "background": {
-        "key": "ch1-m03-botanical-garden-bg-v2",
-        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v2.png",
+        "key": "ch1-m03-botanical-garden-bg-v3",
+        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v3.png",
         "width": 3072,
         "height": 2048
       },
@@ -1963,17 +1963,17 @@
         {
           "id": "ch1_m03_node_carnivora_boss",
           "type": "spawn",
-          "label": "中央异常花坛",
+          "label": "北侧异常花坛",
           "x": 1536,
-          "y": 1145,
+          "y": 560,
           "radius": 190,
           "visualType": "boss-point",
           "hintX": 1536,
-          "hintY": 1060,
+          "hintY": 500,
           "hintWidth": 190,
           "hintHeight": 60,
           "labelX": 1536,
-          "labelY": 1034,
+          "labelY": 474,
           "requiresFlags": [
             "ch1_m03_rare_cleared"
           ],
@@ -2181,7 +2181,7 @@
         {
           "id": "ch1-m03-carnivora-boss",
           "x": 1536,
-          "y": 1045,
+          "y": 530,
           "group": "ch1_m03_encounter_carnivora",
           "activeAfter": "ch1_m03_carnivora_awakened",
           "textureKey": "ch1-enemy-garden-carnivora-boss",
@@ -2190,7 +2190,7 @@
           "rangedAttack": true,
           "rank": "boss",
           "label": "食人花院长",
-          "scale": 0.43,
+          "scale": 0.3,
           "tint": 16777215,
           "maxHp": 1250,
           "damage": 20,
@@ -2203,9 +2203,9 @@
           "rangedCooldown": 1500,
           "projectileSpeed": 335,
           "projectileColor": 7925970,
-          "bodyWidth": 280,
-          "bodyHeight": 100,
-          "hudOffsetY": -276
+          "bodyWidth": 200,
+          "bodyHeight": 82,
+          "hudOffsetY": -205
         }
       ],
       "encounters": [
@@ -2252,7 +2252,7 @@
         {
           "id": "ch1_m03_exit_to_m04",
           "type": "teleport",
-          "label": "图书馆草坪考核区",
+          "label": "结构力学实验室终期考核",
           "x": 1536,
           "y": 455,
           "radius": 92,
@@ -2331,98 +2331,113 @@
       ],
       "foregroundOverlays": [],
       "minimapImage": {
-        "key": "ch1-m03-botanical-garden-bg-v2",
-        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v2.png",
+        "key": "ch1-m03-botanical-garden-bg-v3",
+        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v3.png",
         "width": 3072,
         "height": 2048
       },
-      "version": "0.9.0-qstyle-wide-arena",
-      "summary": "Wide chibi botanical garden with a spacious ring arena, staged patrol, rare guardian, and stationary ranged carnivorous-flower boss.",
+      "version": "1.0.0-academy-botanical-arena-v3",
+      "summary": "Hand-painted academy botanical garden with a large quiet central lawn, broad ring-path combat space, staged patrol, rare guardian, and stationary ranged carnivorous-flower boss.",
       "recommendedCredits": 12
     },
     "ch1_m04_library_lawn_boss": {
       "id": "ch1_m04_library_lawn_boss",
-      "title": "图书馆草坪考核区",
+      "title": "结构力学实验室终期考核",
       "chapterId": "chapter1",
       "background": {
-        "key": "ch1-map-library-lawn-boss-bg",
-        "path": "assets/chapter1/maps/ch1_m04_library_lawn_boss/background/ch1-map-library-lawn-boss-bg-v2-2048.png",
-        "width": 2048,
-        "height": 2048
+        "width": 3762,
+        "height": 2508,
+        "chunks": [
+          {
+            "id": "ch1-m04-lab-elbow-v1",
+            "key": "ch1-m04-lab-elbow-v1",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-elbow-v1.png",
+            "x": 0,
+            "y": 0,
+            "width": 1254,
+            "height": 1254
+          },
+          {
+            "id": "ch1-m04-lab-middle-v1",
+            "key": "ch1-m04-lab-middle-v1",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-middle-v1.png",
+            "x": 1254,
+            "y": 0,
+            "width": 1254,
+            "height": 1254
+          },
+          {
+            "id": "ch1-m04-lab-final-v1",
+            "key": "ch1-m04-lab-final-v1",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-final-v1.png",
+            "x": 2508,
+            "y": 0,
+            "width": 1254,
+            "height": 1254
+          },
+          {
+            "id": "ch1-m04-lab-entrance-v1",
+            "key": "ch1-m04-lab-entrance-v1",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-entrance-v1.png",
+            "x": 0,
+            "y": 1254,
+            "width": 1254,
+            "height": 1254
+          }
+        ]
       },
       "spawn": {
         "id": "ch1_m04_spawn_lawn_gate",
-        "x": 1024,
-        "y": 1764,
+        "x": 627,
+        "y": 2310,
         "facing": "N"
       },
       "spawnPoints": [
         {
           "id": "ch1_m04_spawn_lawn_gate",
-          "x": 1024,
-          "y": 1764,
+          "x": 627,
+          "y": 2310,
           "facing": "N"
         },
         {
           "id": "ch1_m04_spawn_from_boss",
-          "x": 1024,
-          "y": 1540,
+          "x": 627,
+          "y": 2050,
           "facing": "N"
         }
       ],
       "camera": {
-        "startX": 1024,
-        "startY": 1080
+        "startX": 627,
+        "startY": 2050
       },
       "obstacles": [
+        { "id": "m04-lab-north-wall", "x": 0, "y": 0, "w": 3762, "h": 275 },
+        { "id": "m04-lab-west-wall", "x": 0, "y": 0, "w": 72, "h": 2508 },
+        { "id": "m04-lab-east-wall", "x": 3688, "y": 0, "w": 74, "h": 1254 },
+        { "id": "m04-lab-top-south-wall", "x": 1254, "y": 1090, "w": 2508, "h": 164 },
+        { "id": "m04-lab-elbow-south-left", "x": 0, "y": 1090, "w": 500, "h": 164 },
+        { "id": "m04-lab-elbow-south-right", "x": 760, "y": 1090, "w": 494, "h": 164 },
+        { "id": "m04-lab-missing-lower-wing", "x": 1254, "y": 1254, "w": 2508, "h": 1254 },
+        { "id": "m04-lab-entrance-west-equipment", "x": 0, "y": 1254, "w": 350, "h": 1010 },
+        { "id": "m04-lab-entrance-east-equipment", "x": 910, "y": 1254, "w": 344, "h": 1010 },
+        { "id": "m04-lab-south-wall-left", "x": 0, "y": 2260, "w": 500, "h": 248 },
+        { "id": "m04-lab-south-wall-right", "x": 760, "y": 2260, "w": 494, "h": 248 }
+      ],
+      "npcs": [
         {
-          "id": "m04_library_facade",
-          "x": 0,
-          "y": 0,
-          "w": 2048,
-          "h": 220
-        },
-        {
-          "id": "m04_west_trees",
-          "x": 0,
-          "y": 180,
-          "w": 185,
-          "h": 1460
-        },
-        {
-          "id": "m04_east_trees",
-          "x": 1862,
-          "y": 180,
-          "w": 186,
-          "h": 1460
-        },
-        {
-          "id": "m04_south_gate_edges",
-          "x": 0,
-          "y": 1910,
-          "w": 2048,
-          "h": 138
-        },
-        {
-          "id": "m04_west_bench",
-          "x": 330,
-          "y": 1370,
-          "w": 300,
-          "h": 120
-        },
-        {
-          "id": "m04_east_bench",
-          "x": 1418,
-          "y": 1370,
-          "w": 300,
-          "h": 120
-        },
-        {
-          "id": "m04_north_pylons",
-          "x": 640,
-          "y": 300,
-          "w": 760,
-          "h": 120
+          "id": "ch1_m04_npc_professor",
+          "label": "陆教授",
+          "textureKey": "ch1-ai-professor-npc",
+          "animationKey": "ch1-ai-professor-npc-idle",
+          "x": 540,
+          "y": 530,
+          "scale": 0.74,
+          "originY": 1,
+          "animate": true,
+          "breathe": true,
+          "showLabel": false,
+          "shadowWidth": 98,
+          "shadowHeight": 24
         }
       ],
       "interactionNodes": [
@@ -2430,16 +2445,16 @@
           "id": "ch1_m04_node_professor_exam",
           "type": "boss",
           "label": "陆教授协议考核",
-          "x": 1024,
-          "y": 720,
+          "x": 540,
+          "y": 620,
           "radius": 180,
           "visualType": "boss-point",
-          "hintX": 1024,
-          "hintY": 720,
+          "hintX": 540,
+          "hintY": 620,
           "hintWidth": 180,
           "hintHeight": 58,
-          "labelX": 1024,
-          "labelY": 696,
+          "labelX": 540,
+          "labelY": 580,
           "requiresFlags": [
             "ch1_m03_small_boss_cleared"
           ],
@@ -2451,16 +2466,16 @@
           "id": "ch1_m04_node_completion",
           "type": "chapter-clear",
           "label": "章节完成点",
-          "x": 1024,
-          "y": 500,
+          "x": 3135,
+          "y": 610,
           "radius": 150,
           "visualType": "background-prop",
-          "hintX": 1024,
-          "hintY": 458,
+          "hintX": 3135,
+          "hintY": 565,
           "hintWidth": 164,
           "hintHeight": 48,
-          "labelX": 1024,
-          "labelY": 438,
+          "labelX": 3135,
+          "labelY": 540,
           "requiresFlags": [
             "ch1_final_boss_defeated"
           ],
@@ -2471,14 +2486,22 @@
       ],
       "enemySpawns": [],
       "disableDefaultEnemies": true,
-      "encounters": [],
+      "encounters": [
+        {
+          "id": "ch1_m04_final_boss",
+          "title": "结构失稳聚合体最终决战",
+          "setFlagsOnClear": ["ch1_final_boss_defeated"],
+          "rewardCredits": 12,
+          "rewardExp": 160
+        }
+      ],
       "exitPoints": [
         {
           "id": "ch1_m04_exit_back_m03",
           "type": "teleport",
-          "label": "返回 Agent 机房",
-          "x": 1024,
-          "y": 1884,
+          "label": "返回学院花园",
+          "x": 627,
+          "y": 2380,
           "radius": 110,
           "targetMapId": "ch1_m03_agent_lab",
           "targetSpawnId": "ch1_m03_spawn_from_boss_lawn"
@@ -2487,74 +2510,21 @@
       "chapterBossPoint": {
         "mapId": "ch1_m04_library_lawn_boss",
         "pointId": "ch1_m04_node_professor_exam",
-        "x": 1024,
-        "y": 720,
+        "x": 540,
+        "y": 620,
         "requiresFlags": [
           "ch1_m03_small_boss_cleared"
         ]
       },
-      "foregroundOverlays": [
-        {
-          "id": "m04_library_balcony",
-          "x": 420,
-          "y": 0,
-          "w": 1210,
-          "h": 360,
-          "depth": 540,
-          "textureKey": "ch1-map-library-lawn-boss-bg",
-          "sourceX": 420,
-          "sourceY": 0,
-          "sourceWidth": 1210,
-          "sourceHeight": 360
-        },
-        {
-          "id": "m04_south_gate_lintel",
-          "x": 790,
-          "y": 1580,
-          "w": 470,
-          "h": 330,
-          "depth": 1930,
-          "textureKey": "ch1-map-library-lawn-boss-bg",
-          "sourceX": 790,
-          "sourceY": 1580,
-          "sourceWidth": 470,
-          "sourceHeight": 330
-        },
-        {
-          "id": "m04_west_tree_canopy",
-          "x": 0,
-          "y": 420,
-          "w": 360,
-          "h": 620,
-          "depth": 1190,
-          "textureKey": "ch1-map-library-lawn-boss-bg",
-          "sourceX": 0,
-          "sourceY": 420,
-          "sourceWidth": 360,
-          "sourceHeight": 620
-        },
-        {
-          "id": "m04_east_tree_canopy",
-          "x": 1680,
-          "y": 420,
-          "w": 360,
-          "h": 620,
-          "depth": 1190,
-          "textureKey": "ch1-map-library-lawn-boss-bg",
-          "sourceX": 1680,
-          "sourceY": 420,
-          "sourceWidth": 360,
-          "sourceHeight": 620
-        }
-      ],
+      "foregroundOverlays": [],
       "minimapImage": {
-        "key": "ch1-map-library-lawn-boss-bg",
-        "path": "assets/chapter1/maps/ch1_m04_library_lawn_boss/background/ch1-map-library-lawn-boss-bg-v2-2048.png",
-        "width": 2048,
-        "height": 2048
+        "key": "ch1-m04-structural-lab-minimap-v1",
+        "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-structural-lab-minimap-v1.jpg",
+        "width": 564,
+        "height": 376
       },
-      "version": "0.8.0-single-background-v3",
-      "summary": "Single coherent library-lawn background with foreground crops sourced from the same image; legacy stitched chunks removed."
+      "version": "1.0.0-structural-lab-l-shape",
+      "summary": "Four-panel L-shaped structural mechanics laboratory with an entrance wing, staged teaching bays, and a large final load-testing arena."
     }
   }
 }

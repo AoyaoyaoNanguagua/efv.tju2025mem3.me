@@ -11,7 +11,7 @@
 | 1 | `ch1_m01_classroom_spawn` | assembled v4 + one reused floor tile + prop/wall atlases | new-character spawn, professor NPC, first tasks |
 | 2 | `ch1_m02_prompt_archive` | `ch1-map-prompt-archive-bg-v3-6144x2048.png` + 12 `ch1-m02-archive-v3-*` chunks | citation/schema tasks and archive encounters |
 | 3 | `ch1_m03_agent_lab` | `ch1-map-agent-lab-bg-v2-2048.png` + 4 `ch1-m03-agent-lab-v2-*` chunks | console task and lab encounter |
-| 4 | `ch1_m04_library_lawn_boss` | `ch1-map-library-lawn-boss-bg-v2-2048.png` + 4 `ch1-m04-boss-*-v1` chunks | professor summoner boss and reward chest |
+| 4 | `ch1_m04_library_lawn_boss` | 4 `ch1-m04-lab-*-v1.png` chunks | L-shaped structural mechanics lab, three summon stages, final boss, and reward chest |
 
 Each package lives under `assets/chapter1/maps/<map_id>/`. Allowed map subdirectories are `background`, `chunks`, `foreground` and `props`.
 

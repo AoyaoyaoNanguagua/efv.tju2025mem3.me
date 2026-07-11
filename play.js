@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-zhixia-electric-v6`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-lina-maps-m04-v8`;
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -112,13 +112,8 @@
   const BOSS_VOID_PORTAL_FRAME_HEIGHT = 256;
   const PROJECTILE_ATLAS = "assets/effects/lina-projectiles-atlas-v2.png";
   const PROJECTILE_TEXTURE_KEY = "play-lina-projectiles";
-  const ULTIMATE_BACK_ATLAS = "assets/effects/lina-ultimate-cyclone-back-v1.png";
-  const ULTIMATE_FRONT_ATLAS = "assets/effects/lina-ultimate-cyclone-front-v1.png";
-  const ULTIMATE_BACK_TEXTURE_KEY = "play-lina-ultimate-cyclone-back";
-  const ULTIMATE_FRONT_TEXTURE_KEY = "play-lina-ultimate-cyclone-front";
-  const ULTIMATE_FRAME_WIDTH = 768;
-  const ULTIMATE_FRAME_HEIGHT = 512;
-  const ULTIMATE_ORIGIN_Y = 300 / ULTIMATE_FRAME_HEIGHT;
+  const WIND_MOTE_TEXTURE_KEY = "play-lina-wind-mote";
+  const WIND_LEAF_TEXTURE_KEY = "play-lina-wind-leaf";
   const CHARGE_HOLD_THRESHOLD = 280;
   const ENERGY_DEFAULT_MAX = 150;
   const ENERGY_REGEN_PER_SECOND = 4.5;
@@ -127,9 +122,15 @@
   const ENERGY_MELEE_HIT_GAIN = 6;
   const ULTIMATE_COST = 100;
   const HEAL_COST = 50;
-  const ULTIMATE_DAMAGE = 48;
-  const ULTIMATE_RADIUS_X = 430;
-  const ULTIMATE_RADIUS_Y = 220;
+  const LINA_GALE_RADIUS = MAP_TILE_SIZE * 5;
+  const LINA_GALE_PUSH_DISTANCE = MAP_TILE_SIZE;
+  const LINA_GALE_DAMAGE_MULTIPLIER = 1.55;
+  const LINA_HEAL_CHAIN_RANGE = MAP_TILE_SIZE * 10;
+  const LINA_HEAL_CHAIN_JUMPS = 5;
+  const LINA_HEAL_CHAIN_BASE = 28;
+  const LINA_HEAL_CHAIN_MULTIPLIER = 1.25;
+  const LINA_HEAL_CHAIN_SHIELD_BASE = 20;
+  const LINA_HEAL_CHAIN_SHIELD_MULTIPLIER = 0.65;
   const AYU_SWORD_WAVE_RANGE = MAP_TILE_SIZE * 7;
   const ZHIXIA_LIGHTNING_RANGE = MAP_TILE_SIZE * 7;
   const ZHIXIA_LIGHTNING_REFRACT_RANGE = MAP_TILE_SIZE * 5;
@@ -173,6 +174,9 @@
   const BOSS_KEY = "play-ai-professor-boss";
   const BOSS_IMAGE = "assets/game/bosses/ai-professor-summoner-game-cutout-v1.png";
   const BOSS_VISUAL_SCALE = 0.42;
+  const PROFESSOR_FLY_KEY = "ch1-ai-professor-fly";
+  const PROFESSOR_FLY_IMAGE = "assets/game/characters/npcs/ai-professor-fly-v1.png";
+  const PROFESSOR_FLY_VISUAL_SCALE = 0.18;
   const QUANTUM_SCHOLAR_KEY = "ch1-enemy-quantum-scholar-rare";
   const QUANTUM_FAMILIAR_KEY = "ch1-enemy-quantum-familiar-elite";
   const QUANTUM_PAPER_KEY = "ch1-enemy-quantum-paper-mob";
@@ -187,6 +191,7 @@
   const GARDEN_VINE_GARDENER_KEY = "ch1-enemy-garden-vine-gardener-elite";
   const GARDEN_MOON_ORCHID_KEY = "ch1-enemy-garden-moon-orchid-rare";
   const GARDEN_CARNIVORA_BOSS_KEY = "ch1-enemy-garden-carnivora-boss";
+  const M04_STRUCTURAL_BOSS_KEY = "ch1-m04-structural-instability-boss";
   const CHAPTER_ONE_ENEMY_IMAGES = [
     { key: QUANTUM_SCHOLAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-scholar-rare-cutout-v1.png" },
     { key: QUANTUM_FAMILIAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-familiar-elite-cutout-v1.png" },
@@ -201,7 +206,8 @@
     { key: GARDEN_POLLEN_MOTH_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-pollen-moth-elite-v2.png" },
     { key: GARDEN_VINE_GARDENER_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-vine-gardener-elite-v2.png" },
     { key: GARDEN_MOON_ORCHID_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-moon-orchid-rare-v2.png" },
-    { key: GARDEN_CARNIVORA_BOSS_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-carnivora-boss-v2.png" }
+    { key: GARDEN_CARNIVORA_BOSS_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-carnivora-boss-v2.png" },
+    { key: M04_STRUCTURAL_BOSS_KEY, path: "assets/game/bosses/m04-structural-instability-boss-v1.png" }
   ];
   const BOSS_PORTAL_OPEN_MS = 520;
   const BOSS_PORTAL_EGRESS_MS = 820;
@@ -491,14 +497,14 @@
   const SKILL_DEFINITIONS = {
     lina: {
       attack: {
-        name: "晶光飞弹",
+        name: "风飞弹 / 狂风重击",
         key: "J",
-        description: "魔法伤害 = 魔力 × 100%；长按蓄力后为魔力 × 155%。魔法暴击造成 200% 伤害，命中回复 8 EN，蓄力命中回复 18 EN。"
+        description: "普攻发射风飞弹，伤害 = 魔力 × 100%。长按重击使脚下风压扩散 5 格，伤害 = 魔力 × 155%，仅将普通小怪弹飞 1 格，精英与 BOSS 免疫位移。"
       },
       ultimate: {
-        name: "学风旋流",
+        name: "同心愈风链",
         key: "K",
-        description: `消耗 ${ULTIMATE_COST} EN，对身边椭圆范围内的目标造成 ${ULTIMATE_DAMAGE} 点魔法伤害。魔法暴击造成 200% 伤害。`
+        description: `消耗 ${ULTIMATE_COST} EN，在 10 格内友方之间弹射 5 次，优先命中血量比例最低者。每次治疗 28 + 魔力 × 125% HP；目标满血时改为增加 20 + 魔力 × 65% 护盾。`
       },
       heal: {
         name: "樱光护盾",
@@ -666,6 +672,8 @@
     {
       title: "量子系",
       color: 0x5ed2df,
+      mapX: 560,
+      mapY: 620,
       units: [
         { rank: "rare", label: "量子观测稀有精英", dx: 260, dy: 110, textureKey: QUANTUM_SCHOLAR_KEY, staticImage: true, tint: 0xffffff, scale: 0.68, maxHp: 260, damage: 15, creditDefense: 4, rewardExp: 44, rewardCredits: 4, dropId: "ch1_drop_quantum_probability_core", dropName: "量子概率核心" },
         { rank: "elite", label: "波函数精英", dx: -220, dy: 120, textureKey: QUANTUM_FAMILIAR_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 150, damage: 12, rewardExp: 24, rewardCredits: 2, dropId: "ch1_drop_quantum_shard", dropName: "量子相干碎片" },
@@ -677,6 +685,8 @@
     {
       title: "区块链系",
       color: 0xf3c75d,
+      mapX: 1880,
+      mapY: 620,
       units: [
         { rank: "rare", label: "链铸重兽稀有精英", dx: -270, dy: 105, textureKey: BLOCKCHAIN_CHAINBEAST_KEY, staticImage: true, tint: 0xffffff, scale: 0.55, maxHp: 300, damage: 17, creditDefense: 5, rewardExp: 46, rewardCredits: 5, dropId: "ch1_drop_chain_forge_core", dropName: "链铸重核" },
         { rank: "elite", label: "重锁精英", dx: 235, dy: 130, textureKey: BLOCKCHAIN_LOCK_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 175, damage: 13, rewardExp: 26, rewardCredits: 3, dropId: "ch1_drop_blockchain_lock", dropName: "验证锁片" },
@@ -688,6 +698,8 @@
     {
       title: "AI Agent 系",
       color: 0x8f72d6,
+      mapX: 3135,
+      mapY: 620,
       units: [
         { rank: "rare", label: "Agent 协调稀有精英", dx: 270, dy: 105, textureKey: AIAGENT_CYBERMAGE_KEY, staticImage: true, tint: 0xffffff, scale: 0.66, maxHp: 320, damage: 18, creditDefense: 6, rewardExp: 48, rewardCredits: 5, dropId: "ch1_drop_agent_memory_core", dropName: "Agent 记忆核心" },
         { rank: "elite", label: "数字猫精英", dx: -235, dy: 130, textureKey: AIAGENT_DIGITAL_CAT_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 190, damage: 14, rewardExp: 28, rewardCredits: 3, dropId: "ch1_drop_agent_tool_node", dropName: "工具节点" },
@@ -2353,6 +2365,8 @@
       this.gameNotes = [261.63, 329.63, 392, 523.25, 493.88, 392, 349.23, 392];
       this.loginTrackUrl = "assets/audio/efv-login.mp3";
       this.gameTrackUrl = "assets/audio/efv-p1m0m3.mp3";
+      this.finalMapTrackUrl = "assets/audio/efv-p1m4.mp3";
+      this.activeGameTrackUrl = this.gameTrackUrl;
       this.loginTrack = null;
       this.gameTrack = new Audio(this.gameTrackUrl);
       this.gameTrack.loop = true;
@@ -2515,11 +2529,22 @@
     }
 
     shouldPlayChapterTrack(mapId = app.profile?.mapId) {
-      return /^ch1_m0[1-3]_/.test(String(mapId || ""));
+      return /^ch1_m0[1-4]_/.test(String(mapId || ""));
+    }
+
+    selectGameTrack(mapId = app.profile?.mapId) {
+      const nextUrl = /^ch1_m04_/.test(String(mapId || "")) ? this.finalMapTrackUrl : this.gameTrackUrl;
+      if (nextUrl === this.activeGameTrackUrl) return;
+      this.gameTrack.pause();
+      this.gameTrack.currentTime = 0;
+      this.gameTrack.src = nextUrl;
+      this.gameTrack.load();
+      this.activeGameTrackUrl = nextUrl;
     }
 
     async playGameTrack() {
       if (!this.enabled || this.mode !== "game" || !this.shouldPlayChapterTrack()) return;
+      this.selectGameTrack();
       try {
         await this.gameTrack.play();
       } catch {
@@ -2534,6 +2559,7 @@
     syncMap(mapId = app.profile?.mapId) {
       if (this.mode !== "game") return;
       if (this.shouldPlayChapterTrack(mapId)) {
+        this.selectGameTrack(mapId);
         this.stopGamePulse();
         this.playGameTrack();
         return;
@@ -2732,7 +2758,8 @@
         action: app.scene?.networkAction || "idle",
         hp: app.profile.hp,
         maxHp: app.profile.maxHp,
-        shield: app.profile.shield || 0
+        shield: app.profile.shield || 0,
+        mapId: app.profile.mapId || ""
       };
     }
 
@@ -2776,6 +2803,12 @@
 
     sendDropCollect(id) {
       this.send({ type: "dropCollect", id });
+    }
+
+    sendHealingChain(healing, shield, radius, jumps) {
+      if (this.ws?.readyState !== WebSocket.OPEN) return false;
+      this.send({ type: "healingChain", healing, shield, radius, jumps });
+      return true;
     }
 
     syncDropsForCurrentMap() {
@@ -2859,6 +2892,7 @@
         }
       }
       if (message.type === "dropError") showToast(message.text || "无法拾取这个掉落物");
+      if (message.type === "healingChain") app.scene?.applyNetworkHealingChain(message);
       if (message.type === "notice" && message.text) showToast(message.text);
     }
   }
@@ -2910,14 +2944,6 @@
         frameWidth: PROJECTILE_FRAME_SIZE,
         frameHeight: PROJECTILE_FRAME_SIZE
       });
-      this.load.spritesheet(ULTIMATE_BACK_TEXTURE_KEY, ULTIMATE_BACK_ATLAS, {
-        frameWidth: ULTIMATE_FRAME_WIDTH,
-        frameHeight: ULTIMATE_FRAME_HEIGHT
-      });
-      this.load.spritesheet(ULTIMATE_FRONT_TEXTURE_KEY, ULTIMATE_FRONT_ATLAS, {
-        frameWidth: ULTIMATE_FRAME_WIDTH,
-        frameHeight: ULTIMATE_FRAME_HEIGHT
-      });
       this.load.spritesheet(LEAF_SLIME_KEY, LEAF_SLIME_SHEET, {
         frameWidth: LEAF_SLIME_FRAME_SIZE,
         frameHeight: LEAF_SLIME_FRAME_SIZE
@@ -2933,6 +2959,7 @@
         frameHeight: PROFESSOR_NPC_FRAME_HEIGHT
       });
       this.load.image(BOSS_KEY, BOSS_IMAGE);
+      this.load.image(PROFESSOR_FLY_KEY, PROFESSOR_FLY_IMAGE);
       CHAPTER_ONE_ENEMY_IMAGES.forEach(item => this.load.image(item.key, item.path));
       this.load.spritesheet(MAP_PORTAL_KEY, MAP_PORTAL_IMAGE, {
         frameWidth: MAP_PORTAL_FRAME_WIDTH,
@@ -2998,7 +3025,6 @@
       this.drawObstacles();
       this.prepareCharacterAnimations();
       this.prepareProjectileAnimations();
-      this.prepareUltimateAnimations();
       this.prepareLeafSlimeAnimations();
       this.prepareNpcAnimations();
       this.preparePortalAnimations();
@@ -3006,6 +3032,7 @@
       this.ensureBossChestTexture();
       this.ensureEnemySeedProjectileTexture();
       this.ensureLightningParticleTextures();
+      this.ensureWindParticleTextures();
 
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.enemyProjectiles = this.physics.add.group({ allowGravity: false });
@@ -3629,6 +3656,7 @@
       showToast(groupId === "ch1_m01_encounter_bug_notes"
         ? `${encounter.title || "遭遇"}完成，返回陆教授处交付任务`
         : `${encounter.title || "遭遇"}完成，区域协议已更新`);
+      if (groupId === "ch1_m04_final_boss") this.time.delayedCall(520, () => this.prepareBossChest());
     }
 
     enterChapterBossArena(node) {
@@ -3712,23 +3740,6 @@
             repeat: 0
           });
         }
-      });
-    }
-
-    prepareUltimateAnimations() {
-      [
-        { textureKey: ULTIMATE_BACK_TEXTURE_KEY, animationKey: "lina-ultimate-cyclone-back" },
-        { textureKey: ULTIMATE_FRONT_TEXTURE_KEY, animationKey: "lina-ultimate-cyclone-front" }
-      ].forEach(({ textureKey, animationKey }) => {
-        const texture = this.textures.get(textureKey);
-        texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
-        if (this.anims.exists(animationKey)) return;
-        this.anims.create({
-          key: animationKey,
-          frames: this.anims.generateFrameNumbers(textureKey, { start: 0, end: 7 }),
-          frameRate: 13,
-          repeat: 0
-        });
       });
     }
 
@@ -3857,6 +3868,29 @@
         mote.fillCircle(8, 8, 1.5);
         mote.generateTexture(LIGHTNING_MOTE_TEXTURE_KEY, 16, 16);
         mote.destroy();
+      }
+    }
+
+    ensureWindParticleTextures() {
+      if (!this.textures.exists(WIND_MOTE_TEXTURE_KEY)) {
+        const mote = this.make.graphics({ x: 0, y: 0, add: false });
+        mote.fillStyle(0x5be1cf, 0.22);
+        mote.fillEllipse(12, 12, 24, 10);
+        mote.fillStyle(0xb8fff2, 0.9);
+        mote.fillEllipse(14, 12, 13, 4);
+        mote.lineStyle(2, 0x4bc9d4, 0.9);
+        mote.lineBetween(2, 12, 22, 12);
+        mote.generateTexture(WIND_MOTE_TEXTURE_KEY, 24, 24);
+        mote.destroy();
+      }
+      if (!this.textures.exists(WIND_LEAF_TEXTURE_KEY)) {
+        const leaf = this.make.graphics({ x: 0, y: 0, add: false });
+        leaf.fillStyle(0x48c99e, 0.96);
+        leaf.fillTriangle(2, 8, 17, 3, 12, 13);
+        leaf.lineStyle(2, 0xc6ffe7, 0.86);
+        leaf.lineBetween(3, 8, 16, 5);
+        leaf.generateTexture(WIND_LEAF_TEXTURE_KEY, 20, 16);
+        leaf.destroy();
       }
     }
 
@@ -4307,7 +4341,7 @@
     syncBoss() {
       if (!this.bossSprite) return;
       const visiblePhases = new Set(["summoning", "between", "portalOpening", "portalClosing"]);
-      if (!app.boss.active && !visiblePhases.has(app.boss.phase)) {
+      if (this.professorDeparted || (!app.boss.active && !visiblePhases.has(app.boss.phase))) {
         this.bossSprite.setVisible(false).setActive(false);
         return;
       }
@@ -4322,9 +4356,10 @@
       if (!options.force && getProtocolCardIds().length < CHAPTER_ONE_PROTOCOL_CARD_GOAL) {
         showToast("协议卡不足也可挑战，但稀有精英会更难处理");
       }
-      const x = Number.isFinite(options.x) ? options.x : clamp(this.actor.x + 420, 420, this.worldWidth - 420);
-      const y = Number.isFinite(options.y) ? options.y : clamp(this.actor.y - 70, 640, this.worldHeight - 420);
       const firstWave = BOSS_SUMMON_WAVES[0];
+      const structuralExam = this.getCurrentMapId() === "ch1_m04_library_lawn_boss";
+      const x = structuralExam ? firstWave.mapX : (Number.isFinite(options.x) ? options.x : clamp(this.actor.x + 420, 420, this.worldWidth - 420));
+      const y = structuralExam ? firstWave.mapY : (Number.isFinite(options.y) ? options.y : clamp(this.actor.y - 70, 640, this.worldHeight - 420));
       const boss = {
         ...BOSS,
         active: true,
@@ -4343,6 +4378,12 @@
       app.bossRewardClaimed = false;
       setFlag(BOSS_CHEST_FLAG, false);
       this.bossWavePending = false;
+      this.professorDeparted = false;
+      (this.mapNpcs || []).filter(entry => entry.item?.id === "ch1_m04_npc_professor").forEach(entry => {
+        entry.sprite?.setVisible(false);
+        entry.shadow?.setVisible(false);
+        entry.label?.setVisible(false);
+      });
       this.bossChest?.setVisible(false).setActive(false);
       if (app.connected) app.multiplayer.sendBossStart(boss);
       syncBossState(boss);
@@ -4406,7 +4447,12 @@
       const wave = BOSS_SUMMON_WAVES[index];
       if (!wave || !app.boss.active) return;
       this.bossWavePending = true;
-      syncBossState({ ...app.boss, phase: "portalOpening", waveIndex: index, waveTitle: wave.title });
+      this.professorDeparted = false;
+      const nextX = this.getCurrentMapId() === "ch1_m04_library_lawn_boss" ? Number(wave.mapX || app.boss.x) : app.boss.x;
+      const nextY = this.getCurrentMapId() === "ch1_m04_library_lawn_boss" ? Number(wave.mapY || app.boss.y) : app.boss.y;
+      syncBossState({ ...app.boss, x: nextX, y: nextY, phase: "portalOpening", waveIndex: index, waveTitle: wave.title });
+      this.bossSprite?.setAlpha(1).setVisible(true).setActive(true);
+      this.bossSprite?.setTexture(BOSS_KEY).setScale(BOSS_VISUAL_SCALE).setAngle(0);
       this.playBossCastAnimation();
       const portal = this.createBossPortal(wave);
       showToast(`陆教授正在展开${wave.title}传送门`);
@@ -4417,6 +4463,7 @@
           this.closeBossPortal();
           syncBossState({ ...app.boss, phase: "summoning" });
           this.bossWavePending = false;
+          this.playProfessorFlyAway();
           this.updateBossSummonState();
         });
       });
@@ -4477,6 +4524,63 @@
       this.updateBossSummonState();
     }
 
+    playProfessorFlyAway() {
+      if (!this.bossSprite?.visible) return;
+      const sprite = this.bossSprite;
+      sprite.setTexture(PROFESSOR_FLY_KEY).setScale(PROFESSOR_FLY_VISUAL_SCALE).setOrigin(0.5, 0.78);
+      this.spawnHealingMotes(sprite.x, sprite.y - 90, 28, 82, 520);
+      this.tweens.killTweensOf(sprite);
+      this.tweens.add({
+        targets: sprite,
+        y: sprite.y - 180,
+        x: sprite.x + 70,
+        alpha: 0,
+        angle: 8,
+        duration: 620,
+        ease: "Cubic.easeIn",
+        onComplete: () => {
+          this.professorDeparted = true;
+          sprite.setVisible(false).setActive(false).setTexture(BOSS_KEY).setOrigin(0.5, 0.72).setScale(BOSS_VISUAL_SCALE).setAngle(0).setAlpha(1);
+        }
+      });
+    }
+
+    spawnM04FinalBoss() {
+      if (this.findLeafSlime("ch1-m04-structural-final-boss") || hasFlag("ch1_final_boss_defeated")) return;
+      const x = 3135;
+      const y = 650;
+      this.professorDeparted = true;
+      syncBossState({ ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: 1, hp: 1, summonsRemaining: 1 });
+      this.spawnLeafSlime({
+        id: "ch1-m04-structural-final-boss",
+        x,
+        y,
+        group: "ch1_m04_final_boss",
+        textureKey: M04_STRUCTURAL_BOSS_KEY,
+        staticImage: true,
+        rank: "boss",
+        label: "结构失稳聚合体",
+        scale: 0.3,
+        maxHp: 1800,
+        damage: 24,
+        creditDefense: 10,
+        rewardExp: 160,
+        rewardCredits: 12,
+        dropId: "ch1_drop_structural_core",
+        dropName: "结构稳定核心",
+        smoothMovement: true,
+        wanderSpeed: 24,
+        chaseSpeed: 42,
+        aggroRange: 820,
+        bodyWidth: 180,
+        bodyHeight: 105,
+        hudOffsetY: -270
+      });
+      app.audio.ultimateBurst();
+      this.cameras.main.shake(260, 0.004);
+      showToast("三阶段考核完成：结构失稳聚合体进入最终加载状态");
+    }
+
     updateBossSummonState() {
       if (!app.boss.active || app.boss.phase !== "summoning") return;
       const alive = (this.leafSlimes?.getChildren?.() || []).filter(slime =>
@@ -4506,7 +4610,8 @@
         this.time.delayedCall(900, () => this.beginBossWaveSequence(nextIndex));
         return;
       }
-      this.prepareBossChest();
+      if (this.getCurrentMapId() === "ch1_m04_library_lawn_boss") this.spawnM04FinalBoss();
+      else this.prepareBossChest();
     }
 
     prepareBossChest() {
@@ -4653,9 +4758,59 @@
     }
 
     playEnemyAnimation(slime, action, restart = false) {
-      if (!slime?.active || slime.staticImage) return;
+      if (!slime?.active) return;
+      if (slime.staticImage) {
+        this.playStaticEnemyAnimation(slime, action, restart);
+        return;
+      }
       const key = `${slime.textureKey || LEAF_SLIME_KEY}-${action}`;
       if (this.anims.exists(key)) slime.play(key, restart);
+    }
+
+    playStaticEnemyAnimation(slime, action, restart = false) {
+      if (!restart && slime.staticAction === action) return;
+      slime.staticAction = action;
+      const scale = Number(slime.baseVisualScale || slime.scaleX || 1);
+      if (action === "move") {
+        slime.setAngle(0).setScale(scale);
+        slime.staticMoveTween?.resume?.();
+        return;
+      }
+      slime.staticMoveTween?.pause?.();
+      if (action === "attack") {
+        this.tweens.add({
+          targets: slime,
+          scaleX: scale * 1.12,
+          scaleY: scale * 0.9,
+          angle: slime.flipX ? -5 : 5,
+          duration: 115,
+          yoyo: true,
+          ease: "Cubic.easeOut",
+          onComplete: () => slime.active && slime.setAngle(0).setScale(scale)
+        });
+      } else if (action === "hit") {
+        this.tweens.add({
+          targets: slime,
+          x: slime.x + (slime.flipX ? 10 : -10),
+          angle: slime.flipX ? 8 : -8,
+          scaleX: scale * 0.92,
+          scaleY: scale * 1.08,
+          duration: 75,
+          yoyo: true,
+          repeat: 1,
+          onComplete: () => slime.active && slime.setAngle(0).setScale(scale)
+        });
+      } else if (action === "dead") {
+        this.tweens.add({
+          targets: slime,
+          angle: slime.flipX ? 82 : -82,
+          scaleX: scale * 1.05,
+          scaleY: scale * 0.55,
+          y: slime.y + 20,
+          duration: 210,
+          ease: "Cubic.easeIn"
+        });
+      }
     }
 
     getEnemyRankStyle(slime) {
@@ -4755,6 +4910,7 @@
       slime.baseTint = Number(options.tint) || (elite ? 0xffd56b : 0xffffff);
       slime.textureKey = textureKey;
       slime.staticImage = !!options.staticImage;
+      slime.baseVisualScale = visualScale;
       slime.stationary = !!options.stationary;
       slime.rangedAttack = !!options.rangedAttack;
       slime.rangedRange = Math.max(180, Number(options.rangedRange) || 760);
@@ -4809,7 +4965,7 @@
       slime.actionToken = 0;
       this.playEnemyAnimation(slime, "move", true);
       if (slime.staticImage && !slime.stationary) {
-        this.tweens.add({
+        slime.staticMoveTween = this.tweens.add({
           targets: slime,
           angle: rank === "mob" ? 2.5 : 1.5,
           duration: 880 + Math.random() * 240,
@@ -4818,7 +4974,7 @@
           repeat: -1
         });
       } else if (slime.staticImage && slime.stationary) {
-        this.tweens.add({
+        slime.staticMoveTween = this.tweens.add({
           targets: slime,
           scaleX: visualScale * 1.025,
           scaleY: visualScale * 0.985,
@@ -5036,7 +5192,8 @@
       this.primaryHold = null;
       this.chargeHoldTimer?.remove?.(false);
       this.chargeHoldTimer = null;
-      this.fireProjectile({ charged: hold.charged });
+      if (hold.charged) this.castLinaGale();
+      else this.fireLinaWindBolt();
       this.isCasting = false;
       this.actor.setTexture(app.profile.characterId);
       this.resetActorVisualScale();
@@ -5119,6 +5276,10 @@
           maxDistance: MAP_TILE_SIZE * 7,
           visualType: "lightningOrb"
         }));
+      } else if (characterId === "lina" && charged) {
+        this.time.delayedCall(105, () => this.castLinaGale());
+      } else if (characterId === "lina") {
+        this.time.delayedCall(95, () => this.fireLinaWindBolt());
       } else if (characterId === "jiangxun") {
         this.time.delayedCall(95, () => this.fireProjectile({
           charged,
@@ -5171,7 +5332,7 @@
       this.actor.setTexture("lina");
       this.setLinaAttackVisualScale();
       this.actor.play("lina-ultimate-cast", true);
-      this.playUltimateCyclone();
+      this.playLinaHealingChainUltimate();
     }
 
     castAyuUltimate() {
@@ -5281,29 +5442,196 @@
       });
     }
 
-    playUltimateCyclone() {
-      const footCenter = this.getActorFootCenter();
-      const x = footCenter.x;
-      const y = footCenter.y;
-      const back = this.add.sprite(x, y, ULTIMATE_BACK_TEXTURE_KEY, 0)
-        .setOrigin(0.5, ULTIMATE_ORIGIN_Y)
-        .setDepth(y - 34);
-      const front = this.add.sprite(x, y, ULTIMATE_FRONT_TEXTURE_KEY, 0)
-        .setOrigin(0.5, ULTIMATE_ORIGIN_Y)
-        .setDepth(y + 42);
-
-      back.play("lina-ultimate-cyclone-back", true);
-      front.play("lina-ultimate-cyclone-front", true);
-      app.audio.ultimateWind();
-      this.time.delayedCall(430, () => {
-        this.dealUltimateDamage(x, y);
-        app.audio.ultimateBurst();
-        this.cameras.main.shake(150, 0.0022);
+    fireLinaWindBolt() {
+      this.fireProjectile({
+        kind: "magic",
+        color: 0x62dfca,
+        damage: Number(app.profile.magicPower || 22),
+        speed: 760,
+        maxDistance: MAP_TILE_SIZE * 7,
+        visualType: "windBolt"
       });
-      front.once("animationcomplete", () => {
-        back.destroy();
-        front.destroy();
-        if (!this.actor || this.isDead) return;
+    }
+
+    castLinaGale() {
+      if (!this.actor?.active || this.isDead) return;
+      const center = this.getActorFootCenter();
+      const damage = Math.round(Number(app.profile.magicPower || 22) * LINA_GALE_DAMAGE_MULTIPLIER);
+      let hitSomething = false;
+      this.playLinaGaleVisual(center.x, center.y);
+      (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
+        if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
+        const dx = slime.x - center.x;
+        const dy = slime.y + LEAF_SLIME_HIT_OFFSET_Y - center.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance > LINA_GALE_RADIUS + LEAF_SLIME_HIT_RADIUS) return;
+        this.playLeafSlimeHit(slime, damage, { kind: "magic", charged: true });
+        if (slime.rank === "mob" && slime.active && slime.body?.enable) {
+          const fallback = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+          const unit = distance > 1 ? { x: dx / distance, y: dy / distance } : fallback;
+          const pushToken = (slime.galePushToken || 0) + 1;
+          slime.galePushToken = pushToken;
+          const pushDuration = 165;
+          const pushSpeed = LINA_GALE_PUSH_DISTANCE / (pushDuration / 1000);
+          slime.body.setVelocity(unit.x * pushSpeed, unit.y * pushSpeed);
+          this.time.delayedCall(pushDuration, () => {
+            if (slime.active && slime.body?.enable && slime.galePushToken === pushToken) slime.body.setVelocity(0, 0);
+          });
+        }
+        hitSomething = true;
+      });
+      app.audio.ultimateWind();
+      if (hitSomething) this.cameras.main.shake(120, 0.0022);
+    }
+
+    playLinaGaleVisual(x, y) {
+      const wind = this.add.container(x, y - 8).setDepth(y + 72);
+      const streaks = this.add.graphics();
+      for (let index = 0; index < 34; index += 1) {
+        const angle = Math.PI * 2 * index / 34 + (index % 3) * 0.035;
+        const inner = 12 + (index % 5) * 6;
+        const outer = LINA_GALE_RADIUS * (0.76 + (index % 7) * 0.036);
+        const bend = angle + (index % 2 ? 0.11 : -0.1);
+        streaks.lineStyle(index % 4 === 0 ? 5 : 2, index % 3 === 0 ? 0xd5fff5 : 0x55d8c5, 0.42 + (index % 4) * 0.1);
+        streaks.beginPath();
+        streaks.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner * 0.52);
+        streaks.lineTo(Math.cos(bend) * outer * 0.5, Math.sin(bend) * outer * 0.3);
+        streaks.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer * 0.56);
+        streaks.strokePath();
+      }
+      wind.add(streaks);
+      this.tweens.add({
+        targets: wind,
+        scaleX: 1.12,
+        scaleY: 1.08,
+        alpha: 0,
+        duration: 430,
+        ease: "Cubic.easeOut",
+        onComplete: () => wind.destroy()
+      });
+      for (let burst = 0; burst < 5; burst += 1) {
+        this.time.delayedCall(burst * 38, () => this.spawnWindBurst(x, y - 24, 20 + burst * 3, 92 + burst * 54, 220 + burst * 42));
+      }
+    }
+
+    spawnWindBurst(x, y, count = 12, radius = 120, duration = 340) {
+      for (let index = 0; index < count; index += 1) {
+        const angle = Math.PI * 2 * index / count + Math.random() * 0.34;
+        const distance = radius * (0.72 + Math.random() * 0.42);
+        const texture = index % 4 === 0 ? WIND_LEAF_TEXTURE_KEY : WIND_MOTE_TEXTURE_KEY;
+        const mote = this.add.image(x, y, texture)
+          .setScale(texture === WIND_LEAF_TEXTURE_KEY ? 0.55 : 0.5 + Math.random() * 0.32)
+          .setRotation(angle)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(y + 86);
+        this.tweens.add({
+          targets: mote,
+          x: x + Math.cos(angle) * distance,
+          y: y + Math.sin(angle) * distance * 0.56,
+          angle: Phaser.Math.RadToDeg(angle) + 140 + Math.random() * 100,
+          alpha: 0,
+          scale: 0.16,
+          duration: duration * (0.8 + Math.random() * 0.35),
+          ease: "Cubic.easeOut",
+          onComplete: () => mote.destroy()
+        });
+      }
+    }
+
+    applyLocalFriendlyHeal(amount) {
+      if (!app.profile || amount <= 0) return;
+      const before = Number(app.profile.hp || 0);
+      app.profile.hp = Math.min(Number(app.profile.maxHp || before), before + amount);
+      const healed = app.profile.hp - before;
+      if (healed <= 0) return;
+      this.playFriendlyHealEffect(this.actor.x, this.actor.y, healed);
+      renderHud();
+      saveProfile(app.profile);
+    }
+
+    playFriendlyHealEffect(x, y, amount = 0) {
+      this.playHealEffect(x, y);
+      for (let index = 0; index < 7; index += 1) {
+        const angle = Math.PI * 2 * index / 7;
+        const mote = this.add.image(x + Math.cos(angle) * 25, y - 36 + Math.sin(angle) * 13, WIND_MOTE_TEXTURE_KEY)
+          .setScale(0.42)
+          .setRotation(angle)
+          .setDepth(y + 76);
+        this.tweens.add({
+          targets: mote,
+          x: x + Math.cos(angle + 0.9) * 45,
+          y: y - 86 + Math.sin(angle + 0.9) * 18,
+          alpha: 0,
+          angle: Phaser.Math.RadToDeg(angle) + 90,
+          duration: 620,
+          ease: "Sine.easeOut",
+          onComplete: () => mote.destroy()
+        });
+      }
+      if (amount > 0) this.showFloatingText(x, y - 122, `群体治疗 +${amount}`, { color: "#83ffd1", size: "18px", rise: 58 });
+    }
+
+    applyNetworkAreaHeal(message) {
+      const targets = Array.isArray(message?.targets) ? message.targets : [];
+      targets.forEach(target => {
+        if (!target?.id) return;
+        if (target.id === app.profile.id) {
+          const before = Number(app.profile.hp || 0);
+          app.profile.hp = clamp(Number(target.hp ?? before), 0, Number(target.maxHp || app.profile.maxHp || 1));
+          const healed = Math.max(0, app.profile.hp - before);
+          if (healed > 0) this.playFriendlyHealEffect(this.actor.x, this.actor.y, healed);
+          renderHud();
+          saveProfile(app.profile);
+          return;
+        }
+        const remote = this.remotePlayers.get(target.id);
+        if (!remote) return;
+        const before = Number(remote.hp || 0);
+        remote.maxHp = Math.max(1, Number(target.maxHp || remote.maxHp || 1));
+        remote.hp = clamp(Number(target.hp ?? before), 0, remote.maxHp);
+        const ratio = remote.hp / remote.maxHp;
+        remote.hpFill?.setDisplaySize(Math.max(1, 48 * ratio), 4).setVisible(remote.hp > 0);
+        if (remote.hp > before) this.playFriendlyHealEffect(remote.sprite.x, remote.sprite.y, remote.hp - before);
+      });
+    }
+
+    playLinaHealingChainUltimate() {
+      if (!this.actor?.active || this.isDead) return;
+      const magic = Number(app.profile.magicPower || 22);
+      const healing = Math.round(LINA_HEAL_CHAIN_BASE + magic * LINA_HEAL_CHAIN_MULTIPLIER);
+      const shield = Math.round(LINA_HEAL_CHAIN_SHIELD_BASE + magic * LINA_HEAL_CHAIN_SHIELD_MULTIPLIER);
+      this.playHealingChainCastBurst(this.actor.x, this.actor.y);
+      app.audio.ultimateWind();
+      if (!app.connected || !app.multiplayer?.sendHealingChain(healing, shield, LINA_HEAL_CHAIN_RANGE, LINA_HEAL_CHAIN_JUMPS)) {
+        const bounces = [];
+        let hp = Number(app.profile.hp || 0);
+        const maxHp = Math.max(1, Number(app.profile.maxHp || 1));
+        let currentShield = Number(app.profile.shield || 0);
+        const maxShield = Math.round(maxHp * 0.5);
+        for (let index = 0; index < LINA_HEAL_CHAIN_JUMPS; index += 1) {
+          const beforeHp = hp;
+          const beforeShield = currentShield;
+          if (hp < maxHp) hp = Math.min(maxHp, hp + healing);
+          else currentShield = Math.min(maxShield, currentShield + shield);
+          bounces.push({
+            targetId: app.profile.id,
+            hp,
+            maxHp,
+            shield: currentShield,
+            healed: hp - beforeHp,
+            shieldGain: currentShield - beforeShield,
+            x: this.actor.x,
+            y: this.actor.y
+          });
+        }
+        this.applyNetworkHealingChain({
+          sourceId: app.profile.id,
+          source: { x: this.actor.x, y: this.actor.y },
+          bounces
+        });
+      }
+      this.time.delayedCall(860, () => {
+        if (!this.actor?.active || this.isDead) return;
         this.isCasting = false;
         this.isActionLocked = false;
         this.actor.setTexture(app.profile.characterId);
@@ -5312,28 +5640,275 @@
       });
     }
 
-    dealUltimateDamage(cx, cy) {
-      if (!this.actor || this.isDead) return;
-      let hitSomething = false;
-      const slimes = this.leafSlimes?.getChildren?.() || [];
-      for (const slime of slimes) {
-        if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) continue;
-        const dx = slime.x - cx;
-        const dy = (slime.y + LEAF_SLIME_HIT_OFFSET_Y) - cy;
-        if ((dx * dx) / (ULTIMATE_RADIUS_X * ULTIMATE_RADIUS_X) + (dy * dy) / (ULTIMATE_RADIUS_Y * ULTIMATE_RADIUS_Y) <= 1) {
-          this.playLeafSlimeHit(slime, ULTIMATE_DAMAGE, { kind: "magic", noEnergyGain: true });
-          hitSomething = true;
+    applyNetworkHealingChain(message) {
+      const bounces = Array.isArray(message?.bounces) ? message.bounces.slice(0, LINA_HEAL_CHAIN_JUMPS) : [];
+      let previous = message?.source || this.getFriendlyEffectPosition(message?.sourceId);
+      bounces.forEach((bounce, index) => {
+        this.time.delayedCall(index * 125, () => {
+          const targetPosition = this.getFriendlyEffectPosition(bounce.targetId) || { x: bounce.x, y: bounce.y };
+          const target = targetPosition || previous || { x: this.actor.x, y: this.actor.y };
+          this.playHealingChainArc(previous || target, target, index);
+          this.applyHealingChainTargetState(bounce, target);
+          previous = target;
+          if (index === bounces.length - 1) app.audio.heal();
+        });
+      });
+    }
+
+    getFriendlyEffectPosition(playerId) {
+      if (playerId === app.profile.id) return this.actor?.active ? { x: this.actor.x, y: this.actor.y } : null;
+      const remote = this.remotePlayers.get(playerId);
+      return remote?.sprite?.active ? { x: remote.sprite.x, y: remote.sprite.y } : null;
+    }
+
+    applyHealingChainTargetState(bounce, position) {
+      const healed = Math.max(0, Number(bounce.healed || 0));
+      const shieldGain = Math.max(0, Number(bounce.shieldGain || 0));
+      if (bounce.targetId === app.profile.id) {
+        app.profile.hp = clamp(Number(bounce.hp ?? app.profile.hp), 0, Number(bounce.maxHp || app.profile.maxHp || 1));
+        app.profile.shield = Math.max(0, Number(bounce.shield ?? app.profile.shield ?? 0));
+        renderHud();
+        saveProfile(app.profile);
+      } else {
+        const remote = this.remotePlayers.get(bounce.targetId);
+        if (remote) {
+          remote.maxHp = Math.max(1, Number(bounce.maxHp || remote.maxHp || 1));
+          remote.hp = clamp(Number(bounce.hp ?? remote.hp), 0, remote.maxHp);
+          remote.shield = Math.max(0, Number(bounce.shield ?? remote.shield ?? 0));
+          const ratio = remote.hp / remote.maxHp;
+          remote.hpFill?.setDisplaySize(Math.max(1, 48 * ratio), 4).setVisible(remote.hp > 0);
         }
       }
-      if (app.boss.active && app.boss.hp > 0 && this.bossSprite?.visible) {
-        const dx = app.boss.x - cx;
-        const dy = (app.boss.y - 60) - cy;
-        if ((dx * dx) / (ULTIMATE_RADIUS_X * ULTIMATE_RADIUS_X) + (dy * dy) / (ULTIMATE_RADIUS_Y * ULTIMATE_RADIUS_Y) <= 1) {
-          this.applyBossDamage(ULTIMATE_DAMAGE);
-          hitSomething = true;
-        }
+      this.playHealingChainImpact(position.x, position.y, healed, shieldGain);
+    }
+
+    playHealingChainCastBurst(x, y) {
+      const rays = this.add.graphics().setPosition(x, y - 42).setDepth(y + 82).setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 28; index += 1) {
+        const angle = Math.PI * 2 * index / 28;
+        const inner = 12 + (index % 3) * 5;
+        const outer = 44 + (index % 5) * 9;
+        rays.lineStyle(index % 4 === 0 ? 4 : 2, index % 3 ? 0x7dedd5 : 0xfff1b8, 0.72);
+        rays.lineBetween(Math.cos(angle) * inner, Math.sin(angle) * inner, Math.cos(angle) * outer, Math.sin(angle) * outer);
       }
-      if (hitSomething) this.cameras.main.shake(140, 0.002);
+      this.tweens.add({ targets: rays, scale: 1.55, alpha: 0, angle: 24, duration: 420, ease: "Cubic.easeOut", onComplete: () => rays.destroy() });
+      this.spawnHealingMotes(x, y - 42, 38, 76, 520);
+    }
+
+    playHealingChainArc(from, to, bounceIndex = 0) {
+      const sameTarget = Phaser.Math.Distance.Between(from.x, from.y, to.x, to.y) < 8;
+      const points = [];
+      const steps = 16;
+      const dx = sameTarget ? 70 : to.x - from.x;
+      const dy = sameTarget ? -8 : to.y - from.y;
+      const length = Math.max(1, Math.hypot(dx, dy));
+      const nx = -dy / length;
+      const ny = dx / length;
+      for (let step = 0; step <= steps; step += 1) {
+        const t = step / steps;
+        const wave = Math.sin(t * Math.PI * 3 + bounceIndex * 1.3) * (sameTarget ? 20 : 8 + bounceIndex * 1.6);
+        const loop = sameTarget ? Math.sin(t * Math.PI) * 55 : 0;
+        points.push({
+          x: from.x + dx * t + nx * wave + (sameTarget ? Math.cos(t * Math.PI * 2) * loop : 0),
+          y: from.y - 52 + dy * t + ny * wave - (sameTarget ? Math.sin(t * Math.PI) * 36 : 0)
+        });
+      }
+      const beam = this.add.graphics().setDepth(Math.max(from.y, to.y) + 94).setBlendMode(Phaser.BlendModes.ADD);
+      [
+        { width: 12, color: 0x4ddfc7, alpha: 0.16 },
+        { width: 6, color: 0x76f2da, alpha: 0.68 },
+        { width: 2, color: 0xf3fff8, alpha: 0.98 }
+      ].forEach(style => {
+        beam.lineStyle(style.width, style.color, style.alpha);
+        beam.beginPath();
+        points.forEach((point, index) => index ? beam.lineTo(point.x, point.y) : beam.moveTo(point.x, point.y));
+        beam.strokePath();
+      });
+      this.tweens.add({ targets: beam, alpha: 0, duration: 240, ease: "Sine.easeOut", onComplete: () => beam.destroy() });
+      points.slice(1).forEach((point, index) => {
+        if (index % 2) return;
+        this.time.delayedCall(index * 4, () => {
+          const mote = this.add.image(point.x, point.y, WIND_MOTE_TEXTURE_KEY)
+            .setScale(0.3 + Math.random() * 0.22)
+            .setRotation(Math.random() * Math.PI)
+            .setBlendMode(Phaser.BlendModes.ADD)
+            .setDepth(Math.max(from.y, to.y) + 96);
+          this.tweens.add({ targets: mote, y: mote.y - 18 - Math.random() * 14, alpha: 0, scale: 0.1, duration: 280, onComplete: () => mote.destroy() });
+        });
+      });
+    }
+
+    playHealingChainImpact(x, y, healed, shieldGain) {
+      const burst = this.add.graphics().setPosition(x, y - 48).setDepth(y + 100).setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 18; index += 1) {
+        const angle = Math.PI * 2 * index / 18 + 0.12;
+        const length = 30 + (index % 5) * 10;
+        burst.lineStyle(index % 3 === 0 ? 4 : 2, shieldGain > 0 ? 0xa7e9ff : 0x9dffe1, 0.82);
+        burst.lineBetween(Math.cos(angle) * 8, Math.sin(angle) * 8, Math.cos(angle) * length, Math.sin(angle) * length);
+      }
+      const star = this.add.star(x, y - 50, 8, 10, 28, shieldGain > 0 ? 0xbcecff : 0xe8fff6, 0.88)
+        .setDepth(y + 102)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      this.tweens.add({ targets: [burst, star], scale: 1.55, alpha: 0, angle: 38, duration: 480, ease: "Cubic.easeOut", onComplete: () => { burst.destroy(); star.destroy(); } });
+      this.spawnHealingMotes(x, y - 34, 42, 92, 660);
+      if (healed > 0) this.showFloatingText(x, y - 130, `治疗 +${Math.round(healed)}`, { color: "#82ffd4", size: "22px", rise: 68 });
+      else if (shieldGain > 0) this.showFloatingText(x, y - 130, `护盾 +${Math.round(shieldGain)}`, { color: "#aeeaff", size: "22px", rise: 68 });
+    }
+
+    spawnHealingMotes(x, y, count, spread, duration) {
+      for (let index = 0; index < count; index += 1) {
+        const angle = Math.PI * 2 * index / count + Math.random() * 0.3;
+        const distance = spread * (0.35 + Math.random() * 0.65);
+        const texture = index % 7 === 0 ? WIND_LEAF_TEXTURE_KEY : WIND_MOTE_TEXTURE_KEY;
+        const mote = this.add.image(x + Math.cos(angle) * 8, y + Math.sin(angle) * 5, texture)
+          .setScale(texture === WIND_LEAF_TEXTURE_KEY ? 0.46 : 0.28 + Math.random() * 0.28)
+          .setRotation(angle)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(y + 150);
+        this.tweens.add({
+          targets: mote,
+          x: x + Math.cos(angle) * distance,
+          y: y + Math.sin(angle) * distance * 0.62 - 30 - Math.random() * 34,
+          alpha: 0,
+          angle: Phaser.Math.RadToDeg(angle) + 170,
+          scale: 0.08,
+          duration: duration * (0.75 + Math.random() * 0.4),
+          ease: "Cubic.easeOut",
+          onComplete: () => mote.destroy()
+        });
+      }
+    }
+
+    playLinaTornadoUltimate() {
+      if (!this.actor?.active || this.isDead) return;
+      const aim = normalizeVector((this.lastAimVector || directionVector(this.facing || DIRECTIONS[2])).x, (this.lastAimVector || directionVector(this.facing || DIRECTIONS[2])).y);
+      const start = this.getActorFootCenter();
+      const origin = { x: start.x + aim.x * 74, y: start.y + aim.y * 74 };
+      const end = {
+        x: clamp(origin.x + aim.x * LINA_TORNADO_RANGE, 80, this.worldWidth - 80),
+        y: clamp(origin.y + aim.y * LINA_TORNADO_RANGE, 96, this.worldHeight - 80)
+      };
+      const tornado = this.createLinaTornadoVisual(origin.x, origin.y);
+      const startedAt = this.time.now;
+      let lastDamageAt = startedAt - LINA_TORNADO_TICK_MS;
+      app.audio.ultimateWind();
+      const timer = this.time.addEvent({
+        delay: 32,
+        loop: true,
+        callback: () => {
+          if (!tornado.active) return;
+          const elapsed = this.time.now - startedAt;
+          const progress = clamp(elapsed / LINA_TORNADO_DURATION, 0, 1);
+          const eased = Phaser.Math.Easing.Sine.InOut(progress);
+          const x = Phaser.Math.Linear(origin.x, end.x, eased);
+          const y = Phaser.Math.Linear(origin.y, end.y, eased);
+          tornado.setPosition(x, y).setDepth(y + 82);
+          tornado.windBands.forEach((band, index) => band.setRotation(band.rotation + (index % 2 ? -0.2 : 0.24)));
+          if (elapsed - tornado.lastMoteAt > 64) {
+            tornado.lastMoteAt = elapsed;
+            this.spawnTornadoMote(x, y);
+          }
+          const dealDamage = this.time.now - lastDamageAt >= LINA_TORNADO_TICK_MS;
+          if (dealDamage) lastDamageAt = this.time.now;
+          this.pullEnemiesIntoLinaTornado(x, y, dealDamage);
+          if (progress >= 1) {
+            timer.remove(false);
+            this.tweens.add({
+              targets: tornado,
+              alpha: 0,
+              scaleX: 0.55,
+              scaleY: 1.16,
+              duration: 260,
+              ease: "Sine.easeIn",
+              onComplete: () => tornado.destroy()
+            });
+            this.isCasting = false;
+            this.isActionLocked = false;
+            this.actor?.setTexture(app.profile.characterId);
+            this.resetActorVisualScale();
+            if (!this.isDead) this.returnToBaseLoop();
+          }
+        }
+      });
+      this.time.delayedCall(180, () => app.audio.ultimateBurst());
+    }
+
+    createLinaTornadoVisual(x, y) {
+      const container = this.add.container(x, y).setDepth(y + 82);
+      container.windBands = [];
+      container.lastMoteAt = 0;
+      const glow = this.add.ellipse(0, 0, 112, 34, 0x63dfcb, 0.18)
+        .setStrokeStyle(3, 0xc8fff1, 0.5)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      container.add(glow);
+      for (let bandIndex = 0; bandIndex < 5; bandIndex += 1) {
+        const band = this.add.graphics();
+        const baseY = -bandIndex * 28;
+        const width = 84 - bandIndex * 10;
+        band.lineStyle(bandIndex < 2 ? 6 : 4, bandIndex % 2 ? 0x54d7c4 : 0xc7fff3, 0.78 - bandIndex * 0.08);
+        band.beginPath();
+        for (let step = 0; step <= 18; step += 1) {
+          const angle = step / 18 * Math.PI * 2;
+          const px = Math.cos(angle) * width * (0.42 + bandIndex * 0.025);
+          const py = baseY + Math.sin(angle) * (12 + bandIndex * 1.5) - Math.cos(angle * 2) * 3;
+          if (step === 0) band.moveTo(px, py);
+          else band.lineTo(px, py);
+        }
+        band.strokePath();
+        container.windBands.push(band);
+        container.add(band);
+      }
+      const core = this.add.graphics();
+      core.fillStyle(0x9effed, 0.17);
+      core.fillTriangle(-42, 4, 42, 4, 8, -142);
+      core.lineStyle(3, 0x72e8d6, 0.35);
+      core.lineBetween(-34, 0, 2, -142);
+      core.lineBetween(34, 0, 8, -142);
+      container.addAt(core, 0);
+      this.tweens.add({ targets: glow, scaleX: 1.24, scaleY: 0.72, alpha: 0.06, duration: 150, yoyo: true, repeat: -1 });
+      return container;
+    }
+
+    spawnTornadoMote(x, y) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 32 + Math.random() * 48;
+      const texture = Math.random() < 0.24 ? WIND_LEAF_TEXTURE_KEY : WIND_MOTE_TEXTURE_KEY;
+      const mote = this.add.image(x + Math.cos(angle) * radius, y - Math.random() * 130, texture)
+        .setScale(texture === WIND_LEAF_TEXTURE_KEY ? 0.48 : 0.38 + Math.random() * 0.26)
+        .setRotation(angle)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 90);
+      this.tweens.add({
+        targets: mote,
+        x: x + Math.cos(angle + Math.PI * 1.2) * radius * 0.35,
+        y: mote.y - 34 - Math.random() * 28,
+        angle: Phaser.Math.RadToDeg(angle) + 230,
+        alpha: 0,
+        duration: 300,
+        ease: "Sine.easeIn",
+        onComplete: () => mote.destroy()
+      });
+    }
+
+    pullEnemiesIntoLinaTornado(x, y, dealDamage) {
+      const damage = Math.round(Number(app.profile.magicPower || 22) * LINA_TORNADO_DAMAGE_MULTIPLIER);
+      (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
+        if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
+        const dx = x - slime.x;
+        const dy = y - (slime.y + LEAF_SLIME_HIT_OFFSET_Y);
+        const distance = Math.hypot(dx, dy);
+        if (distance > LINA_TORNADO_PULL_RADIUS + LEAF_SLIME_HIT_RADIUS) return;
+        if (dealDamage && this.time.now - Number(slime.lastLinaTornadoHitAt || 0) >= LINA_TORNADO_TICK_MS - 24) {
+          slime.lastLinaTornadoHitAt = this.time.now;
+          this.playLeafSlimeHit(slime, damage, { kind: "magic", noEnergyGain: true });
+        }
+        if (!slime.active || !slime.body?.enable) return;
+        const unit = distance > 1 ? { x: dx / distance, y: dy / distance } : { x: 0, y: 0 };
+        const pull = 230 + (1 - clamp(distance / LINA_TORNADO_PULL_RADIUS, 0, 1)) * 390;
+        const tangent = distance > 34 ? 115 : 0;
+        slime.tornadoPullUntil = this.time.now + 72;
+        slime.body.setVelocity(unit.x * pull - unit.y * tangent, unit.y * pull + unit.x * tangent);
+      });
     }
 
     dealMeleeDamage(options = {}) {
@@ -5760,6 +6335,13 @@
           projectile.visualRotation,
           Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth)
         );
+      } else if (options.visualType === "windBolt") {
+        projectile.visual = this.createWindBoltVisual(
+          castOrigin.x,
+          castOrigin.y,
+          projectile.visualRotation,
+          Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth)
+        );
       } else {
         projectile.visual = this.add.sprite(castOrigin.x, castOrigin.y, PROJECTILE_TEXTURE_KEY, flightFrame)
           .setOrigin(projectileOrigin.x, projectileOrigin.y)
@@ -5791,6 +6373,43 @@
       });
       this.tweens.add({ targets: spark, angle: 90, duration: 160, repeat: -1 });
       return container;
+    }
+
+    createWindBoltVisual(x, y, rotation, depth) {
+      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
+      const wake = this.add.ellipse(-10, 0, 58, 20, 0x54d7c4, 0.18).setBlendMode(Phaser.BlendModes.ADD);
+      const shell = this.add.ellipse(6, 0, 30, 15, 0x58dcc8, 0.72)
+        .setStrokeStyle(2, 0xcafff2, 0.95)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.ellipse(10, 0, 13, 7, 0xe7fff8, 0.96).setBlendMode(Phaser.BlendModes.ADD);
+      const spiral = this.add.graphics();
+      spiral.lineStyle(2, 0xb7ffec, 0.8);
+      spiral.beginPath();
+      spiral.moveTo(-28, -7);
+      spiral.lineTo(-17, -12);
+      spiral.lineTo(-4, -9);
+      spiral.lineTo(5, -2);
+      spiral.strokePath();
+      spiral.beginPath();
+      spiral.moveTo(-30, 7);
+      spiral.lineTo(-17, 11);
+      spiral.lineTo(-3, 8);
+      spiral.strokePath();
+      container.add([wake, spiral, shell, core]);
+      this.tweens.add({ targets: [wake, shell], scaleX: 1.16, scaleY: 0.78, alpha: 0.48, duration: 90, yoyo: true, repeat: -1 });
+      return container;
+    }
+
+    renderWindBoltImpact(x, y) {
+      const slash = this.add.graphics().setPosition(x, y).setDepth(y + 72);
+      [0, 1, 2].forEach(index => {
+        slash.lineStyle(4 - index, index === 1 ? 0xcafff2 : 0x55d8c5, 0.82 - index * 0.18);
+        slash.beginPath();
+        slash.arc(0, 0, 22 + index * 11, -0.85 + index * 1.7, 1.45 + index * 1.4, false);
+        slash.strokePath();
+      });
+      this.tweens.add({ targets: slash, angle: 36, scale: 1.35, alpha: 0, duration: 260, ease: "Cubic.easeOut", onComplete: () => slash.destroy() });
+      this.spawnWindBurst(x, y, 9, 58, 240);
     }
 
     getCastOrigin(vec) {
@@ -5840,6 +6459,11 @@
       projectile.visual?.destroy();
       if (projectile.visualType === "lightningOrb") {
         if (burst) this.renderLightningOrbImpact(projectile.x, projectile.y);
+        projectile.destroy();
+        return;
+      }
+      if (projectile.visualType === "windBolt") {
+        if (burst) this.renderWindBoltImpact(projectile.x, projectile.y);
         projectile.destroy();
         return;
       }
@@ -6205,6 +6829,177 @@
       });
     }
 
+    tryTriggerEnemyLightSkill(slime, time) {
+      if (!slime?.active || !this.actor?.active || this.isDead) return false;
+      if (slime.rank === "rare") {
+        const cooldown = 4200;
+        if (time - Number(slime.lastLightSkillAt || -cooldown) < cooldown) return false;
+        slime.lastLightSkillAt = time;
+        this.triggerRareLightSkill(slime);
+        return true;
+      }
+      if (slime.rank !== "boss") return false;
+      const cooldown = 3000;
+      if (time - Number(slime.lastLightSkillAt || -cooldown) < cooldown) return false;
+      slime.lastLightSkillAt = time;
+      slime.specialSkillIndex = Number(slime.specialSkillIndex || 0) + 1;
+      if (slime.specialSkillIndex % 2) this.triggerBossMultiLineSkill(slime);
+      else this.triggerBossRandomAreaSkill(slime);
+      return true;
+    }
+
+    beginEnemySpecialSkill(slime) {
+      slime.actionToken = (slime.actionToken || 0) + 1;
+      slime.state = "attack";
+      slime.body?.setVelocity(0, 0);
+      this.playEnemyAnimation(slime, "attack", true);
+      app.audio?.enemyAttack();
+      return slime.actionToken;
+    }
+
+    finishEnemySpecialSkill(slime, token, delay = 760) {
+      this.time.delayedCall(delay, () => {
+        if (!slime?.active || slime.actionToken !== token || ["dead", "vanish"].includes(slime.state)) return;
+        slime.state = "move";
+        slime.body?.setVelocity(0, 0);
+        this.playEnemyAnimation(slime, "move", true);
+      });
+    }
+
+    triggerRareLightSkill(slime) {
+      const token = this.beginEnemySpecialSkill(slime);
+      const start = { x: slime.x, y: slime.y - Math.min(90, slime.displayHeight * 0.24) };
+      const aim = normalizeVector(this.actor.x - start.x, this.actor.y - 44 - start.y);
+      const end = { x: start.x + aim.x * 700, y: start.y + aim.y * 700 };
+      const warning = this.add.graphics().setDepth(slime.y + 92).setBlendMode(Phaser.BlendModes.ADD);
+      warning.lineStyle(5, 0xffd46a, 0.16);
+      warning.lineBetween(start.x, start.y, end.x, end.y);
+      warning.lineStyle(1, 0xfff0b5, 0.72);
+      warning.lineBetween(start.x, start.y, end.x, end.y);
+      this.tweens.add({ targets: warning, alpha: 0.35, duration: 180, yoyo: true, repeat: 1 });
+      this.time.delayedCall(430, () => {
+        warning.destroy();
+        if (!slime.active || slime.actionToken !== token) return;
+        this.renderEnemyEnergyBeam(start, end, 0xffcf5d, 260);
+        if (this.distanceToSegment(this.actor.x, this.actor.y - 36, start, end) <= 34) this.damagePlayer(Math.round(slime.damage * 1.35));
+        this.cameras.main.shake(90, 0.0022);
+      });
+      this.finishEnemySpecialSkill(slime, token, 720);
+    }
+
+    triggerBossMultiLineSkill(slime) {
+      const token = this.beginEnemySpecialSkill(slime);
+      const start = { x: slime.x, y: slime.y - Math.min(110, slime.displayHeight * 0.24) };
+      const base = Math.atan2(this.actor.y - 44 - start.y, this.actor.x - start.x);
+      const lines = [-0.34, -0.17, 0, 0.17, 0.34].map(offset => ({
+        start,
+        end: { x: start.x + Math.cos(base + offset) * 860, y: start.y + Math.sin(base + offset) * 860 }
+      }));
+      const warning = this.add.graphics().setDepth(slime.y + 96).setBlendMode(Phaser.BlendModes.ADD);
+      lines.forEach((line, index) => {
+        warning.lineStyle(index === 2 ? 4 : 2, 0x55ddff, index === 2 ? 0.52 : 0.3);
+        warning.lineBetween(line.start.x, line.start.y, line.end.x, line.end.y);
+      });
+      this.tweens.add({ targets: warning, alpha: 0.12, duration: 170, yoyo: true, repeat: 2 });
+      this.time.delayedCall(620, () => {
+        warning.destroy();
+        if (!slime.active || slime.actionToken !== token) return;
+        let hit = false;
+        lines.forEach((line, index) => {
+          this.renderEnemyEnergyBeam(line.start, line.end, index === 2 ? 0xb8f7ff : 0x49cbea, 340);
+          if (this.distanceToSegment(this.actor.x, this.actor.y - 36, line.start, line.end) <= 30) hit = true;
+        });
+        if (hit) this.damagePlayer(Math.round(slime.damage * 1.5));
+        this.cameras.main.shake(180, 0.0035);
+      });
+      this.finishEnemySpecialSkill(slime, token, 980);
+    }
+
+    triggerBossRandomAreaSkill(slime) {
+      const token = this.beginEnemySpecialSkill(slime);
+      const points = Array.from({ length: 5 }, (_, index) => {
+        const angle = Math.PI * 2 * index / 5 + Math.random() * 0.5;
+        const distance = index === 0 ? 35 : 85 + Math.random() * 190;
+        return {
+          x: clamp(this.actor.x + Math.cos(angle) * distance, 80, this.worldWidth - 80),
+          y: clamp(this.actor.y + Math.sin(angle) * distance, 100, this.worldHeight - 80)
+        };
+      });
+      const warnings = points.map(point => {
+        const cross = this.add.graphics().setPosition(point.x, point.y).setDepth(point.y + 96).setBlendMode(Phaser.BlendModes.ADD);
+        cross.lineStyle(4, 0xff8b68, 0.52);
+        cross.lineBetween(-42, 0, 42, 0);
+        cross.lineBetween(0, -24, 0, 24);
+        cross.lineStyle(2, 0xffd0a6, 0.76);
+        cross.lineBetween(-24, -16, 24, 16);
+        cross.lineBetween(-24, 16, 24, -16);
+        this.tweens.add({ targets: cross, scale: 1.28, alpha: 0.18, duration: 230, yoyo: true, repeat: 1 });
+        return cross;
+      });
+      this.time.delayedCall(720, () => {
+        warnings.forEach(item => item.destroy());
+        if (!slime.active || slime.actionToken !== token) return;
+        let hit = false;
+        points.forEach(point => {
+          this.renderEnemyAreaBurst(point.x, point.y);
+          if (Phaser.Math.Distance.Between(this.actor.x, this.actor.y, point.x, point.y) <= 82) hit = true;
+        });
+        if (hit) this.damagePlayer(Math.round(slime.damage * 1.65));
+        this.cameras.main.shake(210, 0.004);
+      });
+      this.finishEnemySpecialSkill(slime, token, 1080);
+    }
+
+    renderEnemyEnergyBeam(start, end, color, duration) {
+      const beam = this.add.graphics().setDepth(Math.max(start.y, end.y) + 104).setBlendMode(Phaser.BlendModes.ADD);
+      beam.lineStyle(16, color, 0.12);
+      beam.lineBetween(start.x, start.y, end.x, end.y);
+      beam.lineStyle(7, color, 0.78);
+      beam.lineBetween(start.x, start.y, end.x, end.y);
+      beam.lineStyle(2, 0xffffff, 0.96);
+      beam.lineBetween(start.x, start.y, end.x, end.y);
+      const length = Phaser.Math.Distance.Between(start.x, start.y, end.x, end.y);
+      for (let index = 0; index < 22; index += 1) {
+        const t = index / 21;
+        const mote = this.add.image(Phaser.Math.Linear(start.x, end.x, t), Phaser.Math.Linear(start.y, end.y, t), LIGHTNING_MOTE_TEXTURE_KEY)
+          .setTint(color)
+          .setScale(0.22 + Math.random() * 0.24)
+          .setDepth(Math.max(start.y, end.y) + 106)
+          .setBlendMode(Phaser.BlendModes.ADD);
+        this.tweens.add({ targets: mote, x: mote.x + Phaser.Math.Between(-18, 18), y: mote.y + Phaser.Math.Between(-18, 18), alpha: 0, duration: duration + Math.random() * 100, onComplete: () => mote.destroy() });
+      }
+      this.tweens.add({ targets: beam, alpha: 0, duration, ease: "Cubic.easeOut", onComplete: () => beam.destroy() });
+      return length;
+    }
+
+    renderEnemyAreaBurst(x, y) {
+      const cracks = this.add.graphics().setPosition(x, y).setDepth(y + 104).setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 16; index += 1) {
+        const angle = Math.PI * 2 * index / 16 + Math.random() * 0.18;
+        const length = 38 + Math.random() * 64;
+        cracks.lineStyle(index % 3 === 0 ? 5 : 2, index % 2 ? 0xffa168 : 0x8de8ff, 0.78);
+        cracks.beginPath();
+        cracks.moveTo(0, 0);
+        cracks.lineTo(Math.cos(angle) * length * 0.48, Math.sin(angle) * length * 0.34);
+        cracks.lineTo(Math.cos(angle + 0.08) * length, Math.sin(angle + 0.08) * length * 0.68);
+        cracks.strokePath();
+      }
+      this.tweens.add({ targets: cracks, scale: 1.35, alpha: 0, duration: 460, ease: "Cubic.easeOut", onComplete: () => cracks.destroy() });
+      for (let index = 0; index < 24; index += 1) {
+        const angle = Math.PI * 2 * index / 24;
+        const mote = this.add.image(x, y, LIGHTNING_MOTE_TEXTURE_KEY).setTint(index % 2 ? 0xffa168 : 0x72dcff).setScale(0.3).setDepth(y + 108).setBlendMode(Phaser.BlendModes.ADD);
+        this.tweens.add({ targets: mote, x: x + Math.cos(angle) * (50 + Math.random() * 55), y: y + Math.sin(angle) * (28 + Math.random() * 45), alpha: 0, duration: 380, onComplete: () => mote.destroy() });
+      }
+    }
+
+    distanceToSegment(px, py, start, end) {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const lengthSquared = dx * dx + dy * dy || 1;
+      const t = clamp(((px - start.x) * dx + (py - start.y) * dy) / lengthSquared, 0, 1);
+      return Math.hypot(px - (start.x + dx * t), py - (start.y + dy * t));
+    }
+
     triggerRangedEnemyAttack(slime, dx, dy) {
       const now = this.time.now;
       if (!slime.rangedAttack || now - slime.lastRangedAttackAt < slime.rangedCooldown) return;
@@ -6370,10 +7165,12 @@
         if (!slime?.active || !this.actor?.active) return;
         slime.setDepth(slime.y + 6);
         this.updateEnemyHud(slime);
+        if (time < Number(slime.tornadoPullUntil || 0)) return;
         if (["hit", "dead", "vanish", "attack", "hop", "emerging"].includes(slime.state)) return;
         const dx = this.actor.x - slime.x;
         const dy = this.actor.y - slime.y;
         const distance = Math.hypot(dx, dy);
+        if (distance <= MAP_TILE_SIZE * 12 && this.tryTriggerEnemyLightSkill(slime, time)) return;
         if (slime.stationary) {
           slime.body.setVelocity(0, 0);
           if (slime.rangedAttack && distance <= slime.rangedRange) this.triggerRangedEnemyAttack(slime, dx, dy);
@@ -6502,13 +7299,27 @@
           .setRotation(Math.atan2(vy, vx))
           .setDepth(Math.max(projectile.y + (projectile.depthOffset || 10), projectile.visualBaseDepth || 0));
         projectile.trail.push({ x: projectile.x, y: projectile.y });
-        if (projectile.trail.length > (projectile.visualType === "lightningOrb" ? 9 : 7)) projectile.trail.shift();
+        if (projectile.trail.length > (["lightningOrb", "windBolt"].includes(projectile.visualType) ? 9 : 7)) projectile.trail.shift();
         if (projectile.visualType === "lightningOrb") {
           projectile.trail.forEach((point, index) => {
             const progress = (index + 1) / projectile.trail.length;
             this.projectileGraphics.fillStyle(index % 2 ? 0x174cff : 0x00a8ff, progress * 0.24);
             this.projectileGraphics.fillCircle(point.x, point.y, 1.5 + progress * 4.5);
           });
+        } else if (projectile.visualType === "windBolt") {
+          projectile.trail.forEach((point, index) => {
+            const progress = (index + 1) / projectile.trail.length;
+            this.projectileGraphics.fillStyle(index % 3 ? 0x55d8c5 : 0xd2fff4, progress * 0.2);
+            this.projectileGraphics.fillEllipse(point.x, point.y, 4 + progress * 9, 2 + progress * 3);
+          });
+          if (this.time.now - projectile.lastTrailSparkAt > 55) {
+            projectile.lastTrailSparkAt = this.time.now;
+            const mote = this.add.image(projectile.x, projectile.y, Math.random() < 0.2 ? WIND_LEAF_TEXTURE_KEY : WIND_MOTE_TEXTURE_KEY)
+              .setScale(0.28 + Math.random() * 0.22)
+              .setRotation(projectile.visualRotation + Math.random() - 0.5)
+              .setDepth(projectile.y + 8);
+            this.tweens.add({ targets: mote, y: mote.y - 12 - Math.random() * 14, alpha: 0, angle: mote.angle + 100, duration: 220, onComplete: () => mote.destroy() });
+          }
         } else {
           projectile.trail.forEach((point, index) => {
             const alpha = (index + 1) / projectile.trail.length * .18;
@@ -6755,7 +7566,7 @@
         parent: "gameRoot",
         width: window.innerWidth,
         height: window.innerHeight,
-        backgroundColor: "#dff3ff",
+        backgroundColor: "#101726",
         pixelArt: false,
         antialias: true,
         roundPixels: false,

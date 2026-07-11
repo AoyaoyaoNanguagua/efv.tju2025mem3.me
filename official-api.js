@@ -46,9 +46,10 @@
       attackSakura: "assets/sprites/lina-sprites-v10-anchored-expanded.png",
       attackThesis: "assets/sprites/lina-sprites-v10-anchored-expanded.png",
       projectiles: "assets/effects/lina-projectiles-atlas-v2.png",
-      ultimateCyclone: "assets/effects/lina-ultimate-cyclone-atlas-v1.png",
-      ultimateCycloneBack: "assets/effects/lina-ultimate-cyclone-back-v1.png",
-      ultimateCycloneFront: "assets/effects/lina-ultimate-cyclone-front-v1.png"
+      vfxMode: "procedural-particles",
+      windBolt: "runtime://lina/wind-bolt",
+      gale: "runtime://lina/gale",
+      healingChain: "runtime://lina/healing-chain"
     },
     spriteSpec: SPRITE_SPEC,
     actions: ACTIONS
