@@ -10,13 +10,13 @@ REQUIRED_COLUMNS = [4, 6, 4, 4, 6, 8, 4, 6]
 SHEETS = [
     "lina-sprites-v10-anchored-expanded.png",
     "ayu-sprites-v11-q-normalized.png",
-    "zhixia-sprites-v3-q-normalized.png",
+    "zhixia-sprites-v5-prototype.png",
     "laodeng-sprites-v3-q-normalized.png",
     "jiangxun-sprites-v4-q-normalized.png",
 ]
 PORTRAITS = [
     "ayu-q-v2.png",
-    "zhixia-q-v2.png",
+    "zhixia.png",
     "laodeng-q-v2.png",
     "jiangxun-q-v2.png",
 ]

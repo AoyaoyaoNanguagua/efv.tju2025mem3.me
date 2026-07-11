@@ -11,13 +11,11 @@ ROWS = 8
 BASELINE = 140
 TARGETS = {
     "ayu": "ayu-sprites-v11-q-normalized.png",
-    "zhixia": "zhixia-sprites-v3-q-normalized.png",
     "laodeng": "laodeng-sprites-v3-q-normalized.png",
     "jiangxun": "jiangxun-sprites-v4-q-normalized.png",
 }
 SOURCES = {
     "ayu": "dict/legacy-assets-20260711/sprites/ayu-sprites-v10-imagegen-anchored-clean.png",
-    "zhixia": "dict/legacy-assets-20260711/sprites/zhixia-sprites-v2.png",
     "laodeng": "dict/legacy-assets-20260711/sprites/laodeng-sprites-v2.png",
     "jiangxun": "dict/legacy-assets-20260711/sprites/jiangxun-sprites-v3.png",
 }

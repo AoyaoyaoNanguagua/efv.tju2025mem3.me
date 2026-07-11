@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-qstyle-characters`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-m02-zhixia-v5`;
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -131,7 +131,10 @@
   const ULTIMATE_RADIUS_X = 430;
   const ULTIMATE_RADIUS_Y = 220;
   const AYU_SWORD_WAVE_RANGE = MAP_TILE_SIZE * 7;
-  const ZHIXIA_LIGHTNING_RANGE = MAP_TILE_SIZE * 10;
+  const ZHIXIA_LIGHTNING_RANGE = MAP_TILE_SIZE * 7;
+  const ZHIXIA_LIGHTNING_REFRACT_RANGE = MAP_TILE_SIZE * 3;
+  const LIGHTNING_SPARK_TEXTURE_KEY = "play-lightning-spark";
+  const LIGHTNING_MOTE_TEXTURE_KEY = "play-lightning-mote";
   const LAODENG_BERSERK_DURATION = 30000;
   const JIANGXUN_BARRAGE_ARROWS = 30;
   const LEAF_SLIME_SHEET = "assets/game/enemies/animated/leaf-poring-sprites-v2.png";
@@ -309,8 +312,8 @@
       id: "zhixia",
       name: "知夏",
       color: "#66bfe8",
-      portrait: "assets/portraits/zhixia-q-v2.png",
-      sprite: "assets/sprites/zhixia-sprites-v3-q-normalized.png",
+      portrait: "assets/portraits/zhixia.png",
+      sprite: "assets/sprites/zhixia-sprites-v5-prototype.png",
       baseline: 140,
       speed: 250
     },
@@ -1771,7 +1774,7 @@
   function resetChat() {
     app.chat.messages = [];
     clearChildren($("#chatMessages"));
-    renderChatSystem("欢迎来到同舟星愿公共频道。");
+    renderChatSystem("欢迎来到同舟喵济公共频道。");
     updateChatControls();
   }
 
@@ -3002,6 +3005,7 @@
       this.ensureProjectileHitboxTexture();
       this.ensureBossChestTexture();
       this.ensureEnemySeedProjectileTexture();
+      this.ensureLightningParticleTextures();
 
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.enemyProjectiles = this.physics.add.group({ allowGravity: false });
@@ -3827,6 +3831,31 @@
       g.lineBetween(3, 18, 33, 18);
       g.generateTexture(ENEMY_SEED_PROJECTILE_KEY, 36, 36);
       g.destroy();
+    }
+
+    ensureLightningParticleTextures() {
+      if (!this.textures.exists(LIGHTNING_SPARK_TEXTURE_KEY)) {
+        const spark = this.make.graphics({ x: 0, y: 0, add: false });
+        spark.lineStyle(2, 0xffffff, 1);
+        spark.lineBetween(8, 0, 8, 16);
+        spark.lineBetween(0, 8, 16, 8);
+        spark.lineStyle(2, 0x9cecff, 0.9);
+        spark.lineBetween(3, 3, 13, 13);
+        spark.lineBetween(13, 3, 3, 13);
+        spark.fillStyle(0xffffff, 1);
+        spark.fillCircle(8, 8, 3);
+        spark.generateTexture(LIGHTNING_SPARK_TEXTURE_KEY, 16, 16);
+        spark.destroy();
+      }
+      if (!this.textures.exists(LIGHTNING_MOTE_TEXTURE_KEY)) {
+        const mote = this.make.graphics({ x: 0, y: 0, add: false });
+        mote.fillStyle(0x8ddfff, 0.42);
+        mote.fillCircle(8, 8, 8);
+        mote.fillStyle(0xeaffff, 0.96);
+        mote.fillCircle(8, 8, 3);
+        mote.generateTexture(LIGHTNING_MOTE_TEXTURE_KEY, 16, 16);
+        mote.destroy();
+      }
     }
 
     qualityColor(quality = "common") {
@@ -5084,7 +5113,9 @@
           kind: "magic",
           color: 0x73d9ff,
           damage: Number(app.profile.magicPower || 22),
-          visualType: "lightning"
+          speed: 820,
+          maxDistance: MAP_TILE_SIZE * 7,
+          visualType: "lightningOrb"
         }));
       } else if (characterId === "jiangxun") {
         this.time.delayedCall(95, () => this.fireProjectile({
@@ -5354,65 +5385,221 @@
 
     castChainLightning() {
       if (!this.actor || this.isDead) return;
-      const candidates = (this.leafSlimes?.getChildren?.() || [])
-        .filter(slime => slime?.active && !["dead", "vanish", "emerging"].includes(slime.state))
-        .map(slime => ({ slime, distance: Phaser.Math.Distance.Between(this.actor.x, this.actor.y, slime.x, slime.y) }))
+      const start = { x: this.actor.x, y: this.actor.y - 52 };
+      const activeEnemies = (this.leafSlimes?.getChildren?.() || [])
+        .filter(slime => slime?.active && !["dead", "vanish", "emerging"].includes(slime.state));
+      const primary = activeEnemies
+        .map(slime => ({ slime, distance: Phaser.Math.Distance.Between(start.x, start.y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) }))
         .filter(item => item.distance <= ZHIXIA_LIGHTNING_RANGE)
-        .sort((a, b) => a.distance - b.distance);
-      const selected = [];
-      let source = { x: this.actor.x, y: this.actor.y - 52 };
-      while (selected.length < 4) {
-        const next = candidates
-          .filter(item => !selected.includes(item.slime))
-          .sort((a, b) => Phaser.Math.Distance.Between(source.x, source.y, a.slime.x, a.slime.y)
-            - Phaser.Math.Distance.Between(source.x, source.y, b.slime.x, b.slime.y))[0];
-        if (!next) break;
-        selected.push(next.slime);
-        source = { x: next.slime.x, y: next.slime.y };
-      }
-      if (!selected.length) {
+        .sort((a, b) => a.distance - b.distance)
+        .at(0)?.slime;
+      if (!primary) {
         const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
-        this.drawLightningArc(this.actor.x, this.actor.y - 52, this.actor.x + aim.x * 180, this.actor.y - 52 + aim.y * 180);
+        const length = Math.hypot(aim.x, aim.y) || 1;
+        const end = {
+          x: start.x + aim.x / length * MAP_TILE_SIZE * 2.2,
+          y: start.y + aim.y / length * MAP_TILE_SIZE * 2.2
+        };
+        this.drawLightningArc(start.x, start.y, end.x, end.y, { intensity: 1.32 });
+        this.renderLightningImpact(end.x, end.y, 56, { quantity: 20, shake: 0.0014 });
+        app.audio.ultimateBurst();
         return;
       }
-      let from = { x: this.actor.x, y: this.actor.y - 52 };
-      selected.forEach((slime, index) => {
-        this.time.delayedCall(index * 90, () => {
+
+      const chain = [primary];
+      const visited = new Set([primary]);
+      while (chain.length < 3) {
+        const current = chain[chain.length - 1];
+        const next = activeEnemies
+          .filter(slime => !visited.has(slime) && slime?.active)
+          .map(slime => ({
+            slime,
+            distance: Phaser.Math.Distance.Between(
+              current.x,
+              current.y + LEAF_SLIME_HIT_OFFSET_Y,
+              slime.x,
+              slime.y + LEAF_SLIME_HIT_OFFSET_Y
+            )
+          }))
+          .filter(item => item.distance <= ZHIXIA_LIGHTNING_REFRACT_RANGE)
+          .sort((a, b) => a.distance - b.distance)[0]?.slime;
+        if (!next) break;
+        visited.add(next);
+        chain.push(next);
+      }
+
+      const multipliers = [1, 0.8, 0.5];
+      let previous = null;
+      chain.forEach((slime, index) => {
+        const target = { x: slime.x, y: slime.y + LEAF_SLIME_HIT_OFFSET_Y };
+        const source = previous || start;
+        previous = target;
+        this.time.delayedCall(index * 105, () => {
           if (!slime?.active) return;
-          this.drawLightningArc(from.x, from.y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
-          const damage = Math.round(Number(app.profile.magicPower || 22) * Math.pow(0.85, index));
+          this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 1.42 - index * 0.18 });
+          if (!index) {
+            this.time.delayedCall(38, () => this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 0.72 }));
+          }
+          this.renderLightningImpact(target.x, target.y, 68 - index * 7, {
+            quantity: 30 - index * 5,
+            shake: 0.0028 - index * 0.00055
+          });
+          const damage = Math.round(Number(app.profile.magicPower || 22) * multipliers[index]);
           this.playLeafSlimeHit(slime, damage, { kind: "magic", charged: true });
-          from = { x: slime.x, y: slime.y + LEAF_SLIME_HIT_OFFSET_Y };
         });
       });
       app.audio.ultimateBurst();
     }
 
-    drawLightningArc(x1, y1, x2, y2) {
-      const graphics = this.add.graphics().setDepth(Math.max(y1, y2) + 70);
-      graphics.lineStyle(6, 0xb9f5ff, 0.88);
-      graphics.beginPath();
-      graphics.moveTo(x1, y1);
-      const segments = 6;
+    drawLightningArc(x1, y1, x2, y2, options = {}) {
+      const intensity = Number(options.intensity) || 1;
+      const distance = Phaser.Math.Distance.Between(x1, y1, x2, y2);
+      const segments = Math.max(6, Math.ceil(distance / 28));
+      const points = [{ x: x1, y: y1 }];
       for (let index = 1; index < segments; index += 1) {
         const t = index / segments;
-        graphics.lineTo(
-          Phaser.Math.Linear(x1, x2, t) + Phaser.Math.Between(-12, 12),
-          Phaser.Math.Linear(y1, y2, t) + Phaser.Math.Between(-12, 12)
-        );
+        const taper = Math.sin(Math.PI * t);
+        points.push({
+          x: Phaser.Math.Linear(x1, x2, t) + Phaser.Math.Between(-14, 14) * taper * intensity,
+          y: Phaser.Math.Linear(y1, y2, t) + Phaser.Math.Between(-14, 14) * taper * intensity
+        });
       }
-      graphics.lineTo(x2, y2);
-      graphics.strokePath();
-      this.tweens.add({ targets: graphics, alpha: 0, duration: 180, onComplete: () => graphics.destroy() });
+      points.push({ x: x2, y: y2 });
+      const graphics = this.add.graphics().setDepth(Math.max(y1, y2) + 70);
+      const stroke = (width, color, alpha) => {
+        graphics.lineStyle(width * intensity, color, alpha);
+        graphics.beginPath();
+        graphics.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
+        graphics.strokePath();
+      };
+      stroke(22, 0x6e3cff, 0.34);
+      stroke(11, 0x55d7ff, 0.84);
+      stroke(3.2, 0xf4ffff, 1);
+      [0.22, 0.4, 0.6, 0.78].map(ratio => Math.floor(segments * ratio)).forEach((pointIndex, branchIndex) => {
+        const point = points[pointIndex];
+        const direction = branchIndex % 2 ? -1 : 1;
+        graphics.lineStyle(2.2 * intensity, 0xb9f5ff, 0.72);
+        graphics.beginPath();
+        graphics.moveTo(point.x, point.y);
+        graphics.lineTo(point.x + Phaser.Math.Between(16, 28) * direction, point.y + Phaser.Math.Between(-24, 24));
+        graphics.lineTo(point.x + Phaser.Math.Between(30, 44) * direction, point.y + Phaser.Math.Between(-34, 34));
+        graphics.strokePath();
+      });
+      this.emitLightningBurst(x2, y2, Math.round(12 * intensity));
+      this.tweens.add({
+        targets: graphics,
+        alpha: 0,
+        duration: 220,
+        ease: "Quad.easeOut",
+        onComplete: () => graphics.destroy()
+      });
+    }
+
+    emitLightningBurst(x, y, quantity = 18) {
+      if (!this.textures.exists(LIGHTNING_SPARK_TEXTURE_KEY)) return;
+      const sparks = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 170, max: 380 },
+        speed: { min: 90, max: 280 },
+        angle: { min: 0, max: 360 },
+        rotate: { min: 0, max: 180 },
+        scale: { start: 0.8, end: 0 },
+        alpha: { start: 1, end: 0 },
+        tint: [0xffffff, 0x9cecff, 0x8f7cff],
+        blendMode: "ADD"
+      }).setDepth(y + 118);
+      sparks.explode(quantity, 0, 0);
+      const motes = this.add.particles(x, y, LIGHTNING_MOTE_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 220, max: 520 },
+        speed: { min: 28, max: 120 },
+        angle: { min: 210, max: 330 },
+        gravityY: -90,
+        scale: { start: 0.55, end: 0 },
+        alpha: { start: 0.72, end: 0 },
+        tint: [0xc8fbff, 0x89dfff],
+        blendMode: "ADD"
+      }).setDepth(y + 116);
+      motes.explode(Math.max(5, Math.round(quantity * 0.45)), 0, 0);
+      this.time.delayedCall(650, () => {
+        sparks.destroy();
+        motes.destroy();
+      });
+    }
+
+    renderLightningImpact(x, y, radius, options = {}) {
+      const glow = this.add.circle(x, y, radius * 0.42, 0x5acfff, 0.3)
+        .setStrokeStyle(3, 0xf0ffff, 0.94)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 82);
+      const ring = this.add.circle(x, y, radius * 0.25, 0x765cff, 0.12)
+        .setStrokeStyle(5, 0x86eaff, 0.82)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 80);
+      const groundArcs = this.add.graphics()
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 84);
+      for (let index = 0; index < 7; index += 1) {
+        const angle = index / 7 * Math.PI * 2 + Phaser.Math.FloatBetween(-0.16, 0.16);
+        const middle = radius * Phaser.Math.FloatBetween(0.45, 0.7);
+        const end = radius * Phaser.Math.FloatBetween(0.9, 1.35);
+        groundArcs.lineStyle(index % 2 ? 2 : 3, index % 2 ? 0x7f68ff : 0xc8fbff, 0.72);
+        groundArcs.beginPath();
+        groundArcs.moveTo(x, y);
+        groundArcs.lineTo(
+          x + Math.cos(angle + 0.14) * middle,
+          y + Math.sin(angle + 0.14) * middle * 0.45
+        );
+        groundArcs.lineTo(x + Math.cos(angle) * end, y + Math.sin(angle) * end * 0.45);
+        groundArcs.strokePath();
+      }
+      this.emitLightningBurst(x, y, Number(options.quantity) || 18);
+      const sparks = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 240, max: 520 },
+        speed: { min: 110, max: 310 },
+        angle: { min: 195, max: 345 },
+        gravityY: 380,
+        scale: { start: 0.48, end: 0 },
+        alpha: { start: 0.92, end: 0 },
+        tint: [0xfff0b5, 0xffbd72, 0xff7c66],
+        blendMode: "ADD"
+      }).setDepth(y + 122);
+      sparks.explode(Math.max(5, Math.round((Number(options.quantity) || 18) * 0.38)), 0, 0);
+      this.time.delayedCall(620, () => sparks.destroy());
+      this.tweens.add({
+        targets: glow,
+        radius: radius * 1.08,
+        alpha: 0,
+        duration: 240,
+        ease: "Quad.easeOut",
+        onComplete: () => glow.destroy()
+      });
+      this.tweens.add({
+        targets: ring,
+        radius: radius * 1.35,
+        alpha: 0,
+        duration: 330,
+        ease: "Cubic.easeOut",
+        onComplete: () => ring.destroy()
+      });
+      this.tweens.add({
+        targets: groundArcs,
+        alpha: 0,
+        duration: 300,
+        ease: "Quad.easeOut",
+        onComplete: () => groundArcs.destroy()
+      });
+      const shake = Number(options.shake) || 0;
+      if (shake > 0) this.cameras.main.shake(70, shake);
     }
 
     strikeLightning(x, y, damage, radius) {
-      const topY = Math.max(0, y - 220);
-      this.drawLightningArc(x + 18, topY, x, y);
-      const ring = this.add.circle(x, y, radius * 0.34, 0x7fe8ff, 0.26)
-        .setStrokeStyle(4, 0xe5fbff, 0.9)
-        .setDepth(y + 80);
-      this.tweens.add({ targets: ring, radius, alpha: 0, duration: 260, onComplete: () => ring.destroy() });
+      const topY = Math.max(0, y - 460);
+      this.drawLightningArc(x + 24, topY, x, y, { intensity: 1.58 });
+      this.time.delayedCall(42, () => this.drawLightningArc(x - 10, topY + 20, x, y, { intensity: 0.68 }));
+      this.renderLightningImpact(x, y, radius, { quantity: 30, shake: 0.0018 });
       (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
         if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
         if (Phaser.Math.Distance.Between(x, y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) <= radius + LEAF_SLIME_HIT_RADIUS) {
@@ -5474,8 +5661,10 @@
       projectile.kind = options.kind || (app.profile.characterId === "lina" ? "magic" : "physical");
       projectile.piercing = !!options.piercing;
       projectile.noEnergyGain = !!options.noEnergyGain;
+      projectile.visualType = options.visualType || "";
       projectile.hitTargets = new Set();
       projectile.trail = [];
+      projectile.lastTrailSparkAt = 0;
       const projectileOrigin = charged
         ? (equipment.chargedProjectileOrigin || equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN)
         : (equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN);
@@ -5489,10 +5678,13 @@
           .setStrokeStyle(5, 0xe7f8ff, 0.92)
           .setRotation(projectile.visualRotation)
           .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
-      } else if (options.visualType === "lightning") {
-        projectile.visual = this.add.star(castOrigin.x, castOrigin.y, 6, 5, 15, projectile.color, 0.94)
-          .setRotation(projectile.visualRotation)
-          .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
+      } else if (options.visualType === "lightningOrb") {
+        projectile.visual = this.createLightningOrbVisual(
+          castOrigin.x,
+          castOrigin.y,
+          projectile.visualRotation,
+          Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth)
+        );
       } else {
         projectile.visual = this.add.sprite(castOrigin.x, castOrigin.y, PROJECTILE_TEXTURE_KEY, flightFrame)
           .setOrigin(projectileOrigin.x, projectileOrigin.y)
@@ -5502,6 +5694,31 @@
       }
       this.flashCast(castOrigin.x, castOrigin.y, projectile.color, projectile.visualBaseDepth + 1);
       app.audio.projectileFly(charged);
+    }
+
+    createLightningOrbVisual(x, y, rotation, depth) {
+      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
+      const glow = this.add.ellipse(-5, 0, 54, 25, 0x6f5cff, 0.22)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const shell = this.add.circle(8, 0, 12, 0x4edcff, 0.78)
+        .setStrokeStyle(3, 0xbaf8ff, 0.94)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.circle(10, 0, 5, 0xffffff, 1)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const spark = this.add.star(10, 0, 4, 3, 10, 0xffffff, 0.94)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      container.add([glow, shell, core, spark]);
+      this.tweens.add({
+        targets: [glow, shell, spark],
+        alpha: { from: 0.92, to: 0.48 },
+        scaleX: { from: 0.88, to: 1.15 },
+        scaleY: { from: 0.88, to: 1.15 },
+        angle: 35,
+        duration: 85,
+        yoyo: true,
+        repeat: -1
+      });
+      return container;
     }
 
     getCastOrigin(vec) {
@@ -5549,6 +5766,13 @@
     destroyProjectile(projectile, burst = false) {
       if (!projectile?.active) return;
       projectile.visual?.destroy();
+      if (projectile.visualType === "lightningOrb") {
+        if (burst) {
+          this.renderLightningImpact(projectile.x, projectile.y, 46, { quantity: 16, shake: 0.0013 });
+        }
+        projectile.destroy();
+        return;
+      }
       if (burst) {
         const impactScale = projectile.impactScale || 1;
         const impact = this.add.sprite(projectile.x, projectile.y, PROJECTILE_TEXTURE_KEY, projectile.impactFrame)
@@ -6208,12 +6432,39 @@
           .setRotation(Math.atan2(vy, vx))
           .setDepth(Math.max(projectile.y + (projectile.depthOffset || 10), projectile.visualBaseDepth || 0));
         projectile.trail.push({ x: projectile.x, y: projectile.y });
-        if (projectile.trail.length > 7) projectile.trail.shift();
-        projectile.trail.forEach((point, index) => {
-          const alpha = (index + 1) / projectile.trail.length * .18;
-          this.projectileGraphics.fillStyle(projectile.color, alpha);
-          this.projectileGraphics.fillCircle(point.x, point.y, Math.max(2, projectile.radius * 0.7 * (index + 1) / projectile.trail.length));
-        });
+        if (projectile.trail.length > (projectile.visualType === "lightningOrb" ? 9 : 7)) projectile.trail.shift();
+        if (projectile.visualType === "lightningOrb") {
+          projectile.trail.forEach((point, index) => {
+            const progress = (index + 1) / projectile.trail.length;
+            this.projectileGraphics.fillStyle(index % 2 ? 0x6e4cff : 0x56dcff, progress * 0.13);
+            this.projectileGraphics.fillCircle(point.x, point.y, 2 + progress * 8);
+          });
+          if (this.time.now - projectile.lastTrailSparkAt > 75) {
+            projectile.lastTrailSparkAt = this.time.now;
+            const spark = this.add.image(projectile.x, projectile.y, LIGHTNING_SPARK_TEXTURE_KEY)
+              .setScale(Phaser.Math.FloatBetween(0.35, 0.72))
+              .setAngle(Phaser.Math.Between(0, 180))
+              .setAlpha(0.88)
+              .setBlendMode(Phaser.BlendModes.ADD)
+              .setDepth(projectile.y + 70);
+            this.tweens.add({
+              targets: spark,
+              x: spark.x + Phaser.Math.Between(-18, 18),
+              y: spark.y + Phaser.Math.Between(-18, 18),
+              angle: spark.angle + 90,
+              scale: 0,
+              alpha: 0,
+              duration: 190,
+              onComplete: () => spark.destroy()
+            });
+          }
+        } else {
+          projectile.trail.forEach((point, index) => {
+            const alpha = (index + 1) / projectile.trail.length * .18;
+            this.projectileGraphics.fillStyle(projectile.color, alpha);
+            this.projectileGraphics.fillCircle(point.x, point.y, Math.max(2, projectile.radius * 0.7 * (index + 1) / projectile.trail.length));
+          });
+        }
       });
     }
 
