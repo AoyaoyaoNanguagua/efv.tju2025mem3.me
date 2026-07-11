@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-m02-zhixia-v5`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-zhixia-electric-v6`;
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -132,7 +132,7 @@
   const ULTIMATE_RADIUS_Y = 220;
   const AYU_SWORD_WAVE_RANGE = MAP_TILE_SIZE * 7;
   const ZHIXIA_LIGHTNING_RANGE = MAP_TILE_SIZE * 7;
-  const ZHIXIA_LIGHTNING_REFRACT_RANGE = MAP_TILE_SIZE * 3;
+  const ZHIXIA_LIGHTNING_REFRACT_RANGE = MAP_TILE_SIZE * 5;
   const LIGHTNING_SPARK_TEXTURE_KEY = "play-lightning-spark";
   const LIGHTNING_MOTE_TEXTURE_KEY = "play-lightning-mote";
   const LAODENG_BERSERK_DURATION = 30000;
@@ -3836,23 +3836,25 @@
     ensureLightningParticleTextures() {
       if (!this.textures.exists(LIGHTNING_SPARK_TEXTURE_KEY)) {
         const spark = this.make.graphics({ x: 0, y: 0, add: false });
-        spark.lineStyle(2, 0xffffff, 1);
+        spark.lineStyle(3, 0x168cff, 1);
         spark.lineBetween(8, 0, 8, 16);
         spark.lineBetween(0, 8, 16, 8);
-        spark.lineStyle(2, 0x9cecff, 0.9);
+        spark.lineStyle(2, 0x7548ff, 0.96);
         spark.lineBetween(3, 3, 13, 13);
         spark.lineBetween(13, 3, 3, 13);
-        spark.fillStyle(0xffffff, 1);
+        spark.fillStyle(0x45d8ff, 1);
         spark.fillCircle(8, 8, 3);
         spark.generateTexture(LIGHTNING_SPARK_TEXTURE_KEY, 16, 16);
         spark.destroy();
       }
       if (!this.textures.exists(LIGHTNING_MOTE_TEXTURE_KEY)) {
         const mote = this.make.graphics({ x: 0, y: 0, add: false });
-        mote.fillStyle(0x8ddfff, 0.42);
+        mote.fillStyle(0x315dff, 0.5);
         mote.fillCircle(8, 8, 8);
-        mote.fillStyle(0xeaffff, 0.96);
+        mote.fillStyle(0x38c8ff, 0.96);
         mote.fillCircle(8, 8, 3);
+        mote.fillStyle(0x9cecff, 0.96);
+        mote.fillCircle(8, 8, 1.5);
         mote.generateTexture(LIGHTNING_MOTE_TEXTURE_KEY, 16, 16);
         mote.destroy();
       }
@@ -5500,106 +5502,179 @@
       if (!this.textures.exists(LIGHTNING_SPARK_TEXTURE_KEY)) return;
       const sparks = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
         emitting: false,
-        lifespan: { min: 170, max: 380 },
-        speed: { min: 90, max: 280 },
+        lifespan: { min: 190, max: 460 },
+        speed: { min: 110, max: 340 },
         angle: { min: 0, max: 360 },
         rotate: { min: 0, max: 180 },
-        scale: { start: 0.8, end: 0 },
-        alpha: { start: 1, end: 0 },
-        tint: [0xffffff, 0x9cecff, 0x8f7cff],
-        blendMode: "ADD"
+        scale: { start: 0.72, end: 0 },
+        alpha: { start: 0.96, end: 0 },
+        tint: [0x127cff, 0x21c7ff, 0x7047ff],
+        blendMode: "NORMAL"
       }).setDepth(y + 118);
       sparks.explode(quantity, 0, 0);
       const motes = this.add.particles(x, y, LIGHTNING_MOTE_TEXTURE_KEY, {
         emitting: false,
-        lifespan: { min: 220, max: 520 },
-        speed: { min: 28, max: 120 },
-        angle: { min: 210, max: 330 },
-        gravityY: -90,
-        scale: { start: 0.55, end: 0 },
-        alpha: { start: 0.72, end: 0 },
-        tint: [0xc8fbff, 0x89dfff],
-        blendMode: "ADD"
+        lifespan: { min: 260, max: 620 },
+        speed: { min: 45, max: 170 },
+        angle: { min: 0, max: 360 },
+        gravityY: -55,
+        scale: { start: 0.52, end: 0 },
+        alpha: { start: 0.78, end: 0 },
+        tint: [0x245dff, 0x28bfff, 0x724cff],
+        blendMode: "NORMAL"
       }).setDepth(y + 116);
-      motes.explode(Math.max(5, Math.round(quantity * 0.45)), 0, 0);
-      this.time.delayedCall(650, () => {
+      motes.explode(Math.max(8, Math.round(quantity * 0.65)), 0, 0);
+      this.time.delayedCall(720, () => {
         sparks.destroy();
         motes.destroy();
       });
     }
 
     renderLightningImpact(x, y, radius, options = {}) {
-      const glow = this.add.circle(x, y, radius * 0.42, 0x5acfff, 0.3)
-        .setStrokeStyle(3, 0xf0ffff, 0.94)
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setDepth(y + 82);
-      const ring = this.add.circle(x, y, radius * 0.25, 0x765cff, 0.12)
-        .setStrokeStyle(5, 0x86eaff, 0.82)
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setDepth(y + 80);
-      const groundArcs = this.add.graphics()
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setDepth(y + 84);
-      for (let index = 0; index < 7; index += 1) {
-        const angle = index / 7 * Math.PI * 2 + Phaser.Math.FloatBetween(-0.16, 0.16);
-        const middle = radius * Phaser.Math.FloatBetween(0.45, 0.7);
-        const end = radius * Phaser.Math.FloatBetween(0.9, 1.35);
-        groundArcs.lineStyle(index % 2 ? 2 : 3, index % 2 ? 0x7f68ff : 0xc8fbff, 0.72);
-        groundArcs.beginPath();
-        groundArcs.moveTo(x, y);
-        groundArcs.lineTo(
-          x + Math.cos(angle + 0.14) * middle,
-          y + Math.sin(angle + 0.14) * middle * 0.45
-        );
-        groundArcs.lineTo(x + Math.cos(angle) * end, y + Math.sin(angle) * end * 0.45);
-        groundArcs.strokePath();
+      const quantity = Number(options.quantity) || 24;
+      const crackCount = Math.max(3, Number(options.crackCount) || 10);
+      const splashCount = Math.max(3, Number(options.splashCount) || 9);
+      const groundCracks = this.add.graphics().setDepth(y + 84);
+      const splashArcs = this.add.graphics().setDepth(y + 126);
+      const paths = [];
+      const branches = [];
+      for (let index = 0; index < crackCount; index += 1) {
+        const angle = index / crackCount * Math.PI * 2 + Phaser.Math.FloatBetween(-0.18, 0.18);
+        const steps = Phaser.Math.Between(3, 5);
+        const targetLength = radius * Phaser.Math.FloatBetween(1.05, 1.75);
+        const points = [{ x, y }];
+        for (let step = 1; step <= steps; step += 1) {
+          const distance = targetLength * step / steps;
+          const jitter = Phaser.Math.FloatBetween(-0.2, 0.2);
+          points.push({
+            x: x + Math.cos(angle + jitter) * distance,
+            y: y + Math.sin(angle + jitter) * distance * 0.48
+          });
+          if (step === 2 && index % 2 === 0) {
+            const root = points[points.length - 1];
+            const side = index % 4 ? -1 : 1;
+            branches.push([
+              root,
+              {
+                x: root.x + Math.cos(angle + side * 0.7) * radius * 0.38,
+                y: root.y + Math.sin(angle + side * 0.7) * radius * 0.18
+              },
+              {
+                x: root.x + Math.cos(angle + side * 0.82) * radius * 0.7,
+                y: root.y + Math.sin(angle + side * 0.82) * radius * 0.34
+              }
+            ]);
+          }
+        }
+        paths.push(points);
       }
-      this.emitLightningBurst(x, y, Number(options.quantity) || 18);
-      const sparks = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
+      const drawPath = (graphics, points, width, color, alpha) => {
+        graphics.lineStyle(width, color, alpha);
+        graphics.beginPath();
+        graphics.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
+        graphics.strokePath();
+      };
+      [...paths, ...branches].forEach(points => {
+        drawPath(groundCracks, points, 8, 0x4d2bce, 0.24);
+        drawPath(groundCracks, points, 3.2, 0x126dff, 0.86);
+        drawPath(groundCracks, points, 1.2, 0x5cdcff, 1);
+      });
+      for (let index = 0; index < splashCount; index += 1) {
+        const angle = index / splashCount * Math.PI * 2 + Phaser.Math.FloatBetween(-0.24, 0.24);
+        const first = {
+          x: x + Math.cos(angle + 0.2) * radius * 0.45,
+          y: y + Math.sin(angle + 0.2) * radius * 0.45
+        };
+        const end = {
+          x: x + Math.cos(angle) * radius * Phaser.Math.FloatBetween(1.2, 2.1),
+          y: y + Math.sin(angle) * radius * Phaser.Math.FloatBetween(0.8, 1.45)
+        };
+        const arc = [{ x, y }, first, end];
+        drawPath(splashArcs, arc, 7, 0x5428dc, 0.2);
+        drawPath(splashArcs, arc, 2.2, index % 2 ? 0x1485ff : 0x3ed7ff, 0.92);
+      }
+      const impactGlow = this.add.star(x, y, 8, radius * 0.12, radius * 0.5, 0x275fff, 0.38)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 128);
+      const impactCore = this.add.star(x, y, 6, radius * 0.08, radius * 0.28, 0x2bc7ff, 0.96)
+        .setDepth(y + 130);
+      this.emitLightningBurst(x, y, Math.round(quantity * 1.45));
+      const spray = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
         emitting: false,
-        lifespan: { min: 240, max: 520 },
-        speed: { min: 110, max: 310 },
-        angle: { min: 195, max: 345 },
-        gravityY: 380,
-        scale: { start: 0.48, end: 0 },
-        alpha: { start: 0.92, end: 0 },
-        tint: [0xfff0b5, 0xffbd72, 0xff7c66],
-        blendMode: "ADD"
+        lifespan: { min: 260, max: 640 },
+        speed: { min: 150, max: 430 },
+        angle: { min: 0, max: 360 },
+        gravityY: 150,
+        rotate: { min: 0, max: 240 },
+        scale: { start: 0.66, end: 0 },
+        alpha: { start: 0.96, end: 0 },
+        tint: [0x115fff, 0x1cbfff, 0x643cff],
+        blendMode: "NORMAL"
       }).setDepth(y + 122);
-      sparks.explode(Math.max(5, Math.round((Number(options.quantity) || 18) * 0.38)), 0, 0);
-      this.time.delayedCall(620, () => sparks.destroy());
+      spray.explode(Math.max(16, Math.round(quantity * 0.85)), 0, 0);
+      this.time.delayedCall(760, () => spray.destroy());
       this.tweens.add({
-        targets: glow,
-        radius: radius * 1.08,
+        targets: [impactGlow, impactCore],
+        scale: 1.75,
         alpha: 0,
-        duration: 240,
+        duration: 230,
         ease: "Quad.easeOut",
-        onComplete: () => glow.destroy()
+        onComplete: () => {
+          impactGlow.destroy();
+          impactCore.destroy();
+        }
       });
       this.tweens.add({
-        targets: ring,
-        radius: radius * 1.35,
+        targets: splashArcs,
         alpha: 0,
-        duration: 330,
-        ease: "Cubic.easeOut",
-        onComplete: () => ring.destroy()
+        duration: 360,
+        ease: "Quad.easeOut",
+        onComplete: () => splashArcs.destroy()
       });
       this.tweens.add({
-        targets: groundArcs,
+        targets: groundCracks,
         alpha: 0,
-        duration: 300,
+        delay: 850,
+        duration: 650,
         ease: "Quad.easeOut",
-        onComplete: () => groundArcs.destroy()
+        onComplete: () => groundCracks.destroy()
       });
       const shake = Number(options.shake) || 0;
       if (shake > 0) this.cameras.main.shake(70, shake);
+    }
+
+    renderLightningOrbImpact(x, y) {
+      const glow = this.add.star(x, y, 8, 5, 23, 0x244fff, 0.34)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 88);
+      const core = this.add.star(x, y, 6, 3, 12, 0x24bfff, 0.96)
+        .setDepth(y + 90);
+      this.emitLightningBurst(x, y, 8);
+      this.tweens.add({
+        targets: [glow, core],
+        scale: 1.55,
+        alpha: 0,
+        duration: 180,
+        ease: "Quad.easeOut",
+        onComplete: () => {
+          glow.destroy();
+          core.destroy();
+        }
+      });
+      this.cameras.main.shake(45, 0.0007);
     }
 
     strikeLightning(x, y, damage, radius) {
       const topY = Math.max(0, y - 460);
       this.drawLightningArc(x + 24, topY, x, y, { intensity: 1.58 });
       this.time.delayedCall(42, () => this.drawLightningArc(x - 10, topY + 20, x, y, { intensity: 0.68 }));
-      this.renderLightningImpact(x, y, radius, { quantity: 30, shake: 0.0018 });
+      this.renderLightningImpact(x, y, radius, {
+        quantity: 30,
+        crackCount: 5,
+        splashCount: 5,
+        shake: 0.0018
+      });
       (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
         if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
         if (Phaser.Math.Distance.Between(x, y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) <= radius + LEAF_SLIME_HIT_RADIUS) {
@@ -5698,26 +5773,23 @@
 
     createLightningOrbVisual(x, y, rotation, depth) {
       const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
-      const glow = this.add.ellipse(-5, 0, 54, 25, 0x6f5cff, 0.22)
+      const glow = this.add.ellipse(-4, 0, 42, 19, 0x234cff, 0.26)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const shell = this.add.circle(8, 0, 12, 0x4edcff, 0.78)
-        .setStrokeStyle(3, 0xbaf8ff, 0.94)
-        .setBlendMode(Phaser.BlendModes.ADD);
-      const core = this.add.circle(10, 0, 5, 0xffffff, 1)
-        .setBlendMode(Phaser.BlendModes.ADD);
-      const spark = this.add.star(10, 0, 4, 3, 10, 0xffffff, 0.94)
-        .setBlendMode(Phaser.BlendModes.ADD);
+      const shell = this.add.circle(7, 0, 9, 0x1467e8, 1)
+        .setStrokeStyle(2, 0x20bfff, 1);
+      const core = this.add.circle(8, 0, 3.5, 0x76e7ff, 1);
+      const spark = this.add.star(8, 0, 4, 2, 6, 0x2bbcff, 0.92);
       container.add([glow, shell, core, spark]);
       this.tweens.add({
-        targets: [glow, shell, spark],
-        alpha: { from: 0.92, to: 0.48 },
-        scaleX: { from: 0.88, to: 1.15 },
-        scaleY: { from: 0.88, to: 1.15 },
-        angle: 35,
-        duration: 85,
+        targets: [glow, shell],
+        alpha: { from: 0.96, to: 0.62 },
+        scaleX: { from: 0.92, to: 1.1 },
+        scaleY: { from: 0.92, to: 1.1 },
+        duration: 72,
         yoyo: true,
         repeat: -1
       });
+      this.tweens.add({ targets: spark, angle: 90, duration: 160, repeat: -1 });
       return container;
     }
 
@@ -5767,9 +5839,7 @@
       if (!projectile?.active) return;
       projectile.visual?.destroy();
       if (projectile.visualType === "lightningOrb") {
-        if (burst) {
-          this.renderLightningImpact(projectile.x, projectile.y, 46, { quantity: 16, shake: 0.0013 });
-        }
+        if (burst) this.renderLightningOrbImpact(projectile.x, projectile.y);
         projectile.destroy();
         return;
       }
@@ -6436,28 +6506,9 @@
         if (projectile.visualType === "lightningOrb") {
           projectile.trail.forEach((point, index) => {
             const progress = (index + 1) / projectile.trail.length;
-            this.projectileGraphics.fillStyle(index % 2 ? 0x6e4cff : 0x56dcff, progress * 0.13);
-            this.projectileGraphics.fillCircle(point.x, point.y, 2 + progress * 8);
+            this.projectileGraphics.fillStyle(index % 2 ? 0x174cff : 0x00a8ff, progress * 0.24);
+            this.projectileGraphics.fillCircle(point.x, point.y, 1.5 + progress * 4.5);
           });
-          if (this.time.now - projectile.lastTrailSparkAt > 75) {
-            projectile.lastTrailSparkAt = this.time.now;
-            const spark = this.add.image(projectile.x, projectile.y, LIGHTNING_SPARK_TEXTURE_KEY)
-              .setScale(Phaser.Math.FloatBetween(0.35, 0.72))
-              .setAngle(Phaser.Math.Between(0, 180))
-              .setAlpha(0.88)
-              .setBlendMode(Phaser.BlendModes.ADD)
-              .setDepth(projectile.y + 70);
-            this.tweens.add({
-              targets: spark,
-              x: spark.x + Phaser.Math.Between(-18, 18),
-              y: spark.y + Phaser.Math.Between(-18, 18),
-              angle: spark.angle + 90,
-              scale: 0,
-              alpha: 0,
-              duration: 190,
-              onComplete: () => spark.destroy()
-            });
-          }
         } else {
           projectile.trail.forEach((point, index) => {
             const alpha = (index + 1) / projectile.trail.length * .18;
