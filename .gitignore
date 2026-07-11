@@ -7,6 +7,8 @@ __pycache__/
 *.py[cod]
 
 dist/
+tmp/
+dict/
 *.log
 play-data.sqlite3*
 

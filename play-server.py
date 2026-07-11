@@ -29,7 +29,7 @@ DROP_TTL_MS = 5 * 60 * 1000
 SESSION_TTL = 7 * 24 * 60 * 60
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_-]{3,18}$")
-CHARACTER_IDS = {"lina", "ayu"}
+CHARACTER_IDS = {"lina", "ayu", "zhixia", "laodeng", "jiangxun"}
 CHARACTER_LIMIT = 5
 PROFILE_EXTRA_STRING_FIELDS = {"chapterId", "mapId", "spawnId", "characterRecordId"}
 PROFILE_EXTRA_JSON_FIELDS = {"flags", "quests", "inventory", "equipment", "collections"}
@@ -65,6 +65,11 @@ DROP_ITEM_CATALOG = {
     "ch1_drop_agent_memory_core": {"name": "Agent 记忆核心", "type": "material", "quality": "rare"},
     "ch1_drop_agent_tool_node": {"name": "工具节点", "type": "material", "quality": "excellent"},
     "ch1_drop_citation_seal_fragment": {"name": "引用封印碎片", "type": "material", "quality": "rare"},
+    "ch1_drop_thorn_seed": {"name": "荆棘种核", "type": "material", "quality": "excellent"},
+    "ch1_drop_pollen_lantern": {"name": "花粉灯芯", "type": "material", "quality": "excellent"},
+    "ch1_drop_gardener_badge": {"name": "园艺校徽", "type": "material", "quality": "excellent"},
+    "ch1_drop_moon_orchid": {"name": "月兰花冠", "type": "material", "quality": "rare"},
+    "ch1_drop_carnivora_core": {"name": "食人花院核", "type": "material", "quality": "epic"},
 }
 
 BASE_PROFILE = {
@@ -484,7 +489,13 @@ def save_profile(user: sqlite3.Row, profile: dict) -> dict:
     return safe_profile
 
 
-DEFAULT_CHARACTER_NAMES = {"lina": "莉娜", "ayu": "阿宇"}
+DEFAULT_CHARACTER_NAMES = {
+    "lina": "莉娜",
+    "ayu": "阿宇",
+    "zhixia": "知夏",
+    "laodeng": "老登",
+    "jiangxun": "江寻",
+}
 
 
 def character_to_dict(row: sqlite3.Row) -> dict:

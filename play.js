@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260710-m2-ui-v2`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-qstyle-characters`;
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -130,6 +130,10 @@
   const ULTIMATE_DAMAGE = 48;
   const ULTIMATE_RADIUS_X = 430;
   const ULTIMATE_RADIUS_Y = 220;
+  const AYU_SWORD_WAVE_RANGE = MAP_TILE_SIZE * 7;
+  const ZHIXIA_LIGHTNING_RANGE = MAP_TILE_SIZE * 10;
+  const LAODENG_BERSERK_DURATION = 30000;
+  const JIANGXUN_BARRAGE_ARROWS = 30;
   const LEAF_SLIME_SHEET = "assets/game/enemies/animated/leaf-poring-sprites-v2.png";
   const LEAF_SLIME_KEY = "play-leaf-slime";
   const LEAF_SLIME_FRAME_SIZE = 128;
@@ -160,6 +164,8 @@
   const LEAF_SLIME_VANISH_TIME = 520;
   const LEAF_SLIME_HIT_OFFSET_Y = -62;
   const LEAF_SLIME_HIT_RADIUS = 52;
+  const ENEMY_SEED_PROJECTILE_KEY = "play-enemy-seed-projectile";
+  const ENEMY_PROJECTILE_LIFETIME_MS = 4200;
 
   const BOSS_KEY = "play-ai-professor-boss";
   const BOSS_IMAGE = "assets/game/bosses/ai-professor-summoner-game-cutout-v1.png";
@@ -173,6 +179,11 @@
   const AIAGENT_CYBERMAGE_KEY = "ch1-enemy-aiagent-cybermage-rare";
   const AIAGENT_DIGITAL_CAT_KEY = "ch1-enemy-aiagent-digital-cat-elite";
   const AIAGENT_BOTCAT_KEY = "ch1-enemy-aiagent-botcat-mob";
+  const GARDEN_THORN_HOUND_KEY = "ch1-enemy-garden-thorn-hound-elite";
+  const GARDEN_POLLEN_MOTH_KEY = "ch1-enemy-garden-pollen-moth-elite";
+  const GARDEN_VINE_GARDENER_KEY = "ch1-enemy-garden-vine-gardener-elite";
+  const GARDEN_MOON_ORCHID_KEY = "ch1-enemy-garden-moon-orchid-rare";
+  const GARDEN_CARNIVORA_BOSS_KEY = "ch1-enemy-garden-carnivora-boss";
   const CHAPTER_ONE_ENEMY_IMAGES = [
     { key: QUANTUM_SCHOLAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-scholar-rare-cutout-v1.png" },
     { key: QUANTUM_FAMILIAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-familiar-elite-cutout-v1.png" },
@@ -182,7 +193,12 @@
     { key: BLOCKCHAIN_SPIDER_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-blockchain-spider-mob-cutout-v1.png" },
     { key: AIAGENT_CYBERMAGE_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-cybermage-rare-cutout-v1.png" },
     { key: AIAGENT_DIGITAL_CAT_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-digital-cat-elite-cutout-v2.png" },
-    { key: AIAGENT_BOTCAT_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-botcat-mob-cutout-v1.png" }
+    { key: AIAGENT_BOTCAT_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-botcat-mob-cutout-v1.png" },
+    { key: GARDEN_THORN_HOUND_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-thorn-hound-elite-v2.png" },
+    { key: GARDEN_POLLEN_MOTH_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-pollen-moth-elite-v2.png" },
+    { key: GARDEN_VINE_GARDENER_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-vine-gardener-elite-v2.png" },
+    { key: GARDEN_MOON_ORCHID_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-moon-orchid-rare-v2.png" },
+    { key: GARDEN_CARNIVORA_BOSS_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-carnivora-boss-v2.png" }
   ];
   const BOSS_PORTAL_OPEN_MS = 520;
   const BOSS_PORTAL_EGRESS_MS = 820;
@@ -284,10 +300,37 @@
       id: "ayu",
       name: "阿宇",
       color: "#d99a4a",
-      portrait: "assets/portraits/ayu.png",
-      sprite: "assets/sprites/ayu-sprites-v10-imagegen-anchored-clean.png",
+      portrait: "assets/portraits/ayu-q-v2.png",
+      sprite: "assets/sprites/ayu-sprites-v11-q-normalized.png",
       baseline: 140,
       speed: 270
+    },
+    {
+      id: "zhixia",
+      name: "知夏",
+      color: "#66bfe8",
+      portrait: "assets/portraits/zhixia-q-v2.png",
+      sprite: "assets/sprites/zhixia-sprites-v3-q-normalized.png",
+      baseline: 140,
+      speed: 250
+    },
+    {
+      id: "laodeng",
+      name: "老登",
+      color: "#e18a52",
+      portrait: "assets/portraits/laodeng-q-v2.png",
+      sprite: "assets/sprites/laodeng-sprites-v3-q-normalized.png",
+      baseline: 140,
+      speed: 235
+    },
+    {
+      id: "jiangxun",
+      name: "江寻",
+      color: "#68a977",
+      portrait: "assets/portraits/jiangxun-q-v2.png",
+      sprite: "assets/sprites/jiangxun-sprites-v4-q-normalized.png",
+      baseline: 140,
+      speed: 255
     }
   ];
 
@@ -404,6 +447,41 @@
       type: "material",
       quality: "rare",
       description: "从资料长廊的复制阴影中剥离的封印碎片，记录着已修复的引用链。"
+    },
+    "ch1_drop_thorn_seed": {
+      id: "ch1_drop_thorn_seed",
+      name: "荆棘种核",
+      type: "material",
+      quality: "excellent",
+      description: "荆棘猎犬巡逻时凝成的硬质种核，可用于花园研究。"
+    },
+    "ch1_drop_pollen_lantern": {
+      id: "ch1_drop_pollen_lantern",
+      name: "花粉灯芯",
+      type: "material",
+      quality: "excellent",
+      description: "花粉灯蛾留下的冷光灯芯，仍在缓慢释放稳定花粉。"
+    },
+    "ch1_drop_gardener_badge": {
+      id: "ch1_drop_gardener_badge",
+      name: "园艺校徽",
+      type: "material",
+      quality: "excellent",
+      description: "藤蔓园丁胸前脱落的学院徽记，刻着生态园养护编号。"
+    },
+    "ch1_drop_moon_orchid": {
+      id: "ch1_drop_moon_orchid",
+      name: "月兰花冠",
+      type: "material",
+      quality: "rare",
+      description: "月兰守卫净化后留下的银蓝花冠，蕴含稀有生态记录。"
+    },
+    "ch1_drop_carnivora_core": {
+      id: "ch1_drop_carnivora_core",
+      name: "食人花院核",
+      type: "material",
+      quality: "epic",
+      description: "食人花院长的种荚核心，记录着中央花坛异常生长的完整参数。"
     }
   };
 
@@ -432,14 +510,14 @@
     },
     ayu: {
       attack: {
-        name: "光刃挥砍",
+        name: "光刃二连斩",
         key: "J",
-        description: "物理伤害 = 攻击力 × 100%。物理暴击造成 150% 伤害，命中回复 6 EN。"
+        description: "短按造成攻击力 × 100% 物理伤害；长按重击发动二连斩，每段造成攻击力 × 85%，每次命中回复 6 EN。"
       },
       ultimate: {
-        name: "星轨环斩",
+        name: "三重剑气",
         key: "K",
-        description: `消耗 ${ULTIMATE_COST} EN，对周围目标造成攻击力 × 180% 的物理伤害。物理暴击造成 150% 伤害。`
+        description: `消耗 ${ULTIMATE_COST} EN，同时向前发出 3 股剑气，每股造成攻击力 × 180% 物理伤害并飞行 7 格。`
       },
       heal: {
         name: "樱光护盾",
@@ -450,6 +528,72 @@
         name: "学术猫形态",
         key: "L",
         description: "切换猫形态。移动速度 = 人形速度 × 200%，主要攻击变为向前跳跃。"
+      }
+    },
+    zhixia: {
+      attack: {
+        name: "雷弧术",
+        key: "J",
+        description: "短按造成魔力 × 100% 魔法伤害；长按重击触发连锁闪电，最多弹射 4 个目标，每次弹射伤害衰减 15%。"
+      },
+      ultimate: {
+        name: "十格落雷",
+        key: "K",
+        description: `消耗 ${ULTIMATE_COST} EN，沿瞄准方向连续轰击 10 格，每格造成魔力 × 115% 范围魔法伤害，总射程 10 格。`
+      },
+      heal: {
+        name: "樱光护盾",
+        key: "H",
+        description: `消耗 ${HEAL_COST} EN，恢复 42 HP 并获得 36 点护盾。`
+      },
+      transform: {
+        name: "学术猫形态",
+        key: "L",
+        description: "切换猫形态。移动速度提升至 200%，主要攻击变为向前跳跃。"
+      }
+    },
+    laodeng: {
+      attack: {
+        name: "奔雷拳",
+        key: "J",
+        description: "短按造成攻击力 × 100% 物理伤害；长按重击发动奔雷拳，造成攻击力 × 175% 范围伤害。狂暴期间普攻和重击均扩大范围并吸血 20%。"
+      },
+      ultimate: {
+        name: "狂暴",
+        key: "K",
+        description: `消耗 ${ULTIMATE_COST} EN，体型增大，移动速度和攻击速度提升 50%；普攻与重击附带范围伤害和 20% 吸血，持续 30 秒。`
+      },
+      heal: {
+        name: "樱光护盾",
+        key: "H",
+        description: `消耗 ${HEAL_COST} EN，恢复 42 HP 并获得 36 点护盾。`
+      },
+      transform: {
+        name: "学术猫形态",
+        key: "L",
+        description: "切换猫形态。移动速度提升至 200%，主要攻击变为向前跳跃。"
+      }
+    },
+    jiangxun: {
+      attack: {
+        name: "穿云箭",
+        key: "J",
+        description: "短按射箭造成攻击力 × 100% 物理伤害；长按重击射出穿云箭，造成攻击力 × 165% 伤害并穿透沿途怪物。"
+      },
+      ultimate: {
+        name: "乱射",
+        key: "K",
+        description: `消耗 ${ULTIMATE_COST} EN，在 3 秒内连续射出 30 支箭，每箭造成攻击力 × 45% 物理伤害。`
+      },
+      heal: {
+        name: "樱光护盾",
+        key: "H",
+        description: `消耗 ${HEAL_COST} EN，恢复 42 HP 并获得 36 点护盾。`
+      },
+      transform: {
+        name: "学术猫形态",
+        key: "L",
+        description: "切换猫形态。移动速度提升至 200%，主要攻击变为向前跳跃。"
       }
     }
   };
@@ -899,6 +1043,24 @@
       role: "敏捷突击 · DPS-STRIKE",
       desc: "校园风光剑士，同济蓝护腕配光剑激光笔。勇敢热血、值得信赖，猫形态是一只狸花猫，擅长快速跑图与追击脱战。",
       quote: "「我是阿宇！立志成为同济最强的剑士喵！」"
+    },
+    {
+      id: "zhixia",
+      role: "雷电法师 · ARC-MAGE",
+      desc: "以雷电术式控制战场的校园法师，擅长连锁闪电与长距离落雷压制。",
+      quote: "「把思路连起来，雷光自然会找到答案。」"
+    },
+    {
+      id: "laodeng",
+      role: "近战拳师 · BRAWLER",
+      desc: "沉稳可靠的近战拳师，奔雷拳打散敌阵，狂暴后以范围拳风持续吸血。",
+      quote: "「先站稳，再一拳把问题讲明白。」"
+    },
+    {
+      id: "jiangxun",
+      role: "穿透猎人 · RANGER",
+      desc: "冷静敏锐的校园猎人，穿云箭贯穿目标，乱射可持续封锁大片区域。",
+      quote: "「风向、距离、落点，都已经算好了。」"
     }
   ];
 
@@ -1417,7 +1579,10 @@
     return [
       ...classroomTasks,
       { label: "资料室：修复引用链", done: hasFlag("ch1_m02_copy_shadow_cleared") },
-      { label: "机房：完成路演压力测试", done: hasFlag("ch1_m03_small_boss_cleared") },
+      { label: "花园：读取生态巡检记录", done: hasFlag("ch1_m03_garden_briefed") },
+      { label: "花园：清理三名精英巡园者", done: hasFlag("ch1_m03_patrol_cleared") },
+      { label: "花园：净化月兰守卫", done: hasFlag("ch1_m03_rare_cleared") },
+      { label: "花园：击败中央食人花", done: hasFlag("ch1_m03_small_boss_cleared") },
       { label: `收集 ${CHAPTER_ONE_PROTOCOL_CARD_GOAL} 张协议卡`, done: getProtocolCardIds().length >= CHAPTER_ONE_PROTOCOL_CARD_GOAL },
       { label: "开启陆教授 Boss 宝箱", done: !!app.chapterOne.bossCleared }
     ];
@@ -2816,6 +2981,8 @@
       this.primaryHold = null;
       this.chargeHoldTimer = null;
       this.lastUltimateAt = 0;
+      this.berserkUntil = 0;
+      this.berserkEndingShown = false;
       this.collisionDebugVisible = false;
       this.collisionDebugGraphics = null;
       this.collisionDebugRects = [];
@@ -2834,8 +3001,10 @@
       this.preparePortalAnimations();
       this.ensureProjectileHitboxTexture();
       this.ensureBossChestTexture();
+      this.ensureEnemySeedProjectileTexture();
 
       this.projectiles = this.physics.add.group({ allowGravity: false });
+      this.enemyProjectiles = this.physics.add.group({ allowGravity: false });
       this.leafSlimes = this.physics.add.group({ allowGravity: false });
       this.projectileGraphics = this.add.graphics().setDepth(40);
       this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,K,H,L,I,Q,SPACE");
@@ -2852,6 +3021,13 @@
       this.bindMapColliders();
       this.projectileObstacleCollider = this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => this.destroyProjectile(projectile, true));
       this.projectileSlimeOverlap = this.physics.add.overlap(this.projectiles, this.leafSlimes, (projectile, enemy) => this.handleLeafSlimeProjectileHit(projectile, enemy));
+      this.enemyProjectileObstacleCollider = this.physics.add.collider(this.enemyProjectiles, this.obstacleGroup, projectile => projectile.destroy());
+      this.enemyProjectileActorOverlap = this.physics.add.overlap(this.actor, this.enemyProjectiles, (actor, projectile) => {
+        if (!projectile?.active) return;
+        const damage = Math.max(1, Number(projectile.damage) || 12);
+        projectile.destroy();
+        this.damagePlayer(damage);
+      });
       this.bindActorLeafSlimeCollision();
 
       this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
@@ -2903,6 +3079,8 @@
             .setOrigin(0, 0)
             .setDepth(-20);
           image.setDisplaySize(Number(chunk.width) || image.width, Number(chunk.height) || image.height);
+          const tint = Number(chunk.tint ?? this.mapData.background.tint);
+          if (Number.isFinite(tint) && tint > 0) image.setTint(tint);
           this.mapBackgroundChunks.push(image);
         });
         this.mapLayers = [];
@@ -2921,6 +3099,8 @@
         const targetWidth = Number(this.mapData.background.width) || bg.width || 1024;
         const targetHeight = Number(this.mapData.background.height) || bg.height || 1024;
         bg.setDisplaySize(targetWidth, targetHeight);
+        const tint = Number(this.mapData.background.tint);
+        if (Number.isFinite(tint) && tint > 0) bg.setTint(tint);
         this.mapBackground = bg;
         this.mapLayers = [];
         this.tileMap = null;
@@ -3633,6 +3813,22 @@
       g.destroy();
     }
 
+    ensureEnemySeedProjectileTexture() {
+      if (this.textures.exists(ENEMY_SEED_PROJECTILE_KEY)) return;
+      const g = this.make.graphics({ x: 0, y: 0, add: false });
+      g.fillStyle(0x173e34, 0.96);
+      g.fillCircle(18, 18, 14);
+      g.fillStyle(0x5ed2df, 0.94);
+      g.fillCircle(18, 18, 9);
+      g.lineStyle(3, 0xf3c75d, 0.94);
+      g.strokeCircle(18, 18, 13);
+      g.lineStyle(2, 0xd8fff4, 0.86);
+      g.lineBetween(18, 3, 18, 33);
+      g.lineBetween(3, 18, 33, 18);
+      g.generateTexture(ENEMY_SEED_PROJECTILE_KEY, 36, 36);
+      g.destroy();
+    }
+
     qualityColor(quality = "common") {
       return {
         common: 0xf4ead5,
@@ -3650,8 +3846,8 @@
           id: slime.dropId,
           name: slime.dropName || slime.dropId,
           type: "material",
-          quality: slime.rank === "rare" ? "rare" : "excellent",
-          source: slime.rank === "rare" ? "rare_elite" : "elite"
+          quality: slime.rank === "boss" ? "epic" : slime.rank === "rare" ? "rare" : "excellent",
+          source: slime.rank === "boss" ? "garden_boss" : slime.rank === "rare" ? "rare_elite" : "elite"
         });
       }
       const roll = Math.random();
@@ -3833,7 +4029,8 @@
     }
 
     resetActorVisualScale() {
-      this.setActorVisualScale(ACTOR_DEFAULT_VISUAL_SCALE);
+      const berserk = app.profile?.characterId === "laodeng" && this.time?.now < this.berserkUntil;
+      this.setActorVisualScale(berserk ? 1.25 : ACTOR_DEFAULT_VISUAL_SCALE);
     }
 
     createMapNpcs() {
@@ -3957,6 +4154,7 @@
       this.collisionDebugRects = [];
       this.obstacleGroup?.clear(true, true);
       this.projectiles?.children?.each(projectile => this.destroyProjectile(projectile, false));
+      this.enemyProjectiles?.clear(true, true);
       this.leafSlimes?.children?.each(slime => {
         slime.shadow?.destroy();
         slime.hpBg?.destroy();
@@ -4301,6 +4499,7 @@
     }
 
     getMapLeafSlimeSpawns() {
+      if (this.mapData?.disableDefaultEnemies) return [];
       const spawns = this.mapData?.enemySpawns || this.mapData?.slimeSpawns;
       if (Array.isArray(spawns) && spawns.length) {
         return spawns.filter(point => {
@@ -4429,6 +4628,7 @@
     }
 
     getEnemyRankStyle(slime) {
+      if (slime.rank === "boss") return { frame: 0xe45b66, fill: 0xef7fb0, text: "#ffd9e3", width: 108, height: 11 };
       if (slime.rank === "rare") return { frame: 0xf3c75d, fill: 0xffcf5d, text: "#ffe9a8", width: 78, height: 9 };
       if (slime.rank === "elite") return { frame: 0x8f72d6, fill: 0xb889ff, text: "#dbcfff", width: 66, height: 8 };
       return { frame: 0x3f5368, fill: 0x42c98a, text: "#ffffff", width: 56, height: 6 };
@@ -4438,7 +4638,7 @@
       const style = this.getEnemyRankStyle(slime);
       const y = slime.y + slime.hudOffsetY;
       slime.hpFrame = this.add.rectangle(slime.x, y, style.width + 6, style.height + 6, 0x241b2e, 0.72)
-        .setStrokeStyle(slime.rank === "rare" ? 2 : 1, style.frame, 0.95)
+        .setStrokeStyle(["rare", "boss"].includes(slime.rank) ? 2 : 1, style.frame, 0.95)
         .setDepth(slime.y + 36);
       slime.hpBg = this.add.rectangle(slime.x, y, style.width, style.height, 0x1d1826, 0.72)
         .setDepth(slime.y + 37);
@@ -4446,9 +4646,9 @@
         .setOrigin(0, 0.5)
         .setDepth(slime.y + 38);
       if (slime.rank !== "mob" || slime.displayLabel) {
-        slime.nameLabel = this.add.text(slime.x, y - 12, slime.displayLabel || (slime.rank === "rare" ? "稀有精英" : "精英"), {
+        slime.nameLabel = this.add.text(slime.x, y - 12, slime.displayLabel || (slime.rank === "boss" ? "花园 Boss" : slime.rank === "rare" ? "稀有精英" : "精英"), {
           fontFamily: "Microsoft YaHei, sans-serif",
-          fontSize: slime.rank === "rare" ? "12px" : "11px",
+          fontSize: slime.rank === "boss" ? "13px" : slime.rank === "rare" ? "12px" : "11px",
           fontStyle: "700",
           color: style.text,
           stroke: "#241b2e",
@@ -4501,7 +4701,7 @@
       const x = clamp(point.x, 72, Math.max(72, this.worldWidth - 72));
       const y = clamp(point.y, 96, Math.max(96, this.worldHeight - 96));
       const rank = options.rank || (options.elite ? "elite" : "mob");
-      const elite = !!options.elite || rank === "elite" || rank === "rare";
+      const elite = !!options.elite || rank === "elite" || rank === "rare" || rank === "boss";
       const visualScale = Number(options.scale) || (elite ? 1.18 : 0.9);
       const textureKey = options.textureKey || LEAF_SLIME_KEY;
       const slime = this.leafSlimes.create(x, y, textureKey, options.staticImage ? undefined : 0)
@@ -4524,6 +4724,16 @@
       slime.baseTint = Number(options.tint) || (elite ? 0xffd56b : 0xffffff);
       slime.textureKey = textureKey;
       slime.staticImage = !!options.staticImage;
+      slime.stationary = !!options.stationary;
+      slime.rangedAttack = !!options.rangedAttack;
+      slime.rangedRange = Math.max(180, Number(options.rangedRange) || 760);
+      slime.rangedCooldown = Math.max(650, Number(options.rangedCooldown) || 1850);
+      slime.projectileSpeed = Math.max(120, Number(options.projectileSpeed) || 330);
+      slime.projectileColor = Number(options.projectileColor) || 0x78f0d2;
+      slime.lastRangedAttackAt = -slime.rangedCooldown;
+      slime.homeX = x;
+      slime.homeY = y;
+      slime.patrolBounds = options.patrolBounds || null;
       slime.smoothMovement = options.smoothMovement === true
         || textureKey === MAGIC_BROOM_KEY
         || textureKey === BITING_MAGIC_BOOK_KEY;
@@ -4537,7 +4747,7 @@
       slime.wanderTargetX = x;
       slime.wanderTargetY = y;
       slime.wanderUntil = 0;
-      const configuredMaxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
+      const configuredMaxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "boss" ? 1200 : rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
       const mobHealthMultiplier = rank === "mob" ? 2 : 1;
       slime.maxHp = configuredMaxHp * mobHealthMultiplier;
       const incomingHp = Number(options.hp);
@@ -4561,16 +4771,27 @@
       }
       slime.body.setAllowGravity(false);
       slime.body.setCollideWorldBounds(true);
+      slime.body.setImmovable(slime.stationary);
       slime.state = "move";
       slime.nextHopAt = 0;
       slime.lastAttackAt = -LEAF_SLIME_ATTACK_COOLDOWN;
       slime.actionToken = 0;
       this.playEnemyAnimation(slime, "move", true);
-      if (slime.staticImage) {
+      if (slime.staticImage && !slime.stationary) {
         this.tweens.add({
           targets: slime,
           angle: rank === "mob" ? 2.5 : 1.5,
           duration: 880 + Math.random() * 240,
+          ease: "Sine.easeInOut",
+          yoyo: true,
+          repeat: -1
+        });
+      } else if (slime.staticImage && slime.stationary) {
+        this.tweens.add({
+          targets: slime,
+          scaleX: visualScale * 1.025,
+          scaleY: visualScale * 0.985,
+          duration: 1150,
           ease: "Sine.easeInOut",
           yoyo: true,
           repeat: -1
@@ -4690,11 +4911,12 @@
 
     beginPrimaryActionHold() {
       if (this.primaryHold) return;
-      if (this.isCat || app.profile.characterId !== "lina") {
+      if (this.isCat) {
         this.triggerPrimaryActionImmediate();
         return;
       }
-      this.startLinaAttackHold();
+      if (app.profile.characterId === "lina") this.startLinaAttackHold();
+      else this.startCharacterAttackHold();
     }
 
     releasePrimaryActionHold() {
@@ -4702,7 +4924,9 @@
       const hold = this.primaryHold;
       hold.released = true;
       if (this.time.now - hold.startedAt >= CHARGE_HOLD_THRESHOLD) hold.charged = true;
-      if (hold.startComplete || this.actor?.anims?.currentAnim?.key === "lina-attack-charge-loop") {
+      if (app.profile.characterId !== "lina") {
+        this.finishCharacterAttackHold();
+      } else if (hold.startComplete || this.actor?.anims?.currentAnim?.key === "lina-attack-charge-loop") {
         this.finishLinaAttackHold();
       }
     }
@@ -4716,7 +4940,30 @@
 
     triggerPrimaryActionImmediate() {
       if (this.isCat) this.playCatJump();
-      else this.castProjectile();
+      else this.castProjectile({ charged: false });
+    }
+
+    startCharacterAttackHold() {
+      if (!this.actor || app.profile.hp <= 0 || this.isDead || this.isActionLocked || this.isCasting) return;
+      this.primaryHold = {
+        startedAt: this.time.now,
+        charged: false,
+        released: false,
+        startComplete: true
+      };
+      this.chargeHoldTimer?.remove?.(false);
+      this.chargeHoldTimer = this.time.delayedCall(CHARGE_HOLD_THRESHOLD, () => {
+        if (this.primaryHold && !this.primaryHold.released) this.primaryHold.charged = true;
+      });
+    }
+
+    finishCharacterAttackHold() {
+      const hold = this.primaryHold;
+      if (!hold) return;
+      this.primaryHold = null;
+      this.chargeHoldTimer?.remove?.(false);
+      this.chargeHoldTimer = null;
+      this.castProjectile({ charged: !!hold.charged });
     }
 
     startLinaAttackHold() {
@@ -4800,24 +5047,58 @@
       return `${app.profile.characterId}-attack-once`;
     }
 
-    castProjectile() {
+    castProjectile(options = {}) {
       if (!this.actor || app.profile.hp <= 0 || this.isCat) {
         if (this.isCat) this.playCatJump();
         return;
       }
+      const charged = !!options.charged;
       const now = this.time.now;
-      const isMelee = app.profile.characterId === "ayu";
+      const characterId = app.profile.characterId;
+      const isMelee = ["ayu", "laodeng"].includes(characterId);
       const equipment = this.selectedEquipment || EQUIPMENT[0];
-      const cooldown = isMelee ? MELEE.cooldown : equipment.cooldown;
+      const berserk = characterId === "laodeng" && now < this.berserkUntil;
+      const baseCooldown = isMelee ? MELEE.cooldown : equipment.cooldown;
+      const cooldown = berserk ? baseCooldown / 1.5 : baseCooldown;
       if (now - this.lastShotAt < cooldown) return;
       this.lastShotAt = now;
-      const character = getCharacter(app.profile.characterId);
+      const character = getCharacter(characterId);
       this.isCasting = true;
       this.networkAction = "attack";
       this.setLinaAttackVisualScale();
       this.actor.play(this.getAttackAnimationKey(), true);
-      if (isMelee) this.time.delayedCall(110, () => this.dealMeleeDamage());
-      else this.time.delayedCall(95, () => this.fireProjectile());
+      if (characterId === "ayu") {
+        this.time.delayedCall(95, () => this.dealMeleeDamage({ damageMultiplier: charged ? 0.85 : 1, charged }));
+        if (charged) this.time.delayedCall(245, () => this.dealMeleeDamage({ damageMultiplier: 0.85, charged: true, reverseSlash: true }));
+      } else if (characterId === "laodeng") {
+        this.time.delayedCall(105, () => this.dealMeleeDamage({
+          damageMultiplier: charged ? 1.75 : 1,
+          charged,
+          radius: charged ? 112 : undefined,
+          berserk
+        }));
+      } else if (characterId === "zhixia" && charged) {
+        this.time.delayedCall(105, () => this.castChainLightning());
+      } else if (characterId === "zhixia") {
+        this.time.delayedCall(95, () => this.fireProjectile({
+          kind: "magic",
+          color: 0x73d9ff,
+          damage: Number(app.profile.magicPower || 22),
+          visualType: "lightning"
+        }));
+      } else if (characterId === "jiangxun") {
+        this.time.delayedCall(95, () => this.fireProjectile({
+          charged,
+          kind: "physical",
+          color: 0xb7e58a,
+          damage: Math.round(Number(app.profile.attackPower || 26) * (charged ? 1.65 : 1)),
+          piercing: charged,
+          maxDistance: MAP_TILE_SIZE * (charged ? 9 : 7),
+          visualType: "arrow"
+        }));
+      } else {
+        this.time.delayedCall(95, () => this.fireProjectile({ charged }));
+      }
       this.actor.once("animationcomplete", () => {
         this.isCasting = false;
         this.actor.setTexture(character.id);
@@ -4842,10 +5123,10 @@
 
     castUltimate() {
       if (!this.actor || app.profile.hp <= 0) return;
-      if (app.profile.characterId === "ayu") {
-        this.castAyuUltimate();
-        return;
-      }
+      if (app.profile.characterId === "ayu") return this.castAyuUltimate();
+      if (app.profile.characterId === "zhixia") return this.castZhixiaUltimate();
+      if (app.profile.characterId === "laodeng") return this.castLaodengUltimate();
+      if (app.profile.characterId === "jiangxun") return this.castJiangxunUltimate();
       if (app.profile.characterId !== "lina") return;
       if (this.isCat || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold) return;
       if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
@@ -4871,30 +5152,96 @@
       app.audio.ultimateWind();
       this.time.delayedCall(150, () => {
         if (!this.actor?.active || this.isDead) return;
-        for (let index = 0; index < 8; index += 1) {
-          const angle = index / 8 * Math.PI * 2;
-          this.flashSlash(
-            this.actor.x + Math.cos(angle) * 82,
-            this.actor.y - 44 + Math.sin(angle) * 58,
-            angle,
-            this.actor.y + 48
-          );
-        }
-        const baseDamage = Math.round(Number(app.profile.attackPower || MELEE.damage) * 1.8);
-        (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
-          if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
-          if (Phaser.Math.Distance.Between(this.actor.x, this.actor.y - 42, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) <= 250) {
-            this.playLeafSlimeHit(slime, baseDamage, { kind: "physical", noEnergyGain: true });
-          }
+        const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+        const baseAngle = Math.atan2(aim.y, aim.x);
+        [-0.18, 0, 0.18].forEach(offset => {
+          this.fireProjectile({
+            vec: { x: Math.cos(baseAngle + offset), y: Math.sin(baseAngle + offset) },
+            kind: "physical",
+            color: 0x8fd8ff,
+            damage: Math.round(Number(app.profile.attackPower || MELEE.damage) * 1.8),
+            maxDistance: AYU_SWORD_WAVE_RANGE,
+            speed: 700,
+            piercing: true,
+            noEnergyGain: true,
+            visualType: "swordWave"
+          });
         });
-        if (app.boss.active && app.boss.hp > 0 && Phaser.Math.Distance.Between(this.actor.x, this.actor.y, app.boss.x, app.boss.y) <= 280) {
-          this.applyBossDamage(baseDamage);
-        }
         app.audio.ultimateBurst();
         this.cameras.main.shake(160, 0.003);
       });
       this.actor.once("animationcomplete", () => {
         if (!this.actor?.active || this.isDead) return;
+        this.isCasting = false;
+        this.isActionLocked = false;
+        this.returnToBaseLoop();
+      });
+    }
+
+    castZhixiaUltimate() {
+      if (this.isCat || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold) return;
+      if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
+      this.isCasting = true;
+      this.isActionLocked = true;
+      this.networkAction = "attack";
+      this.actor.body.setVelocity(0, 0);
+      this.actor.play("zhixia-attack-once", true);
+      const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+      for (let index = 1; index <= 10; index += 1) {
+        this.time.delayedCall(index * 105, () => {
+          if (!this.actor?.active || this.isDead) return;
+          const x = this.actor.x + aim.x * MAP_TILE_SIZE * index;
+          const y = this.actor.y - 42 + aim.y * MAP_TILE_SIZE * index;
+          this.strikeLightning(x, y, Math.round(Number(app.profile.magicPower || 22) * 1.15), 92);
+        });
+      }
+      app.audio.ultimateWind();
+      this.time.delayedCall(1220, () => {
+        this.isCasting = false;
+        this.isActionLocked = false;
+        this.returnToBaseLoop();
+      });
+    }
+
+    castLaodengUltimate() {
+      if (this.isCat || this.isDead || this.isActionLocked || this.primaryHold) return;
+      if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
+      this.berserkUntil = this.time.now + LAODENG_BERSERK_DURATION;
+      this.berserkEndingShown = false;
+      this.setActorVisualScale(1.25);
+      this.flashCast(this.actor.x, this.actor.y - 44, 0xffa24d, this.actor.y + 80);
+      this.showFloatingText(this.actor.x, this.actor.y - 128, "狂暴 30秒", { color: "#ffd18b", size: "22px", rise: 64 });
+      app.audio.ultimateBurst();
+      showToast("狂暴：移速与攻速 +50%，拳击范围扩大并附带 20% 吸血");
+    }
+
+    castJiangxunUltimate() {
+      if (this.isCat || this.isDead || this.isActionLocked || this.isCasting || this.primaryHold) return;
+      if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
+      this.isCasting = true;
+      this.isActionLocked = true;
+      this.networkAction = "attack";
+      this.actor.body.setVelocity(0, 0);
+      const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+      const baseAngle = Math.atan2(aim.y, aim.x);
+      for (let index = 0; index < JIANGXUN_BARRAGE_ARROWS; index += 1) {
+        this.time.delayedCall(index * 100, () => {
+          if (!this.actor?.active || this.isDead) return;
+          const spread = Math.sin(index * 2.37) * 0.22;
+          this.fireProjectile({
+            vec: { x: Math.cos(baseAngle + spread), y: Math.sin(baseAngle + spread) },
+            kind: "physical",
+            color: 0xc5eb92,
+            damage: Math.max(1, Math.round(Number(app.profile.attackPower || 26) * 0.45)),
+            maxDistance: MAP_TILE_SIZE * 9,
+            speed: 820,
+            noEnergyGain: true,
+            visualType: "arrow"
+          });
+        });
+      }
+      app.audio.ultimateWind();
+      this.time.delayedCall(JIANGXUN_BARRAGE_ARROWS * 100 + 120, () => {
         this.isCasting = false;
         this.isActionLocked = false;
         this.returnToBaseLoop();
@@ -4956,33 +5303,123 @@
       if (hitSomething) this.cameras.main.shake(140, 0.002);
     }
 
-    dealMeleeDamage() {
+    dealMeleeDamage(options = {}) {
       if (!this.actor || this.isDead) return;
       const direction = this.facing || DIRECTIONS[2];
       const vec = directionVector(direction);
       this.lastAimVector = vec;
       const hitX = this.actor.x + vec.x * MELEE.reach;
       const hitY = this.actor.y - 44 + vec.y * MELEE.reach;
-      this.flashSlash(hitX, hitY, Math.atan2(vec.y, vec.x), this.actor.y + 20);
+      const angle = Math.atan2(vec.y, vec.x) + (options.reverseSlash ? Math.PI : 0);
+      this.flashSlash(hitX, hitY, angle, this.actor.y + 20);
       app.audio.cast();
       let hitSomething = false;
+      let dealtDamage = 0;
+      const berserk = !!options.berserk || (app.profile.characterId === "laodeng" && this.time.now < this.berserkUntil);
+      const radius = Number(options.radius) || (berserk ? 104 : MELEE.radius);
+      const baseDamage = Math.round(Number(app.profile.attackPower || MELEE.damage) * (Number(options.damageMultiplier) || 1));
       const slimes = this.leafSlimes?.getChildren?.() || [];
       for (const slime of slimes) {
         if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) continue;
         const distance = Phaser.Math.Distance.Between(hitX, hitY, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
-        if (distance <= MELEE.radius + LEAF_SLIME_HIT_RADIUS) {
-          this.playLeafSlimeHit(slime, Number(app.profile.attackPower || MELEE.damage), { kind: "physical", energyGain: ENERGY_MELEE_HIT_GAIN });
+        if (distance <= radius + LEAF_SLIME_HIT_RADIUS) {
+          dealtDamage += this.playLeafSlimeHit(slime, baseDamage, {
+            kind: "physical",
+            charged: !!options.charged,
+            energyGain: ENERGY_MELEE_HIT_GAIN
+          }) || 0;
           hitSomething = true;
         }
       }
       if (app.boss.active && app.boss.hp > 0 && this.bossSprite?.visible) {
         const bossDistance = Phaser.Math.Distance.Between(hitX, hitY, app.boss.x, app.boss.y - 60);
-        if (bossDistance < 96 + MELEE.radius) {
-          this.applyBossDamage(MELEE.damage);
+        if (bossDistance < 96 + radius) {
+          this.applyBossDamage(baseDamage);
           hitSomething = true;
         }
       }
+      if (berserk && dealtDamage > 0) this.applyLifesteal(dealtDamage * 0.2);
       if (hitSomething) this.cameras.main.shake(60, 0.0015);
+    }
+
+    applyLifesteal(amount) {
+      if (!app.profile || amount <= 0) return;
+      const before = Number(app.profile.hp || 0);
+      app.profile.hp = Math.min(Number(app.profile.maxHp || before), before + Math.max(1, Math.round(amount)));
+      const healed = app.profile.hp - before;
+      if (healed <= 0) return;
+      this.showFloatingText(this.actor.x, this.actor.y - 116, `吸血 +${healed}`, { color: "#85f2b1", size: "16px", rise: 42 });
+      renderHud();
+    }
+
+    castChainLightning() {
+      if (!this.actor || this.isDead) return;
+      const candidates = (this.leafSlimes?.getChildren?.() || [])
+        .filter(slime => slime?.active && !["dead", "vanish", "emerging"].includes(slime.state))
+        .map(slime => ({ slime, distance: Phaser.Math.Distance.Between(this.actor.x, this.actor.y, slime.x, slime.y) }))
+        .filter(item => item.distance <= ZHIXIA_LIGHTNING_RANGE)
+        .sort((a, b) => a.distance - b.distance);
+      const selected = [];
+      let source = { x: this.actor.x, y: this.actor.y - 52 };
+      while (selected.length < 4) {
+        const next = candidates
+          .filter(item => !selected.includes(item.slime))
+          .sort((a, b) => Phaser.Math.Distance.Between(source.x, source.y, a.slime.x, a.slime.y)
+            - Phaser.Math.Distance.Between(source.x, source.y, b.slime.x, b.slime.y))[0];
+        if (!next) break;
+        selected.push(next.slime);
+        source = { x: next.slime.x, y: next.slime.y };
+      }
+      if (!selected.length) {
+        const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+        this.drawLightningArc(this.actor.x, this.actor.y - 52, this.actor.x + aim.x * 180, this.actor.y - 52 + aim.y * 180);
+        return;
+      }
+      let from = { x: this.actor.x, y: this.actor.y - 52 };
+      selected.forEach((slime, index) => {
+        this.time.delayedCall(index * 90, () => {
+          if (!slime?.active) return;
+          this.drawLightningArc(from.x, from.y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
+          const damage = Math.round(Number(app.profile.magicPower || 22) * Math.pow(0.85, index));
+          this.playLeafSlimeHit(slime, damage, { kind: "magic", charged: true });
+          from = { x: slime.x, y: slime.y + LEAF_SLIME_HIT_OFFSET_Y };
+        });
+      });
+      app.audio.ultimateBurst();
+    }
+
+    drawLightningArc(x1, y1, x2, y2) {
+      const graphics = this.add.graphics().setDepth(Math.max(y1, y2) + 70);
+      graphics.lineStyle(6, 0xb9f5ff, 0.88);
+      graphics.beginPath();
+      graphics.moveTo(x1, y1);
+      const segments = 6;
+      for (let index = 1; index < segments; index += 1) {
+        const t = index / segments;
+        graphics.lineTo(
+          Phaser.Math.Linear(x1, x2, t) + Phaser.Math.Between(-12, 12),
+          Phaser.Math.Linear(y1, y2, t) + Phaser.Math.Between(-12, 12)
+        );
+      }
+      graphics.lineTo(x2, y2);
+      graphics.strokePath();
+      this.tweens.add({ targets: graphics, alpha: 0, duration: 180, onComplete: () => graphics.destroy() });
+    }
+
+    strikeLightning(x, y, damage, radius) {
+      const topY = Math.max(0, y - 220);
+      this.drawLightningArc(x + 18, topY, x, y);
+      const ring = this.add.circle(x, y, radius * 0.34, 0x7fe8ff, 0.26)
+        .setStrokeStyle(4, 0xe5fbff, 0.9)
+        .setDepth(y + 80);
+      this.tweens.add({ targets: ring, radius, alpha: 0, duration: 260, onComplete: () => ring.destroy() });
+      (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
+        if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
+        if (Phaser.Math.Distance.Between(x, y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) <= radius + LEAF_SLIME_HIT_RADIUS) {
+          this.playLeafSlimeHit(slime, damage, { kind: "magic", noEnergyGain: true });
+        }
+      });
+      app.audio.hit();
     }
 
     flashSlash(x, y, angle, depth = 45) {
@@ -5005,10 +5442,10 @@
       const equipment = this.selectedEquipment || EQUIPMENT[0];
       const charged = !!options.charged;
       const direction = this.facing || DIRECTIONS[2];
-      const vec = directionVector(direction);
+      const vec = options.vec ? normalizeVector(options.vec.x, options.vec.y) : directionVector(direction);
       this.lastAimVector = vec;
       const castOrigin = this.getCastOrigin(vec);
-      const projectileSpeed = equipment.speed * PROJECTILE_SPEED_SCALE * PLAYER_PROJECTILE_SPEED_MULTIPLIER;
+      const projectileSpeed = Number(options.speed) || equipment.speed * PROJECTILE_SPEED_SCALE * PLAYER_PROJECTILE_SPEED_MULTIPLIER;
       const flightFrame = equipment.projectileFrame + (charged ? 1 : 0);
       const projectile = this.projectiles.create(castOrigin.x, castOrigin.y, "play-projectile-hitbox");
       projectile.setVisible(false);
@@ -5017,11 +5454,11 @@
       projectile.body.setAllowGravity(false);
       projectile.body.setVelocity(vec.x * projectileSpeed, vec.y * projectileSpeed);
       projectile.spawnTime = this.time.now;
-      projectile.color = equipment.color;
+      projectile.color = Number(options.color) || equipment.color;
       projectile.radius = projectileSize;
       projectile.spawnX = castOrigin.x;
       projectile.spawnY = castOrigin.y;
-      projectile.maxDistance = Math.min(equipment.range || PROJECTILE_MAX_RANGE, PROJECTILE_MAX_RANGE);
+      projectile.maxDistance = Number(options.maxDistance) || Math.min(equipment.range || PROJECTILE_MAX_RANGE, PROJECTILE_MAX_RANGE);
       projectile.maxLifetime = Math.ceil((projectile.maxDistance / projectileSpeed) * 1000) + 180;
       projectile.impactFrame = equipment.impactFrame;
       projectile.visualScale = (equipment.projectileScale || 0.15) * PROJECTILE_VISUAL_SCALE_MULTIPLIER;
@@ -5029,21 +5466,41 @@
       projectile.depthOffset = vec.y < -0.12 ? -8 : 12;
       projectile.visualBaseDepth = this.actor.y + 18;
       projectile.visualRotation = Math.atan2(vec.y, vec.x);
-      projectile.impactAnimationKey = this.getProjectileAnimationKey(equipment, "impact");
-      projectile.damage = app.profile.characterId === "lina"
+      projectile.impactAnimationKey = options.visualType ? "" : this.getProjectileAnimationKey(equipment, "impact");
+      projectile.damage = Number(options.damage) || (app.profile.characterId === "lina"
         ? (charged ? Math.round(Number(app.profile.magicPower || 22) * 1.55) : Number(app.profile.magicPower || 22))
-        : Number(app.profile.attackPower || 18);
+        : Number(app.profile.attackPower || 18));
       projectile.charged = charged;
+      projectile.kind = options.kind || (app.profile.characterId === "lina" ? "magic" : "physical");
+      projectile.piercing = !!options.piercing;
+      projectile.noEnergyGain = !!options.noEnergyGain;
+      projectile.hitTargets = new Set();
       projectile.trail = [];
       const projectileOrigin = charged
         ? (equipment.chargedProjectileOrigin || equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN)
         : (equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN);
-      projectile.visual = this.add.sprite(castOrigin.x, castOrigin.y, PROJECTILE_TEXTURE_KEY, flightFrame)
-        .setOrigin(projectileOrigin.x, projectileOrigin.y)
-        .setScale(projectile.visualScale)
-        .setRotation(projectile.visualRotation)
-        .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
-      this.flashCast(castOrigin.x, castOrigin.y, equipment.color, projectile.visualBaseDepth + 1);
+      if (options.visualType === "arrow") {
+        projectile.visual = this.add.rectangle(castOrigin.x, castOrigin.y, charged ? 54 : 42, charged ? 7 : 5, projectile.color, 0.96)
+          .setStrokeStyle(2, 0xf3ffe7, 0.9)
+          .setRotation(projectile.visualRotation)
+          .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
+      } else if (options.visualType === "swordWave") {
+        projectile.visual = this.add.arc(castOrigin.x, castOrigin.y, 34, -58, 58, false, projectile.color, 0.72)
+          .setStrokeStyle(5, 0xe7f8ff, 0.92)
+          .setRotation(projectile.visualRotation)
+          .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
+      } else if (options.visualType === "lightning") {
+        projectile.visual = this.add.star(castOrigin.x, castOrigin.y, 6, 5, 15, projectile.color, 0.94)
+          .setRotation(projectile.visualRotation)
+          .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
+      } else {
+        projectile.visual = this.add.sprite(castOrigin.x, castOrigin.y, PROJECTILE_TEXTURE_KEY, flightFrame)
+          .setOrigin(projectileOrigin.x, projectileOrigin.y)
+          .setScale(projectile.visualScale)
+          .setRotation(projectile.visualRotation)
+          .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
+      }
+      this.flashCast(castOrigin.x, castOrigin.y, projectile.color, projectile.visualBaseDepth + 1);
       app.audio.projectileFly(charged);
     }
 
@@ -5112,10 +5569,16 @@
     }
 
     handleLeafSlimeProjectileHit(projectile, slime) {
-      if (!slime?.active) return;
-      this.destroyProjectile(projectile, true);
-      if (slime.state === "dead" || slime.state === "vanish") return;
-      this.playLeafSlimeHit(slime, projectile.damage || 18, { kind: "magic", charged: !!projectile.charged });
+      if (!slime?.active || projectile.hitTargets?.has(slime.slimeId || slime)) return false;
+      projectile.hitTargets?.add(slime.slimeId || slime);
+      if (!projectile.piercing) this.destroyProjectile(projectile, true);
+      if (slime.state === "dead" || slime.state === "vanish") return !projectile.piercing;
+      this.playLeafSlimeHit(slime, projectile.damage || 18, {
+        kind: projectile.kind || "magic",
+        charged: !!projectile.charged,
+        noEnergyGain: !!projectile.noEnergyGain
+      });
+      return !projectile.piercing;
     }
 
     checkLeafSlimeProjectileHit(projectile) {
@@ -5126,8 +5589,7 @@
         const hitY = slime.y + LEAF_SLIME_HIT_OFFSET_Y;
         const distance = Phaser.Math.Distance.Between(projectile.x, projectile.y, hitX, hitY);
         if (distance > LEAF_SLIME_HIT_RADIUS + projectile.radius) continue;
-        this.handleLeafSlimeProjectileHit(projectile, slime);
-        return true;
+        if (this.handleLeafSlimeProjectileHit(projectile, slime)) return true;
       }
       return false;
     }
@@ -5275,7 +5737,7 @@
     }
 
     playLeafSlimeHit(slime, baseDamage = MELEE.damage, options = {}) {
-      if (slime.state === "hit" || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return;
+      if (slime.state === "hit" || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return 0;
       slime.provokedUntil = this.time.now + 12000;
       const result = this.rollPlayerDamage(baseDamage, slime, options.kind || "magic");
       slime.hp = Math.max(0, Number(slime.hp || 0) - result.amount);
@@ -5319,6 +5781,7 @@
       };
       if (slime.staticImage) this.time.delayedCall(180, finishHit);
       else slime.once("animationcomplete", finishHit);
+      return result.amount;
     }
 
     killLeafSlime(slime) {
@@ -5392,9 +5855,10 @@
         this.isCasting = false;
         this.networkAction = "death";
         this.actor.body.setVelocity(0, 0);
+        this.enemyProjectiles?.clear(true, true);
         this.actor.play(`${app.profile.characterId}-death-once`, true);
         renderReviveDialog(true);
-        showToast("角色倒下了，点击复活或按 I 继续");
+        showToast("角色倒下了，点击复活后继续探索");
       }
     }
 
@@ -5411,6 +5875,7 @@
       this.networkAction = "idle";
       this.actor.clearTint();
       this.actor.body.setVelocity(0, 0);
+      this.enemyProjectiles?.clear(true, true);
       this.actor.setTexture(app.profile.characterId);
       renderReviveDialog(false);
       renderHud();
@@ -5443,6 +5908,61 @@
         this.actor.clearTint();
         this.isActionLocked = false;
         this.returnToBaseLoop();
+      });
+    }
+
+    triggerRangedEnemyAttack(slime, dx, dy) {
+      const now = this.time.now;
+      if (!slime.rangedAttack || now - slime.lastRangedAttackAt < slime.rangedCooldown) return;
+      slime.lastRangedAttackAt = now;
+      slime.actionToken = (slime.actionToken || 0) + 1;
+      const token = slime.actionToken;
+      slime.state = "attack";
+      slime.body.setVelocity(0, 0);
+      app.audio?.enemyAttack();
+      const originY = slime.y - Math.min(92, Math.max(38, slime.displayHeight * 0.24));
+      const warning = this.add.circle(slime.x, originY, 18, slime.projectileColor, 0.22)
+        .setStrokeStyle(3, slime.projectileColor, 0.88)
+        .setDepth(slime.y + 82);
+      this.tweens.add({
+        targets: warning,
+        radius: 42,
+        alpha: 0.05,
+        duration: 260,
+        ease: "Sine.easeOut",
+        onComplete: () => {
+          warning.destroy();
+          if (!slime.active || slime.actionToken !== token || !this.actor?.active || this.isDead) {
+            if (slime?.active) slime.state = "move";
+            return;
+          }
+          const aim = normalizeVector(this.actor.x - slime.x, this.actor.y - originY);
+          const projectile = this.enemyProjectiles.create(slime.x, originY, ENEMY_SEED_PROJECTILE_KEY)
+            .setDepth(slime.y + 84)
+            .setTint(slime.projectileColor);
+          projectile.body.setAllowGravity(false);
+          projectile.body.setCircle(12, 6, 6);
+          projectile.body.setVelocity(aim.x * slime.projectileSpeed, aim.y * slime.projectileSpeed);
+          projectile.damage = slime.damage;
+          projectile.spawnedAt = this.time.now;
+          projectile.setAngularVelocity(220);
+          slime.state = "move";
+        }
+      });
+    }
+
+    updateEnemyProjectiles(time) {
+      if (this.isDead) {
+        this.enemyProjectiles?.clear(true, true);
+        return;
+      }
+      this.enemyProjectiles?.children?.each(projectile => {
+        if (!projectile?.active) return;
+        projectile.setDepth(projectile.y + 36);
+        const expired = time - Number(projectile.spawnedAt || time) > ENEMY_PROJECTILE_LIFETIME_MS;
+        const outside = projectile.x < -48 || projectile.y < -48
+          || projectile.x > this.worldWidth + 48 || projectile.y > this.worldHeight + 48;
+        if (expired || outside) projectile.destroy();
       });
     }
 
@@ -5496,7 +6016,7 @@
 
     chooseSmoothEnemyWanderTarget(slime) {
       const config = this.getAmbientEnemyRefreshConfig() || {};
-      const bounds = config.spawnBounds || {};
+      const bounds = slime.patrolBounds || config.spawnBounds || {};
       const left = clamp(Number(bounds.x) || 96, 72, this.worldWidth - 72);
       const top = clamp(Number(bounds.y) || 96, 96, this.worldHeight - 96);
       const right = clamp(left + (Number(bounds.width) || this.worldWidth - left * 2), left, this.worldWidth - 72);
@@ -5548,6 +6068,10 @@
 
     updateLeafSlimes(time, delta = 16) {
       const slimes = this.leafSlimes?.getChildren?.() || [];
+      if (this.isDead) {
+        slimes.forEach(slime => slime?.body?.setVelocity(0, 0));
+        return;
+      }
       slimes.forEach(slime => {
         if (!slime?.active || !this.actor?.active) return;
         slime.setDepth(slime.y + 6);
@@ -5556,6 +6080,11 @@
         const dx = this.actor.x - slime.x;
         const dy = this.actor.y - slime.y;
         const distance = Math.hypot(dx, dy);
+        if (slime.stationary) {
+          slime.body.setVelocity(0, 0);
+          if (slime.rangedAttack && distance <= slime.rangedRange) this.triggerRangedEnemyAttack(slime, dx, dy);
+          return;
+        }
         if (slime.smoothMovement) {
           this.updateSmoothEnemyMotion(slime, dx, dy, distance, delta);
           return;
@@ -5690,8 +6219,10 @@
 
     hitBoss(projectile) {
       if (!app.boss.active || app.boss.hp <= 0) return;
+      if (projectile.hitTargets?.has("boss")) return;
+      projectile.hitTargets?.add("boss");
       const damage = projectile.damage || 18;
-      this.destroyProjectile(projectile, true);
+      if (!projectile.piercing) this.destroyProjectile(projectile, true);
       this.applyBossDamage(damage);
     }
 
@@ -5836,6 +6367,14 @@
 
     update(time, delta = 16) {
       if (!this.actor) return;
+      if (app.profile?.characterId === "laodeng" && this.berserkUntil > 0 && time >= this.berserkUntil) {
+        this.berserkUntil = 0;
+        this.resetActorVisualScale();
+        if (!this.berserkEndingShown) {
+          this.berserkEndingShown = true;
+          showToast("狂暴状态结束");
+        }
+      }
       this.restoreEnergy((Number(delta) || 16) / 1000 * ENERGY_REGEN_PER_SECOND, NaN, NaN, { silent: true });
       if (this.isActionLocked || this.isDead) {
         this.actor.body.setVelocity(0, 0);
@@ -5845,7 +6384,8 @@
         if (moving) {
           const vec = normalizeVector(dx, dy);
           this.updateFacing(dx, dy);
-          const speed = this.isCat ? character.speed * 2 : character.speed;
+          const berserkSpeed = app.profile.characterId === "laodeng" && time < this.berserkUntil ? 1.5 : 1;
+          const speed = (this.isCat ? character.speed * 2 : character.speed) * berserkSpeed;
           this.actor.body.setVelocity(vec.x * speed, vec.y * speed);
           if (!this.isCasting && !this.isTransforming) this.playLoop("walk");
         } else {
@@ -5855,6 +6395,7 @@
       }
       this.actor.setDepth(this.actor.y + 8);
       this.updateProjectiles();
+      this.updateEnemyProjectiles(time);
       this.updateLeafSlimes(time, delta);
       this.updateBoss(time);
       this.updateWorldDrops(time);

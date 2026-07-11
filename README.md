@@ -26,7 +26,7 @@ python -m http.server 4173
 文件名：
 
 - `assets/sprites/lina-sprites-v10-anchored-expanded.png`
-- `assets/sprites/ayu-sprites-v10-imagegen-anchored-clean.png`
+- `assets/sprites/ayu-sprites-v11-q-normalized.png`
 
 如果重新出图，把原图放到 `assets/sprites/original/<角色>-sprites.png`，运行 `python tools/normalize_sprites.py` 即可统一尺寸并去掉棋盘底。
 

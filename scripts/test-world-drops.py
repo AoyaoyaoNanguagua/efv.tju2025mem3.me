@@ -71,6 +71,20 @@ class WorldDropTests(unittest.TestCase):
         self.assertEqual(SERVER.get_room("drop-test")["drops"], {})
         self.assertEqual(self.sent[-1][1]["type"], "dropError")
 
+    def test_garden_boss_drop_is_whitelisted(self):
+        SERVER.handle_drop_spawn(self.owner, {
+            "drop": {
+                "id": "garden-boss-drop",
+                "mapId": "ch1_m03_agent_lab",
+                "x": 120,
+                "y": 140,
+                "item": {"id": "ch1_drop_carnivora_core", "source": "garden_boss"},
+            }
+        })
+        drop = SERVER.get_room("drop-test")["drops"]["garden-boss-drop"]
+        self.assertEqual(drop["item"]["name"], "食人花院核")
+        self.assertEqual(drop["item"]["quality"], "epic")
+
 
 if __name__ == "__main__":
     unittest.main()

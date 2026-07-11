@@ -87,8 +87,8 @@ const CHARACTERS = [
     weapon: "均衡剑",
     combat: "前排剑士，适合后续测试近战切入和碰撞体判定。",
     cat: "狸花猫，条纹尾巴，蓝色项圈。",
-    portrait: "assets/portraits/ayu.png",
-    sprite: "assets/sprites/ayu-sprites-v10-imagegen-anchored-clean.png",
+    portrait: "assets/portraits/ayu-q-v2.png",
+    sprite: "assets/sprites/ayu-sprites-v11-q-normalized.png",
     color: "#d99a4a",
     baseline: 140
   }

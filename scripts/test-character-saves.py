@@ -37,6 +37,22 @@ class CharacterSaveTests(unittest.TestCase):
         self.assertEqual(status, 200)
         return body["profile"]
 
+    def test_all_five_characters_can_fill_the_roster(self):
+        expected = ["lina", "ayu", "zhixia", "laodeng", "jiangxun"]
+        for slot, character_id in enumerate(expected):
+            status, body = SERVER.handle_character_create(
+                self.user, {"characterId": character_id}
+            )
+            self.assertEqual(status, 200)
+            self.assertEqual(body["slot"], slot)
+            self.assertEqual(self.select(slot)["characterId"], character_id)
+
+        status, body = SERVER.handle_character_create(
+            self.user, {"characterId": "lina"}
+        )
+        self.assertEqual(status, 400)
+        self.assertIn("角色仓库", body["error"])
+
     def test_character_progress_is_isolated_and_reused_slot_starts_fresh(self):
         status, _ = SERVER.handle_character_create(self.user, {"characterId": "lina"})
         self.assertEqual(status, 200)
