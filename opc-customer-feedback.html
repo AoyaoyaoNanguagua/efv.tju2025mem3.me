@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>客户反馈中心 | Third Academy OPC</title>
+  <meta name="description" content="第三学院 OPC 客户反馈模拟中心，按反馈性质与业务分类提交意见。">
+  <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
+  <link rel="stylesheet" href="opc.css">
+</head>
+<body class="feedback-page">
+  <div class="site-shell">
+    <header class="site-nav">
+      <a class="brand" href="opc.html" aria-label="第三学院 OPC 首页">
+        <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
+        <span><strong>第三学院 OPC</strong><span>Third Academy OPC</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="打开导航" aria-expanded="false" data-nav-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="nav-links" aria-label="主导航" data-nav-links>
+        <a href="opc.html">公司 Company</a>
+        <a class="active" href="opc-products.html">IP 与产品 Products</a>
+        <a href="opc-workflow.html">OPC 工作流 Workflow</a>
+        <a href="opc-console.html">OPC 控制台 Console</a>
+        <a href="play.html">在线试玩 Play</a>
+        <a href="https://github.com/opc-studios/campus-daze">代码仓库 GitHub</a>
+      </nav>
+    </header>
+
+    <section class="hero page-hero feedback-hero">
+      <img class="hero-bg" src="assets/ui/start-screen-bg-v4.png" alt="">
+      <div class="hero-inner">
+        <p class="kicker">客户声音 · 分类受理 · 闭环改进</p>
+        <h1>客户反馈中心<span class="cn">Customer Feedback Center</span></h1>
+        <p class="hero-copy">把体验、问题与建议转化为可追踪的改进任务，让策划、生产和市场三个主 Agent 形成持续反馈闭环。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#feedback-form">填写反馈 Submit</a>
+          <a class="button light" href="opc-feedback-records.html">查看反馈台账 50 条</a>
+          <a class="button light" href="opc-products.html">返回产品页 Products</a>
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <section class="band">
+        <div class="inner">
+          <div class="feedback-demo-note">
+            <b>DEMO 模拟界面</b>
+            <span>当前提交仅保存在本浏览器中，不会发送到真实客服、订单或工单系统。</span>
+          </div>
+
+          <div class="feedback-intake-grid">
+            <section class="feedback-form-panel" id="feedback-form">
+              <header>
+                <p class="section-label">分类提交 Feedback Intake</p>
+                <h2>告诉我们哪些值得保留，哪些需要改进。</h2>
+                <p>带 * 的字段为必填项。提交后会生成模拟反馈编号，便于演示后续流转。</p>
+              </header>
+
+              <form data-feedback-form>
+                <fieldset class="feedback-kind-fieldset">
+                  <legend>反馈性质 *</legend>
+                  <div class="feedback-kind-options">
+                    <label class="feedback-kind positive">
+                      <input type="radio" name="kind" value="positive" required>
+                      <span><b>正面反馈</b><small>认可亮点，帮助团队持续放大</small></span>
+                    </label>
+                    <label class="feedback-kind negative">
+                      <input type="radio" name="kind" value="negative" required>
+                      <span><b>负面反馈</b><small>报告问题，推动定位与修复</small></span>
+                    </label>
+                    <label class="feedback-kind suggestion">
+                      <input type="radio" name="kind" value="suggestion" required>
+                      <span><b>优化建议</b><small>提出想法，进入需求候选池</small></span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div class="feedback-fields two-column">
+                  <label>业务分类 *
+                    <select name="category" required>
+                      <option value="">请选择分类</option>
+                      <option value="character">角色与 IP 设定</option>
+                      <option value="game">游戏内容与玩法</option>
+                      <option value="merchandise">手办与毛绒周边</option>
+                      <option value="payment">支付、订单与售后</option>
+                      <option value="website">网站与页面体验</option>
+                      <option value="cooperation">商务合作与授权</option>
+                    </select>
+                  </label>
+                  <label>关联产品
+                    <select name="product">
+                      <option value="学术喵：樱花同济篇">学术喵：樱花同济篇</option>
+                      <option value="莉娜 × 知夏典藏手办">莉娜 × 知夏典藏手办</option>
+                      <option value="莉娜 × 知夏 Q版毛绒">莉娜 × 知夏 Q版毛绒</option>
+                      <option value="OPC 公司网站">OPC 公司网站</option>
+                      <option value="其他">其他</option>
+                    </select>
+                  </label>
+                </div>
+
+                <fieldset class="feedback-rating">
+                  <legend>整体满意度 *</legend>
+                  <div>
+                    <label><input type="radio" name="rating" value="1" required><span>1</span><small>很差</small></label>
+                    <label><input type="radio" name="rating" value="2"><span>2</span><small>较差</small></label>
+                    <label><input type="radio" name="rating" value="3"><span>3</span><small>一般</small></label>
+                    <label><input type="radio" name="rating" value="4"><span>4</span><small>满意</small></label>
+                    <label><input type="radio" name="rating" value="5"><span>5</span><small>非常满意</small></label>
+                  </div>
+                </fieldset>
+
+                <div class="feedback-fields">
+                  <label>反馈标题 *
+                    <input name="subject" type="text" maxlength="60" placeholder="请用一句话概括重点" required>
+                  </label>
+                  <label>详细内容 *
+                    <textarea name="detail" rows="6" maxlength="1000" placeholder="可以描述使用场景、预期结果、实际体验以及建议方案" required></textarea>
+                  </label>
+                  <label>联系方式（选填）
+                    <input name="contact" type="text" maxlength="80" placeholder="邮箱、手机号或其他联系方式">
+                  </label>
+                </div>
+
+                <label class="feedback-consent">
+                  <input type="checkbox" name="followup">
+                  <span>允许团队就此反馈进行后续联系（模拟选项）</span>
+                </label>
+
+                <div class="feedback-form-actions">
+                  <button class="button dark" type="submit">提交模拟反馈</button>
+                  <button class="button light" type="reset">清空内容</button>
+                </div>
+                <div class="feedback-submit-status" role="status" aria-live="polite" data-feedback-status hidden></div>
+              </form>
+            </section>
+
+            <aside class="feedback-process-panel">
+              <p class="section-label">闭环机制 Closed Loop</p>
+              <h2>每条反馈都有明确去向。</h2>
+              <ol class="feedback-process-list">
+                <li><em>01</em><div><b>客户关系 subagent</b><span>去重、分类、脱敏并标注优先级。</span></div></li>
+                <li><em>02</em><div><b>市场 Agent</b><span>汇总用户信号，判断影响范围与商业价值。</span></div></li>
+                <li><em>03</em><div><b>策划 Agent</b><span>转化为需求、问题单或内容 Brief。</span></div></li>
+                <li><em>04</em><div><b>生产 Agent</b><span>由美术、代码、测试 subagent 实施并验收。</span></div></li>
+                <li><em>05</em><div><b>结果回访</b><span>发布改进结果，验证满意度是否提升。</span></div></li>
+              </ol>
+              <div class="feedback-mini-kpis">
+                <article><span>模拟反馈总量</span><strong data-feedback-total>36</strong></article>
+                <article><span>目标首次响应</span><strong>24h</strong></article>
+                <article><span>闭环完成率</span><strong>82%</strong></article>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt">
+        <div class="inner">
+          <div class="section-head">
+            <div>
+              <p class="section-label">模拟受理记录 Recent Feedback</p>
+              <h2>不同类型的客户声音进入同一条改进管线。</h2>
+            </div>
+            <p>以下示例与本机新提交内容仅用于展示分类、状态与责任归属。</p>
+          </div>
+          <div class="feedback-ticket-list" data-feedback-list></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <span>第三学院 OPC · 客户反馈中心</span>
+        <div class="footer-links">
+          <a href="opc-products.html">IP 与产品 Products</a>
+          <a href="opc-workflow.html">工作流 Workflow</a>
+          <a href="opc-console.html">控制台 Console</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script src="opc.js"></script>
+  <script src="opc-customer-feedback.js"></script>
+</body>
+</html>

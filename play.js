@@ -26,7 +26,8 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260711-lina-maps-m04-v8`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260712-physical-v12`;
+  const CHAPTER_END_CINEMATIC_PATH = "assets/cg/p1boss-end.mp4";
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
   function getQueuedMapImageKeys(scene) {
@@ -114,6 +115,9 @@
   const PROJECTILE_TEXTURE_KEY = "play-lina-projectiles";
   const WIND_MOTE_TEXTURE_KEY = "play-lina-wind-mote";
   const WIND_LEAF_TEXTURE_KEY = "play-lina-wind-leaf";
+  const WIND_RIBBON_TEXTURE_KEY = "play-lina-wind-ribbon";
+  const SWORD_WAVE_TEXTURE_KEY = "play-ayu-sword-wave";
+  const PHYSICAL_SPARK_TEXTURE_KEY = "play-physical-spark";
   const CHARGE_HOLD_THRESHOLD = 280;
   const ENERGY_DEFAULT_MAX = 150;
   const ENERGY_REGEN_PER_SECOND = 4.5;
@@ -136,8 +140,12 @@
   const ZHIXIA_LIGHTNING_REFRACT_RANGE = MAP_TILE_SIZE * 5;
   const LIGHTNING_SPARK_TEXTURE_KEY = "play-lightning-spark";
   const LIGHTNING_MOTE_TEXTURE_KEY = "play-lightning-mote";
-  const LAODENG_BERSERK_DURATION = 30000;
-  const JIANGXUN_BARRAGE_ARROWS = 30;
+  const LIGHTNING_RIBBON_TEXTURE_KEY = "play-lightning-ribbon";
+  const LAODENG_BERSERK_DURATION = 8000;
+  const LAODENG_BERSERK_SCALE = 1.3;
+  const LAODENG_BERSERK_DAMAGE_MULTIPLIER = 1.5;
+  const JIANGXUN_BARRAGE_ARROWS = 15;
+  const JIANGXUN_BARRAGE_SPREAD = Phaser.Math.DegToRad(30);
   const LEAF_SLIME_SHEET = "assets/game/enemies/animated/leaf-poring-sprites-v2.png";
   const LEAF_SLIME_KEY = "play-leaf-slime";
   const LEAF_SLIME_FRAME_SIZE = 128;
@@ -157,7 +165,7 @@
   const PROFESSOR_NPC_FRAME_WIDTH = 192;
   const PROFESSOR_NPC_FRAME_HEIGHT = 256;
   const PROFESSOR_NPC_IDLE_ANIMATION = "ch1-ai-professor-npc-idle";
-  const LEAF_SLIME_DETECT_RANGE = MAP_TILE_SIZE * 6;
+  const LEAF_SLIME_DETECT_RANGE = MAP_TILE_SIZE * 9;
   const LEAF_SLIME_ATTACK_RANGE = 64;
   const LEAF_SLIME_ATTACK_COOLDOWN = 1250;
   const LEAF_SLIME_HOP_DISTANCE = 72;
@@ -310,7 +318,7 @@
       name: "阿宇",
       color: "#d99a4a",
       portrait: "assets/portraits/ayu-q-v2.png",
-      sprite: "assets/sprites/ayu-sprites-v11-q-normalized.png",
+      sprite: "assets/sprites/ayu-sprites-v13.png",
       baseline: 140,
       speed: 270
     },
@@ -328,7 +336,7 @@
       name: "老登",
       color: "#e18a52",
       portrait: "assets/portraits/laodeng-q-v2.png",
-      sprite: "assets/sprites/laodeng-sprites-v3-q-normalized.png",
+      sprite: "assets/sprites/laodeng-sprites-v5.png",
       baseline: 140,
       speed: 235
     },
@@ -337,7 +345,7 @@
       name: "江寻",
       color: "#68a977",
       portrait: "assets/portraits/jiangxun-q-v2.png",
-      sprite: "assets/sprites/jiangxun-sprites-v4-q-normalized.png",
+      sprite: "assets/sprites/jiangxun-sprites-v6.png",
       baseline: 140,
       speed: 255
     }
@@ -543,7 +551,7 @@
       attack: {
         name: "雷弧术",
         key: "J",
-        description: "短按造成魔力 × 100% 魔法伤害；长按重击触发连锁闪电，最多弹射 4 个目标，每次弹射伤害衰减 15%。"
+        description: "短按发射高速雷光球，造成魔力 × 100% 魔法伤害；长按重击自动锁定 7 格内最近目标，并在目标周围 5 格内折射 2 次，三段伤害为 100% / 80% / 50%。"
       },
       ultimate: {
         name: "十格落雷",
@@ -565,12 +573,12 @@
       attack: {
         name: "奔雷拳",
         key: "J",
-        description: "短按造成攻击力 × 100% 物理伤害；长按重击发动奔雷拳，造成攻击力 × 175% 范围伤害。狂暴期间普攻和重击均扩大范围并吸血 20%。"
+        description: "短按造成攻击力 × 100% 物理伤害；长按发动冲击拳，造成攻击力 × 175% 范围伤害并击退小怪与精英。BOSS 免疫击退，但会承受追加多段伤害。"
       },
       ultimate: {
         name: "狂暴",
         key: "K",
-        description: `消耗 ${ULTIMATE_COST} EN，体型增大，移动速度和攻击速度提升 50%；普攻与重击附带范围伤害和 20% 吸血，持续 30 秒。`
+        description: `消耗 ${ULTIMATE_COST} EN，持续 30 秒：体型增大 30%，移动速度与攻击速度提升 50%，拳击范围扩大、伤害提升 50%，并获得 20% 吸血。`
       },
       heal: {
         name: "樱光护盾",
@@ -587,12 +595,12 @@
       attack: {
         name: "穿云箭",
         key: "J",
-        description: "短按射箭造成攻击力 × 100% 物理伤害；长按重击射出穿云箭，造成攻击力 × 165% 伤害并穿透沿途怪物。"
+        description: "短按射箭造成攻击力 × 100% 物理伤害；长按射出穿云箭，穿越沿途怪物和障碍。命中大型目标或 BOSS 时按穿体时间造成最多 3 段伤害。"
       },
       ultimate: {
         name: "乱射",
         key: "K",
-        description: `消耗 ${ULTIMATE_COST} EN，在 3 秒内连续射出 30 支箭，每箭造成攻击力 × 45% 物理伤害。`
+        description: `消耗 ${ULTIMATE_COST} EN，在 30° 扇区内快速随机射出 15 支箭，每箭造成攻击力 × 52% 物理伤害。`
       },
       heal: {
         name: "樱光护盾",
@@ -729,6 +737,7 @@
     selectedInventoryItem: null,
     lastHealAt: -Infinity,
     connected: false,
+    cinematicActive: false,
     touchMove: { active: false, dx: 0, dy: 0 }
   };
 
@@ -1532,9 +1541,20 @@
     return !!flag && !!profileFlags()[flag];
   }
 
-  function setFlag(flag, value = true) {
+  function setFlag(flag, value = true, options = {}) {
     if (!flag || !app.profile) return;
+    const existed = !!profileFlags()[flag];
     profileFlags()[flag] = !!value;
+    if (value && !existed && options.broadcast !== false && app.connected) {
+      app.multiplayer?.sendProgressEvent({
+        kind: "flag",
+        eventId: flag,
+        flags: [flag],
+        mapId: app.profile.mapId || "",
+        x: app.scene?.actor?.x || 0,
+        y: app.scene?.actor?.y || 0
+      });
+    }
   }
 
   function getProtocolCardIds() {
@@ -1652,6 +1672,7 @@
       app.profile.magicPower = Math.max(1, Number(app.profile.magicPower || BASE_STATS.magicPower) + 3);
       gainedLevels += 1;
     }
+    if (gainedLevels > 0) app.scene?.playLevelUpEffect?.(gainedLevels);
     return gainedLevels;
   }
 
@@ -1734,12 +1755,18 @@
 
   function renderInteractionPrompt(text = "") {
     const node = $("#interactionPrompt");
-    if (!node) return;
-    if (node.dataset.text === text) return;
+    const touchButton = $("#mobileInteractButton");
+    const available = !!text;
+    if (touchButton) {
+      touchButton.disabled = !available;
+      touchButton.classList.toggle("available", available);
+      touchButton.setAttribute("aria-hidden", String(!available));
+    }
+    if (!node || node.dataset.text === text) return;
     node.dataset.text = text;
     node.textContent = text;
-    node.classList.toggle("open", !!text);
-    node.setAttribute("aria-hidden", String(!text));
+    node.classList.toggle("open", available);
+    node.setAttribute("aria-hidden", String(!available));
   }
 
   function handleChatMessage(payload) {
@@ -1832,7 +1859,7 @@
   }
 
   function initializeHudPanels() {
-    setPanelCollapsed("chapterHud", true);
+    setPanelCollapsed("chapterHud", false);
     const compact = window.matchMedia("(max-width: 760px)").matches;
     setPanelCollapsed("publicChat", compact);
     setPanelCollapsed("minimapPanel", compact);
@@ -2231,6 +2258,107 @@
     if (cards) cards.textContent = `${getProtocolCardIds().length} / ${CHAPTER_ONE_PROTOCOL_CARD_GOAL}`;
     panel.classList.toggle("open", !!open);
     panel.setAttribute("aria-hidden", String(!open));
+  }
+
+  const chapterEndCinematicState = {
+    autoPreloadRequested: false,
+    completion: null,
+    previousActionLocked: false,
+    resumeGameMusic: false
+  };
+
+  function initializeChapterEndCinematic() {
+    const video = $("#chapterEndVideo");
+    if (!video) return;
+    video.preload = "metadata";
+    video.dataset.assetPath = CHAPTER_END_CINEMATIC_PATH;
+  }
+
+  function hasConstrainedConnection() {
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!connection) return false;
+    return !!connection.saveData || /(^|-)2g$/.test(String(connection.effectiveType || ""));
+  }
+
+  function scheduleChapterEndCinematicPreload(mapId = app.profile?.mapId) {
+    const id = String(mapId || "");
+    const inM3 = /^ch1_m03_/.test(id);
+    const inM4 = /^ch1_m04_/.test(id);
+    if ((!inM3 && !inM4) || chapterEndCinematicState.autoPreloadRequested) return;
+    if (inM3 && hasConstrainedConnection()) return;
+    const video = $("#chapterEndVideo");
+    if (!video) return;
+    chapterEndCinematicState.autoPreloadRequested = true;
+    const begin = () => {
+      if (app.cinematicActive || video.preload === "auto") return;
+      video.preload = "auto";
+      video.load();
+    };
+    if (inM4) {
+      window.setTimeout(begin, 250);
+    } else if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(begin, { timeout: 8000 });
+    } else {
+      window.setTimeout(begin, 5000);
+    }
+  }
+
+  function finishChapterEndCinematic(complete = true) {
+    const overlay = $("#chapterEndCinematic");
+    const video = $("#chapterEndVideo");
+    const replayButton = $("#chapterEndReplayButton");
+    const completion = complete ? chapterEndCinematicState.completion : null;
+    chapterEndCinematicState.completion = null;
+    video?.pause();
+    if (replayButton) replayButton.hidden = true;
+    overlay?.classList.remove("open");
+    overlay?.setAttribute("aria-hidden", "true");
+    app.cinematicActive = false;
+    if (app.scene) app.scene.isActionLocked = chapterEndCinematicState.previousActionLocked;
+    if (chapterEndCinematicState.resumeGameMusic) app.audio?.playGameTrack();
+    chapterEndCinematicState.resumeGameMusic = false;
+    completion?.();
+  }
+
+  function playChapterEndCinematic(onComplete) {
+    const overlay = $("#chapterEndCinematic");
+    const video = $("#chapterEndVideo");
+    if (!overlay || !video) {
+      onComplete?.();
+      return;
+    }
+    if (app.cinematicActive) return;
+    chapterEndCinematicState.completion = onComplete;
+    chapterEndCinematicState.previousActionLocked = !!app.scene?.isActionLocked;
+    chapterEndCinematicState.resumeGameMusic = !!app.audio?.enabled && !app.audio?.gameTrack?.paused;
+    app.cinematicActive = true;
+    if (app.scene) {
+      app.scene.isActionLocked = true;
+      app.scene.actor?.body?.setVelocity(0, 0);
+      app.scene.cancelPrimaryActionHold?.();
+    }
+    app.touchMove = { active: false, dx: 0, dy: 0 };
+    app.audio?.pauseGameTrack();
+    renderChapterClearPanel(false);
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    try {
+      video.currentTime = 0;
+    } catch {
+      // Metadata may still be arriving; playback will begin from the start.
+    }
+    video.play().then(() => {
+      const replayButton = $("#chapterEndReplayButton");
+      if (replayButton) replayButton.hidden = true;
+    }).catch(() => {
+      if (video.error) {
+        showToast("结章动画加载失败，已进入通关结算");
+        finishChapterEndCinematic(true);
+        return;
+      }
+      const replayButton = $("#chapterEndReplayButton");
+      if (replayButton) replayButton.hidden = false;
+    });
   }
 
   function getDefaultWsUrl() {
@@ -2642,6 +2770,34 @@
       this.sweep(820, 1840, 0.11, "triangle", 0.054);
       window.setTimeout(() => this.tone(1320, 0.045, "sine", 0.026), 42);
     }
+    swordSwing(charged = false) {
+      this.noise(charged ? 0.2 : 0.13, charged ? 0.055 : 0.04, "highpass", charged ? 1500 : 1900);
+      this.sweep(charged ? 1450 : 1900, charged ? 210 : 420, charged ? 0.2 : 0.13, "sawtooth", charged ? 0.06 : 0.045);
+      window.setTimeout(() => this.tone(charged ? 118 : 164, 0.07, "triangle", charged ? 0.04 : 0.025), charged ? 78 : 46);
+    }
+    swordImpact(charged = false) {
+      this.noise(charged ? 0.18 : 0.11, charged ? 0.075 : 0.055, "bandpass", charged ? 980 : 1380);
+      this.tone(charged ? 82 : 124, charged ? 0.18 : 0.11, "square", charged ? 0.07 : 0.05);
+      window.setTimeout(() => this.tone(charged ? 930 : 1180, 0.055, "triangle", 0.032), 24);
+    }
+    punchSwing(charged = false, berserk = false) {
+      this.noise(charged ? 0.19 : 0.12, berserk ? 0.075 : charged ? 0.058 : 0.042, "lowpass", berserk ? 420 : 560);
+      this.sweep(berserk ? 170 : 240, 62, charged ? 0.2 : 0.13, "sawtooth", berserk ? 0.07 : 0.05);
+    }
+    punchImpact(charged = false) {
+      this.noise(charged ? 0.24 : 0.16, charged ? 0.1 : 0.075, "lowpass", charged ? 280 : 390);
+      this.tone(charged ? 54 : 72, charged ? 0.25 : 0.17, "square", charged ? 0.095 : 0.072);
+      window.setTimeout(() => this.noise(0.1, charged ? 0.05 : 0.035, "bandpass", 820), 30);
+    }
+    bowRelease(charged = false) {
+      this.noise(charged ? 0.16 : 0.1, charged ? 0.044 : 0.032, "highpass", charged ? 1700 : 2200);
+      this.sweep(charged ? 880 : 1120, charged ? 1480 : 1760, charged ? 0.16 : 0.105, "triangle", charged ? 0.052 : 0.038);
+      window.setTimeout(() => this.tone(charged ? 132 : 176, 0.055, "sine", 0.025), 20);
+    }
+    arrowImpact(charged = false) {
+      this.noise(charged ? 0.15 : 0.09, charged ? 0.06 : 0.042, "bandpass", charged ? 760 : 1040);
+      this.tone(charged ? 96 : 142, charged ? 0.13 : 0.085, "triangle", charged ? 0.052 : 0.035);
+    }
     ultimateWind() {
       this.noise(0.62, 0.038, "bandpass", 620);
       this.sweep(180, 520, 0.52, "sine", 0.03);
@@ -2697,6 +2853,8 @@
       this.ws = null;
       this.peers = new Map();
       this.drops = new Map();
+      this.progressEvents = new Map();
+      this.enemyStates = new Map();
       this.url = "";
     }
 
@@ -2737,6 +2895,8 @@
       this.ws = null;
       this.peers.clear();
       this.drops.clear();
+      this.progressEvents.clear();
+      this.enemyStates.clear();
       app.scene?.clearWorldDrops();
       renderPeers(this.peers);
     }
@@ -2759,7 +2919,8 @@
         hp: app.profile.hp,
         maxHp: app.profile.maxHp,
         shield: app.profile.shield || 0,
-        mapId: app.profile.mapId || ""
+        mapId: app.profile.mapId || "",
+        flags: Object.keys(profileFlags()).filter(flag => profileFlags()[flag]).slice(0, 240)
       };
     }
 
@@ -2811,6 +2972,24 @@
       return true;
     }
 
+    sendCombatEvent(event) {
+      if (this.ws?.readyState !== WebSocket.OPEN) return false;
+      this.send({ type: "combatEvent", event });
+      return true;
+    }
+
+    sendEnemyState(enemy) {
+      if (this.ws?.readyState !== WebSocket.OPEN) return false;
+      this.send({ type: "enemyState", enemy });
+      return true;
+    }
+
+    sendProgressEvent(event) {
+      if (this.ws?.readyState !== WebSocket.OPEN) return false;
+      this.send({ type: "progressEvent", event });
+      return true;
+    }
+
     syncDropsForCurrentMap() {
       app.scene?.syncWorldDrops(Array.from(this.drops.values()));
     }
@@ -2838,18 +3017,27 @@
       if (message.type === "welcome") {
         this.peers.clear();
         this.drops.clear();
+        this.progressEvents.clear();
+        this.enemyStates.clear();
         (message.peers || []).forEach(peer => {
           if (peer.id !== app.profile.id) this.peers.set(peer.id, peer);
         });
         if (Array.isArray(message.chat)) renderChatHistory(message.chat);
         if (message.boss) syncBossState(message.boss);
+        (Array.isArray(message.slimes) ? message.slimes : []).forEach(enemy => {
+          if (enemy?.id) this.enemyStates.set(String(enemy.id), enemy);
+        });
         if (Array.isArray(message.slimes)) app.scene?.syncSlimes(message.slimes);
         (Array.isArray(message.drops) ? message.drops : []).forEach(drop => {
           if (drop?.id) this.drops.set(String(drop.id), drop);
         });
+        (Array.isArray(message.progress) ? message.progress : []).forEach(event => {
+          if (event?.id) this.progressEvents.set(String(event.id), event);
+        });
         renderPeers(this.peers);
         app.scene?.syncAllPeers(this.peers);
         this.syncDropsForCurrentMap();
+        app.scene?.syncProgressEvents(Array.from(this.progressEvents.values()));
       }
       if (message.type === "chatMessage") {
         handleChatMessage(message);
@@ -2873,9 +3061,11 @@
         syncBossState(message.boss);
       }
       if (message.type === "slimeSpawn" && message.slime) {
+        this.enemyStates.set(String(message.slime.id), message.slime);
         app.scene?.syncSlimeSpawn(message.slime);
       }
       if (message.type === "slimeRemove" && message.id) {
+        this.enemyStates.delete(String(message.id));
         app.scene?.syncSlimeRemove(message.id);
       }
       if (message.type === "dropSpawn" && message.drop?.id) {
@@ -2893,6 +3083,15 @@
       }
       if (message.type === "dropError") showToast(message.text || "无法拾取这个掉落物");
       if (message.type === "healingChain") app.scene?.applyNetworkHealingChain(message);
+      if (message.type === "combatEvent" && message.event) app.scene?.playRemoteCombatEvent(message);
+      if (message.type === "enemyState" && message.enemy) {
+        this.enemyStates.set(String(message.enemy.id), message.enemy);
+        app.scene?.applyNetworkEnemyState(message.enemy);
+      }
+      if (message.type === "progressEvent" && message.event?.id) {
+        this.progressEvents.set(String(message.event.id), message.event);
+        app.scene?.applyNetworkProgressEvent(message.event);
+      }
       if (message.type === "notice" && message.text) showToast(message.text);
     }
   }
@@ -2989,7 +3188,9 @@
       this.baseMapData = this.cache.json.get(MAP_DATA_KEY) || {};
       this.chapterMapRegistry = this.cache.json.get(CHAPTER_ONE_MAPS_KEY) || {};
       this.mapData = this.composeRuntimeMapData();
+      scheduleChapterEndCinematicPreload(this.mapData?.id || app.profile?.mapId);
       this.remotePlayers = new Map();
+      this.appliedProgressEventIds = new Set();
       this.worldDrops = new Map();
       this.syncedSlimeIds = new Set();
       this.bossSummonIds = new Set();
@@ -3033,6 +3234,7 @@
       this.ensureEnemySeedProjectileTexture();
       this.ensureLightningParticleTextures();
       this.ensureWindParticleTextures();
+      this.ensurePhysicalParticleTextures();
 
       this.projectiles = this.physics.add.group({ allowGravity: false });
       this.enemyProjectiles = this.physics.add.group({ allowGravity: false });
@@ -3050,7 +3252,9 @@
 
       this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
       this.bindMapColliders();
-      this.projectileObstacleCollider = this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => this.destroyProjectile(projectile, true));
+      this.projectileObstacleCollider = this.physics.add.collider(this.projectiles, this.obstacleGroup, projectile => {
+        if (!projectile?.ignoreObstacles) this.destroyProjectile(projectile, true);
+      }, projectile => !projectile?.ignoreObstacles);
       this.projectileSlimeOverlap = this.physics.add.overlap(this.projectiles, this.leafSlimes, (projectile, enemy) => this.handleLeafSlimeProjectileHit(projectile, enemy));
       this.enemyProjectileObstacleCollider = this.physics.add.collider(this.enemyProjectiles, this.obstacleGroup, projectile => projectile.destroy());
       this.enemyProjectileActorOverlap = this.physics.add.overlap(this.actor, this.enemyProjectiles, (actor, projectile) => {
@@ -3354,7 +3558,7 @@
           .setDepth(Number(node.hintDepth) || y + 2);
         this.tweens.add({
           targets: glow,
-          alpha: Math.max(0.22, Number(node.markerGlowAlpha) || 0.1),
+          alpha: Math.max(0.07, Number(node.markerGlowAlpha) || 0.1),
           scaleX: 1.14,
           scaleY: 1.18,
           duration: 1080,
@@ -3377,7 +3581,9 @@
       (this.interactionMarkers || []).forEach(entry => {
         const locked = !this.flagRequirementsMet(entry.node.requiresFlags);
         const completed = !!entry.node.once && hasFlag(this.nodeDoneFlag(entry.node));
-        const visible = !completed && !(entry.node.hideUntilUnlocked && locked);
+        const doneFlag = this.nodeDoneFlag(entry.node);
+        const teammateNeedsHelp = !!entry.node.once && Array.from(this.remotePlayers?.values?.() || []).some(remote => !remote.flags?.has(doneFlag));
+        const visible = (!completed || teammateNeedsHelp) && !(entry.node.hideUntilUnlocked && locked && !teammateNeedsHelp);
         entry.marker?.setVisible(visible);
         entry.label?.setVisible(visible);
       });
@@ -3502,6 +3708,16 @@
         showToast(`学分记录更新，校园币 +${node.rewardCredits}`);
       }
       if (node.once) setFlag(this.nodeDoneFlag(node));
+      if (app.connected && node.id) {
+        app.multiplayer?.sendProgressEvent({
+          kind: "node",
+          eventId: node.id,
+          flags: [...(node.setFlags || []), ...(node.once ? [this.nodeDoneFlag(node)] : [])],
+          mapId: this.getCurrentMapId(),
+          x: Number(node.x) || this.actor?.x || 0,
+          y: Number(node.y) || this.actor?.y || 0
+        });
+      }
       renderHud();
     }
 
@@ -3593,7 +3809,7 @@
       if (node.type === "chapter-clear") {
         (node.setFlags || []).forEach(flag => setFlag(flag));
         saveProfile(app.profile);
-        renderChapterClearPanel(true);
+        playChapterEndCinematic(() => renderChapterClearPanel(true));
       }
     }
 
@@ -3619,11 +3835,21 @@
       return (this.mapData.encounters || []).find(item => item.id === id) || null;
     }
 
-    spawnEncounter(encounterId) {
+    spawnEncounter(encounterId, options = {}) {
       const encounter = this.getEncounter(encounterId);
       if (!encounter) return;
       const clearFlags = encounter.setFlagsOnClear || [];
-      if (clearFlags.some(flag => hasFlag(flag))) {
+      if (!options.network && app.connected) {
+        app.multiplayer?.sendProgressEvent({
+          kind: "encounter",
+          eventId: encounterId,
+          flags: [],
+          mapId: this.getCurrentMapId(),
+          x: this.actor?.x || 0,
+          y: this.actor?.y || 0
+        });
+      }
+      if (!options.network && clearFlags.some(flag => hasFlag(flag))) {
         showToast("这组错乱笔记已经清理完毕");
         return;
       }
@@ -3631,6 +3857,7 @@
       (this.mapData.enemySpawns || [])
         .filter(point => point.group === encounterId)
         .forEach(point => {
+          if (app.multiplayer?.enemyStates?.get(String(point.id))?.state === "dead") return;
           if (this.findLeafSlime(point.id)) return;
           if (this.spawnLeafSlime({ ...point, group: point.group })) spawned += 1;
         });
@@ -3707,6 +3934,14 @@
           repeat: config.repeat
         });
       });
+      if (!this.anims.exists("jiangxun-barrage-loop")) {
+        this.anims.create({
+          key: "jiangxun-barrage-loop",
+          frames: this.makeActionFrames("jiangxun", { ...attackAction, frames: ALL_FRAMES }),
+          frameRate: 30,
+          repeat: -1
+        });
+      }
     }
 
     getProjectileAnimationKey(equipment, phase) {
@@ -3869,6 +4104,39 @@
         mote.generateTexture(LIGHTNING_MOTE_TEXTURE_KEY, 16, 16);
         mote.destroy();
       }
+      if (!this.textures.exists(LIGHTNING_RIBBON_TEXTURE_KEY)) {
+        const texture = this.textures.createCanvas(LIGHTNING_RIBBON_TEXTURE_KEY, 256, 80);
+        const context = texture.getContext();
+        context.clearRect(0, 0, 256, 80);
+        const points = [[2, 42], [34, 32], [61, 48], [92, 25], [126, 44], [158, 29], [192, 51], [224, 34], [254, 40]];
+        const stroke = (width, color, blur = 0) => {
+          context.save();
+          context.strokeStyle = color;
+          context.lineWidth = width;
+          context.lineCap = "round";
+          context.lineJoin = "round";
+          context.shadowColor = color;
+          context.shadowBlur = blur;
+          context.beginPath();
+          points.forEach(([x, y], index) => index ? context.lineTo(x, y) : context.moveTo(x, y));
+          context.stroke();
+          context.restore();
+        };
+        stroke(18, "rgba(70,31,111,0.28)", 16);
+        stroke(9, "rgba(164,73,210,0.84)", 10);
+        stroke(4, "rgba(105,211,225,0.92)", 6);
+        stroke(1.5, "rgba(246,238,255,0.98)", 2);
+        [[83, 32, 72, 8], [159, 34, 174, 65], [201, 46, 214, 72]].forEach(([x1, y1, x2, y2]) => {
+          context.strokeStyle = "rgba(207,146,239,0.82)";
+          context.lineWidth = 2;
+          context.beginPath();
+          context.moveTo(x1, y1);
+          context.lineTo((x1 + x2) / 2 + 4, (y1 + y2) / 2 - 3);
+          context.lineTo(x2, y2);
+          context.stroke();
+        });
+        texture.refresh();
+      }
     }
 
     ensureWindParticleTextures() {
@@ -3891,6 +4159,76 @@
         leaf.lineBetween(3, 8, 16, 5);
         leaf.generateTexture(WIND_LEAF_TEXTURE_KEY, 20, 16);
         leaf.destroy();
+      }
+      if (!this.textures.exists(WIND_RIBBON_TEXTURE_KEY)) {
+        const texture = this.textures.createCanvas(WIND_RIBBON_TEXTURE_KEY, 256, 128);
+        const context = texture.getContext();
+        context.clearRect(0, 0, 256, 128);
+        const fill = context.createLinearGradient(0, 0, 256, 0);
+        fill.addColorStop(0, "rgba(124,190,196,0)");
+        fill.addColorStop(0.18, "rgba(151,220,220,0.48)");
+        fill.addColorStop(0.58, "rgba(202,241,237,0.92)");
+        fill.addColorStop(0.86, "rgba(238,252,248,0.72)");
+        fill.addColorStop(1, "rgba(255,255,255,0)");
+        context.fillStyle = fill;
+        context.shadowColor = "rgba(133,225,220,0.65)";
+        context.shadowBlur = 14;
+        context.beginPath();
+        context.moveTo(5, 91);
+        context.bezierCurveTo(66, 111, 139, 8, 251, 30);
+        context.bezierCurveTo(156, 28, 82, 119, 5, 91);
+        context.closePath();
+        context.fill();
+        context.shadowBlur = 5;
+        context.strokeStyle = "rgba(247,255,252,0.82)";
+        context.lineWidth = 2.4;
+        context.beginPath();
+        context.moveTo(16, 89);
+        context.bezierCurveTo(84, 99, 150, 18, 240, 31);
+        context.stroke();
+        texture.refresh();
+      }
+    }
+
+    ensurePhysicalParticleTextures() {
+      if (!this.textures.exists(PHYSICAL_SPARK_TEXTURE_KEY)) {
+        const spark = this.make.graphics({ x: 0, y: 0, add: false });
+        spark.fillStyle(0xfff2bd, 0.98);
+        spark.fillTriangle(10, 0, 13, 8, 10, 20);
+        spark.fillTriangle(10, 0, 7, 8, 10, 20);
+        spark.fillStyle(0xf1b95a, 0.88);
+        spark.fillTriangle(0, 10, 8, 7, 20, 10);
+        spark.fillTriangle(0, 10, 8, 13, 20, 10);
+        spark.generateTexture(PHYSICAL_SPARK_TEXTURE_KEY, 20, 20);
+        spark.destroy();
+      }
+      if (!this.textures.exists(SWORD_WAVE_TEXTURE_KEY)) {
+        const texture = this.textures.createCanvas(SWORD_WAVE_TEXTURE_KEY, 256, 128);
+        const context = texture.getContext();
+        context.clearRect(0, 0, 256, 128);
+        const fill = context.createLinearGradient(0, 0, 256, 0);
+        fill.addColorStop(0, "rgba(69,116,170,0)");
+        fill.addColorStop(0.14, "rgba(91,164,220,0.24)");
+        fill.addColorStop(0.52, "rgba(154,221,255,0.88)");
+        fill.addColorStop(0.82, "rgba(243,251,255,0.96)");
+        fill.addColorStop(1, "rgba(255,255,255,0)");
+        context.fillStyle = fill;
+        context.shadowColor = "rgba(94,190,255,0.68)";
+        context.shadowBlur = 16;
+        context.beginPath();
+        context.moveTo(4, 101);
+        context.bezierCurveTo(62, 112, 154, 15, 252, 24);
+        context.bezierCurveTo(160, 39, 82, 124, 4, 101);
+        context.closePath();
+        context.fill();
+        context.shadowBlur = 5;
+        context.strokeStyle = "rgba(255,255,255,0.94)";
+        context.lineWidth = 2.2;
+        context.beginPath();
+        context.moveTo(20, 98);
+        context.bezierCurveTo(92, 101, 164, 26, 240, 25);
+        context.stroke();
+        texture.refresh();
       }
     }
 
@@ -4095,7 +4433,7 @@
 
     resetActorVisualScale() {
       const berserk = app.profile?.characterId === "laodeng" && this.time?.now < this.berserkUntil;
-      this.setActorVisualScale(berserk ? 1.25 : ACTOR_DEFAULT_VISUAL_SCALE);
+      this.setActorVisualScale(berserk ? LAODENG_BERSERK_SCALE : ACTOR_DEFAULT_VISUAL_SCALE);
     }
 
     createMapNpcs() {
@@ -4301,6 +4639,7 @@
           this.spawnMapLeafSlimes();
           this.scheduleAmbientEnemyRefresh();
           app.multiplayer?.syncDropsForCurrentMap();
+          app.scene?.syncProgressEvents(Array.from(app.multiplayer?.progressEvents?.values?.() || []));
           saveProfile(app.profile);
           renderChapterHud();
           renderMinimap(this);
@@ -4308,6 +4647,7 @@
           this.isActionLocked = false;
           hideMapLoading();
           showToast(`进入${this.mapData.title || "新区域"}`);
+          scheduleChapterEndCinematicPreload(targetMapId);
         });
       }).catch(error => {
         console.error("Map asset loading failed", error);
@@ -4640,6 +4980,7 @@
       if (Array.isArray(spawns) && spawns.length) {
         return spawns.filter(point => {
           if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return false;
+          if (app.multiplayer?.enemyStates?.get(String(point.id))?.state === "dead") return false;
           if (point.activeAfter && !hasFlag(point.activeAfter)) return false;
           if (point.group && this.getEncounter(point.group)?.setFlagsOnClear?.some(flag => hasFlag(flag))) return false;
           return true;
@@ -4930,7 +5271,7 @@
       slime.hideHudUntilProvoked = slime.passiveWander;
       slime.wanderSpeed = Math.max(18, Number(options.wanderSpeed) || (textureKey === BITING_MAGIC_BOOK_KEY ? 30 : 34));
       slime.chaseSpeed = Math.max(slime.wanderSpeed, Number(options.chaseSpeed) || (textureKey === BITING_MAGIC_BOOK_KEY ? 44 : 48));
-      slime.aggroRange = Math.max(120, Number(options.aggroRange) || 300);
+      slime.aggroRange = Math.max(LEAF_SLIME_DETECT_RANGE, Number(options.aggroRange) || LEAF_SLIME_DETECT_RANGE);
       slime.wanderTargetX = x;
       slime.wanderTargetY = y;
       slime.wanderUntil = 0;
@@ -5027,24 +5368,222 @@
       }
       this.syncedSlimeIds.add(slimeId);
       if (options.broadcast && app.connected) {
-        app.multiplayer.sendSlimeSpawn({ id: slimeId, x, y });
+        app.multiplayer.sendSlimeSpawn({
+          id: slimeId,
+          mapId: this.getCurrentMapId(),
+          x,
+          y,
+          hp: slime.hp,
+          maxHp: slime.maxHp,
+          textureKey,
+          rank,
+          label: slime.displayLabel,
+          staticImage: slime.staticImage,
+          stationary: slime.stationary,
+          scale: visualScale
+        });
       }
       return slime;
     }
 
     syncSlimeSpawn(slime) {
       if (!slime?.id) return;
+      if (slime.mapId && slime.mapId !== this.getCurrentMapId()) return;
+      if (slime.state === "dead") {
+        this.syncSlimeRemove(slime.id);
+        return;
+      }
       this.spawnLeafSlime({
         id: String(slime.id),
         x: Number(slime.x),
         y: Number(slime.y),
         ownerId: String(slime.ownerId || ""),
+        hp: Number(slime.hp),
+        maxHp: Number(slime.maxHp),
+        textureKey: slime.textureKey || LEAF_SLIME_KEY,
+        rank: slime.rank || "mob",
+        label: slime.label || "",
+        staticImage: !!slime.staticImage,
+        stationary: !!slime.stationary,
+        scale: Number(slime.scale) || undefined,
         broadcast: false
+      });
+    }
+
+    enemyNetworkSnapshot(slime, state = slime?.state || "move") {
+      if (!slime?.slimeId) return null;
+      return {
+        id: slime.slimeId,
+        mapId: this.getCurrentMapId(),
+        x: slime.x,
+        y: slime.y,
+        hp: Math.max(0, Number(slime.hp || 0)),
+        maxHp: Math.max(1, Number(slime.maxHp || 1)),
+        state,
+        textureKey: slime.textureKey || LEAF_SLIME_KEY,
+        rank: slime.rank || "mob",
+        label: slime.displayLabel || "",
+        staticImage: !!slime.staticImage,
+        stationary: !!slime.stationary,
+        scale: Number(slime.baseVisualScale || slime.scaleX || 0.9)
+      };
+    }
+
+    broadcastEnemyState(slime, state) {
+      if (!app.connected) return;
+      const snapshot = this.enemyNetworkSnapshot(slime, state);
+      if (snapshot) app.multiplayer?.sendEnemyState(snapshot);
+    }
+
+    applyNetworkEnemyState(enemy) {
+      if (!enemy?.id || enemy.mapId !== this.getCurrentMapId()) return;
+      let slime = this.findLeafSlime(String(enemy.id));
+      if (!slime && enemy.state !== "dead") {
+        this.syncSlimeSpawn(enemy);
+        slime = this.findLeafSlime(String(enemy.id));
+      }
+      if (!slime) return;
+      slime.setPosition(Number(enemy.x) || slime.x, Number(enemy.y) || slime.y);
+      slime.maxHp = Math.max(1, Number(enemy.maxHp || slime.maxHp || 1));
+      slime.hp = clamp(Number(enemy.hp ?? slime.hp), 0, slime.maxHp);
+      this.refreshEnemyHpBar(slime);
+      if (enemy.state === "dead" || slime.hp <= 0) {
+        slime.state = "dead";
+        slime.body.setVelocity(0, 0);
+        slime.body.enable = false;
+        this.playEnemyAnimation(slime, "dead", true);
+        this.time.delayedCall(360, () => this.syncSlimeRemove(slime.slimeId));
+        return;
+      }
+      slime.actionToken = (slime.actionToken || 0) + 1;
+      const token = slime.actionToken;
+      slime.state = "hit";
+      slime.body.setVelocity(0, 0);
+      slime.setTint(0xffe1a8);
+      this.playEnemyAnimation(slime, "hit", true);
+      this.time.delayedCall(190, () => {
+        if (!slime.active || slime.actionToken !== token) return;
+        slime.state = "move";
+        slime.clearTint();
+        if (slime.baseTint && slime.baseTint !== 0xffffff) slime.setTint(slime.baseTint);
+        this.playEnemyAnimation(slime, "move", true);
       });
     }
 
     syncSlimes(slimes) {
       slimes.forEach(slime => this.syncSlimeSpawn(slime));
+    }
+
+    syncProgressEvents(events = []) {
+      events.forEach(event => this.applyNetworkProgressEvent(event));
+    }
+
+    applyNetworkProgressEvent(event) {
+      if (!event?.id || !app.profile) return;
+      (event.flags || []).forEach(flag => setFlag(flag, true, { broadcast: false }));
+      saveProfile(app.profile);
+      this.refreshQuestUi?.();
+      if (event.mapId !== this.getCurrentMapId() || this.appliedProgressEventIds?.has(event.id)) return;
+      this.appliedProgressEventIds?.add(event.id);
+      if (event.kind === "encounter") this.spawnEncounter(event.eventId, { network: true });
+      if (event.kind === "node") {
+        const node = (this.interactionNodes || []).find(item => item.id === event.eventId);
+        if (node) this.setInteractionMarkerCompleted(node);
+      }
+      const sourceName = event.sourceName || "队友";
+      showToast(`${sourceName}同步了区域进度，可共同协助完成目标`);
+    }
+
+    broadcastCombatEvent(action, payload = {}) {
+      if (!app.connected || !action) return false;
+      return !!app.multiplayer?.sendCombatEvent({
+        action,
+        mapId: this.getCurrentMapId(),
+        ...payload
+      });
+    }
+
+    playRemoteCombatEvent(message) {
+      const event = message?.event;
+      if (!event || event.sourceId === app.profile?.id || event.mapId !== this.getCurrentMapId()) return;
+      const remote = this.remotePlayers.get(event.sourceId);
+      if (remote?.sprite?.active && !remote.down) {
+        const key = `${event.characterId || remote.characterId}-attack-once`;
+        if (this.anims.exists(key)) remote.sprite.play(key, true);
+      }
+      if (event.action === "projectile") {
+        this.playRemoteProjectileEvent(event);
+        return;
+      }
+      if (event.action === "linaGale") {
+        this.playLinaGaleVisual(event.x, event.y);
+        return;
+      }
+      if (event.action === "melee") {
+        const angle = Math.atan2(event.aimY || 0, event.aimX || 1);
+        if (event.characterId === "laodeng") this.playImpactPunchVisual(event.x, event.y, angle, !!event.charged, false);
+        else this.flashSlash(event.x, event.y, angle, event.y + 70);
+        return;
+      }
+      if (event.action === "berserk") {
+        if (remote?.sprite?.active) {
+          remote.sprite.setScale(PEER_DEFAULT_VISUAL_SCALE * LAODENG_BERSERK_SCALE);
+          this.playBerserkActivationVisual(remote.sprite);
+        }
+        return;
+      }
+      if (event.action === "chainLightning") {
+        const points = Array.isArray(event.points) ? event.points : [];
+        points.slice(1).forEach((target, index) => {
+          const source = points[index];
+          this.time.delayedCall(index * 90, () => {
+            this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 1.28 - index * 0.16 });
+            this.renderLightningImpact(target.x, target.y, 62 - index * 6, { quantity: 34 - index * 4, splashCount: 12 - index, ground: false });
+          });
+        });
+        return;
+      }
+      if (event.action === "zhixiaUltimate") {
+        const aim = normalizeVector(Number(event.aimX) || 0, Number(event.aimY) || 1);
+        for (let index = 1; index <= 10; index += 1) {
+          this.time.delayedCall(index * 105, () => this.playLightningStrikeVisual(
+            event.x + aim.x * MAP_TILE_SIZE * index,
+            event.y + aim.y * MAP_TILE_SIZE * index,
+            Number(event.radius) || 92
+          ));
+        }
+      }
+    }
+
+    playRemoteProjectileEvent(event) {
+      const startX = Number(event.x) || 0;
+      const startY = Number(event.y) || 0;
+      const targetX = Number(event.targetX) || startX;
+      const targetY = Number(event.targetY) || startY;
+      const rotation = Math.atan2(targetY - startY, targetX - startX);
+      const depth = startY + 42;
+      let visual;
+      if (event.visualType === "windBolt") visual = this.createWindBoltVisual(startX, startY, rotation, depth);
+      else if (event.visualType === "lightningOrb") visual = this.createLightningOrbVisual(startX, startY, rotation, depth);
+      else if (event.visualType === "arrow") visual = this.createArrowVisual(startX, startY, rotation, depth, !!event.charged);
+      else if (event.visualType === "swordWave") visual = this.createSwordWaveVisual(startX, startY, rotation, depth);
+      else visual = this.add.circle(startX, startY, event.charged ? 12 : 8, event.color || 0xffffff, 0.88).setDepth(depth);
+      const distance = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
+      const duration = clamp(distance / Math.max(80, Number(event.speed) || 700) * 1000, 120, 1200);
+      this.tweens.add({
+        targets: visual,
+        x: targetX,
+        y: targetY,
+        duration,
+        ease: "Linear",
+        onUpdate: () => visual.setDepth(visual.y + 42),
+        onComplete: () => {
+          visual.destroy();
+          if (event.visualType === "windBolt") this.renderWindBoltImpact(targetX, targetY);
+          else if (event.visualType === "lightningOrb") this.renderLightningOrbImpact(targetX, targetY);
+          else this.flashCast(targetX, targetY, event.color || 0xffffff, targetY + 44);
+        }
+      });
     }
 
     syncSlimeRemove(id) {
@@ -5256,15 +5795,10 @@
       this.setLinaAttackVisualScale();
       this.actor.play(this.getAttackAnimationKey(), true);
       if (characterId === "ayu") {
-        this.time.delayedCall(95, () => this.dealMeleeDamage({ damageMultiplier: charged ? 0.85 : 1, charged }));
-        if (charged) this.time.delayedCall(245, () => this.dealMeleeDamage({ damageMultiplier: 0.85, charged: true, reverseSlash: true }));
+        this.time.delayedCall(95, () => this.dealMeleeDamage({ damageMultiplier: charged ? 0.85 : 1, charged, reach: 88, radius: 90 }));
+        if (charged) this.time.delayedCall(245, () => this.dealMeleeDamage({ damageMultiplier: 0.85, charged: true, reverseSlash: true, reach: 92, radius: 94 }));
       } else if (characterId === "laodeng") {
-        this.time.delayedCall(105, () => this.dealMeleeDamage({
-          damageMultiplier: charged ? 1.75 : 1,
-          charged,
-          radius: charged ? 112 : undefined,
-          berserk
-        }));
+        this.time.delayedCall(105, () => this.castLaodengImpactPunch(charged, berserk));
       } else if (characterId === "zhixia" && charged) {
         this.time.delayedCall(105, () => this.castChainLightning());
       } else if (characterId === "zhixia") {
@@ -5287,8 +5821,12 @@
           color: 0xb7e58a,
           damage: Math.round(Number(app.profile.attackPower || 26) * (charged ? 1.65 : 1)),
           piercing: charged,
+          ignoreObstacles: charged,
+          maxLargeTargetHits: charged ? 3 : 1,
+          largeTargetDamage: charged ? Math.round(Number(app.profile.attackPower || 26) * 0.72) : 0,
           maxDistance: MAP_TILE_SIZE * (charged ? 9 : 7),
-          visualType: "arrow"
+          visualType: "arrow",
+          audioType: "bow"
         }));
       } else {
         this.time.delayedCall(95, () => this.fireProjectile({ charged }));
@@ -5344,27 +5882,28 @@
       this.actor.body.setVelocity(0, 0);
       this.actor.play("ayu-attack-once", true);
       app.audio.ultimateWind();
-      this.time.delayedCall(150, () => {
+      [0, 170, 340].forEach((roundDelay, roundIndex) => this.time.delayedCall(120 + roundDelay, () => {
         if (!this.actor?.active || this.isDead) return;
+        this.actor.play("ayu-attack-once", true);
         const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
         const baseAngle = Math.atan2(aim.y, aim.x);
-        [-0.18, 0, 0.18].forEach(offset => {
-          this.fireProjectile({
-            vec: { x: Math.cos(baseAngle + offset), y: Math.sin(baseAngle + offset) },
-            kind: "physical",
-            color: 0x8fd8ff,
-            damage: Math.round(Number(app.profile.attackPower || MELEE.damage) * 1.8),
-            maxDistance: AYU_SWORD_WAVE_RANGE,
-            speed: 700,
-            piercing: true,
-            noEnergyGain: true,
-            visualType: "swordWave"
-          });
-        });
-        app.audio.ultimateBurst();
-        this.cameras.main.shake(160, 0.003);
-      });
-      this.actor.once("animationcomplete", () => {
+        [-0.2, 0, 0.2].forEach(offset => this.fireProjectile({
+          vec: { x: Math.cos(baseAngle + offset), y: Math.sin(baseAngle + offset) },
+          kind: "physical",
+          color: 0x8fd8ff,
+          damage: Math.round(Number(app.profile.attackPower || MELEE.damage) * 0.82),
+          maxDistance: AYU_SWORD_WAVE_RANGE,
+          speed: 760,
+          piercing: true,
+          noEnergyGain: true,
+          knockbackForce: 185,
+          visualType: "swordWave",
+          audioType: "sword"
+        }));
+        if (roundIndex === 2) app.audio.ultimateBurst();
+        this.cameras.main.shake(90, 0.002 + roundIndex * 0.0005);
+      }));
+      this.time.delayedCall(780, () => {
         if (!this.actor?.active || this.isDead) return;
         this.isCasting = false;
         this.isActionLocked = false;
@@ -5381,6 +5920,13 @@
       this.actor.body.setVelocity(0, 0);
       this.actor.play("zhixia-attack-once", true);
       const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+      this.broadcastCombatEvent("zhixiaUltimate", {
+        x: this.actor.x,
+        y: this.actor.y - 42,
+        aimX: aim.x,
+        aimY: aim.y,
+        radius: 92
+      });
       for (let index = 1; index <= 10; index += 1) {
         this.time.delayedCall(index * 105, () => {
           if (!this.actor?.active || this.isDead) return;
@@ -5402,11 +5948,12 @@
       if (!this.spendEnergy(ULTIMATE_COST, "大招")) return;
       this.berserkUntil = this.time.now + LAODENG_BERSERK_DURATION;
       this.berserkEndingShown = false;
-      this.setActorVisualScale(1.25);
-      this.flashCast(this.actor.x, this.actor.y - 44, 0xffa24d, this.actor.y + 80);
-      this.showFloatingText(this.actor.x, this.actor.y - 128, "狂暴 30秒", { color: "#ffd18b", size: "22px", rise: 64 });
+      this.setActorVisualScale(LAODENG_BERSERK_SCALE);
+      this.playBerserkActivationVisual();
+      this.broadcastCombatEvent("berserk", { x: this.actor.x, y: this.actor.y, radius: 128 });
+      this.showFloatingText(this.actor.x, this.actor.y - 128, "嗜血狂暴 8秒", { color: "#ffbd72", size: "22px", rise: 64 });
       app.audio.ultimateBurst();
-      showToast("狂暴：移速与攻速 +50%，拳击范围扩大并附带 20% 吸血");
+      showToast("嗜血狂暴：8 秒内免硬直，体型 +30%，移速、攻速与伤害 +50%，结束恢复 40% 最大生命");
     }
 
     castJiangxunUltimate() {
@@ -5416,28 +5963,31 @@
       this.isActionLocked = true;
       this.networkAction = "attack";
       this.actor.body.setVelocity(0, 0);
+      this.actor.play("jiangxun-barrage-loop", true);
       const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
       const baseAngle = Math.atan2(aim.y, aim.x);
       for (let index = 0; index < JIANGXUN_BARRAGE_ARROWS; index += 1) {
-        this.time.delayedCall(index * 100, () => {
+        this.time.delayedCall(index * 58, () => {
           if (!this.actor?.active || this.isDead) return;
-          const spread = Math.sin(index * 2.37) * 0.22;
+          const spread = Phaser.Math.FloatBetween(-JIANGXUN_BARRAGE_SPREAD / 2, JIANGXUN_BARRAGE_SPREAD / 2);
           this.fireProjectile({
             vec: { x: Math.cos(baseAngle + spread), y: Math.sin(baseAngle + spread) },
             kind: "physical",
             color: 0xc5eb92,
-            damage: Math.max(1, Math.round(Number(app.profile.attackPower || 26) * 0.45)),
+            damage: Math.max(1, Math.round(Number(app.profile.attackPower || 26) * 0.52)),
             maxDistance: MAP_TILE_SIZE * 9,
-            speed: 820,
+            speed: Phaser.Math.Between(850, 980),
             noEnergyGain: true,
-            visualType: "arrow"
+            visualType: "arrow",
+            audioType: "bow"
           });
         });
       }
       app.audio.ultimateWind();
-      this.time.delayedCall(JIANGXUN_BARRAGE_ARROWS * 100 + 120, () => {
+      this.time.delayedCall(JIANGXUN_BARRAGE_ARROWS * 58 + 180, () => {
         this.isCasting = false;
         this.isActionLocked = false;
+        this.actor?.setTexture("jiangxun");
         this.returnToBaseLoop();
       });
     }
@@ -5445,7 +5995,7 @@
     fireLinaWindBolt() {
       this.fireProjectile({
         kind: "magic",
-        color: 0x62dfca,
+        color: 0xa7e5df,
         damage: Number(app.profile.magicPower || 22),
         speed: 760,
         maxDistance: MAP_TILE_SIZE * 7,
@@ -5459,6 +6009,7 @@
       const damage = Math.round(Number(app.profile.magicPower || 22) * LINA_GALE_DAMAGE_MULTIPLIER);
       let hitSomething = false;
       this.playLinaGaleVisual(center.x, center.y);
+      this.broadcastCombatEvent("linaGale", { x: center.x, y: center.y, radius: LINA_GALE_RADIUS });
       (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
         if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
         const dx = slime.x - center.x;
@@ -5485,32 +6036,68 @@
     }
 
     playLinaGaleVisual(x, y) {
-      const wind = this.add.container(x, y - 8).setDepth(y + 72);
-      const streaks = this.add.graphics();
-      for (let index = 0; index < 34; index += 1) {
-        const angle = Math.PI * 2 * index / 34 + (index % 3) * 0.035;
-        const inner = 12 + (index % 5) * 6;
-        const outer = LINA_GALE_RADIUS * (0.76 + (index % 7) * 0.036);
-        const bend = angle + (index % 2 ? 0.11 : -0.1);
-        streaks.lineStyle(index % 4 === 0 ? 5 : 2, index % 3 === 0 ? 0xd5fff5 : 0x55d8c5, 0.42 + (index % 4) * 0.1);
-        streaks.beginPath();
-        streaks.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner * 0.52);
-        streaks.lineTo(Math.cos(bend) * outer * 0.5, Math.sin(bend) * outer * 0.3);
-        streaks.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer * 0.56);
-        streaks.strokePath();
+      for (let wave = 0; wave < 4; wave += 1) {
+        this.time.delayedCall(wave * 46, () => {
+          const depth = y + 76 + wave;
+          const shadow = this.add.graphics().setPosition(x, y - 42).setScale(1, 0.56).setDepth(depth);
+          const body = this.add.graphics().setPosition(x, y - 42).setScale(1, 0.56).setDepth(depth + 1);
+          const haze = this.add.graphics().setPosition(x, y - 42).setScale(1, 0.56).setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
+          const segmentCount = 13 + wave * 2;
+          for (let index = 0; index < segmentCount; index += 1) {
+            const radius = 52 + (index / segmentCount) * (LINA_GALE_RADIUS - 32) + Phaser.Math.Between(-14, 14);
+            const start = Math.PI * 2 * index / segmentCount + wave * 0.4 + Phaser.Math.FloatBetween(-0.16, 0.16);
+            const sweep = Phaser.Math.FloatBetween(0.46, 1.02);
+            const drawArc = (graphics, width, color, alpha, offset = 0) => {
+              graphics.lineStyle(width, color, alpha);
+              graphics.beginPath();
+              graphics.arc(0, 0, radius + offset, start, start + sweep, false);
+              graphics.strokePath();
+            };
+            drawArc(shadow, index % 4 === 0 ? 16 : 10, 0x466d78, 0.12);
+            drawArc(body, index % 4 === 0 ? 8 : 5, index % 3 ? 0x9ad8d5 : 0xb9e5e0, 0.46);
+            if (index % 2 === 0) drawArc(haze, index % 4 === 0 ? 3 : 1.6, 0xe8f8f5, 0.5, 2);
+          }
+          for (let ribbonIndex = 0; ribbonIndex < 4; ribbonIndex += 1) {
+            const angle = Math.PI * 2 * ribbonIndex / 4 + wave * 0.52 + Phaser.Math.FloatBetween(-0.18, 0.18);
+            const ribbon = this.add.image(x, y - 42, WIND_RIBBON_TEXTURE_KEY)
+              .setOrigin(0.04, 0.72)
+              .setRotation(angle)
+              .setScale(0.86 + wave * 0.1 + ribbonIndex * 0.05, 0.58 + ribbonIndex * 0.06)
+              .setTint(ribbonIndex % 2 ? 0xb8e1de : 0xe0f2ef)
+              .setAlpha(0.72)
+              .setDepth(depth + 3);
+            const glow = this.add.image(x, y - 42, WIND_RIBBON_TEXTURE_KEY)
+              .setOrigin(0.04, 0.72)
+              .setRotation(angle)
+              .setScale(ribbon.scaleX * 1.03, ribbon.scaleY * 1.22)
+              .setTint(0x93d8d5)
+              .setAlpha(0.28)
+              .setBlendMode(Phaser.BlendModes.ADD)
+              .setDepth(depth + 2);
+            this.tweens.add({
+              targets: [ribbon, glow],
+              rotation: angle + (wave % 2 ? -0.28 : 0.28),
+              scaleX: ribbon.scaleX * 1.18,
+              alpha: 0,
+              duration: 360 + wave * 75,
+              ease: "Cubic.easeOut",
+              onComplete: () => { ribbon.destroy(); glow.destroy(); }
+            });
+          }
+          [shadow, body, haze].forEach((layer, index) => this.tweens.add({
+            targets: layer,
+            scaleX: 1.13 + wave * 0.03,
+            scaleY: 0.63 + wave * 0.02,
+            angle: (wave % 2 ? -1 : 1) * (18 + index * 5),
+            alpha: 0,
+            duration: 380 + wave * 70,
+            ease: "Cubic.easeOut",
+            onComplete: () => layer.destroy()
+          }));
+        });
       }
-      wind.add(streaks);
-      this.tweens.add({
-        targets: wind,
-        scaleX: 1.12,
-        scaleY: 1.08,
-        alpha: 0,
-        duration: 430,
-        ease: "Cubic.easeOut",
-        onComplete: () => wind.destroy()
-      });
-      for (let burst = 0; burst < 5; burst += 1) {
-        this.time.delayedCall(burst * 38, () => this.spawnWindBurst(x, y - 24, 20 + burst * 3, 92 + burst * 54, 220 + burst * 42));
+      for (let burst = 0; burst < 7; burst += 1) {
+        this.time.delayedCall(burst * 30, () => this.spawnWindBurst(x, y - 44, 16 + burst * 3, 86 + burst * 44, 250 + burst * 42));
       }
     }
 
@@ -5522,7 +6109,8 @@
         const mote = this.add.image(x, y, texture)
           .setScale(texture === WIND_LEAF_TEXTURE_KEY ? 0.55 : 0.5 + Math.random() * 0.32)
           .setRotation(angle)
-          .setBlendMode(Phaser.BlendModes.ADD)
+          .setBlendMode(texture === WIND_LEAF_TEXTURE_KEY ? Phaser.BlendModes.NORMAL : Phaser.BlendModes.ADD)
+          .setTint(texture === WIND_LEAF_TEXTURE_KEY ? 0x60c59b : (index % 3 ? 0x8cf2df : 0xe6fff8))
           .setDepth(y + 86);
         this.tweens.add({
           targets: mote,
@@ -5691,6 +6279,28 @@
         rays.lineStyle(index % 4 === 0 ? 4 : 2, index % 3 ? 0x7dedd5 : 0xfff1b8, 0.72);
         rays.lineBetween(Math.cos(angle) * inner, Math.sin(angle) * inner, Math.cos(angle) * outer, Math.sin(angle) * outer);
       }
+      for (let index = 0; index < 7; index += 1) {
+        const angle = Math.PI * 2 * index / 7;
+        const ribbon = this.add.image(x, y - 42, WIND_RIBBON_TEXTURE_KEY)
+          .setOrigin(0.08, 0.5)
+          .setRotation(angle - 0.55)
+          .setScale(0.24, 0.14)
+          .setTint(index % 3 ? 0x9cf2d8 : 0xffe5a6)
+          .setAlpha(0.76)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(y + 83 + index);
+        this.tweens.add({
+          targets: ribbon,
+          x: x + Math.cos(angle) * 76,
+          y: y - 42 + Math.sin(angle) * 42,
+          scaleX: 0.5,
+          scaleY: 0.2,
+          alpha: 0,
+          duration: 430 + index * 18,
+          ease: "Cubic.easeOut",
+          onComplete: () => ribbon.destroy()
+        });
+      }
       this.tweens.add({ targets: rays, scale: 1.55, alpha: 0, angle: 24, duration: 420, ease: "Cubic.easeOut", onComplete: () => rays.destroy() });
       this.spawnHealingMotes(x, y - 42, 38, 76, 520);
     }
@@ -5698,7 +6308,7 @@
     playHealingChainArc(from, to, bounceIndex = 0) {
       const sameTarget = Phaser.Math.Distance.Between(from.x, from.y, to.x, to.y) < 8;
       const points = [];
-      const steps = 16;
+      const steps = 20;
       const dx = sameTarget ? 70 : to.x - from.x;
       const dy = sameTarget ? -8 : to.y - from.y;
       const length = Math.max(1, Math.hypot(dx, dy));
@@ -5706,51 +6316,120 @@
       const ny = dx / length;
       for (let step = 0; step <= steps; step += 1) {
         const t = step / steps;
-        const wave = Math.sin(t * Math.PI * 3 + bounceIndex * 1.3) * (sameTarget ? 20 : 8 + bounceIndex * 1.6);
+        const wave = Math.sin(t * Math.PI * 2.5 + bounceIndex * 1.3) * (sameTarget ? 20 : 10 + bounceIndex * 1.8);
         const loop = sameTarget ? Math.sin(t * Math.PI) * 55 : 0;
         points.push({
           x: from.x + dx * t + nx * wave + (sameTarget ? Math.cos(t * Math.PI * 2) * loop : 0),
           y: from.y - 52 + dy * t + ny * wave - (sameTarget ? Math.sin(t * Math.PI) * 36 : 0)
         });
       }
-      const beam = this.add.graphics().setDepth(Math.max(from.y, to.y) + 94).setBlendMode(Phaser.BlendModes.ADD);
-      [
-        { width: 12, color: 0x4ddfc7, alpha: 0.16 },
-        { width: 6, color: 0x76f2da, alpha: 0.68 },
-        { width: 2, color: 0xf3fff8, alpha: 0.98 }
-      ].forEach(style => {
-        beam.lineStyle(style.width, style.color, style.alpha);
-        beam.beginPath();
-        points.forEach((point, index) => index ? beam.lineTo(point.x, point.y) : beam.moveTo(point.x, point.y));
-        beam.strokePath();
-      });
-      this.tweens.add({ targets: beam, alpha: 0, duration: 240, ease: "Sine.easeOut", onComplete: () => beam.destroy() });
-      points.slice(1).forEach((point, index) => {
-        if (index % 2) return;
-        this.time.delayedCall(index * 4, () => {
-          const mote = this.add.image(point.x, point.y, WIND_MOTE_TEXTURE_KEY)
-            .setScale(0.3 + Math.random() * 0.22)
-            .setRotation(Math.random() * Math.PI)
-            .setBlendMode(Phaser.BlendModes.ADD)
-            .setDepth(Math.max(from.y, to.y) + 96);
-          this.tweens.add({ targets: mote, y: mote.y - 18 - Math.random() * 14, alpha: 0, scale: 0.1, duration: 280, onComplete: () => mote.destroy() });
+      const depth = Math.max(from.y, to.y) + 94;
+      if (!sameTarget) {
+        const rotation = Math.atan2(dy, dx);
+        const midpoint = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 - 52 };
+        [
+          { tint: 0x2f8f83, alpha: 0.24, scaleY: 0.34, offset: 8 },
+          { tint: 0x7de8c8, alpha: 0.68, scaleY: 0.22, offset: 0 },
+          { tint: 0xffedbd, alpha: 0.84, scaleY: 0.1, offset: -5 }
+        ].forEach((style, index) => {
+          const ribbon = this.add.image(midpoint.x + nx * style.offset, midpoint.y + ny * style.offset, WIND_RIBBON_TEXTURE_KEY)
+            .setOrigin(0.5)
+            .setRotation(rotation - 0.54)
+            .setScale(Math.max(0.22, length / 228), style.scaleY)
+            .setTint(style.tint)
+            .setAlpha(style.alpha)
+            .setBlendMode(index ? Phaser.BlendModes.ADD : Phaser.BlendModes.NORMAL)
+            .setDepth(depth + index);
+          this.tweens.add({ targets: ribbon, scaleX: ribbon.scaleX * 1.08, alpha: 0, duration: 300, ease: "Sine.easeOut", onComplete: () => ribbon.destroy() });
         });
+      }
+      [
+        { width: 17, color: 0x126b72, alpha: 0.2, blend: Phaser.BlendModes.NORMAL },
+        { width: 9, color: 0x41cfae, alpha: 0.72, blend: Phaser.BlendModes.NORMAL },
+        { width: 4, color: 0x9effdd, alpha: 0.96, blend: Phaser.BlendModes.ADD },
+        { width: 1.4, color: 0xffffff, alpha: 0.9, blend: Phaser.BlendModes.ADD }
+      ].forEach(style => {
+        const graphics = this.add.graphics().setDepth(depth).setBlendMode(style.blend);
+        graphics.lineStyle(style.width, style.color, style.alpha);
+        graphics.beginPath();
+        points.forEach((point, index) => index ? graphics.lineTo(point.x, point.y) : graphics.moveTo(point.x, point.y));
+        graphics.strokePath();
+        this.tweens.add({ targets: graphics, alpha: 0, duration: 260, ease: "Sine.easeOut", onComplete: () => graphics.destroy() });
+      });
+      const samplePath = progress => {
+        const scaled = clamp(progress, 0, 1) * (points.length - 1);
+        const index = Math.min(points.length - 2, Math.floor(scaled));
+        const ratio = scaled - index;
+        return {
+          x: Phaser.Math.Linear(points[index].x, points[index + 1].x, ratio),
+          y: Phaser.Math.Linear(points[index].y, points[index + 1].y, ratio)
+        };
+      };
+      for (let pulseIndex = 0; pulseIndex < 5; pulseIndex += 1) {
+        const pulse = this.add.image(points[0].x, points[0].y, WIND_MOTE_TEXTURE_KEY)
+          .setScale(0.48 + pulseIndex * 0.035)
+          .setTint(pulseIndex % 2 ? 0x7dffd5 : 0xeafff5)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(depth + 3);
+        const travel = { value: 0 };
+        this.tweens.add({
+          targets: travel,
+          value: 1,
+          delay: pulseIndex * 28,
+          duration: 150 + bounceIndex * 12,
+          ease: "Cubic.easeIn",
+          onUpdate: () => {
+            const point = samplePath(travel.value);
+            pulse.setPosition(point.x, point.y);
+          },
+          onComplete: () => pulse.destroy()
+        });
+      }
+      points.slice(2, -1).forEach((point, index) => {
+        if (index % 2) return;
+        const mote = this.add.image(point.x, point.y, WIND_MOTE_TEXTURE_KEY)
+          .setScale(0.2 + Math.random() * 0.2)
+          .setTint(index % 4 ? 0x6ee8c5 : 0xffedaf)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(depth + 2);
+        this.tweens.add({ targets: mote, x: mote.x + Phaser.Math.Between(-18, 18), y: mote.y - 24 - Math.random() * 18, alpha: 0, scale: 0.06, duration: 300, onComplete: () => mote.destroy() });
       });
     }
 
     playHealingChainImpact(x, y, healed, shieldGain) {
-      const burst = this.add.graphics().setPosition(x, y - 48).setDepth(y + 100).setBlendMode(Phaser.BlendModes.ADD);
-      for (let index = 0; index < 18; index += 1) {
-        const angle = Math.PI * 2 * index / 18 + 0.12;
-        const length = 30 + (index % 5) * 10;
-        burst.lineStyle(index % 3 === 0 ? 4 : 2, shieldGain > 0 ? 0xa7e9ff : 0x9dffe1, 0.82);
-        burst.lineBetween(Math.cos(angle) * 8, Math.sin(angle) * 8, Math.cos(angle) * length, Math.sin(angle) * length);
+      const color = shieldGain > 0 ? 0x8bdcff : 0x70efbd;
+      const streamers = this.add.graphics().setPosition(x, y - 36).setDepth(y + 100);
+      const highlights = this.add.graphics().setPosition(x, y - 36).setDepth(y + 102).setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 24; index += 1) {
+        const angle = Math.PI * 2 * index / 24 + Phaser.Math.FloatBetween(-0.12, 0.12);
+        const length = 38 + (index % 6) * 9;
+        const endX = Math.cos(angle) * length;
+        const endY = Math.sin(angle) * length * 0.62 - (index % 3) * 8;
+        streamers.lineStyle(index % 4 === 0 ? 7 : 4, shieldGain > 0 ? 0x318fc0 : 0x238e72, 0.3);
+        streamers.lineBetween(Math.cos(angle) * 8, Math.sin(angle) * 5, endX, endY);
+        highlights.lineStyle(index % 4 === 0 ? 2.5 : 1.4, index % 5 ? color : 0xffefb2, 0.9);
+        highlights.lineBetween(Math.cos(angle) * 8, Math.sin(angle) * 5, endX, endY);
       }
-      const star = this.add.star(x, y - 50, 8, 10, 28, shieldGain > 0 ? 0xbcecff : 0xe8fff6, 0.88)
-        .setDepth(y + 102)
-        .setBlendMode(Phaser.BlendModes.ADD);
-      this.tweens.add({ targets: [burst, star], scale: 1.55, alpha: 0, angle: 38, duration: 480, ease: "Cubic.easeOut", onComplete: () => { burst.destroy(); star.destroy(); } });
-      this.spawnHealingMotes(x, y - 34, 42, 92, 660);
+      for (let columnIndex = 0; columnIndex < 7; columnIndex += 1) {
+        const offsetX = (columnIndex - 3) * 13 + Phaser.Math.Between(-5, 5);
+        streamers.lineStyle(7, shieldGain > 0 ? 0x2c7898 : 0x247a65, 0.18);
+        streamers.lineBetween(offsetX, 34, offsetX + Phaser.Math.Between(-8, 8), -78 - columnIndex % 2 * 24);
+        highlights.lineStyle(2, columnIndex % 2 ? color : 0xfff1bd, 0.82);
+        highlights.lineBetween(offsetX, 34, offsetX + Phaser.Math.Between(-8, 8), -78 - columnIndex % 2 * 24);
+      }
+      for (let index = 0; index < 5; index += 1) {
+        const angle = -Math.PI * 0.82 + index * Math.PI * 0.41;
+        const ribbon = this.add.image(x, y - 34, WIND_RIBBON_TEXTURE_KEY)
+          .setOrigin(0.08, 0.5)
+          .setRotation(angle)
+          .setScale(0.28, 0.14)
+          .setTint(shieldGain > 0 ? (index % 2 ? 0xa7e8ff : 0xe6f8ff) : (index % 2 ? 0x8ff0cb : 0xffe7a8))
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(y + 103 + index);
+        this.tweens.add({ targets: ribbon, x: x + Math.cos(angle) * 62, y: y - 82 + Math.sin(angle) * 24, scaleX: 0.5, alpha: 0, duration: 520, ease: "Cubic.easeOut", onComplete: () => ribbon.destroy() });
+      }
+      this.tweens.add({ targets: [streamers, highlights], scaleX: 1.2, scaleY: 1.35, alpha: 0, duration: 520, ease: "Cubic.easeOut", onComplete: () => { streamers.destroy(); highlights.destroy(); } });
+      this.spawnHealingMotes(x, y - 34, 58, 108, 720);
       if (healed > 0) this.showFloatingText(x, y - 130, `治疗 +${Math.round(healed)}`, { color: "#82ffd4", size: "22px", rise: 68 });
       else if (shieldGain > 0) this.showFloatingText(x, y - 130, `护盾 +${Math.round(shieldGain)}`, { color: "#aeeaff", size: "22px", rise: 68 });
     }
@@ -5831,6 +6510,58 @@
         }
       });
       this.time.delayedCall(180, () => app.audio.ultimateBurst());
+    }
+
+    castLaodengImpactPunch(charged, berserk) {
+      this.dealMeleeDamage({
+        damageMultiplier: charged ? 1.75 : 1,
+        charged,
+        radius: charged ? 112 : undefined,
+        berserk,
+        knockback: charged
+      });
+      if (!charged) return;
+      [92, 178].forEach((delay, index) => this.time.delayedCall(delay, () => {
+        this.dealMeleeDamage({
+          damageMultiplier: 0.62,
+          charged: true,
+          radius: 104,
+          berserk,
+          bossOnly: true,
+          silentVisual: true,
+          noEnergyGain: true
+        });
+        if (!index) this.cameras.main.shake(70, 0.0018);
+      }));
+    }
+
+    playBerserkActivationVisual(position = this.actor) {
+      if (!position) return;
+      const x = Number(position.x) || 0;
+      const y = Number(position.y) || 0;
+      if (position === this.actor) this.berserkAura?.destroy();
+      const aura = this.add.container(x, y - 48).setDepth(y + 86);
+      const outerGlow = this.add.ellipse(0, 24, 126, 112, 0x8f1f25, 0.2).setBlendMode(Phaser.BlendModes.ADD);
+      const innerGlow = this.add.ellipse(0, 18, 82, 94, 0xff4d2f, 0.18).setBlendMode(Phaser.BlendModes.ADD);
+      const flames = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 18; index += 1) {
+        const angle = index / 18 * Math.PI * 2;
+        const sideX = Math.cos(angle) * (34 + (index % 3) * 7);
+        const baseY = 48 + Math.sin(angle) * 18;
+        const height = 44 + (index % 5) * 9;
+        flames.fillStyle(index % 3 ? 0xff4b2b : 0xffb13b, index % 3 ? 0.5 : 0.74);
+        flames.fillTriangle(sideX - 7, baseY, sideX + 7, baseY, sideX + Math.sin(index) * 12, baseY - height);
+      }
+      const crest = this.add.star(0, 10, 10, 22, 58, 0xff7a2f, 0.2)
+        .setStrokeStyle(4, 0xffcf6f, 0.58)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      aura.add([outerGlow, flames, innerGlow, crest]);
+      this.emitPhysicalSparks(x, y - 42, 46, 0xff6038);
+      this.tweens.add({ targets: [outerGlow, innerGlow], scale: { from: 0.84, to: 1.18 }, alpha: { from: 0.34, to: 0.12 }, duration: 260, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: flames, scaleY: { from: 0.82, to: 1.14 }, angle: { from: -3, to: 3 }, alpha: { from: 0.98, to: 0.62 }, duration: 190, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: crest, angle: 36, scale: { from: 0.9, to: 1.16 }, alpha: { from: 0.5, to: 0.16 }, duration: 420, yoyo: true, repeat: -1 });
+      if (position === this.actor) this.berserkAura = aura;
+      else this.time.delayedCall(1300, () => aura.destroy());
     }
 
     createLinaTornadoVisual(x, y) {
@@ -5916,30 +6647,54 @@
       const direction = this.facing || DIRECTIONS[2];
       const vec = directionVector(direction);
       this.lastAimVector = vec;
-      const hitX = this.actor.x + vec.x * MELEE.reach;
-      const hitY = this.actor.y - 44 + vec.y * MELEE.reach;
+      const reach = Number(options.reach) || MELEE.reach;
+      const hitX = this.actor.x + vec.x * reach;
+      const hitY = this.actor.y - 44 + vec.y * reach;
       const angle = Math.atan2(vec.y, vec.x) + (options.reverseSlash ? Math.PI : 0);
-      this.flashSlash(hitX, hitY, angle, this.actor.y + 20);
-      app.audio.cast();
+      const isLaodeng = app.profile.characterId === "laodeng";
+      if (!options.silentVisual) {
+        if (isLaodeng) this.playImpactPunchVisual(hitX, hitY, angle, !!options.charged, !!options.berserk);
+        else this.flashSlash(hitX, hitY, angle, this.actor.y + 20);
+      }
+      this.broadcastCombatEvent("melee", { x: hitX, y: hitY, aimX: Math.cos(angle), aimY: Math.sin(angle), charged: !!options.charged, radius: Number(options.radius) || MELEE.radius });
+      if (isLaodeng) app.audio.punchSwing(!!options.charged, !!options.berserk);
+      else app.audio.swordSwing(!!options.charged);
       let hitSomething = false;
       let dealtDamage = 0;
       const berserk = !!options.berserk || (app.profile.characterId === "laodeng" && this.time.now < this.berserkUntil);
       const radius = Number(options.radius) || (berserk ? 104 : MELEE.radius);
-      const baseDamage = Math.round(Number(app.profile.attackPower || MELEE.damage) * (Number(options.damageMultiplier) || 1));
+      const baseDamage = Math.round(
+        Number(app.profile.attackPower || MELEE.damage)
+        * (Number(options.damageMultiplier) || 1)
+        * (berserk ? LAODENG_BERSERK_DAMAGE_MULTIPLIER : 1)
+      );
       const slimes = this.leafSlimes?.getChildren?.() || [];
       for (const slime of slimes) {
         if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) continue;
+        if (options.bossOnly && slime.rank !== "boss") continue;
         const distance = Phaser.Math.Distance.Between(hitX, hitY, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
         if (distance <= radius + LEAF_SLIME_HIT_RADIUS) {
           dealtDamage += this.playLeafSlimeHit(slime, baseDamage, {
             kind: "physical",
             charged: !!options.charged,
-            energyGain: ENERGY_MELEE_HIT_GAIN
+            energyGain: options.noEnergyGain ? 0 : ENERGY_MELEE_HIT_GAIN,
+            noEnergyGain: !!options.noEnergyGain
           }) || 0;
+          if (options.knockback && slime.rank !== "boss" && slime.active && slime.body?.enable) {
+            const dx = slime.x - this.actor.x;
+            const dy = slime.y + LEAF_SLIME_HIT_OFFSET_Y - (this.actor.y - 44);
+            const unit = normalizeVector(dx || vec.x, dy || vec.y);
+            const token = (slime.impactPunchToken || 0) + 1;
+            slime.impactPunchToken = token;
+            slime.body.setVelocity(unit.x * 460, unit.y * 460);
+            this.time.delayedCall(170, () => {
+              if (slime.active && slime.body?.enable && slime.impactPunchToken === token) slime.body.setVelocity(0, 0);
+            });
+          }
           hitSomething = true;
         }
       }
-      if (app.boss.active && app.boss.hp > 0 && this.bossSprite?.visible) {
+      if (!options.bossOnly && app.boss.active && app.boss.hp > 0 && this.bossSprite?.visible) {
         const bossDistance = Phaser.Math.Distance.Between(hitX, hitY, app.boss.x, app.boss.y - 60);
         if (bossDistance < 96 + radius) {
           this.applyBossDamage(baseDamage);
@@ -5978,7 +6733,8 @@
           y: start.y + aim.y / length * MAP_TILE_SIZE * 2.2
         };
         this.drawLightningArc(start.x, start.y, end.x, end.y, { intensity: 1.32 });
-        this.renderLightningImpact(end.x, end.y, 56, { quantity: 20, shake: 0.0014 });
+        this.renderLightningImpact(end.x, end.y, 56, { quantity: 28, splashCount: 12, ground: false, shake: 0.0014 });
+        this.broadcastCombatEvent("chainLightning", { x: start.x, y: start.y, points: [start, end] });
         app.audio.ultimateBurst();
         return;
       }
@@ -6006,6 +6762,11 @@
       }
 
       const multipliers = [1, 0.8, 0.5];
+      this.broadcastCombatEvent("chainLightning", {
+        x: start.x,
+        y: start.y,
+        points: [start, ...chain.map(slime => ({ x: slime.x, y: slime.y + LEAF_SLIME_HIT_OFFSET_Y }))]
+      });
       let previous = null;
       chain.forEach((slime, index) => {
         const target = { x: slime.x, y: slime.y + LEAF_SLIME_HIT_OFFSET_Y };
@@ -6018,7 +6779,9 @@
             this.time.delayedCall(38, () => this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 0.72 }));
           }
           this.renderLightningImpact(target.x, target.y, 68 - index * 7, {
-            quantity: 30 - index * 5,
+            quantity: 46 - index * 6,
+            splashCount: 15 - index * 2,
+            ground: false,
             shake: 0.0028 - index * 0.00055
           });
           const damage = Math.round(Number(app.profile.magicPower || 22) * multipliers[index]);
@@ -6042,35 +6805,66 @@
         });
       }
       points.push({ x: x2, y: y2 });
-      const graphics = this.add.graphics().setDepth(Math.max(y1, y2) + 70);
-      const stroke = (width, color, alpha) => {
+      const depth = Math.max(y1, y2) + 70;
+      const ribbon = this.add.image((x1 + x2) / 2, (y1 + y2) / 2, LIGHTNING_RIBBON_TEXTURE_KEY)
+        .setRotation(Math.atan2(y2 - y1, x2 - x1))
+        .setScale(Math.max(0.12, distance / 256), 0.66 * intensity)
+        .setAlpha(0.9)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(depth + 2);
+      const underlay = this.add.graphics().setDepth(depth);
+      const body = this.add.graphics().setDepth(depth + 1);
+      const bloom = this.add.graphics().setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.graphics().setDepth(depth + 3).setBlendMode(Phaser.BlendModes.ADD);
+      const stroke = (graphics, width, color, alpha) => {
         graphics.lineStyle(width * intensity, color, alpha);
         graphics.beginPath();
         graphics.moveTo(points[0].x, points[0].y);
         points.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
         graphics.strokePath();
       };
-      stroke(22, 0x6e3cff, 0.34);
-      stroke(11, 0x55d7ff, 0.84);
-      stroke(3.2, 0xf4ffff, 1);
+      stroke(underlay, 27, 0x2a124f, 0.4);
+      stroke(body, 14, 0x7138c7, 0.96);
+      stroke(bloom, 8, 0xc14fe2, 0.72);
+      stroke(core, 2.6, 0xe8d7ff, 0.98);
       [0.22, 0.4, 0.6, 0.78].map(ratio => Math.floor(segments * ratio)).forEach((pointIndex, branchIndex) => {
         const point = points[pointIndex];
         const direction = branchIndex % 2 ? -1 : 1;
-        graphics.lineStyle(2.2 * intensity, 0xb9f5ff, 0.72);
-        graphics.beginPath();
-        graphics.moveTo(point.x, point.y);
-        graphics.lineTo(point.x + Phaser.Math.Between(16, 28) * direction, point.y + Phaser.Math.Between(-24, 24));
-        graphics.lineTo(point.x + Phaser.Math.Between(30, 44) * direction, point.y + Phaser.Math.Between(-34, 34));
-        graphics.strokePath();
+        const branch = [
+          point,
+          { x: point.x + Phaser.Math.Between(16, 28) * direction, y: point.y + Phaser.Math.Between(-24, 24) },
+          { x: point.x + Phaser.Math.Between(30, 48) * direction, y: point.y + Phaser.Math.Between(-38, 38) }
+        ];
+        [
+          { graphics: underlay, width: 7, color: 0x2a124f, alpha: 0.4 },
+          { graphics: body, width: 3.6, color: 0x8c3ed0, alpha: 0.92 },
+          { graphics: core, width: 1.1, color: 0xd7baff, alpha: 0.9 }
+        ].forEach(style => {
+          style.graphics.lineStyle(style.width * intensity, style.color, style.alpha);
+          style.graphics.beginPath();
+          style.graphics.moveTo(branch[0].x, branch[0].y);
+          style.graphics.lineTo(branch[1].x, branch[1].y);
+          style.graphics.lineTo(branch[2].x, branch[2].y);
+          style.graphics.strokePath();
+        });
       });
-      this.emitLightningBurst(x2, y2, Math.round(12 * intensity));
-      this.tweens.add({
-        targets: graphics,
+      if (options.emit !== false) this.emitLightningBurst(x2, y2, Math.round(14 * intensity));
+      [underlay, body, bloom, core].forEach((layer, index) => this.tweens.add({
+        targets: layer,
         alpha: 0,
-        duration: 220,
+        delay: index === 0 ? 70 : 0,
+        duration: 150 + index * 18,
         ease: "Quad.easeOut",
-        onComplete: () => graphics.destroy()
-      });
+        onComplete: () => layer.destroy()
+      }));
+      this.tweens.add({ targets: ribbon, alpha: 0, scaleY: ribbon.scaleY * 0.28, duration: 165, ease: "Quad.easeOut", onComplete: () => ribbon.destroy() });
+      if (options.echo !== false) {
+        this.time.delayedCall(34, () => this.drawLightningArc(x1, y1, x2, y2, {
+          intensity: intensity * 0.7,
+          echo: false,
+          emit: false
+        }));
+      }
     }
 
     emitLightningBurst(x, y, quantity = 18) {
@@ -6083,7 +6877,7 @@
         rotate: { min: 0, max: 180 },
         scale: { start: 0.72, end: 0 },
         alpha: { start: 0.96, end: 0 },
-        tint: [0x127cff, 0x21c7ff, 0x7047ff],
+        tint: [0x6a32bd, 0xc246dc, 0x62d8d1, 0xffc95d],
         blendMode: "NORMAL"
       }).setDepth(y + 118);
       sparks.explode(quantity, 0, 0);
@@ -6095,7 +6889,7 @@
         gravityY: -55,
         scale: { start: 0.52, end: 0 },
         alpha: { start: 0.78, end: 0 },
-        tint: [0x245dff, 0x28bfff, 0x724cff],
+        tint: [0x6e35b8, 0xb84bd0, 0x63cfc9, 0xf4b95d],
         blendMode: "NORMAL"
       }).setDepth(y + 116);
       motes.explode(Math.max(8, Math.round(quantity * 0.65)), 0, 0);
@@ -6109,40 +6903,13 @@
       const quantity = Number(options.quantity) || 24;
       const crackCount = Math.max(3, Number(options.crackCount) || 10);
       const splashCount = Math.max(3, Number(options.splashCount) || 9);
-      const groundCracks = this.add.graphics().setDepth(y + 84);
+      const showGround = options.ground !== false;
+      const groundY = Number.isFinite(options.groundY) ? Number(options.groundY) : y + 56;
+      const groundShadow = showGround ? this.add.graphics().setPosition(x, groundY).setDepth(groundY - 42) : null;
+      const groundCharge = showGround
+        ? this.add.graphics().setPosition(x, groundY).setDepth(groundY - 41).setBlendMode(Phaser.BlendModes.ADD)
+        : null;
       const splashArcs = this.add.graphics().setDepth(y + 126);
-      const paths = [];
-      const branches = [];
-      for (let index = 0; index < crackCount; index += 1) {
-        const angle = index / crackCount * Math.PI * 2 + Phaser.Math.FloatBetween(-0.18, 0.18);
-        const steps = Phaser.Math.Between(3, 5);
-        const targetLength = radius * Phaser.Math.FloatBetween(1.05, 1.75);
-        const points = [{ x, y }];
-        for (let step = 1; step <= steps; step += 1) {
-          const distance = targetLength * step / steps;
-          const jitter = Phaser.Math.FloatBetween(-0.2, 0.2);
-          points.push({
-            x: x + Math.cos(angle + jitter) * distance,
-            y: y + Math.sin(angle + jitter) * distance * 0.48
-          });
-          if (step === 2 && index % 2 === 0) {
-            const root = points[points.length - 1];
-            const side = index % 4 ? -1 : 1;
-            branches.push([
-              root,
-              {
-                x: root.x + Math.cos(angle + side * 0.7) * radius * 0.38,
-                y: root.y + Math.sin(angle + side * 0.7) * radius * 0.18
-              },
-              {
-                x: root.x + Math.cos(angle + side * 0.82) * radius * 0.7,
-                y: root.y + Math.sin(angle + side * 0.82) * radius * 0.34
-              }
-            ]);
-          }
-        }
-        paths.push(points);
-      }
       const drawPath = (graphics, points, width, color, alpha) => {
         graphics.lineStyle(width, color, alpha);
         graphics.beginPath();
@@ -6150,11 +6917,39 @@
         points.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
         graphics.strokePath();
       };
-      [...paths, ...branches].forEach(points => {
-        drawPath(groundCracks, points, 8, 0x4d2bce, 0.24);
-        drawPath(groundCracks, points, 3.2, 0x126dff, 0.86);
-        drawPath(groundCracks, points, 1.2, 0x5cdcff, 1);
-      });
+      if (showGround) {
+        for (let index = 0; index < crackCount; index += 1) {
+          let angle = index / crackCount * Math.PI * 2 + Phaser.Math.FloatBetween(-0.3, 0.3);
+          const steps = Phaser.Math.Between(5, 8);
+          const targetLength = radius * Phaser.Math.FloatBetween(0.95, 1.8);
+          const points = [{ x: Phaser.Math.Between(-4, 4), y: Phaser.Math.Between(-2, 2) }];
+          for (let step = 1; step <= steps; step += 1) {
+            angle += Phaser.Math.FloatBetween(-0.28, 0.28);
+            const previous = points[points.length - 1];
+            const stride = targetLength / steps * Phaser.Math.FloatBetween(0.72, 1.2);
+            points.push({
+              x: previous.x + Math.cos(angle) * stride,
+              y: previous.y + Math.sin(angle) * stride * 0.42
+            });
+          }
+          drawPath(groundShadow, points, index % 3 === 0 ? 9 : 6, 0x251a2d, 0.58);
+          drawPath(groundShadow, points, index % 3 === 0 ? 4 : 3, 0x4a315f, 0.76);
+          drawPath(groundCharge, points, index % 3 === 0 ? 2.2 : 1.4, index % 2 ? 0xa746d1 : 0x7d5be0, 0.94);
+          [2, Math.floor(steps * 0.62)].forEach((branchStep, branchIndex) => {
+            if (!points[branchStep] || (index + branchIndex) % 2) return;
+            const root = points[branchStep];
+            const side = (index + branchIndex) % 4 < 2 ? -1 : 1;
+            const branchAngle = angle + side * Phaser.Math.FloatBetween(0.65, 1.05);
+            const branch = [
+              root,
+              { x: root.x + Math.cos(branchAngle) * radius * 0.28, y: root.y + Math.sin(branchAngle) * radius * 0.12 },
+              { x: root.x + Math.cos(branchAngle + side * 0.18) * radius * 0.52, y: root.y + Math.sin(branchAngle + side * 0.18) * radius * 0.23 }
+            ];
+            drawPath(groundShadow, branch, 4, 0x261a30, 0.52);
+            drawPath(groundCharge, branch, 1.1, 0xba5be0, 0.78);
+          });
+        }
+      }
       for (let index = 0; index < splashCount; index += 1) {
         const angle = index / splashCount * Math.PI * 2 + Phaser.Math.FloatBetween(-0.24, 0.24);
         const first = {
@@ -6166,14 +6961,14 @@
           y: y + Math.sin(angle) * radius * Phaser.Math.FloatBetween(0.8, 1.45)
         };
         const arc = [{ x, y }, first, end];
-        drawPath(splashArcs, arc, 7, 0x5428dc, 0.2);
-        drawPath(splashArcs, arc, 2.2, index % 2 ? 0x1485ff : 0x3ed7ff, 0.92);
+        drawPath(splashArcs, arc, 7, 0x34165f, 0.28);
+        drawPath(splashArcs, arc, 2.2, index % 3 ? 0xb84bd4 : 0x65d6d1, 0.94);
       }
-      const impactGlow = this.add.star(x, y, 8, radius * 0.12, radius * 0.5, 0x275fff, 0.38)
-        .setBlendMode(Phaser.BlendModes.ADD)
+      const impactGlow = this.add.star(x, y, 8, radius * 0.12, radius * 0.5, 0x6d2bb0, 0.58)
         .setDepth(y + 128);
-      const impactCore = this.add.star(x, y, 6, radius * 0.08, radius * 0.28, 0x2bc7ff, 0.96)
-        .setDepth(y + 130);
+      const impactCore = this.add.star(x, y, 6, radius * 0.08, radius * 0.28, 0xd16ce8, 0.94)
+        .setDepth(y + 130)
+        .setBlendMode(Phaser.BlendModes.ADD);
       this.emitLightningBurst(x, y, Math.round(quantity * 1.45));
       const spray = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
         emitting: false,
@@ -6184,7 +6979,7 @@
         rotate: { min: 0, max: 240 },
         scale: { start: 0.66, end: 0 },
         alpha: { start: 0.96, end: 0 },
-        tint: [0x115fff, 0x1cbfff, 0x643cff],
+        tint: [0x6f32bc, 0xc14bd7, 0x62d3cd, 0xffc65c],
         blendMode: "NORMAL"
       }).setDepth(y + 122);
       spray.explode(Math.max(16, Math.round(quantity * 0.85)), 0, 0);
@@ -6207,14 +7002,10 @@
         ease: "Quad.easeOut",
         onComplete: () => splashArcs.destroy()
       });
-      this.tweens.add({
-        targets: groundCracks,
-        alpha: 0,
-        delay: 850,
-        duration: 650,
-        ease: "Quad.easeOut",
-        onComplete: () => groundCracks.destroy()
-      });
+      if (showGround) {
+        this.tweens.add({ targets: groundCharge, alpha: 0, delay: 620, duration: 520, ease: "Quad.easeOut", onComplete: () => groundCharge.destroy() });
+        this.tweens.add({ targets: groundShadow, alpha: 0, delay: 900, duration: 760, ease: "Quad.easeOut", onComplete: () => groundShadow.destroy() });
+      }
       const shake = Number(options.shake) || 0;
       if (shake > 0) this.cameras.main.shake(70, shake);
     }
@@ -6240,16 +7031,22 @@
       this.cameras.main.shake(45, 0.0007);
     }
 
-    strikeLightning(x, y, damage, radius) {
+    playLightningStrikeVisual(x, y, radius) {
       const topY = Math.max(0, y - 460);
-      this.drawLightningArc(x + 24, topY, x, y, { intensity: 1.58 });
-      this.time.delayedCall(42, () => this.drawLightningArc(x - 10, topY + 20, x, y, { intensity: 0.68 }));
+      this.drawLightningArc(x + 24, topY, x, y, { intensity: 1.72 });
+      this.time.delayedCall(28, () => this.drawLightningArc(x - 18, topY + 24, x, y, { intensity: 0.76 }));
+      this.time.delayedCall(56, () => this.drawLightningArc(x + 42, topY + 70, x + Phaser.Math.Between(-12, 12), y, { intensity: 0.48, echo: false }));
       this.renderLightningImpact(x, y, radius, {
         quantity: 30,
-        crackCount: 5,
-        splashCount: 5,
-        shake: 0.0018
+        crackCount: 7,
+        splashCount: 8,
+        groundY: y + 58,
+        shake: 0.0021
       });
+    }
+
+    strikeLightning(x, y, damage, radius) {
+      this.playLightningStrikeVisual(x, y, radius);
       (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
         if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
         if (Phaser.Math.Distance.Between(x, y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) <= radius + LEAF_SLIME_HIT_RADIUS) {
@@ -6260,18 +7057,124 @@
     }
 
     flashSlash(x, y, angle, depth = 45) {
-      const degrees = Phaser.Math.RadToDeg(angle);
-      const arc = this.add.arc(x, y, 52, degrees - 62, degrees + 62, false, MELEE.color, 0.42)
-        .setDepth(depth);
+      const container = this.add.container(x, y).setRotation(angle).setDepth(depth);
+      const shadow = this.add.image(-34, 0, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.08, 0.5)
+        .setScale(0.72, 0.5)
+        .setRotation(-0.82)
+        .setTint(0x315c87)
+        .setAlpha(0.34);
+      const body = this.add.image(-31, 0, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.08, 0.5)
+        .setScale(0.68, 0.35)
+        .setRotation(-0.82)
+        .setTint(0x8fd8ff)
+        .setAlpha(0.92)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.image(-27, 0, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.08, 0.5)
+        .setScale(0.58, 0.14)
+        .setRotation(-0.82)
+        .setTint(0xffffff)
+        .setAlpha(0.9)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      container.add([shadow, body, core]);
+      this.emitPhysicalSparks(x, y, 15, 0xbceaff);
       this.tweens.add({
-        targets: arc,
+        targets: container,
         alpha: 0,
-        scaleX: 1.3,
-        scaleY: 1.3,
-        duration: 190,
-        ease: "Sine.easeOut",
-        onComplete: () => arc.destroy()
+        scaleX: 1.34,
+        scaleY: 1.16,
+        duration: 210,
+        ease: "Cubic.easeOut",
+        onComplete: () => container.destroy()
       });
+    }
+
+    emitPhysicalSparks(x, y, quantity = 10, tint = 0xffd27a) {
+      if (!this.textures.exists(PHYSICAL_SPARK_TEXTURE_KEY)) return;
+      const sparks = this.add.particles(x, y, PHYSICAL_SPARK_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 150, max: 380 },
+        speed: { min: 90, max: 300 },
+        angle: { min: 0, max: 360 },
+        rotate: { min: -120, max: 180 },
+        scale: { start: 0.46, end: 0 },
+        alpha: { start: 0.96, end: 0 },
+        tint: [tint, 0xffffff, 0xf4b85e],
+        blendMode: "ADD"
+      }).setDepth(y + 96);
+      sparks.explode(quantity, 0, 0);
+      this.time.delayedCall(440, () => sparks.destroy());
+    }
+
+    playImpactPunchVisual(x, y, angle, charged = false, berserk = false) {
+      const container = this.add.container(x, y).setRotation(angle).setDepth(y + 94);
+      const reach = berserk ? 126 : charged ? 104 : 74;
+      const cone = this.add.graphics();
+      const coneGlow = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < (berserk ? 13 : 9); index += 1) {
+        const offset = (index - (berserk ? 6 : 4)) * (berserk ? 7 : 6);
+        const length = reach * (0.76 + Math.random() * 0.28);
+        cone.fillStyle(berserk ? 0x651d28 : 0x4f3b48, 0.2 + (index % 3) * 0.04);
+        cone.fillPoints([
+          { x: -18, y: offset * 0.16 - 3 }, { x: -18, y: offset * 0.16 + 3 },
+          { x: length, y: offset + 5 }, { x: length, y: offset - 5 }
+        ], true);
+        coneGlow.fillStyle(index % 3 ? (berserk ? 0xff5b32 : 0xffd38b) : 0xffffff, index % 3 ? 0.42 : 0.72);
+        coneGlow.fillTriangle(-4, offset * 0.14 - 2, length, offset - 2, length * 0.72, offset + 3);
+      }
+      const shock = this.add.ellipse(reach * 0.5, 0, charged ? 92 : 66, charged ? 62 : 44, berserk ? 0xff432d : 0xffd78d, 0.26)
+        .setStrokeStyle(charged ? 7 : 4, berserk ? 0xffc052 : 0xfff1c3, 0.94)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.star(reach * 0.55, 0, 8, charged ? 12 : 8, charged ? 38 : 28, berserk ? 0xff6a34 : 0xfff4cf, 0.9)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const debris = this.add.graphics();
+      for (let index = 0; index < (charged ? 16 : 10); index += 1) {
+        debris.fillStyle(index % 2 ? 0xd89757 : 0x6b4b3c, 0.82);
+        debris.fillRect(reach * 0.4 + Math.random() * 54, Phaser.Math.Between(-34, 34), Phaser.Math.Between(3, 8), Phaser.Math.Between(2, 6));
+      }
+      container.add([cone, coneGlow, shock, core, debris]);
+      this.emitPhysicalSparks(x + Math.cos(angle) * reach * 0.58, y + Math.sin(angle) * reach * 0.58, charged ? 28 : 16, berserk ? 0xff7040 : 0xffd38b);
+      this.tweens.add({ targets: container, scaleX: 1.42, scaleY: 1.2, alpha: 0, duration: charged ? 300 : 210, ease: "Cubic.easeOut", onComplete: () => container.destroy() });
+      this.cameras.main.shake(charged ? 95 : 55, charged ? 0.0032 : 0.0016);
+    }
+
+    createSwordWaveVisual(x, y, rotation, depth) {
+      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
+      const wake = this.add.image(-38, 0, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.08, 0.5).setScale(0.62, 0.4).setTint(0x2f6e9d).setAlpha(0.28);
+      const wave = this.add.image(-34, 0, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.08, 0.5).setScale(0.58, 0.27).setTint(0x85d8ff).setAlpha(0.92).setBlendMode(Phaser.BlendModes.ADD);
+      const edge = this.add.image(-27, 0, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.08, 0.5).setScale(0.48, 0.11).setTint(0xffffff).setAlpha(0.94).setBlendMode(Phaser.BlendModes.ADD);
+      const tip = this.add.triangle(54, 0, -8, -13, 22, 0, -8, 13, 0xdaf5ff, 0.88).setBlendMode(Phaser.BlendModes.ADD);
+      container.add([wake, wave, edge, tip]);
+      this.tweens.add({ targets: [wake, wave, edge], scaleX: "+=0.07", alpha: "-=0.14", duration: 90, yoyo: true, repeat: -1 });
+      return container;
+    }
+
+    createArrowVisual(x, y, rotation, depth, charged = false) {
+      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
+      const wake = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      const shaft = this.add.graphics();
+      const length = charged ? 70 : 48;
+      if (charged) {
+        for (let index = -2; index <= 2; index += 1) {
+          wake.lineStyle(index ? 2 : 5, index ? 0xc8f5b0 : 0xf7ffd6, index ? 0.38 : 0.68);
+          wake.lineBetween(-length - 26 - Math.abs(index) * 8, index * 4, 9, index * 1.2);
+        }
+      }
+      shaft.lineStyle(charged ? 5 : 3.5, charged ? 0xf5e6a4 : 0xd8be79, 1);
+      shaft.lineBetween(-length * 0.58, 0, length * 0.38, 0);
+      shaft.fillStyle(charged ? 0xc7f59c : 0xe8d8a0, 1);
+      shaft.fillTriangle(length * 0.56, 0, length * 0.26, -7, length * 0.26, 7);
+      shaft.fillStyle(0xb96a46, 0.96);
+      shaft.fillTriangle(-length * 0.58, 0, -length * 0.82, -8, -length * 0.72, 0);
+      shaft.fillTriangle(-length * 0.58, 0, -length * 0.82, 8, -length * 0.72, 0);
+      container.add([wake, shaft]);
+      if (charged) this.tweens.add({ targets: wake, alpha: { from: 0.8, to: 0.32 }, scaleX: { from: 0.86, to: 1.12 }, duration: 72, yoyo: true, repeat: -1 });
+      return container;
     }
 
     fireProjectile(options = {}) {
@@ -6310,6 +7213,11 @@
       projectile.charged = charged;
       projectile.kind = options.kind || (app.profile.characterId === "lina" ? "magic" : "physical");
       projectile.piercing = !!options.piercing;
+      projectile.ignoreObstacles = !!options.ignoreObstacles;
+      projectile.maxLargeTargetHits = Math.max(1, Number(options.maxLargeTargetHits) || 1);
+      projectile.largeTargetDamage = Math.max(0, Number(options.largeTargetDamage) || 0);
+      projectile.knockbackForce = Math.max(0, Number(options.knockbackForce) || 0);
+      projectile.largeTargetHits = new Map();
       projectile.noEnergyGain = !!options.noEnergyGain;
       projectile.visualType = options.visualType || "";
       projectile.hitTargets = new Set();
@@ -6319,15 +7227,20 @@
         ? (equipment.chargedProjectileOrigin || equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN)
         : (equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN);
       if (options.visualType === "arrow") {
-        projectile.visual = this.add.rectangle(castOrigin.x, castOrigin.y, charged ? 54 : 42, charged ? 7 : 5, projectile.color, 0.96)
-          .setStrokeStyle(2, 0xf3ffe7, 0.9)
-          .setRotation(projectile.visualRotation)
-          .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
+        projectile.visual = this.createArrowVisual(
+          castOrigin.x,
+          castOrigin.y,
+          projectile.visualRotation,
+          Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth),
+          charged
+        );
       } else if (options.visualType === "swordWave") {
-        projectile.visual = this.add.arc(castOrigin.x, castOrigin.y, 34, -58, 58, false, projectile.color, 0.72)
-          .setStrokeStyle(5, 0xe7f8ff, 0.92)
-          .setRotation(projectile.visualRotation)
-          .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
+        projectile.visual = this.createSwordWaveVisual(
+          castOrigin.x,
+          castOrigin.y,
+          projectile.visualRotation,
+          Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth)
+        );
       } else if (options.visualType === "lightningOrb") {
         projectile.visual = this.createLightningOrbVisual(
           castOrigin.x,
@@ -6349,19 +7262,46 @@
           .setRotation(projectile.visualRotation)
           .setDepth(Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth));
       }
-      this.flashCast(castOrigin.x, castOrigin.y, projectile.color, projectile.visualBaseDepth + 1);
-      app.audio.projectileFly(charged);
+      if (projectile.visualType === "windBolt") this.playWindCastBurst(castOrigin.x, castOrigin.y, projectile.visualRotation, projectile.visualBaseDepth + 1);
+      else this.flashCast(castOrigin.x, castOrigin.y, projectile.color, projectile.visualBaseDepth + 1);
+      this.broadcastCombatEvent("projectile", {
+        x: castOrigin.x,
+        y: castOrigin.y,
+        targetX: castOrigin.x + vec.x * projectile.maxDistance,
+        targetY: castOrigin.y + vec.y * projectile.maxDistance,
+        aimX: vec.x,
+        aimY: vec.y,
+        speed: projectileSpeed,
+        color: projectile.color,
+        charged,
+        visualType: projectile.visualType
+      });
+      if (options.audioType === "bow") app.audio.bowRelease(charged);
+      else if (options.audioType === "sword") app.audio.swordSwing(true);
+      else app.audio.projectileFly(charged);
     }
 
     createLightningOrbVisual(x, y, rotation, depth) {
       const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
+      const tail = this.add.image(-36, 0, LIGHTNING_RIBBON_TEXTURE_KEY)
+        .setOrigin(0.88, 0.5)
+        .setScale(0.22, 0.26)
+        .setTint(0xb96ae1)
+        .setAlpha(0.62)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const tailCore = this.add.image(-30, 0, LIGHTNING_RIBBON_TEXTURE_KEY)
+        .setOrigin(0.88, 0.5)
+        .setScale(0.18, 0.09)
+        .setTint(0xd9f4ff)
+        .setAlpha(0.78)
+        .setBlendMode(Phaser.BlendModes.ADD);
       const glow = this.add.ellipse(-4, 0, 42, 19, 0x234cff, 0.26)
         .setBlendMode(Phaser.BlendModes.ADD);
       const shell = this.add.circle(7, 0, 9, 0x1467e8, 1)
         .setStrokeStyle(2, 0x20bfff, 1);
       const core = this.add.circle(8, 0, 3.5, 0x76e7ff, 1);
       const spark = this.add.star(8, 0, 4, 2, 6, 0x2bbcff, 0.92);
-      container.add([glow, shell, core, spark]);
+      container.add([tail, tailCore, glow, shell, core, spark]);
       this.tweens.add({
         targets: [glow, shell],
         alpha: { from: 0.96, to: 0.62 },
@@ -6372,32 +7312,69 @@
         repeat: -1
       });
       this.tweens.add({ targets: spark, angle: 90, duration: 160, repeat: -1 });
+      this.tweens.add({ targets: [tail, tailCore], scaleX: "+=0.04", alpha: "-=0.18", duration: 74, yoyo: true, repeat: -1 });
       return container;
     }
 
     createWindBoltVisual(x, y, rotation, depth) {
       const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
-      const wake = this.add.ellipse(-10, 0, 58, 20, 0x54d7c4, 0.18).setBlendMode(Phaser.BlendModes.ADD);
-      const shell = this.add.ellipse(6, 0, 30, 15, 0x58dcc8, 0.72)
-        .setStrokeStyle(2, 0xcafff2, 0.95)
+      const ribbon = this.add.image(-38, 1, WIND_RIBBON_TEXTURE_KEY)
+        .setOrigin(0.08, 0.7)
+        .setScale(0.3, 0.2)
+        .setRotation(-0.18)
+        .setTint(0xd9efec)
+        .setAlpha(0.72);
+      const ribbonGlow = this.add.image(-40, 1, WIND_RIBBON_TEXTURE_KEY)
+        .setOrigin(0.08, 0.7)
+        .setScale(0.32, 0.26)
+        .setRotation(-0.18)
+        .setTint(0x8fd6d1)
+        .setAlpha(0.26)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const core = this.add.ellipse(10, 0, 13, 7, 0xe7fff8, 0.96).setBlendMode(Phaser.BlendModes.ADD);
-      const spiral = this.add.graphics();
-      spiral.lineStyle(2, 0xb7ffec, 0.8);
-      spiral.beginPath();
-      spiral.moveTo(-28, -7);
-      spiral.lineTo(-17, -12);
-      spiral.lineTo(-4, -9);
-      spiral.lineTo(5, -2);
-      spiral.strokePath();
-      spiral.beginPath();
-      spiral.moveTo(-30, 7);
-      spiral.lineTo(-17, 11);
-      spiral.lineTo(-3, 8);
-      spiral.strokePath();
-      container.add([wake, spiral, shell, core]);
-      this.tweens.add({ targets: [wake, shell], scaleX: 1.16, scaleY: 0.78, alpha: 0.48, duration: 90, yoyo: true, repeat: -1 });
+      const wake = this.add.graphics();
+      const stream = this.add.graphics();
+      const highlight = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      [-11, -5, 1, 7, 12].forEach((offset, index) => {
+        const points = [
+          { x: -46 - index * 3, y: offset },
+          { x: -30, y: offset + (index % 2 ? -5 : 5) },
+          { x: -10, y: offset * 0.55 },
+          { x: 13, y: offset * 0.18 }
+        ];
+        const stroke = (graphics, width, color, alpha) => {
+          graphics.lineStyle(width, color, alpha);
+          graphics.beginPath();
+          points.forEach((point, pointIndex) => pointIndex ? graphics.lineTo(point.x, point.y) : graphics.moveTo(point.x, point.y));
+          graphics.strokePath();
+        };
+        stroke(wake, index % 2 ? 9 : 12, 0x557986, 0.13);
+        stroke(stream, index % 2 ? 4 : 6, index % 2 ? 0x9dd8d6 : 0xb7e3df, 0.62);
+        if (index % 2 === 0) stroke(highlight, 1.5, 0xf1fbf8, 0.78);
+      });
+      const pressure = this.add.arc(11, 0, 15, -74, 74, false, 0xccebe7, 0.12)
+        .setStrokeStyle(3, 0xe9f8f5, 0.72)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const leaf = this.add.triangle(-8, -4, -5, 3, 8, 0, -1, -5, 0x65a985, 0.88).setAngle(-18);
+      container.add([ribbonGlow, ribbon, wake, stream, highlight, pressure, leaf]);
+      this.tweens.add({ targets: [wake, stream, highlight], scaleX: 1.14, scaleY: 0.82, alpha: 0.52, duration: 82, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: leaf, angle: 120, x: -15, y: 5, duration: 180, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: ribbon, scaleX: "+=0.035", alpha: { from: 0.72, to: 0.42 }, duration: 86, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: ribbonGlow, scaleX: "+=0.04", alpha: { from: 0.28, to: 0.14 }, duration: 86, yoyo: true, repeat: -1 });
       return container;
+    }
+
+    playWindCastBurst(x, y, rotation, depth) {
+      const gust = this.add.graphics().setPosition(x, y).setRotation(rotation).setDepth(depth);
+      for (let index = 0; index < 8; index += 1) {
+        const offset = (index - 3.5) * 5;
+        gust.lineStyle(index % 3 === 0 ? 5 : 2.5, index % 2 ? 0xaedddb : 0xe6f4f1, 0.58);
+        gust.beginPath();
+        gust.moveTo(-6, offset * 0.25);
+        gust.lineTo(-22, offset + (index % 2 ? 5 : -5));
+        gust.lineTo(-46 - index * 2, offset * 1.18);
+        gust.strokePath();
+      }
+      this.tweens.add({ targets: gust, x: x - Math.cos(rotation) * 24, y: y - Math.sin(rotation) * 24, scaleX: 1.25, alpha: 0, duration: 240, ease: "Cubic.easeOut", onComplete: () => gust.destroy() });
     }
 
     renderWindBoltImpact(x, y) {
@@ -6467,6 +7444,22 @@
         projectile.destroy();
         return;
       }
+      if (projectile.visualType === "arrow") {
+        if (burst) {
+          this.emitPhysicalSparks(projectile.x, projectile.y, projectile.charged ? 13 : 7, projectile.charged ? 0xc8f6a1 : 0xffd38a);
+          this.flashCast(projectile.x, projectile.y, projectile.charged ? 0xbfeea1 : 0xe5cf8d, projectile.y + 88);
+        }
+        projectile.destroy();
+        return;
+      }
+      if (projectile.visualType === "swordWave") {
+        if (burst) {
+          this.emitPhysicalSparks(projectile.x, projectile.y, 16, 0x9de2ff);
+          this.flashSlash(projectile.x, projectile.y, projectile.visualRotation || 0, projectile.y + 92);
+        }
+        projectile.destroy();
+        return;
+      }
       if (burst) {
         const impactScale = projectile.impactScale || 1;
         const impact = this.add.sprite(projectile.x, projectile.y, PROJECTILE_TEXTURE_KEY, projectile.impactFrame)
@@ -6487,15 +7480,39 @@
     }
 
     handleLeafSlimeProjectileHit(projectile, slime) {
-      if (!slime?.active || projectile.hitTargets?.has(slime.slimeId || slime)) return false;
-      projectile.hitTargets?.add(slime.slimeId || slime);
+      if (!slime?.active) return false;
+      const targetKey = slime.slimeId || slime;
+      const largeTarget = slime.rank === "boss" || Number(slime.scale || slime.scaleX || 1) >= 1.3;
+      const canMultiHit = largeTarget && projectile.maxLargeTargetHits > 1;
+      let hitDamage = projectile.damage || 18;
+      if (canMultiHit) {
+        const state = projectile.largeTargetHits.get(targetKey) || { count: 0, at: -Infinity };
+        if (state.count >= projectile.maxLargeTargetHits || this.time.now - state.at < 58) return false;
+        state.count += 1;
+        state.at = this.time.now;
+        projectile.largeTargetHits.set(targetKey, state);
+        hitDamage = projectile.largeTargetDamage || hitDamage;
+      } else {
+        if (projectile.hitTargets?.has(targetKey)) return false;
+        projectile.hitTargets?.add(targetKey);
+      }
       if (!projectile.piercing) this.destroyProjectile(projectile, true);
       if (slime.state === "dead" || slime.state === "vanish") return !projectile.piercing;
-      this.playLeafSlimeHit(slime, projectile.damage || 18, {
+      this.playLeafSlimeHit(slime, hitDamage, {
         kind: projectile.kind || "magic",
         charged: !!projectile.charged,
         noEnergyGain: !!projectile.noEnergyGain
       });
+      if (projectile.knockbackForce > 0 && ["mob", "elite"].includes(slime.rank) && slime.active && slime.body?.enable) {
+        const aim = normalizeVector(slime.x - projectile.spawnX, slime.y - projectile.spawnY);
+        const token = (slime.projectileKnockbackToken || 0) + 1;
+        slime.projectileKnockbackToken = token;
+        slime.body.setVelocity(aim.x * projectile.knockbackForce, aim.y * projectile.knockbackForce);
+        this.time.delayedCall(130, () => {
+          if (slime.active && slime.body?.enable && slime.projectileKnockbackToken === token) slime.body.setVelocity(0, 0);
+        });
+      }
+      if (canMultiHit) this.emitPhysicalSparks(slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y, 8, 0xc9f5a4);
       return !projectile.piercing;
     }
 
@@ -6557,6 +7574,80 @@
       return node;
     }
 
+    playLevelUpEffect(levels = 1) {
+      if (!this.actor?.active) return;
+      const x = this.actor.x;
+      const y = this.actor.y - 126;
+      const label = this.add.text(x, y, levels > 1 ? `LEVEL UP! x${levels}` : "LEVEL UP!", {
+        fontFamily: "Arial Black, Microsoft YaHei, sans-serif",
+        fontSize: "30px",
+        fontStyle: "900",
+        color: "#fff4a8",
+        stroke: "#56318f",
+        strokeThickness: 8,
+        shadow: { offsetX: 0, offsetY: 5, color: "#2a1749", blur: 5, fill: true }
+      }).setOrigin(0.5).setDepth(100200).setScale(0.35).setAngle(-9);
+      const levelText = this.add.text(x, y + 34, `Lv.${app.profile?.level || 1}`, {
+        fontFamily: "Arial Black, Microsoft YaHei, sans-serif",
+        fontSize: "17px",
+        fontStyle: "900",
+        color: "#ffffff",
+        stroke: "#7551a8",
+        strokeThickness: 5
+      }).setOrigin(0.5).setDepth(100201).setAlpha(0).setScale(0.7);
+      for (let index = 0; index < 20; index += 1) {
+        const angle = Math.PI * 2 * index / 20 + Phaser.Math.FloatBetween(-0.15, 0.15);
+        const spark = this.add.image(x, y + 34, PHYSICAL_SPARK_TEXTURE_KEY)
+          .setScale(0.34 + Math.random() * 0.34)
+          .setRotation(angle)
+          .setTint([0xffd45f, 0xff87c8, 0x85eaff][index % 3])
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(100199);
+        const distance = 62 + Math.random() * 66;
+        this.tweens.add({
+          targets: spark,
+          x: x + Math.cos(angle) * distance,
+          y: y + 34 + Math.sin(angle) * distance * 0.58,
+          angle: Phaser.Math.RadToDeg(angle) + 150,
+          scale: 0.05,
+          alpha: 0,
+          duration: 620 + Math.random() * 220,
+          ease: "Cubic.easeOut",
+          onComplete: () => spark.destroy()
+        });
+      }
+      this.tweens.add({
+        targets: label,
+        y: y - 42,
+        scale: 1.18,
+        angle: 2,
+        duration: 360,
+        ease: "Back.easeOut",
+        onComplete: () => this.tweens.add({
+          targets: label,
+          y: label.y - 28,
+          scale: 0.94,
+          alpha: 0,
+          delay: 520,
+          duration: 430,
+          ease: "Cubic.easeIn",
+          onComplete: () => label.destroy()
+        })
+      });
+      this.tweens.add({
+        targets: levelText,
+        y: y - 4,
+        alpha: 1,
+        scale: 1,
+        delay: 170,
+        duration: 260,
+        ease: "Back.easeOut",
+        onComplete: () => this.tweens.add({ targets: levelText, y: levelText.y - 20, alpha: 0, delay: 520, duration: 380, onComplete: () => levelText.destroy() })
+      });
+      this.cameras.main.shake(90, 0.0014);
+      app.audio?.questComplete?.();
+    }
+
     playEnemyHitImpact(slime, critical = false) {
       const x = slime.x;
       const y = slime.y + (Number(slime.hudOffsetY) || -70) + 34;
@@ -6584,7 +7675,10 @@
         onComplete: () => flash.destroy()
       });
       this.cameras.main.shake(critical ? 95 : 70, critical ? 0.0042 : 0.0024);
-      app.audio?.hit();
+      if (app.profile?.characterId === "ayu") app.audio?.swordImpact?.(critical);
+      else if (app.profile?.characterId === "laodeng") app.audio?.punchImpact?.(critical);
+      else if (app.profile?.characterId === "jiangxun") app.audio?.arrowImpact?.(critical);
+      else app.audio?.hit();
     }
 
     playHealEffect(x, y) {
@@ -6683,6 +7777,7 @@
       const token = slime.actionToken;
       const defeated = slime.hp <= 0;
       slime.state = "hit";
+      this.broadcastEnemyState(slime, defeated ? "dead" : "hit");
       slime.body.setVelocity(0, 0);
       slime.setTint(0xfff0b0);
       this.playEnemyAnimation(slime, "hit", true);
@@ -6706,10 +7801,6 @@
       slime.actionToken = (slime.actionToken || 0) + 1;
       const token = slime.actionToken;
       slime.state = "dead";
-      if (slime.slimeId && !slime.removeBroadcasted && app.connected) {
-        slime.removeBroadcasted = true;
-        app.multiplayer.sendSlimeRemove(slime.slimeId);
-      }
       slime.body.setVelocity(0, 0);
       slime.body.enable = false;
       slime.clearTint();
@@ -6763,7 +7854,16 @@
       }
       renderHud();
       app.audio.playerHit();
-      if (incoming > 0) this.playActorHitReaction();
+      const berserkActive = app.profile?.characterId === "laodeng" && this.time.now < this.berserkUntil;
+      if (incoming > 0 && berserkActive) {
+        const token = (this.actorBerserkHitToken || 0) + 1;
+        this.actorBerserkHitToken = token;
+        this.actor.setTint(0xff7a45);
+        this.cameras.main.shake(55, 0.0018);
+        this.time.delayedCall(90, () => {
+          if (this.actor?.active && this.actorBerserkHitToken === token) this.actor.clearTint();
+        });
+      } else if (incoming > 0) this.playActorHitReaction();
       if (app.profile.hp <= 0) {
         this.isDead = true;
         this.isCatJumping = false;
@@ -6831,8 +7931,8 @@
 
     tryTriggerEnemyLightSkill(slime, time) {
       if (!slime?.active || !this.actor?.active || this.isDead) return false;
-      if (slime.rank === "rare") {
-        const cooldown = 4200;
+      if (slime.rank === "rare" || slime.rank === "elite") {
+        const cooldown = slime.rank === "rare" ? 4200 : 5200;
         if (time - Number(slime.lastLightSkillAt || -cooldown) < cooldown) return false;
         slime.lastLightSkillAt = time;
         this.triggerRareLightSkill(slime);
@@ -6866,22 +7966,60 @@
       });
     }
 
+    getEnemyMagicProfile(slime) {
+      const key = String(slime?.textureKey || "");
+      if (key.includes("garden") || key === GARDEN_CARNIVORA_BOSS_KEY) {
+        return {
+          kind: "poison",
+          primary: 0x48b83e,
+          secondary: 0x9ee64f,
+          core: 0xdfff91,
+          shadow: 0x173f22,
+          warning: 0x8ad84c,
+          particles: [0x37a83d, 0x79d947, 0xc7f36b]
+        };
+      }
+      if (key.includes("blockchain") || key === M04_STRUCTURAL_BOSS_KEY) {
+        return {
+          kind: "fire",
+          primary: 0xf04b23,
+          secondary: 0xff9a32,
+          core: 0xffdf78,
+          shadow: 0x5b1711,
+          warning: 0xff7138,
+          particles: [0xe83a20, 0xff7728, 0xffc24f]
+        };
+      }
+      return {
+        kind: "shadow",
+        primary: 0x69259e,
+        secondary: 0xb942d0,
+        core: 0xe59aff,
+        shadow: 0x211039,
+        warning: 0xa84dcc,
+        particles: [0x542080, 0x9e36c2, 0xdd72ee]
+      };
+    }
+
     triggerRareLightSkill(slime) {
       const token = this.beginEnemySpecialSkill(slime);
+      const profile = this.getEnemyMagicProfile(slime);
       const start = { x: slime.x, y: slime.y - Math.min(90, slime.displayHeight * 0.24) };
       const aim = normalizeVector(this.actor.x - start.x, this.actor.y - 44 - start.y);
       const end = { x: start.x + aim.x * 700, y: start.y + aim.y * 700 };
-      const warning = this.add.graphics().setDepth(slime.y + 92).setBlendMode(Phaser.BlendModes.ADD);
-      warning.lineStyle(5, 0xffd46a, 0.16);
+      const warning = this.add.graphics().setDepth(slime.y + 92);
+      warning.lineStyle(7, profile.shadow, 0.2);
       warning.lineBetween(start.x, start.y, end.x, end.y);
-      warning.lineStyle(1, 0xfff0b5, 0.72);
+      warning.lineStyle(2, profile.warning, 0.82);
       warning.lineBetween(start.x, start.y, end.x, end.y);
       this.tweens.add({ targets: warning, alpha: 0.35, duration: 180, yoyo: true, repeat: 1 });
       this.time.delayedCall(430, () => {
         warning.destroy();
         if (!slime.active || slime.actionToken !== token) return;
-        this.renderEnemyEnergyBeam(start, end, 0xffcf5d, 260);
-        if (this.distanceToSegment(this.actor.x, this.actor.y - 36, start, end) <= 34) this.damagePlayer(Math.round(slime.damage * 1.35));
+        this.renderEnemyEnergyBeam(start, end, profile, 280);
+        if (this.distanceToSegment(this.actor.x, this.actor.y - 36, start, end) <= 34) {
+          this.damagePlayer(Math.round(slime.damage * (slime.rank === "rare" ? 1.35 : 1.22)));
+        }
         this.cameras.main.shake(90, 0.0022);
       });
       this.finishEnemySpecialSkill(slime, token, 720);
@@ -6889,15 +8027,16 @@
 
     triggerBossMultiLineSkill(slime) {
       const token = this.beginEnemySpecialSkill(slime);
+      const profile = this.getEnemyMagicProfile(slime);
       const start = { x: slime.x, y: slime.y - Math.min(110, slime.displayHeight * 0.24) };
       const base = Math.atan2(this.actor.y - 44 - start.y, this.actor.x - start.x);
       const lines = [-0.34, -0.17, 0, 0.17, 0.34].map(offset => ({
         start,
         end: { x: start.x + Math.cos(base + offset) * 860, y: start.y + Math.sin(base + offset) * 860 }
       }));
-      const warning = this.add.graphics().setDepth(slime.y + 96).setBlendMode(Phaser.BlendModes.ADD);
+      const warning = this.add.graphics().setDepth(slime.y + 96);
       lines.forEach((line, index) => {
-        warning.lineStyle(index === 2 ? 4 : 2, 0x55ddff, index === 2 ? 0.52 : 0.3);
+        warning.lineStyle(index === 2 ? 5 : 2, profile.warning, index === 2 ? 0.58 : 0.34);
         warning.lineBetween(line.start.x, line.start.y, line.end.x, line.end.y);
       });
       this.tweens.add({ targets: warning, alpha: 0.12, duration: 170, yoyo: true, repeat: 2 });
@@ -6906,7 +8045,7 @@
         if (!slime.active || slime.actionToken !== token) return;
         let hit = false;
         lines.forEach((line, index) => {
-          this.renderEnemyEnergyBeam(line.start, line.end, index === 2 ? 0xb8f7ff : 0x49cbea, 340);
+          this.renderEnemyEnergyBeam(line.start, line.end, profile, index === 2 ? 390 : 330);
           if (this.distanceToSegment(this.actor.x, this.actor.y - 36, line.start, line.end) <= 30) hit = true;
         });
         if (hit) this.damagePlayer(Math.round(slime.damage * 1.5));
@@ -6917,8 +8056,10 @@
 
     triggerBossRandomAreaSkill(slime) {
       const token = this.beginEnemySpecialSkill(slime);
-      const points = Array.from({ length: 5 }, (_, index) => {
-        const angle = Math.PI * 2 * index / 5 + Math.random() * 0.5;
+      const profile = this.getEnemyMagicProfile(slime);
+      const pointCount = slime.textureKey === GARDEN_CARNIVORA_BOSS_KEY ? 10 : 6;
+      const points = Array.from({ length: pointCount }, (_, index) => {
+        const angle = Math.PI * 2 * index / pointCount + Math.random() * 0.5;
         const distance = index === 0 ? 35 : 85 + Math.random() * 190;
         return {
           x: clamp(this.actor.x + Math.cos(angle) * distance, 80, this.worldWidth - 80),
@@ -6926,11 +8067,11 @@
         };
       });
       const warnings = points.map(point => {
-        const cross = this.add.graphics().setPosition(point.x, point.y).setDepth(point.y + 96).setBlendMode(Phaser.BlendModes.ADD);
-        cross.lineStyle(4, 0xff8b68, 0.52);
+        const cross = this.add.graphics().setPosition(point.x, point.y).setDepth(point.y + 96);
+        cross.lineStyle(6, profile.shadow, 0.28);
         cross.lineBetween(-42, 0, 42, 0);
         cross.lineBetween(0, -24, 0, 24);
-        cross.lineStyle(2, 0xffd0a6, 0.76);
+        cross.lineStyle(2, profile.warning, 0.82);
         cross.lineBetween(-24, -16, 24, 16);
         cross.lineBetween(-24, 16, 24, -16);
         this.tweens.add({ targets: cross, scale: 1.28, alpha: 0.18, duration: 230, yoyo: true, repeat: 1 });
@@ -6941,7 +8082,7 @@
         if (!slime.active || slime.actionToken !== token) return;
         let hit = false;
         points.forEach(point => {
-          this.renderEnemyAreaBurst(point.x, point.y);
+          this.renderEnemyAreaBurst(point.x, point.y, profile);
           if (Phaser.Math.Distance.Between(this.actor.x, this.actor.y, point.x, point.y) <= 82) hit = true;
         });
         if (hit) this.damagePlayer(Math.round(slime.damage * 1.65));
@@ -6950,45 +8091,110 @@
       this.finishEnemySpecialSkill(slime, token, 1080);
     }
 
-    renderEnemyEnergyBeam(start, end, color, duration) {
-      const beam = this.add.graphics().setDepth(Math.max(start.y, end.y) + 104).setBlendMode(Phaser.BlendModes.ADD);
-      beam.lineStyle(16, color, 0.12);
-      beam.lineBetween(start.x, start.y, end.x, end.y);
-      beam.lineStyle(7, color, 0.78);
-      beam.lineBetween(start.x, start.y, end.x, end.y);
-      beam.lineStyle(2, 0xffffff, 0.96);
-      beam.lineBetween(start.x, start.y, end.x, end.y);
+    renderEnemyEnergyBeam(start, end, profile, duration) {
+      const depth = Math.max(start.y, end.y) + 104;
       const length = Phaser.Math.Distance.Between(start.x, start.y, end.x, end.y);
-      for (let index = 0; index < 22; index += 1) {
-        const t = index / 21;
-        const mote = this.add.image(Phaser.Math.Linear(start.x, end.x, t), Phaser.Math.Linear(start.y, end.y, t), LIGHTNING_MOTE_TEXTURE_KEY)
-          .setTint(color)
-          .setScale(0.22 + Math.random() * 0.24)
-          .setDepth(Math.max(start.y, end.y) + 106)
-          .setBlendMode(Phaser.BlendModes.ADD);
-        this.tweens.add({ targets: mote, x: mote.x + Phaser.Math.Between(-18, 18), y: mote.y + Phaser.Math.Between(-18, 18), alpha: 0, duration: duration + Math.random() * 100, onComplete: () => mote.destroy() });
+      const segments = Math.max(8, Math.ceil(length / 56));
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const normal = normalizeVector(-dy, dx);
+      const points = [{ x: start.x, y: start.y }];
+      for (let index = 1; index < segments; index += 1) {
+        const t = index / segments;
+        const jitter = Phaser.Math.FloatBetween(-1, 1) * (profile.kind === "shadow" ? 12 : 7) * Math.sin(Math.PI * t);
+        points.push({
+          x: Phaser.Math.Linear(start.x, end.x, t) + normal.x * jitter,
+          y: Phaser.Math.Linear(start.y, end.y, t) + normal.y * jitter
+        });
       }
-      this.tweens.add({ targets: beam, alpha: 0, duration, ease: "Cubic.easeOut", onComplete: () => beam.destroy() });
+      points.push({ x: end.x, y: end.y });
+      const layers = [
+        { width: 24, color: profile.shadow, alpha: 0.3, blend: Phaser.BlendModes.NORMAL },
+        { width: 11, color: profile.primary, alpha: 0.92, blend: Phaser.BlendModes.NORMAL },
+        { width: 6, color: profile.secondary, alpha: 0.78, blend: Phaser.BlendModes.ADD },
+        { width: 2, color: profile.core, alpha: 0.96, blend: Phaser.BlendModes.ADD }
+      ];
+      layers.forEach((style, layerIndex) => {
+        const beam = this.add.graphics().setDepth(depth + layerIndex).setBlendMode(style.blend);
+        beam.lineStyle(style.width, style.color, style.alpha);
+        beam.beginPath();
+        points.forEach((point, index) => index ? beam.lineTo(point.x, point.y) : beam.moveTo(point.x, point.y));
+        beam.strokePath();
+        this.tweens.add({ targets: beam, alpha: 0, delay: layerIndex ? 0 : 70, duration, ease: "Cubic.easeOut", onComplete: () => beam.destroy() });
+      });
+      for (let index = 0; index < 28; index += 1) {
+        const t = index / 27;
+        const texture = profile.kind === "fire" && index % 2 === 0 ? LIGHTNING_SPARK_TEXTURE_KEY : LIGHTNING_MOTE_TEXTURE_KEY;
+        const mote = this.add.image(Phaser.Math.Linear(start.x, end.x, t), Phaser.Math.Linear(start.y, end.y, t), texture)
+          .setTint(profile.particles[index % profile.particles.length])
+          .setScale(0.2 + Math.random() * 0.28)
+          .setDepth(depth + 5)
+          .setBlendMode(index % 3 ? Phaser.BlendModes.NORMAL : Phaser.BlendModes.ADD);
+        this.tweens.add({
+          targets: mote,
+          x: mote.x + normal.x * Phaser.Math.Between(-28, 28),
+          y: mote.y + normal.y * Phaser.Math.Between(-28, 28) - (profile.kind === "fire" ? Phaser.Math.Between(8, 26) : 0),
+          angle: Phaser.Math.Between(-120, 120),
+          alpha: 0,
+          scale: 0.05,
+          duration: duration + Math.random() * 180,
+          onComplete: () => mote.destroy()
+        });
+      }
       return length;
     }
 
-    renderEnemyAreaBurst(x, y) {
-      const cracks = this.add.graphics().setPosition(x, y).setDepth(y + 104).setBlendMode(Phaser.BlendModes.ADD);
-      for (let index = 0; index < 16; index += 1) {
-        const angle = Math.PI * 2 * index / 16 + Math.random() * 0.18;
-        const length = 38 + Math.random() * 64;
-        cracks.lineStyle(index % 3 === 0 ? 5 : 2, index % 2 ? 0xffa168 : 0x8de8ff, 0.78);
-        cracks.beginPath();
-        cracks.moveTo(0, 0);
-        cracks.lineTo(Math.cos(angle) * length * 0.48, Math.sin(angle) * length * 0.34);
-        cracks.lineTo(Math.cos(angle + 0.08) * length, Math.sin(angle + 0.08) * length * 0.68);
-        cracks.strokePath();
+    renderEnemyAreaBurst(x, y, profile) {
+      const residue = this.add.graphics().setPosition(x, y).setDepth(y + 104);
+      const highlights = this.add.graphics().setPosition(x, y).setDepth(y + 106).setBlendMode(Phaser.BlendModes.ADD);
+      const pathCount = profile.kind === "poison" ? 20 : 16;
+      for (let index = 0; index < pathCount; index += 1) {
+        const angle = Math.PI * 2 * index / pathCount + Phaser.Math.FloatBetween(-0.2, 0.2);
+        const length = 44 + Math.random() * 72;
+        const points = [
+          { x: 0, y: 0 },
+          { x: Math.cos(angle + 0.14) * length * 0.42, y: Math.sin(angle + 0.14) * length * 0.24 },
+          { x: Math.cos(angle - 0.1) * length * 0.72, y: Math.sin(angle - 0.1) * length * 0.46 },
+          { x: Math.cos(angle) * length, y: Math.sin(angle) * length * 0.68 }
+        ];
+        const stroke = (graphics, width, color, alpha) => {
+          graphics.lineStyle(width, color, alpha);
+          graphics.beginPath();
+          points.forEach((point, pointIndex) => pointIndex ? graphics.lineTo(point.x, point.y) : graphics.moveTo(point.x, point.y));
+          graphics.strokePath();
+        };
+        stroke(residue, index % 3 === 0 ? 9 : 6, profile.shadow, 0.36);
+        stroke(residue, index % 3 === 0 ? 4 : 2.5, profile.primary, 0.9);
+        stroke(highlights, index % 4 === 0 ? 2 : 1, profile.core, 0.78);
       }
-      this.tweens.add({ targets: cracks, scale: 1.35, alpha: 0, duration: 460, ease: "Cubic.easeOut", onComplete: () => cracks.destroy() });
-      for (let index = 0; index < 24; index += 1) {
-        const angle = Math.PI * 2 * index / 24;
-        const mote = this.add.image(x, y, LIGHTNING_MOTE_TEXTURE_KEY).setTint(index % 2 ? 0xffa168 : 0x72dcff).setScale(0.3).setDepth(y + 108).setBlendMode(Phaser.BlendModes.ADD);
-        this.tweens.add({ targets: mote, x: x + Math.cos(angle) * (50 + Math.random() * 55), y: y + Math.sin(angle) * (28 + Math.random() * 45), alpha: 0, duration: 380, onComplete: () => mote.destroy() });
+      for (let plume = 0; plume < 9; plume += 1) {
+        const offsetX = (plume - 4) * 9 + Phaser.Math.Between(-5, 5);
+        residue.lineStyle(7, profile.primary, 0.38);
+        residue.lineBetween(offsetX, 8, offsetX + Phaser.Math.Between(-22, 22), -48 - plume % 3 * 20);
+        highlights.lineStyle(2, profile.secondary, 0.8);
+        highlights.lineBetween(offsetX, 8, offsetX + Phaser.Math.Between(-22, 22), -48 - plume % 3 * 20);
+      }
+      this.tweens.add({ targets: highlights, scale: 1.28, alpha: 0, duration: 420, ease: "Cubic.easeOut", onComplete: () => highlights.destroy() });
+      this.tweens.add({ targets: residue, scale: 1.2, alpha: 0, delay: profile.kind === "poison" ? 520 : 180, duration: 620, ease: "Cubic.easeOut", onComplete: () => residue.destroy() });
+      for (let index = 0; index < 34; index += 1) {
+        const angle = Math.PI * 2 * index / 34 + Math.random() * 0.2;
+        const texture = profile.kind === "fire" && index % 2 === 0 ? LIGHTNING_SPARK_TEXTURE_KEY : LIGHTNING_MOTE_TEXTURE_KEY;
+        const mote = this.add.image(x, y, texture)
+          .setTint(profile.particles[index % profile.particles.length])
+          .setScale(0.25 + Math.random() * 0.28)
+          .setDepth(y + 108)
+          .setBlendMode(index % 4 ? Phaser.BlendModes.NORMAL : Phaser.BlendModes.ADD);
+        this.tweens.add({
+          targets: mote,
+          x: x + Math.cos(angle) * (54 + Math.random() * 72),
+          y: y + Math.sin(angle) * (34 + Math.random() * 48) - (profile.kind === "fire" ? 34 : profile.kind === "poison" ? 16 : 0),
+          angle: Phaser.Math.Between(-160, 160),
+          alpha: 0,
+          scale: 0.04,
+          duration: 420 + Math.random() * 260,
+          ease: "Cubic.easeOut",
+          onComplete: () => mote.destroy()
+        });
       }
     }
 
@@ -7127,7 +8333,10 @@
     }
 
     updateSmoothEnemyMotion(slime, dx, dy, distance, delta = 16) {
-      const provoked = !slime.passiveWander || this.time.now < slime.provokedUntil;
+      if (slime.passiveWander && distance <= slime.aggroRange) {
+        slime.provokedUntil = Math.max(Number(slime.provokedUntil || 0), this.time.now + 3200);
+      }
+      const provoked = !slime.passiveWander || distance <= slime.aggroRange || this.time.now < slime.provokedUntil;
       if (provoked && distance <= LEAF_SLIME_ATTACK_RANGE) {
         this.triggerLeafSlimeAttack(slime, dx, dy);
         return;
@@ -7170,10 +8379,10 @@
         const dx = this.actor.x - slime.x;
         const dy = this.actor.y - slime.y;
         const distance = Math.hypot(dx, dy);
-        if (distance <= MAP_TILE_SIZE * 12 && this.tryTriggerEnemyLightSkill(slime, time)) return;
+        if (distance <= slime.aggroRange && this.tryTriggerEnemyLightSkill(slime, time)) return;
         if (slime.stationary) {
           slime.body.setVelocity(0, 0);
-          if (slime.rangedAttack && distance <= slime.rangedRange) this.triggerRangedEnemyAttack(slime, dx, dy);
+          if (slime.rangedAttack && distance <= Math.min(slime.rangedRange, slime.aggroRange)) this.triggerRangedEnemyAttack(slime, dx, dy);
           return;
         }
         if (slime.smoothMovement) {
@@ -7210,6 +8419,10 @@
     }
 
     handleHotkey(event) {
+      if (app.cinematicActive) {
+        if (String(event.key || "").toLowerCase() === "escape") finishChapterEndCinematic(true);
+        return;
+      }
       if (isTextEntryActive() || isTextEntryTarget(event.target)) return;
       if (app.dialogue) return;
       if (event.repeat) return;
@@ -7307,19 +8520,44 @@
             this.projectileGraphics.fillCircle(point.x, point.y, 1.5 + progress * 4.5);
           });
         } else if (projectile.visualType === "windBolt") {
+          const windDirection = normalizeVector(vx, vy);
+          const windNormal = { x: -windDirection.y, y: windDirection.x };
           projectile.trail.forEach((point, index) => {
             const progress = (index + 1) / projectile.trail.length;
-            this.projectileGraphics.fillStyle(index % 3 ? 0x55d8c5 : 0xd2fff4, progress * 0.2);
-            this.projectileGraphics.fillEllipse(point.x, point.y, 4 + progress * 9, 2 + progress * 3);
+            const length = 8 + progress * 18;
+            this.projectileGraphics.lineStyle(1 + progress * 2.4, index % 3 ? 0x9edbd8 : 0xe8f7f4, progress * 0.3);
+            this.projectileGraphics.lineBetween(point.x - windDirection.x * length, point.y - windDirection.y * length, point.x, point.y);
           });
           if (this.time.now - projectile.lastTrailSparkAt > 55) {
             projectile.lastTrailSparkAt = this.time.now;
-            const mote = this.add.image(projectile.x, projectile.y, Math.random() < 0.2 ? WIND_LEAF_TEXTURE_KEY : WIND_MOTE_TEXTURE_KEY)
+            const isLeaf = Math.random() < 0.24;
+            const mote = this.add.image(projectile.x, projectile.y, isLeaf ? WIND_LEAF_TEXTURE_KEY : WIND_MOTE_TEXTURE_KEY)
               .setScale(0.28 + Math.random() * 0.22)
               .setRotation(projectile.visualRotation + Math.random() - 0.5)
+              .setTint(isLeaf ? 0x67a987 : 0xd9efec)
               .setDepth(projectile.y + 8);
-            this.tweens.add({ targets: mote, y: mote.y - 12 - Math.random() * 14, alpha: 0, angle: mote.angle + 100, duration: 220, onComplete: () => mote.destroy() });
+            const side = Phaser.Math.FloatBetween(-1, 1) * 22;
+              this.tweens.add({ targets: mote, x: mote.x + windNormal.x * side - windDirection.x * 18, y: mote.y + windNormal.y * side - windDirection.y * 18, alpha: 0, angle: mote.angle + 110, duration: 250, onComplete: () => mote.destroy() });
+            }
+        } else if (projectile.visualType === "arrow") {
+          const direction = normalizeVector(vx, vy);
+          projectile.trail.forEach((point, index) => {
+            const progress = (index + 1) / projectile.trail.length;
+            const length = (projectile.charged ? 30 : 16) * progress;
+            this.projectileGraphics.lineStyle(projectile.charged ? 3.2 : 1.6, projectile.charged ? 0xd8f7ae : 0xe8d49a, progress * 0.34);
+            this.projectileGraphics.lineBetween(point.x - direction.x * length, point.y - direction.y * length, point.x, point.y);
+          });
+          if (projectile.charged && this.time.now - projectile.lastTrailSparkAt > 72) {
+            projectile.lastTrailSparkAt = this.time.now;
+            this.emitPhysicalSparks(projectile.x, projectile.y, 3, 0xc8f6a1);
           }
+        } else if (projectile.visualType === "swordWave") {
+          const direction = normalizeVector(vx, vy);
+          projectile.trail.forEach((point, index) => {
+            const progress = (index + 1) / projectile.trail.length;
+            this.projectileGraphics.lineStyle(2 + progress * 3.4, index % 2 ? 0x75c9f3 : 0xe6f8ff, progress * 0.24);
+            this.projectileGraphics.lineBetween(point.x - direction.x * (22 + progress * 34), point.y - direction.y * (22 + progress * 34), point.x, point.y);
+          });
         } else {
           projectile.trail.forEach((point, index) => {
             const alpha = (index + 1) / projectile.trail.length * .18;
@@ -7362,6 +8600,10 @@
     }
 
     syncPeer(peer) {
+      if (peer?.mapId && peer.mapId !== this.getCurrentMapId()) {
+        this.removePeer(peer.id);
+        return;
+      }
       let remote = this.remotePlayers.get(peer.id);
       const character = getCharacter(peer.characterId);
       if (!remote) {
@@ -7394,7 +8636,8 @@
           hp: Number(peer.hp ?? peer.maxHp ?? 1),
           maxHp: Math.max(1, Number(peer.maxHp || 1)),
           down: false,
-          hitFlashToken: 0
+          hitFlashToken: 0,
+          flags: new Set(peer.flags || [])
         };
         this.remotePlayers.set(peer.id, remote);
       }
@@ -7406,6 +8649,7 @@
       const tookDamage = nextHp < (remote.hp ?? nextHp) && nextHp > 0;
       remote.hp = nextHp;
       remote.maxHp = nextMaxHp;
+      remote.flags = new Set(peer.flags || []);
       remote.down = nextHp <= 0;
       const ratio = clamp(nextHp / nextMaxHp, 0, 1);
       remote.hpFill.setDisplaySize(Math.max(1, 48 * ratio), 4);
@@ -7439,6 +8683,7 @@
       remote.sprite.setScale(peerScale);
       const animKey = `${peer.characterId}-${["attack", "hit", "transform", "catJump"].includes(action) ? `${action}-once` : action}`;
       if (this.anims.exists(animKey) && remote.sprite.anims.currentAnim?.key !== animKey) remote.sprite.play(animKey, true);
+      this.refreshInteractionMarkerVisibility();
     }
 
     removePeer(id) {
@@ -7482,10 +8727,22 @@
       if (!this.actor) return;
       if (app.profile?.characterId === "laodeng" && this.berserkUntil > 0 && time >= this.berserkUntil) {
         this.berserkUntil = 0;
+        this.berserkAura?.destroy();
+        this.berserkAura = null;
         this.resetActorVisualScale();
+        const maxHp = Math.max(1, Number(app.profile.maxHp || 1));
+        const before = Number(app.profile.hp || 0);
+        app.profile.hp = Math.min(maxHp, before + Math.round(maxHp * 0.4));
+        const healed = app.profile.hp - before;
+        if (healed > 0) {
+          this.showFloatingText(this.actor.x, this.actor.y - 126, `嗜血恢复 +${healed}`, { color: "#ffcf82", size: "20px", rise: 58 });
+          this.playHealEffect(this.actor.x, this.actor.y);
+          app.audio.heal();
+          renderHud();
+        }
         if (!this.berserkEndingShown) {
           this.berserkEndingShown = true;
-          showToast("狂暴状态结束");
+          showToast("嗜血狂暴结束，恢复 40% 最大生命");
         }
       }
       this.restoreEnergy((Number(delta) || 16) / 1000 * ENERGY_REGEN_PER_SECOND, NaN, NaN, { silent: true });
@@ -7507,6 +8764,7 @@
         }
       }
       this.actor.setDepth(this.actor.y + 8);
+      if (this.berserkAura?.active) this.berserkAura.setPosition(this.actor.x, this.actor.y - 48).setDepth(this.actor.y + 86);
       this.updateProjectiles();
       this.updateEnemyProjectiles(time);
       this.updateLeafSlimes(time, delta);
@@ -7586,6 +8844,7 @@
   }
 
   function exitGame() {
+    if (app.cinematicActive) finishChapterEndCinematic(false);
     if (app.dialogue) closeStoryDialogue(false);
     renderReviveDialog(false);
     renderChapterClearPanel(false);
@@ -7796,6 +9055,7 @@
     bindAction("#mobileUltimateButton", () => app.scene?.castUltimate());
     bindAction("#mobileTransformButton", () => app.scene?.toggleTransformState());
     bindAction("#mobileSpecialButton", () => healPlayer());
+    bindAction("#mobileInteractButton", () => app.scene?.triggerInteraction());
   }
 
   function bindUi() {
@@ -7971,6 +9231,21 @@
     $("#stayDownButton").addEventListener("click", () => renderReviveDialog(false));
     $("#storyDialogueNextButton")?.addEventListener("click", () => advanceStoryDialogue());
     $("#chapterClearCloseButton")?.addEventListener("click", () => renderChapterClearPanel(false));
+    $("#chapterEndSkipButton")?.addEventListener("click", () => finishChapterEndCinematic(true));
+    $("#chapterEndReplayButton")?.addEventListener("click", async event => {
+      event.currentTarget.hidden = true;
+      try {
+        await $("#chapterEndVideo")?.play();
+      } catch {
+        event.currentTarget.hidden = false;
+      }
+    });
+    $("#chapterEndVideo")?.addEventListener("ended", () => finishChapterEndCinematic(true));
+    $("#chapterEndVideo")?.addEventListener("error", () => {
+      if (!app.cinematicActive) return;
+      showToast("结章动画加载失败，已进入通关结算");
+      finishChapterEndCinematic(true);
+    });
     $("#fullscreenButton").addEventListener("click", async () => {
       if (document.fullscreenElement) await document.exitFullscreen();
       else await $(".game-stage").requestFullscreen();
@@ -8000,6 +9275,7 @@
     }
     renderLoginAssetProgress();
     loadLoginBackground();
+    initializeChapterEndCinematic();
     app.audio = new AudioEngine();
     app.multiplayer = new MultiplayerClient();
     bindUi();

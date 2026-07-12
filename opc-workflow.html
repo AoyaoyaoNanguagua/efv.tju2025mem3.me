@@ -160,6 +160,31 @@
         </div>
       </section>
 
+      <section class="band agent-orchestration">
+        <div class="inner">
+          <div class="section-head">
+            <div>
+              <p class="section-label">三 Agent 编排 Three-Agent Orchestration</p>
+              <h2>三个主 Agent 通过协议交接，构成自动工作循环。<span class="en">Three principal agents form an automated operating loop.</span></h2>
+            </div>
+            <p>策划负责定义价值与验收，生产负责组织专业子 Agent 交付，市场负责验证传播、财务与客户关系；所有交接都使用同一份可追踪任务信封。</p>
+          </div>
+          <div class="orchestration-flow">
+            <article><em>01</em><b>策划 Agent</b><p>读取主理人目标、客户反馈与财务信号，输出 Product Brief、优先级、预算上限和验收标准。</p><small>输入：目标 / 反馈 / 财务<br>输出：brief.v1 + acceptance.json</small></article>
+            <i>brief.v1 →</i>
+            <article><em>02</em><b>生产 Agent</b><p>拆分任务并编排美术、代码、测试等 subagent，聚合资产、构建版本与 QA 证据。</p><small>子集：Art / Code / QA / Content<br>输出：build.v1 + qa-report.json</small></article>
+            <i>release.v1 →</i>
+            <article><em>03</em><b>市场 Agent</b><p>编排宣发、财务、市场关系 subagent，发布内容、读取财务报表并结构化客户反馈。</p><small>子集：Campaign / Finance / CRM<br>输出：market-signal.json</small></article>
+          </div>
+          <div class="protocol-contract">
+            <b>统一接口协议 Workflow Envelope v1</b>
+            <code>{ cycle_id, objective, inputs[], deliverables[], owner, budget_cap, acceptance[], evidence[], status, next_agent }</code>
+            <span>状态门：DRAFT → READY → RUNNING → REVIEW → ACCEPTED；失败返回 issue_code、evidence 与 retry_policy，市场信号自动回流下一轮策划。</span>
+          </div>
+          <div class="loop-ribbon"><span>客户反馈</span><i>→</i><span>策划决策</span><i>→</i><span>生产交付</span><i>→</i><span>市场验证</span><i>→</i><span>财务与关系信号</span><i>↺</i></div>
+        </div>
+      </section>
+
       <section class="band mist">
         <div class="inner">
           <div class="section-head">

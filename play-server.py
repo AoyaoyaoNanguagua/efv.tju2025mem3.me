@@ -49,6 +49,9 @@ CHAT_HISTORY_LIMIT = max(0, int(os.environ.get("CHAT_HISTORY_LIMIT", str(MAX_CHA
 CHAT_TEXT_LIMIT = max(1, int(os.environ.get("CHAT_TEXT_LIMIT", "180")))
 CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
 MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
+COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk"}
+COMBAT_VISUAL_TYPES = {"", "arrow", "swordWave", "lightningOrb", "windBolt"}
+ENEMY_STATES = {"move", "hit", "dead"}
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
 
@@ -321,6 +324,16 @@ def clean_number(value: object, fallback: int, low: int, high: int) -> int:
     try:
         number = int(float(value))
     except (TypeError, ValueError):
+        number = fallback
+    return max(low, min(high, number))
+
+
+def clean_float(value: object, fallback: float, low: float, high: float) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        number = fallback
+    if not math.isfinite(number):
         number = fallback
     return max(low, min(high, number))
 
@@ -654,10 +667,12 @@ def get_room(name: str = "zhonghe-plaza") -> dict:
             "boss": dict(DEFAULT_BOSS),
             "slimes": {},
             "drops": {},
+            "progress": {},
             "chat": [],
         }
     rooms[name].setdefault("slimes", {})
     rooms[name].setdefault("drops", {})
+    rooms[name].setdefault("progress", {})
     rooms[name].setdefault("chat", [])
     return rooms[name]
 
@@ -807,12 +822,18 @@ def leave_client(client: WsClient) -> None:
                 room["boss"] = dict(DEFAULT_BOSS)
                 room["slimes"].clear()
                 room["drops"].clear()
+                room["progress"].clear()
         client.alive = False
     if left_room and left_id:
         broadcast(left_room, {"type": "peerLeft", "id": left_id}, client)
 
 
 def player_state_from_message(user: sqlite3.Row, profile: dict, incoming: dict) -> dict:
+    flags = []
+    for flag in list(incoming.get("flags") or [])[:240]:
+        clean_flag = re.sub(r"[^A-Za-z0-9_-]", "", str(flag))[:96]
+        if clean_flag and clean_flag not in flags:
+            flags.append(clean_flag)
     return {
         "id": profile["id"],
         "name": profile["name"],
@@ -825,6 +846,7 @@ def player_state_from_message(user: sqlite3.Row, profile: dict, incoming: dict) 
         "maxHp": clean_number(incoming.get("maxHp"), profile["maxHp"], 1, 9999),
         "shield": clean_number(incoming.get("shield"), profile.get("shield", 0), 0, 9999),
         "mapId": clean_limited_text(incoming.get("mapId", ""), 64),
+        "flags": flags,
         "updatedAt": int(time.time() * 1000),
     }
 
@@ -882,6 +904,7 @@ def handle_join(client: WsClient, message: dict) -> None:
         for drop_id in expired_drop_ids:
             room["drops"].pop(drop_id, None)
         drops = list(room["drops"].values())
+        progress = list(room["progress"].values())
         chat = list(room["chat"][-CHAT_HISTORY_LIMIT:])
 
     send_ws(
@@ -893,6 +916,7 @@ def handle_join(client: WsClient, message: dict) -> None:
             "boss": boss,
             "slimes": slimes,
             "drops": drops,
+            "progress": progress,
             "chat": chat,
             "recentChat": chat,
         },
@@ -1084,10 +1108,28 @@ def handle_slime_spawn(client: WsClient, message: dict) -> None:
     if client.user_id is None or not client.room_name:
         return
     incoming = message.get("slime") or {}
+    map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
+    if map_id != str(client.player.get("mapId", "")):
+        return
+    texture_key = re.sub(r"[^A-Za-z0-9_-]", "", str(incoming.get("textureKey") or ""))[:80]
+    rank = clean_limited_text(incoming.get("rank", "mob"), 12)
+    if rank not in {"mob", "elite", "rare", "boss"}:
+        rank = "mob"
+    max_hp = clean_number(incoming.get("maxHp"), 72, 1, 99999)
     slime = {
         "id": clean_slime_id(incoming.get("id")),
+        "mapId": map_id,
         "x": clean_number(incoming.get("x"), 3200, 0, 20000),
         "y": clean_number(incoming.get("y"), 3200, 0, 20000),
+        "hp": clean_number(incoming.get("hp"), max_hp, 0, max_hp),
+        "maxHp": max_hp,
+        "state": "move",
+        "textureKey": texture_key,
+        "rank": rank,
+        "label": clean_limited_text(incoming.get("label", ""), 32),
+        "staticImage": bool(incoming.get("staticImage", False)),
+        "stationary": bool(incoming.get("stationary", False)),
+        "scale": clean_float(incoming.get("scale"), 0.9, 0.05, 3.0),
         "ownerId": client.id,
         "createdAt": int(time.time() * 1000),
     }
@@ -1218,6 +1260,129 @@ def handle_drop_collect(client: WsClient, message: dict) -> None:
     broadcast(client.room_name, {"type": "dropRemove", "id": drop_id})
 
 
+def handle_combat_event(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name or not client.id:
+        return
+    incoming = message.get("event") or {}
+    if not isinstance(incoming, dict):
+        return
+    action = clean_limited_text(incoming.get("action", ""), 24)
+    map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
+    if action not in COMBAT_EVENT_ACTIONS or map_id != str(client.player.get("mapId", "")):
+        return
+    visual_type = clean_limited_text(incoming.get("visualType", ""), 24)
+    if visual_type not in COMBAT_VISUAL_TYPES:
+        visual_type = ""
+    points = []
+    for point in list(incoming.get("points") or [])[:12]:
+        if not isinstance(point, dict):
+            continue
+        points.append({
+            "x": clean_number(point.get("x"), client.player.get("x", 0), 0, 20000),
+            "y": clean_number(point.get("y"), client.player.get("y", 0), 0, 20000),
+        })
+    event = {
+        "sourceId": client.id,
+        "characterId": clean_character(client.player.get("characterId"), "lina"),
+        "mapId": map_id,
+        "action": action,
+        "visualType": visual_type,
+        "x": clean_number(incoming.get("x"), client.player.get("x", 0), 0, 20000),
+        "y": clean_number(incoming.get("y"), client.player.get("y", 0), 0, 20000),
+        "targetX": clean_number(incoming.get("targetX"), client.player.get("x", 0), 0, 20000),
+        "targetY": clean_number(incoming.get("targetY"), client.player.get("y", 0), 0, 20000),
+        "aimX": clean_float(incoming.get("aimX"), 0, -1, 1),
+        "aimY": clean_float(incoming.get("aimY"), 1, -1, 1),
+        "speed": clean_number(incoming.get("speed"), 700, 80, 1600),
+        "radius": clean_number(incoming.get("radius"), 96, 24, 640),
+        "color": clean_number(incoming.get("color"), 0xFFFFFF, 0, 0xFFFFFF),
+        "charged": bool(incoming.get("charged", False)),
+        "points": points,
+        "createdAt": int(time.time() * 1000),
+    }
+    broadcast(client.room_name, {"type": "combatEvent", "event": event}, client)
+
+
+def handle_enemy_state(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name or not client.id:
+        return
+    incoming = message.get("enemy") or {}
+    if not isinstance(incoming, dict):
+        return
+    enemy_id = clean_slime_id(incoming.get("id"), fallback=False)
+    map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
+    state = clean_limited_text(incoming.get("state", "move"), 12)
+    if not enemy_id or map_id != str(client.player.get("mapId", "")) or state not in ENEMY_STATES:
+        return
+    texture_key = re.sub(r"[^A-Za-z0-9_-]", "", str(incoming.get("textureKey") or ""))[:80]
+    rank = clean_limited_text(incoming.get("rank", "mob"), 12)
+    if rank not in {"mob", "elite", "rare", "boss"}:
+        rank = "mob"
+    max_hp = clean_number(incoming.get("maxHp"), 72, 1, 99999)
+    scale = clean_float(incoming.get("scale"), 0.9, 0.05, 3.0)
+    enemy = {
+        "id": enemy_id,
+        "mapId": map_id,
+        "x": clean_number(incoming.get("x"), client.player.get("x", 0), 0, 20000),
+        "y": clean_number(incoming.get("y"), client.player.get("y", 0), 0, 20000),
+        "hp": clean_number(incoming.get("hp"), max_hp, 0, max_hp),
+        "maxHp": max_hp,
+        "state": state,
+        "textureKey": texture_key,
+        "rank": rank,
+        "label": clean_limited_text(incoming.get("label", ""), 32),
+        "staticImage": bool(incoming.get("staticImage", False)),
+        "stationary": bool(incoming.get("stationary", False)),
+        "scale": scale,
+        "ownerId": client.id,
+        "createdAt": int(time.time() * 1000),
+    }
+    with state_lock:
+        room = get_room(client.room_name)
+        room["slimes"][enemy_id] = enemy
+    broadcast(client.room_name, {"type": "enemyState", "enemy": enemy}, client)
+
+
+def handle_progress_event(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name or not client.id:
+        return
+    incoming = message.get("event") or {}
+    if not isinstance(incoming, dict):
+        return
+    map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
+    if map_id != str(client.player.get("mapId", "")):
+        return
+    kind = clean_limited_text(incoming.get("kind", "flag"), 16)
+    if kind not in {"flag", "node", "encounter"}:
+        kind = "flag"
+    event_id = re.sub(r"[^A-Za-z0-9_-]", "", str(incoming.get("eventId") or ""))[:96]
+    if not event_id:
+        return
+    flags = []
+    for flag in list(incoming.get("flags") or [])[:16]:
+        clean_flag = re.sub(r"[^A-Za-z0-9_-]", "", str(flag))[:96]
+        if clean_flag and clean_flag not in flags:
+            flags.append(clean_flag)
+    event = {
+        "id": f"{map_id}:{kind}:{event_id}",
+        "sourceId": client.id,
+        "sourceName": clean_limited_text(client.player.get("name", ""), 16),
+        "mapId": map_id,
+        "kind": kind,
+        "eventId": event_id,
+        "flags": flags,
+        "x": clean_number(incoming.get("x"), client.player.get("x", 0), 0, 20000),
+        "y": clean_number(incoming.get("y"), client.player.get("y", 0), 0, 20000),
+        "createdAt": int(time.time() * 1000),
+    }
+    with state_lock:
+        room = get_room(client.room_name)
+        existing = room["progress"].get(event["id"])
+        room["progress"][event["id"]] = event
+    if not existing:
+        broadcast(client.room_name, {"type": "progressEvent", "event": event}, client)
+
+
 def handle_chat_send(client: WsClient, message: dict) -> None:
     if client.user_id is None or not client.room_name:
         return
@@ -1293,6 +1458,12 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
         handle_drop_collect(client, message)
     elif message_type == "healingChain":
         handle_healing_chain(client, message)
+    elif message_type == "combatEvent":
+        handle_combat_event(client, message)
+    elif message_type == "enemyState":
+        handle_enemy_state(client, message)
+    elif message_type == "progressEvent":
+        handle_progress_event(client, message)
     elif message_type == "chatSend":
         handle_chat_send(client, message)
 
@@ -1323,6 +1494,9 @@ class GameHandler(BaseHTTPRequestHandler):
             self.handle_websocket()
             return
         self.serve_static(path)
+
+    def do_HEAD(self) -> None:
+        self.serve_static(urlparse(self.path).path, head_only=True)
 
     def do_POST(self) -> None:
         path = urlparse(self.path).path
@@ -1369,7 +1543,7 @@ class GameHandler(BaseHTTPRequestHandler):
             return
         json_response(self, 404, {"error": "接口不存在。"})
 
-    def serve_static(self, raw_path: str) -> None:
+    def serve_static(self, raw_path: str, head_only: bool = False) -> None:
         pathname = unquote(raw_path or "/")
         if pathname == "/":
             pathname = "/play.html"
@@ -1387,13 +1561,54 @@ class GameHandler(BaseHTTPRequestHandler):
             self.send_error(404)
             return
         ctype = CONTENT_TYPES.get(requested.suffix.lower()) or mimetypes.guess_type(str(requested))[0] or "application/octet-stream"
-        body = requested.read_bytes()
-        self.send_response(200)
+        file_size = requested.stat().st_size
+        start = 0
+        end = max(0, file_size - 1)
+        status = 200
+        range_header = self.headers.get("range", "")
+        range_match = re.fullmatch(r"bytes=(\d*)-(\d*)", range_header.strip(), re.IGNORECASE) if range_header else None
+        if range_header and not range_match:
+            self.send_response(416)
+            self.send_header("content-range", f"bytes */{file_size}")
+            self.end_headers()
+            return
+        if range_match and file_size:
+            first, last = range_match.groups()
+            if not first and last:
+                length = min(file_size, max(0, int(last)))
+                start = file_size - length
+            else:
+                start = int(first or 0)
+                end = min(end, int(last)) if last else end
+            if start >= file_size or end < start:
+                self.send_response(416)
+                self.send_header("content-range", f"bytes */{file_size}")
+                self.end_headers()
+                return
+            status = 206
+        content_length = max(0, end - start + 1) if file_size else 0
+        self.send_response(status)
         self.send_header("content-type", ctype)
         self.send_header("cache-control", "no-cache")
-        self.send_header("content-length", str(len(body)))
+        self.send_header("accept-ranges", "bytes")
+        if status == 206:
+            self.send_header("content-range", f"bytes {start}-{end}/{file_size}")
+        self.send_header("content-length", str(content_length))
         self.end_headers()
-        self.wfile.write(body)
+        if head_only or not content_length:
+            return
+        try:
+            with requested.open("rb") as source:
+                source.seek(start)
+                remaining = content_length
+                while remaining > 0:
+                    chunk = source.read(min(256 * 1024, remaining))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    remaining -= len(chunk)
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     def handle_websocket(self) -> None:
         key = self.headers.get("sec-websocket-key")

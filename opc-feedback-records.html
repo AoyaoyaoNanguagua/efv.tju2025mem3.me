@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>客户反馈管理台账 | Third Academy OPC</title>
+  <meta name="description" content="第三学院 OPC 客户反馈管理台账，展示50条模拟反馈、分类汇总与处理状态。">
+  <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
+  <link rel="stylesheet" href="opc.css">
+</head>
+<body class="finance-report-page feedback-ledger-page">
+  <header class="finance-nav">
+    <a class="finance-brand" href="opc.html">
+      <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
+      <span><b>第三学院 OPC</b><small>Customer Feedback Ledger</small></span>
+    </a>
+    <div class="finance-nav-meta">
+      <span>DEMO · 50 条模拟反馈</span>
+      <a href="opc-customer-feedback.html">返回反馈中心</a>
+      <a href="opc-console.html">返回 OPC 控制台</a>
+    </div>
+  </header>
+
+  <main class="finance-report-shell">
+    <section class="finance-report-head feedback-ledger-head">
+      <div>
+        <p class="section-label">客户关系管理 · Feedback Operations</p>
+        <h1>客户反馈管理台账<span>分类汇总、详情检索与闭环状态追踪</span></h1>
+        <p>模拟呈现来自官网、试玩、社群、内容平台、邮件与支付回访的客户意见，并将反馈分配给策划、生产、市场及其 subagent。</p>
+      </div>
+      <div class="report-actions">
+        <button class="button primary" type="button" data-feedback-export>导出当前结果 CSV</button>
+        <a class="button light" href="opc-customer-feedback.html">新增模拟反馈</a>
+      </div>
+    </section>
+
+    <div class="report-disclaimer">
+      <b>数据口径</b>
+      <span>以下 50 条内容全部为演示数据，不对应真实用户、真实订单或真实客服工单。统计会随筛选条件实时更新。</span>
+    </div>
+
+    <section class="payment-kpis feedback-record-kpis" aria-label="反馈关键指标">
+      <article><span>反馈总量</span><strong data-feedback-kpi="total">50</strong><small>当前模拟周期</small></article>
+      <article><span>正面反馈</span><strong data-feedback-kpi="positive">—</strong><small>认可与亮点</small></article>
+      <article><span>负面反馈</span><strong data-feedback-kpi="negative">—</strong><small>问题与投诉</small></article>
+      <article><span>优化建议</span><strong data-feedback-kpi="suggestion">—</strong><small>需求候选池</small></article>
+      <article><span>待闭环</span><strong data-feedback-kpi="open">—</strong><small>未完成回访</small></article>
+      <article><span>平均评分</span><strong data-feedback-kpi="rating">—</strong><small>5 分制</small></article>
+    </section>
+
+    <section class="report-panel">
+      <header>
+        <div>
+          <p class="section-label">分类汇总 Category Summary</p>
+          <h2>六类业务反馈分布</h2>
+        </div>
+        <span class="report-tag">自动统计</span>
+      </header>
+      <div class="feedback-category-summary" data-feedback-category-summary></div>
+    </section>
+
+    <section class="report-panel">
+      <header>
+        <div>
+          <p class="section-label">详细台账 Feedback Records</p>
+          <h2>客户意见、建议与处理状态</h2>
+        </div>
+        <span class="report-tag" data-feedback-result-count>显示 50 / 50 条</span>
+      </header>
+
+      <div class="feedback-record-filters">
+        <label>关键词搜索
+          <input type="search" placeholder="编号、标题、详情、产品或责任方" data-feedback-search>
+        </label>
+        <label>反馈性质
+          <select data-feedback-kind-filter>
+            <option value="all">全部性质</option>
+            <option value="positive">正面反馈</option>
+            <option value="negative">负面反馈</option>
+            <option value="suggestion">优化建议</option>
+          </select>
+        </label>
+        <label>业务分类
+          <select data-feedback-category-filter>
+            <option value="all">全部分类</option>
+            <option value="character">角色与 IP</option>
+            <option value="game">游戏内容</option>
+            <option value="merchandise">实体周边</option>
+            <option value="payment">支付订单</option>
+            <option value="website">网站体验</option>
+            <option value="cooperation">商务合作</option>
+          </select>
+        </label>
+        <label>处理状态
+          <select data-feedback-status-filter>
+            <option value="all">全部状态</option>
+            <option value="已受理">已受理</option>
+            <option value="分析中">分析中</option>
+            <option value="已转需求">已转需求</option>
+            <option value="生产处理中">生产处理中</option>
+            <option value="待回访">待回访</option>
+            <option value="已闭环">已闭环</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="transaction-table-wrap feedback-table-wrap">
+        <table class="transaction-table feedback-record-table">
+          <thead>
+            <tr>
+              <th>反馈编号 / 时间</th>
+              <th>性质</th>
+              <th>业务分类</th>
+              <th>评分</th>
+              <th>标题与详细内容</th>
+              <th>关联产品 / 来源</th>
+              <th>优先级</th>
+              <th>状态</th>
+              <th>责任 Agent</th>
+            </tr>
+          </thead>
+          <tbody data-feedback-record-body></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="finance-report-footer">
+      <div><b>闭环规则</b><span>客户关系 subagent 分类 → 市场 Agent 汇总信号 → 策划 Agent 建立需求 → 生产 Agent 实施 → 客户关系回访。</span></div>
+      <div class="source-links">
+        <a href="opc-customer-feedback.html">客户反馈提交页</a>
+        <a href="opc-products.html">IP 与产品页</a>
+      </div>
+    </footer>
+  </main>
+
+  <script src="opc-feedback-records.js"></script>
+</body>
+</html>

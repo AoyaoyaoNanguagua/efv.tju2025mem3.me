@@ -76,15 +76,33 @@ for (const registryFile of assetFiles.filter(file => /chapter\d+-maps-v\d+\.json
   }
 }
 
-const ignoredSourceDirectories = new Set([".git", "docs", "node_modules", "scripts"]);
+const ignoredSourceDirectories = new Set([
+  ".agents",
+  ".codex",
+  ".git",
+  "contrib",
+  "dict",
+  "docs",
+  "node_modules",
+  "release",
+  "scripts",
+  "share",
+  "tmp"
+]);
+const ignoredRootSourceFiles = new Set([
+  "ai_context.html",
+  "contribution_guide.html",
+  "gdd_scope_review.html"
+]);
 const sourceFiles = walk(repoRoot, ignoredSourceDirectories).filter(file => {
   const rel = repoPath(file);
   const extension = extname(file).toLowerCase();
   if (rel.startsWith("assets/")) return extension === ".json";
+  if (!rel.includes("/") && ignoredRootSourceFiles.has(rel)) return false;
   return [".css", ".html", ".js", ".json"].includes(extension);
 });
 
-const assetReferencePattern = /assets\/[A-Za-z0-9_./*\-]+\.(?:gif|jpe?g|json|mp3|ogg|png|wav|webp)/gi;
+const assetReferencePattern = /assets\/[A-Za-z0-9_./*\-]+\.(?:gif|jpe?g|json|m4a|mp3|mp4|ogg|png|wav|webm|webp)/gi;
 const references = new Set();
 for (const sourceFile of sourceFiles) {
   const contents = readFileSync(sourceFile, "utf8").replaceAll("\\", "/");

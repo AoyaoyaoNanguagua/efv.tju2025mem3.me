@@ -62,6 +62,7 @@
                 <button type="button" data-console-tab="assets"><b>资产</b><small>Assets</small></button>
                 <button type="button" data-console-tab="campaign"><b>宣发</b><small>Campaign</small></button>
                 <button type="button" data-console-tab="finance"><b>财务</b><small>Finance</small></button>
+                <button type="button" data-console-tab="customers"><b>客户关系</b><small>Feedback</small></button>
               </nav>
             </aside>
             <div class="console-main">
@@ -79,7 +80,7 @@
 
               <div class="console-kpis">
                 <button class="console-kpi active" type="button" data-console-detail="assets"><b>128</b><span>资产总量 IP Assets</span></button>
-                <button class="console-kpi" type="button" data-console-detail="agents"><b>6</b><span>活跃 Agent Active</span></button>
+                <button class="console-kpi" type="button" data-console-detail="agents"><b>3</b><span>主 Agent Active</span></button>
                 <button class="console-kpi" type="button" data-console-detail="campaign"><b>24</b><span>宣发素材 Campaign</span></button>
                 <button class="console-kpi" type="button" data-console-detail="finance"><b>¥3,860</b><span>周报收入 Weekly Revenue</span></button>
               </div>
@@ -156,14 +157,24 @@
               </section>
 
               <section class="console-view" data-console-view="agents">
-                <div class="agent-dashboard">
-                  <article><b>策划 Agent</b><span>6 项任务</span><i style="--w:74%"></i></article>
-                  <article><b>美术 Agent</b><span>12 项任务</span><i style="--w:88%"></i></article>
-                  <article><b>代码 Agent</b><span>7 项任务</span><i style="--w:66%"></i></article>
-                  <article><b>测试 Agent</b><span>5 项任务</span><i style="--w:52%"></i></article>
-                  <article><b>宣发 Agent</b><span>9 项任务</span><i style="--w:78%"></i></article>
-                  <article><b>财务 Agent</b><span>4 项任务</span><i style="--w:46%"></i></article>
+                <div class="agent-dashboard principal-agents">
+                  <article>
+                    <em>01 · PLANNING</em><b>策划 Agent</b><span>8 项任务 · 2 项待决策</span><i style="--w:74%"></i>
+                    <ul><li>目标拆解与版本 Brief</li><li>优先级、预算与验收口径</li><li>读取客户及财务回流信号</li></ul>
+                    <small>输出：brief.v1 → 生产 Agent</small>
+                  </article>
+                  <article>
+                    <em>02 · PRODUCTION</em><b>生产 Agent</b><span>24 项任务 · 5 项待验收</span><i style="--w:86%"></i>
+                    <ul><li>美术 subagent · 12 项</li><li>代码 subagent · 7 项</li><li>测试 / 内容 subagent · 5 项</li></ul>
+                    <small>输出：release.v1 → 市场 Agent</small>
+                  </article>
+                  <article>
+                    <em>03 · MARKET</em><b>市场 Agent</b><span>16 项任务 · 3 条新信号</span><i style="--w:68%"></i>
+                    <ul><li>宣发 subagent · 9 项</li><li>财务 subagent · 4 项</li><li>客户关系 subagent · 3 项</li></ul>
+                    <small>输出：market-signal.json → 策划 Agent</small>
+                  </article>
                 </div>
+                <div class="agent-interface-strip"><span>brief.v1</span><i>→</i><span>release.v1 + qa-report</span><i>→</i><span>market-signal.json</span><i>↺</i><span>下一轮策划</span></div>
               </section>
 
               <section class="console-view" data-console-view="assets">
@@ -203,7 +214,7 @@
               <section class="console-view" data-console-view="finance">
                 <div class="dashboard-grid">
                   <article class="chart-panel wide">
-                    <header><b>周报财务 Finance Weekly</b><span>模拟收入、成本和净额</span></header>
+                    <header><b>周报财务 Finance Weekly</b><a class="console-link" href="opc-finance-report.html">打开报表示例 ↗</a></header>
                     <div class="finance-rows">
                       <div><span>W1</span><b>收入 ¥280</b><i>成本 ¥190</i><em>净额 ¥90</em></div>
                       <div><span>W2</span><b>收入 ¥620</b><i>成本 ¥260</i><em>净额 ¥360</em></div>
@@ -217,6 +228,22 @@
                     <b>资金判断 Budget Signal</b>
                     <p>当周净额和合作线索同步上升时，下一轮优先投入可复用关卡包与角色 PV；当互动不足时，收缩范围并优化宣发素材。</p>
                   </article>
+                </div>
+              </section>
+
+              <section class="console-view" data-console-view="customers">
+                <div class="feedback-summary">
+                  <article><b>正面反馈</b><strong>68%</strong><span>角色辨识度、校园氛围与多人试玩最受认可</span></article>
+                  <article><b>负面反馈</b><strong>12%</strong><span>新手目标不够清晰，移动端首屏信息偏密</span></article>
+                  <article><b>优化建议</b><strong>20%</strong><span>增加任务引导、角色故事与低门槛反馈入口</span></article>
+                </div>
+                <div class="feedback-board">
+                  <article class="feedback-card positive"><b>正面反馈 · 保持并放大</b><p>“五位学术喵很有记忆点，校园与幻想的结合自然。”</p><span>动作：进入宣发素材库，提炼角色卖点与用户原话；负责人：市场 Agent；SLA：24 小时。</span></article>
+                  <article class="feedback-card negative"><b>负面反馈 · 定位根因</b><p>“第一次进入后不知道先做什么，手机上按钮有点多。”</p><span>动作：策划 Agent 建立问题单，生产 Agent 完成新手引导与响应式修复；验收：首次任务完成率 ≥ 75%。</span></article>
+                  <article class="feedback-card suggestion"><b>优化建议 · 进入候选池</b><p>“希望每个角色有独立支线，也想看到校庆限定活动。”</p><span>动作：按用户价值、开发成本、IP 契合度三维评分；达到 70 分进入下轮策划 Brief。</span></article>
+                </div>
+                <div class="feedback-loop" aria-label="客户反馈闭环">
+                  <span>采集<br><small>页面 / 社群 / 试玩</small></span><i>→</i><span>归因<br><small>情绪 / 场景 / 频次</small></span><i>→</i><span>决策<br><small>优先级 / Owner / SLA</small></span><i>→</i><span>交付<br><small>版本 / 内容 / 回复</small></span><i>→</i><span>验证<br><small>指标 / 回访 / 关闭</small></span>
                 </div>
               </section>
             </div>

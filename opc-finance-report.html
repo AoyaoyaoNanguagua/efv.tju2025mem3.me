@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>支付结算与收入确认周报 | Third Academy OPC</title>
+  <meta name="description" content="Third Academy OPC 游戏支付、渠道应收、资金到账、收入确认与异常对账的专业模拟报表。">
+  <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
+  <link rel="stylesheet" href="opc.css">
+</head>
+<body class="finance-report-page">
+  <header class="finance-nav">
+    <a href="opc-console.html" class="finance-brand"><img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt=""><span><b>Third Academy OPC</b><small>Finance Control Center</small></span></a>
+    <div class="finance-nav-meta"><span>模拟账套 DEMO</span><b>2026-07-01 — 2026-07-07</b><a href="opc-console.html">返回控制台</a></div>
+  </header>
+
+  <main class="finance-report-shell">
+    <section class="finance-report-head">
+      <div>
+        <p class="section-label">PAYMENT · SETTLEMENT · REVENUE</p>
+        <h1>支付结算与收入确认周报<span>Payment Reconciliation Report</span></h1>
+        <p>从玩家支付、服务端回调、游戏发货、渠道结算到银行到账的完整审计链。以下 100 条交易均为模拟数据，不代表真实经营结果。</p>
+      </div>
+      <div class="report-actions">
+        <button class="button light" type="button" data-export-csv>导出 100 条 CSV</button>
+        <button class="button dark" type="button" data-print-report>打印报表</button>
+      </div>
+    </section>
+
+    <aside class="report-disclaimer"><b>管理口径</b><span>支付回调 ≠ 银行到账 ≠ 收入确认。报表采用“渠道应收—合同负债—履约收入”保守示例，具体科目、税率及收入确认时点须由企业会计政策和履约事实确定。</span></aside>
+
+    <section class="payment-kpis" aria-label="支付结算摘要">
+      <article><span>模拟订单</span><strong data-kpi="orders">100</strong><small>Orders</small></article>
+      <article><span>支付成功总额</span><strong data-kpi="paid">—</strong><small>Verified callbacks</small></article>
+      <article><span>银行到账净额</span><strong data-kpi="settled">—</strong><small>Net cash received</small></article>
+      <article><span>渠道应收余额</span><strong data-kpi="receivable">—</strong><small>Payment channel A/R</small></article>
+      <article><span>渠道手续费</span><strong data-kpi="fees">—</strong><small>Payment fees</small></article>
+      <article class="kpi-alert"><span>待处理异常</span><strong data-kpi="exceptions">—</strong><small>Exceptions</small></article>
+    </section>
+
+    <section class="report-panel recognition-panel">
+      <header><div><p class="section-label">确认路径 Recognition Policy</p><h2>同一笔充值需要经过四个可核验时点</h2></div><span class="report-tag">建议日清月结</span></header>
+      <div class="recognition-timeline">
+        <article><em>01</em><b>支付成功</b><p>服务端异步通知验签通过，同时核对商户订单号、金额、币种与幂等状态。此时可发货，但不等于银行到账。</p><small>证据：回调原文、签名结果、主动查单</small></article>
+        <article><em>02</em><b>形成渠道应收</b><p>玩家已支付、渠道尚未结算时，示例先确认对支付宝、微信或聚合支付方的结算权利。</p><small>借：其他应收款—支付渠道<br>贷：合同负债—游戏充值</small></article>
+        <article><em>03</em><b>结算到账</b><p>以渠道资金账、结算单和银行流水确认实际到账，冲销渠道应收，支付手续费独立列示。</p><small>借：银行存款 / 支付手续费<br>贷：其他应收款—支付渠道</small></article>
+        <article><em>04</em><b>履约转收入</b><p>虚拟商品控制权转移或约定服务履行时，再将相应合同负债转为收入；未消耗余额继续保留。</p><small>借：合同负债<br>贷：主营业务收入 / 相关税费</small></article>
+      </div>
+      <div class="accounting-note"><b>为什么不是回调后直接记收入？</b><p>回调回答“玩家是否成功付款”，到账回答“钱是否进入企业可控制账户”，收入确认回答“企业是否已经完成对玩家的履约义务”。三者解决的问题不同。若售卖的是即时交付且玩家立即取得控制权的独立道具，履约时点可能与支付非常接近；若售卖虚拟币、月卡或持续服务，通常需要按实际履约模式确认收入。</p></div>
+    </section>
+
+    <section class="report-grid">
+      <article class="report-panel channel-panel"><header><div><p class="section-label">渠道结构 Channel Mix</p><h2>支付来源与到账表现</h2></div></header><div class="channel-breakdown" data-channel-breakdown></div></article>
+      <article class="report-panel controls-panel"><header><div><p class="section-label">日常控制 Daily Controls</p><h2>四账核对与异常关闭</h2></div></header><ol><li><b>业务订单账</b><span>商品、玩家、发货与退款状态</span></li><li><b>支付交易账</b><span>支付成功、退款、渠道流水号</span></li><li><b>渠道资金账</b><span>结算批次、手续费、净额与调账</span></li><li><b>银行流水</b><span>实际到账日期、金额与账户</span></li></ol><p>任一维度不一致即进入异常队列，不允许仅凭客户端“支付成功”页面发货或记账。</p></article>
+    </section>
+
+    <section class="report-panel transaction-panel">
+      <header><div><p class="section-label">交易明细 Transaction Ledger</p><h2>100 条模拟支付与结算记录</h2></div><span class="report-tag" data-record-count>100 / 100</span></header>
+      <div class="transaction-filters">
+        <label>搜索订单<input type="search" placeholder="商户订单 / 渠道流水 / 商品" data-payment-search></label>
+        <label>支付渠道<select data-payment-channel><option value="">全部渠道</option><option>微信支付</option><option>支付宝</option><option>聚合支付</option></select></label>
+        <label>核对状态<select data-payment-status><option value="">全部状态</option><option>四账一致</option><option>待结算</option><option>回调异常</option><option>对账差异</option><option>已退款</option></select></label>
+      </div>
+      <div class="transaction-table-wrap">
+        <table class="transaction-table">
+          <thead><tr><th>#</th><th>玩家支付时间</th><th>支付渠道</th><th>商户订单号 / 渠道流水</th><th>商品</th><th>订单金额</th><th>回调时间</th><th>渠道结算时间</th><th>手续费</th><th>银行实收</th><th>履约状态</th><th>核对状态</th></tr></thead>
+          <tbody data-payment-rows></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="report-grid">
+      <article class="report-panel exception-panel"><header><div><p class="section-label">异常队列 Exception Queue</p><h2>需要人工或 Agent 复核</h2></div></header><div data-exception-list></div></article>
+      <article class="report-panel agent-export-panel"><header><div><p class="section-label">Market Agent Export</p><h2>机器可读摘要</h2></div></header><pre data-agent-export></pre><p>市场 Agent 只能读取脱敏订单、聚合金额与异常状态；支付回调原文、玩家标识和银行账号应在受控财务域保存。</p></article>
+    </section>
+
+    <footer class="finance-report-footer">
+      <div><b>口径依据</b><span>微信支付交易账/资金账用于对账；收入在履约义务完成、客户取得商品或服务控制权时确认。聚合支付还需核对服务商二级商户与结算批次。</span></div>
+      <div class="source-links"><a href="https://pay.wechatpay.cn/doc/v3/merchant/4013071218">微信支付账单文档 ↗</a><a href="https://kjs.mof.gov.cn/zt/kjzzss/kuaijizhunzeshishi/201709/t20170907_2694006.htm">企业会计准则第14号 ↗</a><a href="opc-console.html">返回 OPC 控制台</a></div>
+    </footer>
+  </main>
+  <script src="opc-finance-report.js"></script>
+</body>
+</html>

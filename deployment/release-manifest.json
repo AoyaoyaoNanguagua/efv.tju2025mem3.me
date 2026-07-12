@@ -1,0 +1,47 @@
+{
+  "releaseDate": "2026-07-12",
+  "profiles": {
+    "github": {
+      "description": "完整项目源码与历史资产归档，不包含本轮暂缓纳入的合作素材。",
+      "exclude": [
+        "share/**",
+        "release/**",
+        "tmp/**",
+        "play-data.sqlite3",
+        "*.log",
+        "__pycache__/**"
+      ]
+    },
+    "aliyun": {
+      "description": "可直接部署的线上运行文件，不携带开发资料、历史归档或本地数据。",
+      "include": [
+        "assets/**",
+        "vendor/**",
+        "*.html",
+        "*.css",
+        "*.js",
+        "play-server.py",
+        ".htaccess",
+        ".user.ini",
+        "robots.txt",
+        "sitemap.xml"
+      ],
+      "exclude": [
+        "ai_context.html",
+        "contribution_guide.html",
+        "gdd_scope_review.html",
+        "dict/**",
+        "share/**",
+        "release/**",
+        "scripts/**",
+        "tmp/**",
+        "play-data.sqlite3",
+        "*.log",
+        "*.md",
+        "*.txt",
+        "*.zip",
+        "__pycache__/**"
+      ]
+    }
+  }
+}

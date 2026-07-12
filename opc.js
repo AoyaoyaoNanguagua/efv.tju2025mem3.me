@@ -28,9 +28,9 @@
       rows: [["本周新增", "+19 项"], ["可复用率", "76%"], ["下周重点", "敌人层级与关卡包"]]
     },
     agents: {
-      title: "活跃 Agent Active Agents",
-      body: "6 类 Agent 共同推进产品、视觉、代码、测试、宣发和财务复盘。主理人负责方向、验收与资源配置。",
-      rows: [["高负载 Agent", "美术 / 宣发"], ["待验收任务", "7 项"], ["自动检查", "页面 / 视频 / 链接"]]
+      title: "三主 Agent Principal Agents",
+      body: "策划、生产、市场三个主 Agent 通过版本化协议交接；美术、代码、测试、宣发、财务和客户关系作为各自的 subagent 子集运行。",
+      rows: [["高负载主 Agent", "生产 Agent"], ["待验收任务", "7 项"], ["自动回流", "市场信号 → 策划"]]
     },
     campaign: {
       title: "宣发素材 Campaign Items",
@@ -80,5 +80,86 @@
     consoleRoot.querySelectorAll("[data-console-detail]").forEach(button => {
       button.addEventListener("click", () => renderDetail(button.getAttribute("data-console-detail")));
     });
+  });
+
+  document.querySelectorAll("[data-merch-carousel]").forEach(carousel => {
+    const track = carousel.querySelector("[data-merch-track]");
+    const slides = Array.from(carousel.querySelectorAll("[data-merch-slide]"));
+    const dots = Array.from(carousel.querySelectorAll("[data-merch-dot]"));
+    const previous = carousel.querySelector("[data-merch-prev]");
+    const next = carousel.querySelector("[data-merch-next]");
+    const count = carousel.querySelector("[data-merch-count]");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let current = 0;
+    let timer = 0;
+    let pointerInside = false;
+
+    if (!track || slides.length < 2) return;
+
+    const stop = () => {
+      window.clearTimeout(timer);
+      timer = 0;
+    };
+
+    const show = requestedIndex => {
+      current = (requestedIndex + slides.length) % slides.length;
+      track.style.transform = `translate3d(-${current * 100}%, 0, 0)`;
+      slides.forEach((slide, index) => {
+        slide.setAttribute("aria-hidden", index === current ? "false" : "true");
+      });
+      dots.forEach((dot, index) => {
+        dot.setAttribute("aria-current", index === current ? "true" : "false");
+      });
+      if (count) {
+        count.textContent = `${String(current + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+      }
+    };
+
+    const start = () => {
+      stop();
+      if (reduceMotion || pointerInside || document.hidden) return;
+      timer = window.setTimeout(() => {
+        show(current + 1);
+        start();
+      }, 5000);
+    };
+
+    previous?.addEventListener("click", () => {
+      show(current - 1);
+      start();
+    });
+
+    next?.addEventListener("click", () => {
+      show(current + 1);
+      start();
+    });
+
+    dots.forEach(dot => {
+      dot.addEventListener("click", () => {
+        show(Number(dot.getAttribute("data-merch-dot")) || 0);
+        start();
+      });
+    });
+
+    carousel.addEventListener("mouseenter", () => {
+      pointerInside = true;
+      stop();
+    });
+
+    carousel.addEventListener("mouseleave", () => {
+      pointerInside = false;
+      start();
+    });
+
+    carousel.addEventListener("keydown", event => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      show(current + (event.key === "ArrowRight" ? 1 : -1));
+      start();
+    });
+
+    document.addEventListener("visibilitychange", start);
+    show(0);
+    start();
   });
 })();

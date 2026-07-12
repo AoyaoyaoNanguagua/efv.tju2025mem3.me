@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="play.css?v=20260711-lina-maps-m04-v8">
+  <link rel="stylesheet" href="play.css?v=20260712-assets-cinematic-v13">
   <link rel="stylesheet" href="play-overrides.css?v=20260711-lina-maps-m04-v8">
 </head>
 <body>
@@ -309,6 +309,7 @@
           <button id="mobileUltimateButton" class="mobile-action" type="button">大招</button>
           <button id="mobileTransformButton" class="mobile-action" type="button">变身</button>
           <button id="mobileSpecialButton" class="mobile-action" type="button">特殊</button>
+          <button id="mobileInteractButton" class="mobile-action interaction-action" type="button" disabled aria-hidden="true">交互</button>
         </div>
       </section>
 
@@ -319,6 +320,12 @@
         </div>
         <div class="boss-meter"><i id="bossHpBar"></i></div>
         <b id="bossHpText">420 / 420</b>
+      </section>
+
+      <section id="chapterEndCinematic" class="chapter-end-cinematic" aria-label="第一章结章动画" aria-hidden="true">
+        <video id="chapterEndVideo" src="assets/cg/p1boss-end.mp4?v=20260712-v1" preload="metadata" playsinline></video>
+        <button id="chapterEndReplayButton" class="chapter-end-replay" type="button" hidden>播放结章动画</button>
+        <button id="chapterEndSkipButton" class="chapter-end-skip" type="button">跳过</button>
       </section>
 
       <section id="chapterClearPanel" class="chapter-clear-panel" aria-label="第一章通关结算" aria-hidden="true">
@@ -357,6 +364,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-  <script src="play.js?v=20260711-lina-maps-m04-v8"></script>
+  <script src="play.js?v=20260712-assets-cinematic-v13"></script>
 </body>
 </html>
