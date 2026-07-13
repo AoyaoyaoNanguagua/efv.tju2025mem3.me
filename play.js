@@ -118,11 +118,13 @@
   const WIND_RIBBON_TEXTURE_KEY = "play-lina-wind-ribbon";
   const SWORD_WAVE_TEXTURE_KEY = "play-ayu-sword-wave";
   const PHYSICAL_SPARK_TEXTURE_KEY = "play-physical-spark";
+  const LAODENG_SMOKE_TEXTURE_KEY = "play-laodeng-smoke";
+  const LAODENG_BERSERK_PETAL_TEXTURE_KEY = "play-laodeng-berserk-petals";
   const CHARGE_HOLD_THRESHOLD = 280;
+  const CHARGED_ATTACK_COST = 25;
   const ENERGY_DEFAULT_MAX = 150;
   const ENERGY_REGEN_PER_SECOND = 4.5;
   const ENERGY_HIT_GAIN = 8;
-  const ENERGY_CHARGED_HIT_GAIN = 18;
   const ENERGY_MELEE_HIT_GAIN = 6;
   const ULTIMATE_COST = 100;
   const HEAL_COST = 50;
@@ -135,14 +137,17 @@
   const LINA_HEAL_CHAIN_MULTIPLIER = 1.25;
   const LINA_HEAL_CHAIN_SHIELD_BASE = 20;
   const LINA_HEAL_CHAIN_SHIELD_MULTIPLIER = 0.65;
-  const AYU_SWORD_WAVE_RANGE = MAP_TILE_SIZE * 7;
+  const LINA_HEAL_CHAIN_HOLD_MS = 250;
+  const AYU_SWORD_WAVE_RANGE = MAP_TILE_SIZE * 5.6;
   const ZHIXIA_LIGHTNING_RANGE = MAP_TILE_SIZE * 7;
   const ZHIXIA_LIGHTNING_REFRACT_RANGE = MAP_TILE_SIZE * 5;
   const LIGHTNING_SPARK_TEXTURE_KEY = "play-lightning-spark";
   const LIGHTNING_MOTE_TEXTURE_KEY = "play-lightning-mote";
   const LIGHTNING_RIBBON_TEXTURE_KEY = "play-lightning-ribbon";
+  const ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY = "play-zhixia-ultimate-bolt";
+  const ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY = "play-zhixia-ultimate-crown";
   const LAODENG_BERSERK_DURATION = 8000;
-  const LAODENG_BERSERK_SCALE = 1.3;
+  const LAODENG_BERSERK_SCALE = 1.25;
   const LAODENG_BERSERK_DAMAGE_MULTIPLIER = 1.5;
   const JIANGXUN_BARRAGE_ARROWS = 15;
   const JIANGXUN_BARRAGE_SPREAD = Phaser.Math.DegToRad(30);
@@ -288,7 +293,7 @@
     { id: "hit", row: 3, fps: 11, repeat: 0, frames: FOUR_FRAMES },
     { id: "death", row: 4, fps: 9, repeat: 0, frames: SIX_FRAMES },
     { id: "transform", row: 5, fps: 20, repeat: 0, frames: ALL_FRAMES },
-    { id: "catRun", row: 6, fps: 16, repeat: -1, frames: FOUR_FRAMES },
+    { id: "catRun", row: 6, fps: 13, repeat: -1, frames: FOUR_FRAMES },
     { id: "catJump", row: 7, fps: 16, repeat: 0, frames: SIX_FRAMES }
   ];
 
@@ -318,7 +323,7 @@
       name: "阿宇",
       color: "#d99a4a",
       portrait: "assets/portraits/ayu-q-v2.png",
-      sprite: "assets/sprites/ayu-sprites-v13.png",
+      sprite: "assets/sprites/ayu-sprites-v17-unarmed-walk-seat-lina-edge.png",
       baseline: 140,
       speed: 270
     },
@@ -327,7 +332,7 @@
       name: "知夏",
       color: "#66bfe8",
       portrait: "assets/portraits/zhixia.png",
-      sprite: "assets/sprites/zhixia-sprites-v5-prototype.png",
+      sprite: "assets/sprites/zhixia-sprites-v6-cat-alpha.png",
       baseline: 140,
       speed: 250
     },
@@ -336,7 +341,7 @@
       name: "老登",
       color: "#e18a52",
       portrait: "assets/portraits/laodeng-q-v2.png",
-      sprite: "assets/sprites/laodeng-sprites-v5.png",
+      sprite: "assets/sprites/laodeng-sprites-v7-lina-edge.png",
       baseline: 140,
       speed: 235
     },
@@ -345,7 +350,7 @@
       name: "江寻",
       color: "#68a977",
       portrait: "assets/portraits/jiangxun-q-v2.png",
-      sprite: "assets/sprites/jiangxun-sprites-v6.png",
+      sprite: "assets/sprites/jiangxun-sprites-v8-lina-edge.png",
       baseline: 140,
       speed: 255
     }
@@ -1021,6 +1026,17 @@
     return CHARACTERS.find(character => character.id === id) || CHARACTERS[0];
   }
 
+  function playerDisplayName(player = {}) {
+    const name = String(player.name || player.nickname || "").trim();
+    const characterNames = new Set(CHARACTERS.map(character => character.name));
+    if (name && !characterNames.has(name)) return name.slice(0, 16);
+    const account = String(player.account || player.username || "").trim();
+    if (account && account !== "local-guest") return account.slice(0, 16);
+    const id = String(player.id || "").trim();
+    if (id && !id.startsWith("p-")) return id.slice(0, 16);
+    return "离线玩家";
+  }
+
   function getAction(id) {
     return ACTIONS.find(action => action.id === id) || ACTIONS[0];
   }
@@ -1286,7 +1302,7 @@
           account: "local-guest",
           slot,
           characterId: meta.id,
-          name: getCharacter(meta.id).name,
+          name: "离线玩家",
           ...BASE_STATS,
           chapterId: "chapter1",
           mapId: "ch1_m01_classroom_spawn",
@@ -1501,7 +1517,7 @@
 
   function renderHud() {
     if (!app.profile) return;
-    $("#hudName").textContent = app.profile.name;
+    $("#hudName").textContent = playerDisplayName(app.profile);
     renderSkillButtons();
     $("#levelText").textContent = `Lv.${app.profile.level}`;
     $("#creditText").textContent = `学分 ${app.profile.credits}`;
@@ -1672,7 +1688,15 @@
       app.profile.magicPower = Math.max(1, Number(app.profile.magicPower || BASE_STATS.magicPower) + 3);
       gainedLevels += 1;
     }
-    if (gainedLevels > 0) app.scene?.playLevelUpEffect?.(gainedLevels);
+    if (gainedLevels > 0) {
+      app.scene?.playLevelUpEffect?.(gainedLevels, app.scene?.actor, app.profile.level);
+      app.scene?.broadcastCombatEvent?.("levelUp", {
+        x: app.scene?.actor?.x || 0,
+        y: app.scene?.actor?.y || 0,
+        level: app.profile.level,
+        levels: gainedLevels
+      });
+    }
     return gainedLevels;
   }
 
@@ -2789,6 +2813,15 @@
       this.tone(charged ? 54 : 72, charged ? 0.25 : 0.17, "square", charged ? 0.095 : 0.072);
       window.setTimeout(() => this.noise(0.1, charged ? 0.05 : 0.035, "bandpass", 820), 30);
     }
+    fireExplosion(comboIndex = 0) {
+      const pitchLift = Math.min(4, Math.max(0, Number(comboIndex) || 0)) * 18;
+      this.noise(0.24, 0.058, "lowpass", 330 + pitchLift);
+      this.tone(48 + pitchLift * 0.35, 0.24, "sawtooth", 0.064);
+      this.sweep(190 + pitchLift, 62, 0.19, "square", 0.046);
+      window.setTimeout(() => this.noise(0.15, 0.04, "bandpass", 980 + pitchLift * 4), 24);
+      window.setTimeout(() => this.noise(0.1, 0.026, "highpass", 2100 + pitchLift * 5), 62);
+      window.setTimeout(() => this.tone(420 + pitchLift * 2, 0.07, "triangle", 0.028), 76);
+    }
     bowRelease(charged = false) {
       this.noise(charged ? 0.16 : 0.1, charged ? 0.044 : 0.032, "highpass", charged ? 1700 : 2200);
       this.sweep(charged ? 880 : 1120, charged ? 1480 : 1760, charged ? 0.16 : 0.105, "triangle", charged ? 0.052 : 0.038);
@@ -2910,7 +2943,7 @@
       const actor = app.scene?.actor;
       return {
         id: app.profile.id,
-        name: app.profile.name,
+        name: playerDisplayName(app.profile),
         characterId: app.profile.characterId,
         x: actor?.x || 3200,
         y: actor?.y || 3200,
@@ -2919,6 +2952,7 @@
         hp: app.profile.hp,
         maxHp: app.profile.maxHp,
         shield: app.profile.shield || 0,
+        level: app.profile.level || 1,
         mapId: app.profile.mapId || "",
         flags: Object.keys(profileFlags()).filter(flag => profileFlags()[flag]).slice(0, 240)
       };
@@ -2934,7 +2968,7 @@
       const chat = {
         id: makeId(),
         playerId: app.profile.id,
-        name: app.profile.name,
+        name: playerDisplayName(app.profile),
         text: cleaned,
         createdAt: Date.now()
       };
@@ -3214,6 +3248,8 @@
       this.lastUltimateAt = 0;
       this.berserkUntil = 0;
       this.berserkEndingShown = false;
+      this.isHeavyDashing = false;
+      this.laodengHeavyToken = 0;
       this.collisionDebugVisible = false;
       this.collisionDebugGraphics = null;
       this.collisionDebugRects = [];
@@ -4137,6 +4173,154 @@
         });
         texture.refresh();
       }
+      if (!this.textures.exists(ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY)) {
+        const texture = this.textures.createCanvas(ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY, 220, 540);
+        const context = texture.getContext();
+        const traceBolt = () => {
+          context.beginPath();
+          context.moveTo(112, 3);
+          context.lineTo(98, 38);
+          context.quadraticCurveTo(96, 66, 79, 82);
+          context.lineTo(107, 116);
+          context.quadraticCurveTo(78, 145, 70, 174);
+          context.lineTo(102, 207);
+          context.lineTo(76, 247);
+          context.quadraticCurveTo(66, 270, 58, 283);
+          context.lineTo(94, 321);
+          context.quadraticCurveTo(69, 359, 61, 386);
+          context.lineTo(94, 420);
+          context.quadraticCurveTo(84, 466, 105, 519);
+          context.lineTo(116, 539);
+          context.lineTo(131, 516);
+          context.quadraticCurveTo(118, 472, 143, 436);
+          context.lineTo(117, 401);
+          context.lineTo(150, 357);
+          context.lineTo(121, 321);
+          context.lineTo(158, 275);
+          context.lineTo(130, 237);
+          context.lineTo(151, 198);
+          context.lineTo(119, 164);
+          context.quadraticCurveTo(148, 132, 125, 99);
+          context.quadraticCurveTo(134, 67, 119, 36);
+          context.lineTo(112, 3);
+          context.closePath();
+        };
+        context.clearRect(0, 0, 220, 540);
+        context.save();
+        context.shadowColor = "rgba(18,67,255,0.92)";
+        context.shadowBlur = 30;
+        context.fillStyle = "rgba(5,31,177,0.82)";
+        traceBolt();
+        context.fill();
+        context.restore();
+        const boltFill = context.createLinearGradient(0, 0, 0, 540);
+        boltFill.addColorStop(0, "rgba(18,55,230,0.96)");
+        boltFill.addColorStop(0.35, "rgba(20,112,255,0.98)");
+        boltFill.addColorStop(0.72, "rgba(28,167,255,0.98)");
+        boltFill.addColorStop(1, "rgba(121,236,255,1)");
+        context.fillStyle = boltFill;
+        traceBolt();
+        context.fill();
+        const traceCore = () => {
+          context.beginPath();
+          context.moveTo(112, 5);
+          context.lineTo(108, 49);
+          context.quadraticCurveTo(91, 79, 112, 113);
+          context.quadraticCurveTo(132, 139, 105, 169);
+          context.lineTo(115, 204);
+          context.quadraticCurveTo(93, 244, 103, 281);
+          context.lineTo(113, 320);
+          context.quadraticCurveTo(92, 360, 105, 400);
+          context.quadraticCurveTo(112, 463, 116, 535);
+        };
+        context.save();
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.shadowColor = "rgba(72,211,255,0.94)";
+        context.shadowBlur = 15;
+        context.strokeStyle = "rgba(74,222,255,0.96)";
+        context.lineWidth = 13;
+        traceCore();
+        context.stroke();
+        context.shadowBlur = 5;
+        context.strokeStyle = "rgba(246,255,255,0.98)";
+        context.lineWidth = 4;
+        traceCore();
+        context.stroke();
+        [[86, 81, 45, 60], [133, 152, 174, 129], [83, 282, 42, 260], [138, 355, 180, 329]].forEach(([x1, y1, x2, y2], index) => {
+          context.strokeStyle = index % 2 ? "rgba(184,249,255,0.96)" : "rgba(77,206,255,0.94)";
+          context.lineWidth = index % 2 ? 3 : 4;
+          context.beginPath();
+          context.moveTo(x1, y1);
+          context.quadraticCurveTo((x1 + x2) / 2 + (index % 2 ? 7 : -5), (y1 + y2) / 2, x2, y2);
+          context.stroke();
+        });
+        context.restore();
+        texture.refresh();
+      }
+      if (!this.textures.exists(ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY)) {
+        const texture = this.textures.createCanvas(ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY, 320, 140);
+        const context = texture.getContext();
+        const traceCrown = () => {
+          context.beginPath();
+          context.moveTo(14, 86);
+          context.quadraticCurveTo(34, 44, 70, 62);
+          context.quadraticCurveTo(73, 29, 108, 59);
+          context.quadraticCurveTo(135, 35, 158, 61);
+          context.quadraticCurveTo(181, 31, 207, 60);
+          context.quadraticCurveTo(247, 36, 304, 84);
+          context.quadraticCurveTo(273, 101, 224, 102);
+          context.quadraticCurveTo(184, 122, 157, 109);
+          context.quadraticCurveTo(116, 121, 78, 104);
+          context.quadraticCurveTo(39, 105, 14, 86);
+          context.closePath();
+        };
+        context.clearRect(0, 0, 320, 140);
+        context.save();
+        context.shadowColor = "rgba(18,93,255,0.92)";
+        context.shadowBlur = 26;
+        context.fillStyle = "rgba(10,77,226,0.78)";
+        traceCrown();
+        context.fill();
+        context.restore();
+        const fill = context.createLinearGradient(0, 38, 0, 116);
+        fill.addColorStop(0, "rgba(201,250,255,0.98)");
+        fill.addColorStop(0.42, "rgba(65,198,255,0.98)");
+        fill.addColorStop(1, "rgba(17,85,238,0.88)");
+        context.fillStyle = fill;
+        traceCrown();
+        context.fill();
+        context.strokeStyle = "rgba(217,252,255,0.98)";
+        context.lineWidth = 3;
+        traceCrown();
+        context.stroke();
+        context.fillStyle = "rgba(251,255,255,0.98)";
+        context.beginPath();
+        context.moveTo(17, 85);
+        context.quadraticCurveTo(38, 48, 71, 63);
+        context.quadraticCurveTo(76, 31, 104, 60);
+        context.quadraticCurveTo(82, 83, 50, 91);
+        context.quadraticCurveTo(31, 95, 17, 85);
+        context.fill();
+        context.beginPath();
+        context.moveTo(303, 83);
+        context.quadraticCurveTo(280, 44, 246, 61);
+        context.quadraticCurveTo(240, 31, 210, 60);
+        context.quadraticCurveTo(234, 83, 268, 91);
+        context.quadraticCurveTo(290, 94, 303, 83);
+        context.fill();
+        context.fillStyle = "rgba(239,255,255,0.98)";
+        context.beginPath();
+        context.moveTo(84, 92);
+        context.quadraticCurveTo(121, 68, 144, 79);
+        context.lineTo(158, 52);
+        context.lineTo(173, 79);
+        context.quadraticCurveTo(203, 67, 235, 93);
+        context.quadraticCurveTo(190, 108, 157, 101);
+        context.quadraticCurveTo(120, 109, 84, 92);
+        context.fill();
+        texture.refresh();
+      }
     }
 
     ensureWindParticleTextures() {
@@ -4191,6 +4375,66 @@
     }
 
     ensurePhysicalParticleTextures() {
+      if (!this.textures.exists(LAODENG_SMOKE_TEXTURE_KEY)) {
+        const texture = this.textures.createCanvas(LAODENG_SMOKE_TEXTURE_KEY, 48, 48);
+        const context = texture.getContext();
+        context.clearRect(0, 0, 48, 48);
+        const gradient = context.createRadialGradient(24, 24, 3, 24, 24, 23);
+        gradient.addColorStop(0, "rgba(151,79,48,0.64)");
+        gradient.addColorStop(0.42, "rgba(92,54,45,0.42)");
+        gradient.addColorStop(1, "rgba(45,34,35,0)");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 48, 48);
+        texture.refresh();
+      }
+      if (!this.textures.exists(LAODENG_BERSERK_PETAL_TEXTURE_KEY)) {
+        const texture = this.textures.createCanvas(LAODENG_BERSERK_PETAL_TEXTURE_KEY, 280, 190);
+        const context = texture.getContext();
+        context.clearRect(0, 0, 280, 190);
+        [
+          [112, 91, 34], [150, 76, 40], [188, 93, 35], [132, 116, 38], [174, 119, 42], [92, 112, 30]
+        ].forEach(([x, y, radius], index) => {
+          const smoke = context.createRadialGradient(x, y, 3, x, y, radius);
+          smoke.addColorStop(0, index % 2 ? "rgba(104,57,43,0.55)" : "rgba(132,68,42,0.48)");
+          smoke.addColorStop(0.55, "rgba(74,47,43,0.3)");
+          smoke.addColorStop(1, "rgba(42,34,37,0)");
+          context.fillStyle = smoke;
+          context.beginPath();
+          context.arc(x, y, radius, 0, Math.PI * 2);
+          context.fill();
+        });
+        for (let index = 0; index < 5; index += 1) {
+          const angle = -Math.PI / 2 + index / 5 * Math.PI * 2;
+          context.save();
+          context.translate(140, 103);
+          context.scale(1, 0.63);
+          context.rotate(angle);
+          const flame = context.createLinearGradient(20, 0, 118, 0);
+          flame.addColorStop(0, "rgba(164,28,18,0.44)");
+          flame.addColorStop(0.34, "rgba(235,57,21,0.86)");
+          flame.addColorStop(0.72, "rgba(255,128,27,0.98)");
+          flame.addColorStop(1, "rgba(255,235,104,0.98)");
+          context.fillStyle = flame;
+          context.shadowColor = "rgba(255,72,17,0.88)";
+          context.shadowBlur = 15;
+          context.beginPath();
+          context.moveTo(22, -13);
+          context.bezierCurveTo(56, -30, 94, -30, 122, -2);
+          context.bezierCurveTo(92, -7, 57, 10, 25, 17);
+          context.bezierCurveTo(14, 8, 14, -4, 22, -13);
+          context.closePath();
+          context.fill();
+          context.shadowBlur = 5;
+          context.strokeStyle = "rgba(255,245,146,0.96)";
+          context.lineWidth = 3;
+          context.beginPath();
+          context.moveTo(30, -8);
+          context.bezierCurveTo(61, -20, 94, -20, 117, -2);
+          context.stroke();
+          context.restore();
+        }
+        texture.refresh();
+      }
       if (!this.textures.exists(PHYSICAL_SPARK_TEXTURE_KEY)) {
         const spark = this.make.graphics({ x: 0, y: 0, add: false });
         spark.fillStyle(0xfff2bd, 0.98);
@@ -4203,30 +4447,46 @@
         spark.destroy();
       }
       if (!this.textures.exists(SWORD_WAVE_TEXTURE_KEY)) {
-        const texture = this.textures.createCanvas(SWORD_WAVE_TEXTURE_KEY, 256, 128);
+        const texture = this.textures.createCanvas(SWORD_WAVE_TEXTURE_KEY, 320, 180);
         const context = texture.getContext();
-        context.clearRect(0, 0, 256, 128);
-        const fill = context.createLinearGradient(0, 0, 256, 0);
-        fill.addColorStop(0, "rgba(69,116,170,0)");
-        fill.addColorStop(0.14, "rgba(91,164,220,0.24)");
-        fill.addColorStop(0.52, "rgba(154,221,255,0.88)");
-        fill.addColorStop(0.82, "rgba(243,251,255,0.96)");
-        fill.addColorStop(1, "rgba(255,255,255,0)");
+        context.clearRect(0, 0, 320, 180);
+        const fill = context.createLinearGradient(14, 0, 310, 0);
+        fill.addColorStop(0, "rgba(255,255,255,0.99)");
+        fill.addColorStop(0.18, "rgba(250,254,255,0.98)");
+        fill.addColorStop(0.52, "rgba(225,244,255,0.88)");
+        fill.addColorStop(0.82, "rgba(166,215,242,0.34)");
+        fill.addColorStop(1, "rgba(105,178,220,0)");
         context.fillStyle = fill;
-        context.shadowColor = "rgba(94,190,255,0.68)";
-        context.shadowBlur = 16;
+        context.shadowColor = "rgba(104,188,230,0.46)";
+        context.shadowBlur = 12;
         context.beginPath();
-        context.moveTo(4, 101);
-        context.bezierCurveTo(62, 112, 154, 15, 252, 24);
-        context.bezierCurveTo(160, 39, 82, 124, 4, 101);
+        context.moveTo(308, 111);
+        context.bezierCurveTo(214, 151, 86, 158, 27, 111);
+        context.bezierCurveTo(4, 92, 11, 53, 46, 29);
+        context.bezierCurveTo(86, 2, 153, 8, 229, 27);
+        context.bezierCurveTo(158, 22, 99, 28, 61, 49);
+        context.bezierCurveTo(37, 63, 28, 82, 41, 96);
+        context.bezierCurveTo(82, 132, 193, 133, 308, 111);
         context.closePath();
         context.fill();
-        context.shadowBlur = 5;
-        context.strokeStyle = "rgba(255,255,255,0.94)";
-        context.lineWidth = 2.2;
+        context.shadowBlur = 8;
+        context.strokeStyle = "rgba(255,255,255,0.99)";
+        context.lineWidth = 2.4;
         context.beginPath();
-        context.moveTo(20, 98);
-        context.bezierCurveTo(92, 101, 164, 26, 240, 25);
+        context.moveTo(28, 108);
+        context.bezierCurveTo(92, 153, 218, 139, 302, 113);
+        context.stroke();
+        context.strokeStyle = "rgba(235,249,255,0.9)";
+        context.lineWidth = 1.7;
+        context.beginPath();
+        context.moveTo(43, 98);
+        context.bezierCurveTo(101, 127, 190, 127, 277, 114);
+        context.stroke();
+        context.strokeStyle = "rgba(202,233,248,0.66)";
+        context.lineWidth = 1.2;
+        context.beginPath();
+        context.moveTo(51, 54);
+        context.bezierCurveTo(93, 24, 154, 19, 218, 29);
         context.stroke();
         texture.refresh();
       }
@@ -5410,7 +5670,7 @@
       });
     }
 
-    enemyNetworkSnapshot(slime, state = slime?.state || "move") {
+    enemyNetworkSnapshot(slime, state = slime?.state || "move", effect = {}) {
       if (!slime?.slimeId) return null;
       return {
         id: slime.slimeId,
@@ -5425,13 +5685,17 @@
         label: slime.displayLabel || "",
         staticImage: !!slime.staticImage,
         stationary: !!slime.stationary,
-        scale: Number(slime.baseVisualScale || slime.scaleX || 0.9)
+        scale: Number(slime.baseVisualScale || slime.scaleX || 0.9),
+        damageAmount: Math.max(0, Number(effect.damageAmount || 0)),
+        critical: !!effect.critical,
+        hitKind: effect.hitKind === "physical" ? "physical" : "magic",
+        energyGained: Math.max(0, Number(effect.energyGained || 0))
       };
     }
 
-    broadcastEnemyState(slime, state) {
+    broadcastEnemyState(slime, state, effect = {}) {
       if (!app.connected) return;
-      const snapshot = this.enemyNetworkSnapshot(slime, state);
+      const snapshot = this.enemyNetworkSnapshot(slime, state, effect);
       if (snapshot) app.multiplayer?.sendEnemyState(snapshot);
     }
 
@@ -5443,10 +5707,40 @@
         slime = this.findLeafSlime(String(enemy.id));
       }
       if (!slime) return;
+      const previousHp = Math.max(0, Number(slime.hp || 0));
       slime.setPosition(Number(enemy.x) || slime.x, Number(enemy.y) || slime.y);
       slime.maxHp = Math.max(1, Number(enemy.maxHp || slime.maxHp || 1));
       slime.hp = clamp(Number(enemy.hp ?? slime.hp), 0, slime.maxHp);
       this.refreshEnemyHpBar(slime);
+      const damageAmount = Math.max(0, Number(enemy.damageAmount || previousHp - slime.hp));
+      if (damageAmount > 0) {
+        const critical = !!enemy.critical;
+        this.showFloatingText(
+          slime.x,
+          slime.y + slime.hudOffsetY - 18,
+          `${critical ? "暴击 " : ""}-${Math.round(damageAmount)}`,
+          {
+            color: critical ? "#ffd86b" : "#fff7e6",
+            size: critical ? "34px" : "26px",
+            scale: critical ? 1.25 : 1,
+            startScale: critical ? 1.72 : 1.42,
+            strokeThickness: critical ? 8 : 7,
+            hold: critical ? 240 : 180,
+            duration: critical ? 1250 : 1080,
+            rise: critical ? 92 : 72
+          }
+        );
+        this.playEnemyHitImpact(slime, critical, enemy.sourceCharacterId);
+      }
+      const energyGained = Math.max(0, Number(enemy.energyGained || 0));
+      if (energyGained > 0) {
+        this.showFloatingText(slime.x, slime.y - 92, `+${Math.ceil(energyGained)} EN`, {
+          color: "#9ff7ff",
+          size: "14px",
+          rise: 34,
+          duration: 540
+        });
+      }
       if (enemy.state === "dead" || slime.hp <= 0) {
         slime.state = "dead";
         slime.body.setVelocity(0, 0);
@@ -5507,6 +5801,14 @@
       const event = message?.event;
       if (!event || event.sourceId === app.profile?.id || event.mapId !== this.getCurrentMapId()) return;
       const remote = this.remotePlayers.get(event.sourceId);
+      if (event.action === "levelUp") {
+        this.playLevelUpEffect(
+          Math.max(1, Number(event.levels) || 1),
+          remote?.sprite?.active ? remote.sprite : { x: Number(event.x) || 0, y: Number(event.y) || 0 },
+          Math.max(1, Number(event.level) || remote?.level || 1)
+        );
+        return;
+      }
       if (remote?.sprite?.active && !remote.down) {
         const key = `${event.characterId || remote.characterId}-attack-once`;
         if (this.anims.exists(key)) remote.sprite.play(key, true);
@@ -5517,33 +5819,54 @@
       }
       if (event.action === "linaGale") {
         this.playLinaGaleVisual(event.x, event.y);
+        app.audio.ultimateWind();
         return;
       }
       if (event.action === "melee") {
         const angle = Math.atan2(event.aimY || 0, event.aimX || 1);
-        if (event.characterId === "laodeng") this.playImpactPunchVisual(event.x, event.y, angle, !!event.charged, false);
-        else this.flashSlash(event.x, event.y, angle, event.y + 70);
+        if (event.characterId === "laodeng") {
+          this.playImpactPunchVisual(event.x, event.y, angle, !!event.charged, !!event.berserk);
+          app.audio.punchSwing(!!event.charged, !!event.berserk);
+        } else {
+          this.flashSlash(event.x, event.y, angle, event.y + 70, !!event.charged);
+          app.audio.swordSwing(!!event.charged);
+        }
+        return;
+      }
+      if (event.action === "laodengFireExplosion") {
+        this.playLaodengBerserkExplosionVisual(Number(event.x) || 0, Number(event.y) || 0, 2);
+        app.audio.fireExplosion(2);
+        return;
+      }
+      if (event.action === "laodengShockwave") {
+        this.launchLaodengSixWayShockwaves(Number(event.x) || 0, Number(event.y) || 0, false, false);
         return;
       }
       if (event.action === "berserk") {
         if (remote?.sprite?.active) {
           remote.sprite.setScale(PEER_DEFAULT_VISUAL_SCALE * LAODENG_BERSERK_SCALE);
           this.playBerserkActivationVisual(remote.sprite);
+          this.time.delayedCall(LAODENG_BERSERK_DURATION, () => {
+            if (remote?.sprite?.active && !remote.down) remote.sprite.setScale(PEER_DEFAULT_VISUAL_SCALE);
+          });
         }
+        app.audio.ultimateBurst();
         return;
       }
       if (event.action === "chainLightning") {
+        app.audio.ultimateBurst();
         const points = Array.isArray(event.points) ? event.points : [];
         points.slice(1).forEach((target, index) => {
           const source = points[index];
           this.time.delayedCall(index * 90, () => {
-            this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 1.28 - index * 0.16 });
-            this.renderLightningImpact(target.x, target.y, 62 - index * 6, { quantity: 34 - index * 4, splashCount: 12 - index, ground: false });
+            this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 1.06 - index * 0.12, style: "chain" });
+            this.renderChainLightningHit(target.x, target.y, 48 - index * 4);
           });
         });
         return;
       }
       if (event.action === "zhixiaUltimate") {
+        app.audio.ultimateWind();
         const aim = normalizeVector(Number(event.aimX) || 0, Number(event.aimY) || 1);
         for (let index = 1; index <= 10; index += 1) {
           this.time.delayedCall(index * 105, () => this.playLightningStrikeVisual(
@@ -5565,9 +5888,17 @@
       let visual;
       if (event.visualType === "windBolt") visual = this.createWindBoltVisual(startX, startY, rotation, depth);
       else if (event.visualType === "lightningOrb") visual = this.createLightningOrbVisual(startX, startY, rotation, depth);
-      else if (event.visualType === "arrow") visual = this.createArrowVisual(startX, startY, rotation, depth, !!event.charged);
+      else if (["arrow", "arrowHeavy", "arrowBarrage"].includes(event.visualType)) {
+        const variant = event.visualType === "arrowHeavy" ? "heavy" : event.visualType === "arrowBarrage" ? "barrage" : "normal";
+        visual = this.createArrowVisual(startX, startY, rotation, depth, !!event.charged, variant);
+      }
       else if (event.visualType === "swordWave") visual = this.createSwordWaveVisual(startX, startY, rotation, depth);
       else visual = this.add.circle(startX, startY, event.charged ? 12 : 8, event.color || 0xffffff, 0.88).setDepth(depth);
+      if (event.visualType === "windBolt") this.playWindCastBurst(startX, startY, rotation, depth + 1);
+      else this.flashCast(startX, startY, event.color || 0xffffff, depth + 1);
+      if (event.characterId === "jiangxun") app.audio.bowRelease(!!event.charged);
+      else if (event.visualType === "swordWave") app.audio.swordSwing(true);
+      else app.audio.projectileFly(!!event.charged);
       const distance = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
       const duration = clamp(distance / Math.max(80, Number(event.speed) || 700) * 1000, 120, 1200);
       this.tweens.add({
@@ -5731,8 +6062,9 @@
       this.primaryHold = null;
       this.chargeHoldTimer?.remove?.(false);
       this.chargeHoldTimer = null;
-      if (hold.charged) this.castLinaGale();
-      else this.fireLinaWindBolt();
+      const canCastCharged = !hold.charged || this.spendEnergy(CHARGED_ATTACK_COST, "重击");
+      if (hold.charged && canCastCharged) this.castLinaGale();
+      else if (!hold.charged) this.fireLinaWindBolt();
       this.isCasting = false;
       this.actor.setTexture(app.profile.characterId);
       this.resetActorVisualScale();
@@ -5788,6 +6120,11 @@
       const baseCooldown = isMelee ? MELEE.cooldown : equipment.cooldown;
       const cooldown = berserk ? baseCooldown / 1.5 : baseCooldown;
       if (now - this.lastShotAt < cooldown) return;
+      const freeBerserkHeavy = charged && characterId === "laodeng" && berserk;
+      if (charged && !freeBerserkHeavy && !this.spendEnergy(CHARGED_ATTACK_COST, "重击")) {
+        this.returnToBaseLoop();
+        return;
+      }
       this.lastShotAt = now;
       const character = getCharacter(characterId);
       this.isCasting = true;
@@ -5795,8 +6132,20 @@
       this.setLinaAttackVisualScale();
       this.actor.play(this.getAttackAnimationKey(), true);
       if (characterId === "ayu") {
-        this.time.delayedCall(95, () => this.dealMeleeDamage({ damageMultiplier: charged ? 0.85 : 1, charged, reach: 88, radius: 90 }));
-        if (charged) this.time.delayedCall(245, () => this.dealMeleeDamage({ damageMultiplier: 0.85, charged: true, reverseSlash: true, reach: 92, radius: 94 }));
+        this.time.delayedCall(95, () => this.dealMeleeDamage({
+          damageMultiplier: charged ? 0.85 : 1,
+          charged,
+          angleOffset: charged ? -0.12 : 0,
+          reach: 70,
+          radius: 72
+        }));
+        if (charged) this.time.delayedCall(245, () => this.dealMeleeDamage({
+          damageMultiplier: 0.85,
+          charged: true,
+          angleOffset: 0.14,
+          reach: 74,
+          radius: 75
+        }));
       } else if (characterId === "laodeng") {
         this.time.delayedCall(105, () => this.castLaodengImpactPunch(charged, berserk));
       } else if (characterId === "zhixia" && charged) {
@@ -5825,13 +6174,14 @@
           maxLargeTargetHits: charged ? 3 : 1,
           largeTargetDamage: charged ? Math.round(Number(app.profile.attackPower || 26) * 0.72) : 0,
           maxDistance: MAP_TILE_SIZE * (charged ? 9 : 7),
-          visualType: "arrow",
+          visualType: charged ? "arrowHeavy" : "arrow",
           audioType: "bow"
         }));
       } else {
         this.time.delayedCall(95, () => this.fireProjectile({ charged }));
       }
       this.actor.once("animationcomplete", () => {
+        if (this.isHeavyDashing) return;
         this.isCasting = false;
         this.actor.setTexture(character.id);
         this.resetActorVisualScale();
@@ -5953,7 +6303,7 @@
       this.broadcastCombatEvent("berserk", { x: this.actor.x, y: this.actor.y, radius: 128 });
       this.showFloatingText(this.actor.x, this.actor.y - 128, "嗜血狂暴 8秒", { color: "#ffbd72", size: "22px", rise: 64 });
       app.audio.ultimateBurst();
-      showToast("嗜血狂暴：8 秒内免硬直，体型 +30%，移速、攻速与伤害 +50%，结束恢复 40% 最大生命");
+      showToast("嗜血狂暴：8 秒内免硬直，体型 +25%，移速、攻速与伤害 +50%，结束恢复 40% 最大生命");
     }
 
     castJiangxunUltimate() {
@@ -5966,6 +6316,7 @@
       this.actor.play("jiangxun-barrage-loop", true);
       const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
       const baseAngle = Math.atan2(aim.y, aim.x);
+      const barrageDamageRamp = new Map();
       for (let index = 0; index < JIANGXUN_BARRAGE_ARROWS; index += 1) {
         this.time.delayedCall(index * 58, () => {
           if (!this.actor?.active || this.isDead) return;
@@ -5978,7 +6329,8 @@
             maxDistance: MAP_TILE_SIZE * 9,
             speed: Phaser.Math.Between(850, 980),
             noEnergyGain: true,
-            visualType: "arrow",
+            barrageDamageRamp,
+            visualType: "arrowBarrage",
             audioType: "bow"
           });
         });
@@ -5995,7 +6347,7 @@
     fireLinaWindBolt() {
       this.fireProjectile({
         kind: "magic",
-        color: 0xa7e5df,
+        color: 0x6eea8e,
         damage: Number(app.profile.magicPower || 22),
         speed: 760,
         maxDistance: MAP_TILE_SIZE * 7,
@@ -6036,68 +6388,77 @@
     }
 
     playLinaGaleVisual(x, y) {
-      for (let wave = 0; wave < 4; wave += 1) {
-        this.time.delayedCall(wave * 46, () => {
-          const depth = y + 76 + wave;
-          const shadow = this.add.graphics().setPosition(x, y - 42).setScale(1, 0.56).setDepth(depth);
-          const body = this.add.graphics().setPosition(x, y - 42).setScale(1, 0.56).setDepth(depth + 1);
-          const haze = this.add.graphics().setPosition(x, y - 42).setScale(1, 0.56).setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
-          const segmentCount = 13 + wave * 2;
+      const vortexRadius = Math.min(176, LINA_GALE_RADIUS * 0.58);
+      const centerY = y - 26;
+      const groundDepth = Math.max(2, y - 18);
+      for (let wave = 0; wave < 3; wave += 1) {
+        this.time.delayedCall(wave * 58, () => {
+          const underlay = this.add.graphics().setPosition(x, centerY + 20).setScale(1, 0.48).setDepth(groundDepth + wave);
+          const current = this.add.graphics().setPosition(x, centerY + 20).setScale(1, 0.48).setDepth(y + 78 + wave);
+          const highlight = this.add.graphics().setPosition(x, centerY + 20).setScale(1, 0.48).setDepth(y + 82 + wave).setBlendMode(Phaser.BlendModes.ADD);
+          const segmentCount = 18 + wave * 3;
           for (let index = 0; index < segmentCount; index += 1) {
-            const radius = 52 + (index / segmentCount) * (LINA_GALE_RADIUS - 32) + Phaser.Math.Between(-14, 14);
-            const start = Math.PI * 2 * index / segmentCount + wave * 0.4 + Phaser.Math.FloatBetween(-0.16, 0.16);
-            const sweep = Phaser.Math.FloatBetween(0.46, 1.02);
-            const drawArc = (graphics, width, color, alpha, offset = 0) => {
-              graphics.lineStyle(width, color, alpha);
-              graphics.beginPath();
-              graphics.arc(0, 0, radius + offset, start, start + sweep, false);
-              graphics.strokePath();
-            };
-            drawArc(shadow, index % 4 === 0 ? 16 : 10, 0x466d78, 0.12);
-            drawArc(body, index % 4 === 0 ? 8 : 5, index % 3 ? 0x9ad8d5 : 0xb9e5e0, 0.46);
-            if (index % 2 === 0) drawArc(haze, index % 4 === 0 ? 3 : 1.6, 0xe8f8f5, 0.5, 2);
+            const ratio = index / segmentCount;
+            const radius = 38 + ratio * (vortexRadius - 22) + Phaser.Math.Between(-10, 10);
+            const start = Math.PI * 2 * ratio + wave * 0.7 + Phaser.Math.FloatBetween(-0.12, 0.12);
+            const sweep = Phaser.Math.FloatBetween(0.42, 0.92);
+            underlay.lineStyle(index % 5 === 0 ? 19 : 11, 0x083c2b, index % 4 === 0 ? 0.26 : 0.16);
+            underlay.beginPath();
+            underlay.arc(0, 0, radius, start, start + sweep, false);
+            underlay.strokePath();
+            current.lineStyle(index % 4 === 0 ? 8 : 4.5, index % 3 ? 0x2fcf77 : 0x65eea2, index % 4 === 0 ? 0.62 : 0.48);
+            current.beginPath();
+            current.arc(0, 0, radius, start + 0.035, start + sweep - 0.035, false);
+            current.strokePath();
+            if (index % 2 === 0) {
+              highlight.lineStyle(index % 4 === 0 ? 2.4 : 1.3, index % 5 ? 0xbaffd7 : 0xf4fff3, 0.8);
+              highlight.beginPath();
+              highlight.arc(0, 0, radius + 2, start + 0.08, start + sweep * 0.72, false);
+              highlight.strokePath();
+            }
           }
-          for (let ribbonIndex = 0; ribbonIndex < 4; ribbonIndex += 1) {
-            const angle = Math.PI * 2 * ribbonIndex / 4 + wave * 0.52 + Phaser.Math.FloatBetween(-0.18, 0.18);
-            const ribbon = this.add.image(x, y - 42, WIND_RIBBON_TEXTURE_KEY)
-              .setOrigin(0.04, 0.72)
-              .setRotation(angle)
-              .setScale(0.86 + wave * 0.1 + ribbonIndex * 0.05, 0.58 + ribbonIndex * 0.06)
-              .setTint(ribbonIndex % 2 ? 0xb8e1de : 0xe0f2ef)
-              .setAlpha(0.72)
-              .setDepth(depth + 3);
-            const glow = this.add.image(x, y - 42, WIND_RIBBON_TEXTURE_KEY)
-              .setOrigin(0.04, 0.72)
-              .setRotation(angle)
-              .setScale(ribbon.scaleX * 1.03, ribbon.scaleY * 1.22)
-              .setTint(0x93d8d5)
-              .setAlpha(0.28)
-              .setBlendMode(Phaser.BlendModes.ADD)
-              .setDepth(depth + 2);
-            this.tweens.add({
-              targets: [ribbon, glow],
-              rotation: angle + (wave % 2 ? -0.28 : 0.28),
-              scaleX: ribbon.scaleX * 1.18,
-              alpha: 0,
-              duration: 360 + wave * 75,
-              ease: "Cubic.easeOut",
-              onComplete: () => { ribbon.destroy(); glow.destroy(); }
-            });
-          }
-          [shadow, body, haze].forEach((layer, index) => this.tweens.add({
+          const rotation = wave % 2 ? -26 : 30;
+          [underlay, current, highlight].forEach((layer, index) => this.tweens.add({
             targets: layer,
-            scaleX: 1.13 + wave * 0.03,
-            scaleY: 0.63 + wave * 0.02,
-            angle: (wave % 2 ? -1 : 1) * (18 + index * 5),
+            angle: (index ? rotation : -rotation * 0.55),
+            scaleX: 1.08 + wave * 0.05,
+            scaleY: 0.54 + wave * 0.025,
             alpha: 0,
-            duration: 380 + wave * 70,
+            duration: 430 + wave * 95,
             ease: "Cubic.easeOut",
             onComplete: () => layer.destroy()
           }));
+          for (let ribbonIndex = 0; ribbonIndex < 6; ribbonIndex += 1) {
+            const angle = Math.PI * 2 * ribbonIndex / 6 + wave * 0.5 + Phaser.Math.FloatBetween(-0.16, 0.16);
+            const bandRadius = 42 + ribbonIndex * 14 + wave * 9;
+            const ribbon = this.add.image(
+              x + Math.cos(angle) * bandRadius,
+              centerY + Math.sin(angle) * bandRadius * 0.42,
+              WIND_RIBBON_TEXTURE_KEY
+            )
+              .setOrigin(0.08, 0.5)
+              .setRotation(angle + Math.PI * 0.46)
+              .setScale(0.42 + ribbonIndex * 0.055, 0.26 + (ribbonIndex % 3) * 0.04)
+              .setTint(ribbonIndex % 3 ? 0x49dc83 : 0xc4ffda)
+              .setAlpha(0.68)
+              .setBlendMode(ribbonIndex % 2 ? Phaser.BlendModes.ADD : Phaser.BlendModes.NORMAL)
+              .setDepth(ribbonIndex < 3 ? groundDepth + 5 : y + 86 + ribbonIndex);
+            this.tweens.add({
+              targets: ribbon,
+              x: x + Math.cos(angle + 0.58) * (bandRadius + 34),
+              y: centerY + Math.sin(angle + 0.58) * (bandRadius + 34) * 0.46 - 18,
+              rotation: angle + Math.PI * 0.72,
+              scaleX: ribbon.scaleX * 1.5,
+              alpha: 0,
+              duration: 390 + wave * 80 + ribbonIndex * 18,
+              ease: "Cubic.easeOut",
+              onComplete: () => ribbon.destroy()
+            });
+          }
         });
       }
-      for (let burst = 0; burst < 7; burst += 1) {
-        this.time.delayedCall(burst * 30, () => this.spawnWindBurst(x, y - 44, 16 + burst * 3, 86 + burst * 44, 250 + burst * 42));
+      for (let burst = 0; burst < 5; burst += 1) {
+        this.time.delayedCall(burst * 36, () => this.spawnWindBurst(x, centerY, 14 + burst * 4, 62 + burst * 22, 310 + burst * 45));
       }
     }
 
@@ -6230,15 +6591,25 @@
 
     applyNetworkHealingChain(message) {
       const bounces = Array.isArray(message?.bounces) ? message.bounces.slice(0, LINA_HEAL_CHAIN_JUMPS) : [];
+      if (!bounces.length) return;
+      const chainSegments = [];
       let previous = message?.source || this.getFriendlyEffectPosition(message?.sourceId);
+      if (message?.sourceId !== app.profile?.id && previous) {
+        this.playHealingChainCastBurst(previous.x, previous.y);
+        app.audio.ultimateWind();
+      }
       bounces.forEach((bounce, index) => {
         this.time.delayedCall(index * 125, () => {
           const targetPosition = this.getFriendlyEffectPosition(bounce.targetId) || { x: bounce.x, y: bounce.y };
           const target = targetPosition || previous || { x: this.actor.x, y: this.actor.y };
-          this.playHealingChainArc(previous || target, target, index);
+          const segment = this.playHealingChainArc(previous || target, target, index);
+          if (segment) chainSegments.push(segment);
           this.applyHealingChainTargetState(bounce, target);
           previous = target;
-          if (index === bounces.length - 1) app.audio.heal();
+          if (index === bounces.length - 1) {
+            app.audio.heal();
+            this.time.delayedCall(LINA_HEAL_CHAIN_HOLD_MS, () => chainSegments.forEach(activeSegment => activeSegment.fade()));
+          }
         });
       });
     }
@@ -6308,7 +6679,7 @@
     playHealingChainArc(from, to, bounceIndex = 0) {
       const sameTarget = Phaser.Math.Distance.Between(from.x, from.y, to.x, to.y) < 8;
       const points = [];
-      const steps = 20;
+      const steps = 24;
       const dx = sameTarget ? 70 : to.x - from.x;
       const dy = sameTarget ? -8 : to.y - from.y;
       const length = Math.max(1, Math.hypot(dx, dy));
@@ -6316,7 +6687,7 @@
       const ny = dx / length;
       for (let step = 0; step <= steps; step += 1) {
         const t = step / steps;
-        const wave = Math.sin(t * Math.PI * 2.5 + bounceIndex * 1.3) * (sameTarget ? 20 : 10 + bounceIndex * 1.8);
+        const wave = Math.sin(t * Math.PI * 2.75 + bounceIndex * 1.3) * (sameTarget ? 20 : 8 + bounceIndex * 1.5);
         const loop = sameTarget ? Math.sin(t * Math.PI) * 55 : 0;
         points.push({
           x: from.x + dx * t + nx * wave + (sameTarget ? Math.cos(t * Math.PI * 2) * loop : 0),
@@ -6324,13 +6695,15 @@
         });
       }
       const depth = Math.max(from.y, to.y) + 94;
+      const container = this.add.container(0, 0).setDepth(depth);
+      const activeTweens = [];
       if (!sameTarget) {
         const rotation = Math.atan2(dy, dx);
         const midpoint = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 - 52 };
         [
-          { tint: 0x2f8f83, alpha: 0.24, scaleY: 0.34, offset: 8 },
-          { tint: 0x7de8c8, alpha: 0.68, scaleY: 0.22, offset: 0 },
-          { tint: 0xffedbd, alpha: 0.84, scaleY: 0.1, offset: -5 }
+          { tint: 0x1a6d38, alpha: 0.25, scaleY: 0.36, offset: 8 },
+          { tint: 0x75ed62, alpha: 0.6, scaleY: 0.22, offset: 0 },
+          { tint: 0xffef76, alpha: 0.8, scaleY: 0.09, offset: -5 }
         ].forEach((style, index) => {
           const ribbon = this.add.image(midpoint.x + nx * style.offset, midpoint.y + ny * style.offset, WIND_RIBBON_TEXTURE_KEY)
             .setOrigin(0.5)
@@ -6339,23 +6712,42 @@
             .setTint(style.tint)
             .setAlpha(style.alpha)
             .setBlendMode(index ? Phaser.BlendModes.ADD : Phaser.BlendModes.NORMAL)
-            .setDepth(depth + index);
-          this.tweens.add({ targets: ribbon, scaleX: ribbon.scaleX * 1.08, alpha: 0, duration: 300, ease: "Sine.easeOut", onComplete: () => ribbon.destroy() });
+            .setDepth(index);
+          container.add(ribbon);
+          activeTweens.push(this.tweens.add({
+            targets: ribbon,
+            alpha: { from: style.alpha, to: style.alpha * 0.55 },
+            scaleY: style.scaleY * 1.2,
+            duration: 180 + index * 35,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut"
+          }));
         });
       }
-      [
-        { width: 17, color: 0x126b72, alpha: 0.2, blend: Phaser.BlendModes.NORMAL },
-        { width: 9, color: 0x41cfae, alpha: 0.72, blend: Phaser.BlendModes.NORMAL },
-        { width: 4, color: 0x9effdd, alpha: 0.96, blend: Phaser.BlendModes.ADD },
-        { width: 1.4, color: 0xffffff, alpha: 0.9, blend: Phaser.BlendModes.ADD }
-      ].forEach(style => {
-        const graphics = this.add.graphics().setDepth(depth).setBlendMode(style.blend);
+      const lineLayers = [
+        { width: 18, color: 0x123b23, alpha: 0.34, blend: Phaser.BlendModes.NORMAL },
+        { width: 10, color: 0x31bd55, alpha: 0.72, blend: Phaser.BlendModes.NORMAL },
+        { width: 5, color: 0x9cff67, alpha: 0.96, blend: Phaser.BlendModes.ADD },
+        { width: 1.6, color: 0xfffac0, alpha: 0.96, blend: Phaser.BlendModes.ADD }
+      ].map((style, layerIndex) => {
+        const graphics = this.add.graphics().setDepth(layerIndex + 4).setBlendMode(style.blend);
         graphics.lineStyle(style.width, style.color, style.alpha);
         graphics.beginPath();
         points.forEach((point, index) => index ? graphics.lineTo(point.x, point.y) : graphics.moveTo(point.x, point.y));
         graphics.strokePath();
-        this.tweens.add({ targets: graphics, alpha: 0, duration: 260, ease: "Sine.easeOut", onComplete: () => graphics.destroy() });
+        container.add(graphics);
+        return graphics;
       });
+      activeTweens.push(this.tweens.add({
+        targets: lineLayers.slice(1),
+        alpha: { from: 1, to: 0.58 },
+        duration: 135,
+        delay: bounceIndex * 24,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut"
+      }));
       const samplePath = progress => {
         const scaled = clamp(progress, 0, 1) * (points.length - 1);
         const index = Math.min(points.length - 2, Math.floor(scaled));
@@ -6365,71 +6757,138 @@
           y: Phaser.Math.Linear(points[index].y, points[index + 1].y, ratio)
         };
       };
-      for (let pulseIndex = 0; pulseIndex < 5; pulseIndex += 1) {
+      for (let pulseIndex = 0; pulseIndex < 7; pulseIndex += 1) {
         const pulse = this.add.image(points[0].x, points[0].y, WIND_MOTE_TEXTURE_KEY)
-          .setScale(0.48 + pulseIndex * 0.035)
-          .setTint(pulseIndex % 2 ? 0x7dffd5 : 0xeafff5)
+          .setScale(0.42 + pulseIndex % 3 * 0.08)
+          .setTint(pulseIndex % 3 ? 0xb6ff67 : 0xfff59a)
           .setBlendMode(Phaser.BlendModes.ADD)
-          .setDepth(depth + 3);
+          .setDepth(10 + pulseIndex);
+        container.add(pulse);
         const travel = { value: 0 };
-        this.tweens.add({
+        activeTweens.push(this.tweens.add({
           targets: travel,
           value: 1,
-          delay: pulseIndex * 28,
-          duration: 150 + bounceIndex * 12,
-          ease: "Cubic.easeIn",
+          delay: pulseIndex * 82,
+          duration: 430 + bounceIndex * 28,
+          repeat: -1,
+          repeatDelay: 70,
+          ease: "Sine.easeInOut",
           onUpdate: () => {
             const point = samplePath(travel.value);
-            pulse.setPosition(point.x, point.y);
-          },
-          onComplete: () => pulse.destroy()
-        });
+            pulse.setPosition(point.x, point.y).setScale(0.38 + Math.sin(travel.value * Math.PI) * 0.22);
+          }
+        }));
       }
       points.slice(2, -1).forEach((point, index) => {
-        if (index % 2) return;
+        if (index % 3) return;
         const mote = this.add.image(point.x, point.y, WIND_MOTE_TEXTURE_KEY)
-          .setScale(0.2 + Math.random() * 0.2)
-          .setTint(index % 4 ? 0x6ee8c5 : 0xffedaf)
+          .setScale(0.18 + Math.random() * 0.18)
+          .setTint(index % 2 ? 0x88ee5d : 0xffef8a)
+          .setAlpha(0.66)
           .setBlendMode(Phaser.BlendModes.ADD)
-          .setDepth(depth + 2);
-        this.tweens.add({ targets: mote, x: mote.x + Phaser.Math.Between(-18, 18), y: mote.y - 24 - Math.random() * 18, alpha: 0, scale: 0.06, duration: 300, onComplete: () => mote.destroy() });
+          .setDepth(8);
+        container.add(mote);
+        activeTweens.push(this.tweens.add({
+          targets: mote,
+          y: point.y - 10 - Math.random() * 8,
+          alpha: { from: 0.66, to: 0.18 },
+          scale: 0.08,
+          duration: 260 + index * 9,
+          yoyo: true,
+          repeat: -1,
+          ease: "Sine.easeInOut"
+        }));
       });
+      let fading = false;
+      return {
+        fade: () => {
+          if (fading || !container.active) return;
+          fading = true;
+          activeTweens.forEach(tween => tween?.stop?.());
+          this.tweens.add({
+            targets: container,
+            alpha: 0,
+            duration: 220,
+            ease: "Sine.easeOut",
+            onComplete: () => container.destroy(true)
+          });
+        }
+      };
     }
 
     playHealingChainImpact(x, y, healed, shieldGain) {
-      const color = shieldGain > 0 ? 0x8bdcff : 0x70efbd;
-      const streamers = this.add.graphics().setPosition(x, y - 36).setDepth(y + 100);
-      const highlights = this.add.graphics().setPosition(x, y - 36).setDepth(y + 102).setBlendMode(Phaser.BlendModes.ADD);
-      for (let index = 0; index < 24; index += 1) {
-        const angle = Math.PI * 2 * index / 24 + Phaser.Math.FloatBetween(-0.12, 0.12);
-        const length = 38 + (index % 6) * 9;
-        const endX = Math.cos(angle) * length;
-        const endY = Math.sin(angle) * length * 0.62 - (index % 3) * 8;
-        streamers.lineStyle(index % 4 === 0 ? 7 : 4, shieldGain > 0 ? 0x318fc0 : 0x238e72, 0.3);
-        streamers.lineBetween(Math.cos(angle) * 8, Math.sin(angle) * 5, endX, endY);
-        highlights.lineStyle(index % 4 === 0 ? 2.5 : 1.4, index % 5 ? color : 0xffefb2, 0.9);
-        highlights.lineBetween(Math.cos(angle) * 8, Math.sin(angle) * 5, endX, endY);
+      const accent = shieldGain > 0 ? 0xb7fff4 : 0xb7ff75;
+      const field = this.add.graphics().setPosition(x, y + 2).setDepth(Math.max(2, y - 22));
+      field.fillStyle(0x1b8d42, 0.2);
+      field.fillEllipse(0, 0, 196, 74);
+      field.lineStyle(12, 0x176d35, 0.18);
+      field.strokeEllipse(0, 0, 196, 74);
+      field.lineStyle(4, 0x5fe76f, 0.68);
+      field.strokeEllipse(0, 0, 184, 66);
+      field.lineStyle(1.5, 0xe9ffab, 0.92);
+      field.strokeEllipse(0, 0, 164, 56);
+      const orbit = this.add.graphics().setPosition(x, y + 2).setScale(1, 0.4).setDepth(y + 88).setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 13; index += 1) {
+        const start = Math.PI * 2 * index / 13 + Phaser.Math.FloatBetween(-0.08, 0.08);
+        const radius = 72 + index % 4 * 7;
+        orbit.lineStyle(index % 4 === 0 ? 4.5 : 2, index % 3 ? 0x8cff73 : 0xffef8a, index % 4 === 0 ? 0.86 : 0.62);
+        orbit.beginPath();
+        orbit.arc(0, 0, radius, start, start + 0.38 + index % 3 * 0.14, false);
+        orbit.strokePath();
       }
-      for (let columnIndex = 0; columnIndex < 7; columnIndex += 1) {
-        const offsetX = (columnIndex - 3) * 13 + Phaser.Math.Between(-5, 5);
-        streamers.lineStyle(7, shieldGain > 0 ? 0x2c7898 : 0x247a65, 0.18);
-        streamers.lineBetween(offsetX, 34, offsetX + Phaser.Math.Between(-8, 8), -78 - columnIndex % 2 * 24);
-        highlights.lineStyle(2, columnIndex % 2 ? color : 0xfff1bd, 0.82);
-        highlights.lineBetween(offsetX, 34, offsetX + Phaser.Math.Between(-8, 8), -78 - columnIndex % 2 * 24);
+      const dome = this.add.graphics().setPosition(x, y - 38).setDepth(y + 101).setBlendMode(Phaser.BlendModes.ADD);
+      dome.fillStyle(0x2abf55, 0.055);
+      dome.fillCircle(0, 0, 70);
+      [64, 56, 46].forEach((radius, index) => {
+        dome.lineStyle(index === 0 ? 3.2 : 1.4, index === 1 ? 0xffef91 : 0x86ff78, index === 0 ? 0.82 : 0.58);
+        dome.beginPath();
+        dome.arc(0, 0, radius, -2.86 + index * 0.22, -0.42 - index * 0.14, false);
+        dome.strokePath();
+        dome.beginPath();
+        dome.arc(0, 0, radius, 0.22 + index * 0.16, 2.72 - index * 0.2, false);
+        dome.strokePath();
+      });
+      const pillars = this.add.graphics().setPosition(x, y - 16).setDepth(y + 106).setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 15; index += 1) {
+        const angle = Math.PI * 2 * index / 15 + Phaser.Math.FloatBetween(-0.12, 0.12);
+        const radius = 26 + index % 5 * 13;
+        const baseX = Math.cos(angle) * radius;
+        const baseY = Math.sin(angle) * radius * 0.34 + 22;
+        const height = 34 + index % 6 * 13;
+        pillars.lineStyle(index % 5 === 0 ? 5 : 2, index % 3 ? 0x7af36d : accent, index % 4 === 0 ? 0.82 : 0.58);
+        pillars.beginPath();
+        pillars.moveTo(baseX, baseY);
+        pillars.lineTo(baseX + Phaser.Math.Between(-7, 7), baseY - height * 0.55);
+        pillars.lineTo(baseX + Phaser.Math.Between(-5, 5), baseY - height);
+        pillars.strokePath();
       }
-      for (let index = 0; index < 5; index += 1) {
-        const angle = -Math.PI * 0.82 + index * Math.PI * 0.41;
-        const ribbon = this.add.image(x, y - 34, WIND_RIBBON_TEXTURE_KEY)
+      for (let index = 0; index < 10; index += 1) {
+        const angle = Math.PI * 2 * index / 10 + 0.24;
+        const ribbon = this.add.image(x + Math.cos(angle) * 76, y - 18 + Math.sin(angle) * 28, WIND_RIBBON_TEXTURE_KEY)
           .setOrigin(0.08, 0.5)
-          .setRotation(angle)
-          .setScale(0.28, 0.14)
-          .setTint(shieldGain > 0 ? (index % 2 ? 0xa7e8ff : 0xe6f8ff) : (index % 2 ? 0x8ff0cb : 0xffe7a8))
+          .setRotation(angle + Math.PI * 0.52)
+          .setScale(0.2 + index % 3 * 0.045, 0.1 + index % 2 * 0.035)
+          .setTint(index % 3 ? 0x79ef6a : 0xffefa0)
+          .setAlpha(0.82)
           .setBlendMode(Phaser.BlendModes.ADD)
-          .setDepth(y + 103 + index);
-        this.tweens.add({ targets: ribbon, x: x + Math.cos(angle) * 62, y: y - 82 + Math.sin(angle) * 24, scaleX: 0.5, alpha: 0, duration: 520, ease: "Cubic.easeOut", onComplete: () => ribbon.destroy() });
+          .setDepth(index < 5 ? Math.max(2, y - 18) : y + 108 + index);
+        this.tweens.add({
+          targets: ribbon,
+          x: x + Math.cos(angle + 0.38) * 108,
+          y: y - 52 + Math.sin(angle + 0.38) * 42,
+          rotation: angle + Math.PI * 0.82,
+          scaleX: ribbon.scaleX * 1.55,
+          alpha: 0,
+          duration: 640 + index * 20,
+          ease: "Cubic.easeOut",
+          onComplete: () => ribbon.destroy()
+        });
       }
-      this.tweens.add({ targets: [streamers, highlights], scaleX: 1.2, scaleY: 1.35, alpha: 0, duration: 520, ease: "Cubic.easeOut", onComplete: () => { streamers.destroy(); highlights.destroy(); } });
-      this.spawnHealingMotes(x, y - 34, 58, 108, 720);
+      this.tweens.add({ targets: field, scaleX: 1.16, scaleY: 1.12, alpha: 0, duration: 720, ease: "Cubic.easeOut", onComplete: () => field.destroy() });
+      this.tweens.add({ targets: orbit, angle: 58, scaleX: 1.2, scaleY: 0.48, alpha: 0, duration: 740, ease: "Cubic.easeOut", onComplete: () => orbit.destroy() });
+      this.tweens.add({ targets: dome, scale: 1.14, angle: -18, alpha: 0, duration: 760, ease: "Cubic.easeOut", onComplete: () => dome.destroy() });
+      this.tweens.add({ targets: pillars, y: y - 46, scaleY: 1.16, alpha: 0, duration: 680, ease: "Cubic.easeOut", onComplete: () => pillars.destroy() });
+      this.spawnHealingMotes(x, y - 20, 68, 116, 780);
       if (healed > 0) this.showFloatingText(x, y - 130, `治疗 +${Math.round(healed)}`, { color: "#82ffd4", size: "22px", rise: 68 });
       else if (shieldGain > 0) this.showFloatingText(x, y - 130, `护盾 +${Math.round(shieldGain)}`, { color: "#aeeaff", size: "22px", rise: 68 });
     }
@@ -6513,26 +6972,110 @@
     }
 
     castLaodengImpactPunch(charged, berserk) {
-      this.dealMeleeDamage({
-        damageMultiplier: charged ? 1.75 : 1,
-        charged,
-        radius: charged ? 112 : undefined,
-        berserk,
-        knockback: charged
-      });
-      if (!charged) return;
-      [92, 178].forEach((delay, index) => this.time.delayedCall(delay, () => {
-        this.dealMeleeDamage({
-          damageMultiplier: 0.62,
-          charged: true,
-          radius: 104,
-          berserk,
-          bossOnly: true,
-          silentVisual: true,
-          noEnergyGain: true
+      if (charged) {
+        const token = ++this.laodengHeavyToken;
+        const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+        const dashVector = normalizeVector(aim.x, aim.y);
+        const dashDuration = 340;
+        const dashDistance = MAP_TILE_SIZE * 3;
+        this.isHeavyDashing = true;
+        this.isActionLocked = true;
+        this.actor.body.setVelocity(
+          dashVector.x * dashDistance / (dashDuration / 1000),
+          dashVector.y * dashDistance / (dashDuration / 1000)
+        );
+        [0, 72, 144, 216, 288].forEach((delay, index) => this.time.delayedCall(delay, () => {
+          if (!this.actor?.active || this.isDead || this.laodengHeavyToken !== token) return;
+          this.actor.play("laodeng-attack-once", true);
+          const spread = Phaser.Math.FloatBetween(-0.12, 0.12);
+          const punchResult = this.dealMeleeDamage({
+            damageMultiplier: 0.5,
+            charged: true,
+            berserk,
+            angleOffset: spread,
+            reach: 64,
+            visualLead: berserk ? 54 : 38,
+            radius: 58,
+            allowComboHit: true,
+            knockback: index === 4
+          });
+          if (berserk && punchResult?.hitSomething) {
+            this.triggerLaodengBerserkExplosion(punchResult.hitX, punchResult.hitY, index);
+          }
+          if (index === 4) this.cameras.main.shake(72, 0.0022);
+        }));
+        this.time.delayedCall(dashDuration, () => {
+          if (this.laodengHeavyToken !== token) return;
+          if (this.actor?.body) this.actor.body.setVelocity(0, 0);
+          this.isHeavyDashing = false;
+          this.isActionLocked = false;
+          this.isCasting = false;
+          this.actor?.setTexture("laodeng");
+          this.resetActorVisualScale();
+          if (!this.isDead) this.returnToBaseLoop();
         });
-        if (!index) this.cameras.main.shake(70, 0.0018);
-      }));
+        return;
+      }
+      this.dealMeleeDamage({
+        damageMultiplier: 1,
+        charged: false,
+        berserk,
+        reach: 70,
+        radius: 58,
+        knockback: false
+      });
+    }
+
+    launchLaodengSixWayShockwaves(originX, originY, dealDamage = true, berserk = false) {
+      const range = MAP_TILE_SIZE * 5;
+      const hitTargets = new Set();
+      const baseDamage = Math.round(
+        Number(app.profile?.attackPower || MELEE.damage)
+        * 1.55
+        * (berserk ? LAODENG_BERSERK_DAMAGE_MULTIPLIER : 1)
+      );
+      for (let index = 0; index < 6; index += 1) {
+        const angle = index / 6 * Math.PI * 2;
+        const direction = { x: Math.cos(angle), y: Math.sin(angle) };
+        const wave = this.createLaodengShockwaveVisual(originX, originY, angle, berserk);
+        const hitAlongPath = () => {
+          if (!dealDamage) return;
+          (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
+            if (!slime?.active || hitTargets.has(slime) || ["dead", "vanish", "emerging"].includes(slime.state)) return;
+            const distance = Phaser.Math.Distance.Between(wave.x, wave.y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
+            if (distance > 52 + LEAF_SLIME_HIT_RADIUS) return;
+            hitTargets.add(slime);
+            this.playLeafSlimeHit(slime, baseDamage, {
+              kind: "physical",
+              charged: true,
+              energyGain: ENERGY_MELEE_HIT_GAIN
+            });
+            if (slime.rank === "boss" || !slime.active || !slime.body?.enable) return;
+            const token = (slime.impactPunchToken || 0) + 1;
+            slime.impactPunchToken = token;
+            slime.body.setVelocity(direction.x * 520, direction.y * 520);
+            this.time.delayedCall(190, () => {
+              if (slime.active && slime.body?.enable && slime.impactPunchToken === token) slime.body.setVelocity(0, 0);
+            });
+          });
+        };
+        this.tweens.add({
+          targets: wave,
+          x: originX + direction.x * range,
+          y: originY + direction.y * range,
+          scale: { from: 0.48, to: berserk ? 1.22 : 1.08 },
+          duration: 560,
+          ease: "Cubic.easeOut",
+          onUpdate: () => {
+            wave.setDepth(wave.y + 74);
+            hitAlongPath();
+          },
+          onComplete: () => wave.destroy()
+        });
+      }
+      this.emitPhysicalSparks(originX, originY, 30, 0xff6a28);
+      this.cameras.main.shake(92, 0.003);
+      app.audio.punchSwing(true, berserk);
     }
 
     playBerserkActivationVisual(position = this.actor) {
@@ -6540,28 +7083,103 @@
       const x = Number(position.x) || 0;
       const y = Number(position.y) || 0;
       if (position === this.actor) this.berserkAura?.destroy();
-      const aura = this.add.container(x, y - 48).setDepth(y + 86);
-      const outerGlow = this.add.ellipse(0, 24, 126, 112, 0x8f1f25, 0.2).setBlendMode(Phaser.BlendModes.ADD);
-      const innerGlow = this.add.ellipse(0, 18, 82, 94, 0xff4d2f, 0.18).setBlendMode(Phaser.BlendModes.ADD);
-      const flames = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
-      for (let index = 0; index < 18; index += 1) {
-        const angle = index / 18 * Math.PI * 2;
-        const sideX = Math.cos(angle) * (34 + (index % 3) * 7);
-        const baseY = 48 + Math.sin(angle) * 18;
-        const height = 44 + (index % 5) * 9;
-        flames.fillStyle(index % 3 ? 0xff4b2b : 0xffb13b, index % 3 ? 0.5 : 0.74);
-        flames.fillTriangle(sideX - 7, baseY, sideX + 7, baseY, sideX + Math.sin(index) * 12, baseY - height);
-      }
-      const crest = this.add.star(0, 10, 10, 22, 58, 0xff7a2f, 0.2)
-        .setStrokeStyle(4, 0xffcf6f, 0.58)
+      const aura = this.add.container(x, y - 48).setDepth(y - 14);
+      const outerGlow = this.add.ellipse(0, 48, 204, 66, 0x8f1f25, 0.3)
+        .setStrokeStyle(3, 0xff5b28, 0.54)
         .setBlendMode(Phaser.BlendModes.ADD);
-      aura.add([outerGlow, flames, innerGlow, crest]);
+      const innerGlow = this.add.ellipse(0, 48, 108, 34, 0xff7a28, 0.38)
+        .setStrokeStyle(2, 0xfff0a0, 0.72)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const flameBlades = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 5; index += 1) {
+        const angle = -Math.PI / 2 + index / 5 * Math.PI * 2;
+        const tangent = angle + Math.PI / 2;
+        const baseRadius = 24;
+        const tipRadius = 92 + (index % 2) * 18;
+        const baseX = Math.cos(angle) * baseRadius;
+        const baseY = 48 + Math.sin(angle) * baseRadius * 0.38;
+        const tipX = Math.cos(angle) * tipRadius;
+        const tipY = 48 + Math.sin(angle) * tipRadius * 0.54;
+        const width = 17 + (index % 2) * 5;
+        flameBlades.fillStyle(index % 2 ? 0xff4a20 : 0xff8a28, 0.72);
+        flameBlades.fillPoints([
+          { x: baseX + Math.cos(tangent) * width, y: baseY + Math.sin(tangent) * width * 0.45 },
+          { x: tipX, y: tipY },
+          { x: baseX - Math.cos(tangent) * width, y: baseY - Math.sin(tangent) * width * 0.45 },
+          { x: baseX - Math.cos(angle) * 8, y: baseY - Math.sin(angle) * 4 }
+        ], true);
+        flameBlades.lineStyle(3, 0xffe06b, 0.88);
+        flameBlades.lineBetween(baseX, baseY, tipX, tipY);
+      }
+      const smoke = this.add.particles(0, 48, LAODENG_SMOKE_TEXTURE_KEY, {
+        lifespan: { min: 420, max: 760 },
+        frequency: 68,
+        quantity: 2,
+        speed: { min: 18, max: 76 },
+        angle: { min: 0, max: 360 },
+        gravityY: -26,
+        scale: { start: 0.34, end: 1.1 },
+        alpha: { start: 0.46, end: 0 },
+        tint: [0x8d4e3a, 0x6e4139, 0x49363a],
+        blendMode: "NORMAL"
+      });
+      aura.add([outerGlow, smoke, flameBlades, innerGlow]);
       this.emitPhysicalSparks(x, y - 42, 46, 0xff6038);
-      this.tweens.add({ targets: [outerGlow, innerGlow], scale: { from: 0.84, to: 1.18 }, alpha: { from: 0.34, to: 0.12 }, duration: 260, yoyo: true, repeat: -1 });
-      this.tweens.add({ targets: flames, scaleY: { from: 0.82, to: 1.14 }, angle: { from: -3, to: 3 }, alpha: { from: 0.98, to: 0.62 }, duration: 190, yoyo: true, repeat: -1 });
-      this.tweens.add({ targets: crest, angle: 36, scale: { from: 0.9, to: 1.16 }, alpha: { from: 0.5, to: 0.16 }, duration: 420, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: outerGlow, scale: { from: 0.72, to: 1.18 }, alpha: { from: 0.34, to: 0.08 }, duration: 390, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: innerGlow, scale: { from: 0.8, to: 1.3 }, alpha: { from: 0.68, to: 0.14 }, duration: 250, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: flameBlades, angle: 26, scale: { from: 0.72, to: 1.04 }, alpha: { from: 0.9, to: 0.46 }, duration: 480, yoyo: true, repeat: -1 });
+      aura.pulseTimer = this.time.addEvent({ delay: 96, loop: true, callback: () => this.spawnBerserkGroundPulse(aura) });
+      aura.once("destroy", () => aura.pulseTimer?.remove(false));
+      for (let index = 0; index < 3; index += 1) this.time.delayedCall(index * 90, () => this.spawnBerserkGroundPulse(aura));
       if (position === this.actor) this.berserkAura = aura;
-      else this.time.delayedCall(1300, () => aura.destroy());
+      else this.time.delayedCall(LAODENG_BERSERK_DURATION, () => aura.destroy());
+    }
+
+    spawnBerserkGroundPulse(aura) {
+      if (!aura?.active) return;
+      const pulse = this.add.container(0, 48);
+      const ring = this.add.ellipse(0, 0, 164, 52, 0xb91b16, 0.18)
+        .setStrokeStyle(4, 0xff8a2d, 0.82)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const petalImage = this.textures.exists(LAODENG_BERSERK_PETAL_TEXTURE_KEY)
+        ? this.add.image(0, 0, LAODENG_BERSERK_PETAL_TEXTURE_KEY).setOrigin(0.5, 0.54).setAlpha(0.92)
+        : null;
+      const petals = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 10; index += 1) {
+        const angle = index / 10 * Math.PI * 2 + (index % 2 ? 0.12 : -0.08);
+        const inner = 35 + (index % 3) * 5;
+        const outer = 104 + (index % 4) * 10;
+        const flatten = 0.42;
+        const tangent = angle + Math.PI / 2;
+        const width = 7 + (index % 3) * 2;
+        const baseX = Math.cos(angle) * inner;
+        const baseY = Math.sin(angle) * inner * flatten;
+        const tipX = Math.cos(angle) * outer;
+        const tipY = Math.sin(angle) * outer * flatten;
+        petals.fillStyle(index % 3 ? 0xff4f1e : 0xffc04b, index % 3 ? 0.58 : 0.84);
+        petals.fillTriangle(
+          baseX + Math.cos(tangent) * width,
+          baseY + Math.sin(tangent) * width * flatten,
+          tipX,
+          tipY,
+          baseX - Math.cos(tangent) * width,
+          baseY - Math.sin(tangent) * width * flatten
+        );
+      }
+      if (petalImage) petals.setVisible(false);
+      pulse.add([ring, ...(petalImage ? [petalImage] : []), petals]);
+      aura.add(pulse);
+      pulse.setScale(0.26).setAlpha(0.96).setAngle(Phaser.Math.Between(-12, 12));
+      this.tweens.add({
+        targets: pulse,
+        scaleX: 1.42,
+        scaleY: 1.22,
+        angle: pulse.angle + 20,
+        alpha: 0,
+        duration: 620,
+        ease: "Cubic.easeOut",
+        onComplete: () => pulse.destroy()
+      });
     }
 
     createLinaTornadoVisual(x, y) {
@@ -6646,17 +7264,23 @@
       if (!this.actor || this.isDead) return;
       const direction = this.facing || DIRECTIONS[2];
       const vec = directionVector(direction);
-      this.lastAimVector = vec;
+      const angleOffset = Number(options.angleOffset) || 0;
+      const baseAngle = Math.atan2(vec.y, vec.x) + angleOffset;
+      const attackVec = { x: Math.cos(baseAngle), y: Math.sin(baseAngle) };
+      this.lastAimVector = attackVec;
       const reach = Number(options.reach) || MELEE.reach;
-      const hitX = this.actor.x + vec.x * reach;
-      const hitY = this.actor.y - 44 + vec.y * reach;
-      const angle = Math.atan2(vec.y, vec.x) + (options.reverseSlash ? Math.PI : 0);
+      const hitX = this.actor.x + attackVec.x * reach;
+      const hitY = this.actor.y - 44 + attackVec.y * reach;
+      const visualLead = Math.max(0, Number(options.visualLead) || 0);
+      const visualX = hitX + attackVec.x * visualLead;
+      const visualY = hitY + attackVec.y * visualLead;
+      const angle = baseAngle + (options.reverseSlash ? Math.PI : 0);
       const isLaodeng = app.profile.characterId === "laodeng";
       if (!options.silentVisual) {
-        if (isLaodeng) this.playImpactPunchVisual(hitX, hitY, angle, !!options.charged, !!options.berserk);
-        else this.flashSlash(hitX, hitY, angle, this.actor.y + 20);
+        if (isLaodeng) this.playImpactPunchVisual(visualX, visualY, angle, !!options.charged, !!options.berserk);
+        else this.flashSlash(hitX, hitY, angle, this.actor.y + 20, !!options.charged);
       }
-      this.broadcastCombatEvent("melee", { x: hitX, y: hitY, aimX: Math.cos(angle), aimY: Math.sin(angle), charged: !!options.charged, radius: Number(options.radius) || MELEE.radius });
+      this.broadcastCombatEvent("melee", { x: isLaodeng ? visualX : hitX, y: isLaodeng ? visualY : hitY, aimX: Math.cos(angle), aimY: Math.sin(angle), charged: !!options.charged, berserk: !!options.berserk, radius: Number(options.radius) || MELEE.radius });
       if (isLaodeng) app.audio.punchSwing(!!options.charged, !!options.berserk);
       else app.audio.swordSwing(!!options.charged);
       let hitSomething = false;
@@ -6678,7 +7302,8 @@
             kind: "physical",
             charged: !!options.charged,
             energyGain: options.noEnergyGain ? 0 : ENERGY_MELEE_HIT_GAIN,
-            noEnergyGain: !!options.noEnergyGain
+            noEnergyGain: !!options.noEnergyGain,
+            allowComboHit: !!options.allowComboHit
           }) || 0;
           if (options.knockback && slime.rank !== "boss" && slime.active && slime.body?.enable) {
             const dx = slime.x - this.actor.x;
@@ -6703,6 +7328,7 @@
       }
       if (berserk && dealtDamage > 0) this.applyLifesteal(dealtDamage * 0.2);
       if (hitSomething) this.cameras.main.shake(60, 0.0015);
+      return { hitSomething, hitX, hitY, angle, dealtDamage };
     }
 
     applyLifesteal(amount) {
@@ -6732,8 +7358,8 @@
           x: start.x + aim.x / length * MAP_TILE_SIZE * 2.2,
           y: start.y + aim.y / length * MAP_TILE_SIZE * 2.2
         };
-        this.drawLightningArc(start.x, start.y, end.x, end.y, { intensity: 1.32 });
-        this.renderLightningImpact(end.x, end.y, 56, { quantity: 28, splashCount: 12, ground: false, shake: 0.0014 });
+        this.drawLightningArc(start.x, start.y, end.x, end.y, { intensity: 1.08, style: "chain" });
+        this.renderChainLightningHit(end.x, end.y, 42);
         this.broadcastCombatEvent("chainLightning", { x: start.x, y: start.y, points: [start, end] });
         app.audio.ultimateBurst();
         return;
@@ -6774,16 +7400,11 @@
         previous = target;
         this.time.delayedCall(index * 105, () => {
           if (!slime?.active) return;
-          this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 1.42 - index * 0.18 });
+          this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 1.12 - index * 0.12, style: "chain" });
           if (!index) {
-            this.time.delayedCall(38, () => this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 0.72 }));
+            this.time.delayedCall(38, () => this.drawLightningArc(source.x, source.y, target.x, target.y, { intensity: 0.62, style: "chain" }));
           }
-          this.renderLightningImpact(target.x, target.y, 68 - index * 7, {
-            quantity: 46 - index * 6,
-            splashCount: 15 - index * 2,
-            ground: false,
-            shake: 0.0028 - index * 0.00055
-          });
+          this.renderChainLightningHit(target.x, target.y, 54 - index * 5);
           const damage = Math.round(Number(app.profile.magicPower || 22) * multipliers[index]);
           this.playLeafSlimeHit(slime, damage, { kind: "magic", charged: true });
         });
@@ -6793,63 +7414,79 @@
 
     drawLightningArc(x1, y1, x2, y2, options = {}) {
       const intensity = Number(options.intensity) || 1;
+      const chainStyle = options.style === "chain";
       const distance = Phaser.Math.Distance.Between(x1, y1, x2, y2);
-      const segments = Math.max(6, Math.ceil(distance / 28));
+      const segments = Math.max(6, Math.ceil(distance / (chainStyle ? 22 : 28)));
       const points = [{ x: x1, y: y1 }];
       for (let index = 1; index < segments; index += 1) {
         const t = index / segments;
         const taper = Math.sin(Math.PI * t);
+        const jitter = chainStyle ? 8 : 14;
         points.push({
-          x: Phaser.Math.Linear(x1, x2, t) + Phaser.Math.Between(-14, 14) * taper * intensity,
-          y: Phaser.Math.Linear(y1, y2, t) + Phaser.Math.Between(-14, 14) * taper * intensity
+          x: Phaser.Math.Linear(x1, x2, t) + Phaser.Math.Between(-jitter, jitter) * taper * intensity,
+          y: Phaser.Math.Linear(y1, y2, t) + Phaser.Math.Between(-jitter, jitter) * taper * intensity
         });
       }
       points.push({ x: x2, y: y2 });
       const depth = Math.max(y1, y2) + 70;
-      const ribbon = this.add.image((x1 + x2) / 2, (y1 + y2) / 2, LIGHTNING_RIBBON_TEXTURE_KEY)
-        .setRotation(Math.atan2(y2 - y1, x2 - x1))
-        .setScale(Math.max(0.12, distance / 256), 0.66 * intensity)
-        .setAlpha(0.9)
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setDepth(depth + 2);
+      const ribbon = chainStyle ? null : this.add.image((x1 + x2) / 2, (y1 + y2) / 2, LIGHTNING_RIBBON_TEXTURE_KEY)
+          .setRotation(Math.atan2(y2 - y1, x2 - x1))
+          .setScale(Math.max(0.12, distance / 256), 0.66 * intensity)
+          .setAlpha(0.9)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(depth + 2);
       const underlay = this.add.graphics().setDepth(depth);
       const body = this.add.graphics().setDepth(depth + 1);
       const bloom = this.add.graphics().setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
       const core = this.add.graphics().setDepth(depth + 3).setBlendMode(Phaser.BlendModes.ADD);
-      const stroke = (graphics, width, color, alpha) => {
+      const filament = chainStyle ? this.add.graphics().setDepth(depth + 3).setBlendMode(Phaser.BlendModes.ADD) : null;
+      const strokePath = (graphics, path, width, color, alpha) => {
         graphics.lineStyle(width * intensity, color, alpha);
         graphics.beginPath();
-        graphics.moveTo(points[0].x, points[0].y);
-        points.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
+        graphics.moveTo(path[0].x, path[0].y);
+        path.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
         graphics.strokePath();
       };
-      stroke(underlay, 27, 0x2a124f, 0.4);
-      stroke(body, 14, 0x7138c7, 0.96);
-      stroke(bloom, 8, 0xc14fe2, 0.72);
-      stroke(core, 2.6, 0xe8d7ff, 0.98);
-      [0.22, 0.4, 0.6, 0.78].map(ratio => Math.floor(segments * ratio)).forEach((pointIndex, branchIndex) => {
+      strokePath(underlay, points, chainStyle ? 11 : 27, chainStyle ? 0x06133f : 0x2a124f, chainStyle ? 0.5 : 0.4);
+      strokePath(body, points, chainStyle ? 4.5 : 14, chainStyle ? 0x145dff : 0x7138c7, chainStyle ? 0.98 : 0.96);
+      strokePath(bloom, points, chainStyle ? 3.2 : 8, chainStyle ? 0x42cfff : 0xc14fe2, chainStyle ? 0.86 : 0.72);
+      strokePath(core, points, chainStyle ? 1.1 : 2.6, chainStyle ? 0xf2fdff : 0xe8d7ff, 0.98);
+      if (filament) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.hypot(dx, dy) || 1;
+        const normal = { x: -dy / length, y: dx / length };
+        [-1, 1].forEach((side, strandIndex) => {
+          const offset = (7 + strandIndex * 5) * side * intensity;
+          const strand = points.map((point, index) => {
+            const taper = Math.sin(Math.PI * index / (points.length - 1));
+            return {
+              x: point.x + normal.x * offset * taper + Phaser.Math.Between(-2, 2),
+              y: point.y + normal.y * offset * taper + Phaser.Math.Between(-2, 2)
+            };
+          });
+          strokePath(filament, strand, strandIndex ? 0.9 : 1.15, strandIndex ? 0x63dfff : 0xb7f3ff, strandIndex ? 0.68 : 0.82);
+        });
+      }
+      const branchRatios = chainStyle ? [0.28, 0.58, 0.8] : [0.22, 0.4, 0.6, 0.78];
+      branchRatios.map(ratio => Math.floor(segments * ratio)).forEach((pointIndex, branchIndex) => {
         const point = points[pointIndex];
         const direction = branchIndex % 2 ? -1 : 1;
         const branch = [
           point,
-          { x: point.x + Phaser.Math.Between(16, 28) * direction, y: point.y + Phaser.Math.Between(-24, 24) },
-          { x: point.x + Phaser.Math.Between(30, 48) * direction, y: point.y + Phaser.Math.Between(-38, 38) }
+          { x: point.x + Phaser.Math.Between(chainStyle ? 10 : 16, chainStyle ? 20 : 28) * direction, y: point.y + Phaser.Math.Between(chainStyle ? -16 : -24, chainStyle ? 16 : 24) },
+          { x: point.x + Phaser.Math.Between(chainStyle ? 22 : 30, chainStyle ? 36 : 48) * direction, y: point.y + Phaser.Math.Between(chainStyle ? -28 : -38, chainStyle ? 28 : 38) }
         ];
         [
-          { graphics: underlay, width: 7, color: 0x2a124f, alpha: 0.4 },
-          { graphics: body, width: 3.6, color: 0x8c3ed0, alpha: 0.92 },
-          { graphics: core, width: 1.1, color: 0xd7baff, alpha: 0.9 }
+          { graphics: underlay, width: chainStyle ? 3.5 : 7, color: chainStyle ? 0x06133f : 0x2a124f, alpha: 0.4 },
+          { graphics: body, width: chainStyle ? 1.7 : 3.6, color: chainStyle ? 0x278cff : 0x8c3ed0, alpha: 0.92 },
+          { graphics: core, width: chainStyle ? 0.65 : 1.1, color: chainStyle ? 0xdffbff : 0xd7baff, alpha: 0.9 }
         ].forEach(style => {
-          style.graphics.lineStyle(style.width * intensity, style.color, style.alpha);
-          style.graphics.beginPath();
-          style.graphics.moveTo(branch[0].x, branch[0].y);
-          style.graphics.lineTo(branch[1].x, branch[1].y);
-          style.graphics.lineTo(branch[2].x, branch[2].y);
-          style.graphics.strokePath();
+          strokePath(style.graphics, branch, style.width, style.color, style.alpha);
         });
       });
-      if (options.emit !== false) this.emitLightningBurst(x2, y2, Math.round(14 * intensity));
-      [underlay, body, bloom, core].forEach((layer, index) => this.tweens.add({
+      if (options.emit !== false) this.emitLightningBurst(x2, y2, Math.round((chainStyle ? 7 : 14) * intensity), chainStyle ? "electricBlue" : "arcane");
+      [underlay, body, bloom, core, filament].filter(Boolean).forEach((layer, index) => this.tweens.add({
         targets: layer,
         alpha: 0,
         delay: index === 0 ? 70 : 0,
@@ -6857,18 +7494,20 @@
         ease: "Quad.easeOut",
         onComplete: () => layer.destroy()
       }));
-      this.tweens.add({ targets: ribbon, alpha: 0, scaleY: ribbon.scaleY * 0.28, duration: 165, ease: "Quad.easeOut", onComplete: () => ribbon.destroy() });
+      if (ribbon) this.tweens.add({ targets: ribbon, alpha: 0, scaleY: ribbon.scaleY * 0.28, duration: 165, ease: "Quad.easeOut", onComplete: () => ribbon.destroy() });
       if (options.echo !== false) {
         this.time.delayedCall(34, () => this.drawLightningArc(x1, y1, x2, y2, {
           intensity: intensity * 0.7,
+          style: options.style,
           echo: false,
           emit: false
         }));
       }
     }
 
-    emitLightningBurst(x, y, quantity = 18) {
+    emitLightningBurst(x, y, quantity = 18, palette = "arcane") {
       if (!this.textures.exists(LIGHTNING_SPARK_TEXTURE_KEY)) return;
+      const electricBlue = palette === "electricBlue";
       const sparks = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
         emitting: false,
         lifespan: { min: 190, max: 460 },
@@ -6877,8 +7516,8 @@
         rotate: { min: 0, max: 180 },
         scale: { start: 0.72, end: 0 },
         alpha: { start: 0.96, end: 0 },
-        tint: [0x6a32bd, 0xc246dc, 0x62d8d1, 0xffc95d],
-        blendMode: "NORMAL"
+        tint: electricBlue ? [0xffffff, 0xbfefff, 0x43c8ff, 0x1767ff] : [0x6a32bd, 0xc246dc, 0x62d8d1, 0xffc95d],
+        blendMode: electricBlue ? "ADD" : "NORMAL"
       }).setDepth(y + 118);
       sparks.explode(quantity, 0, 0);
       const motes = this.add.particles(x, y, LIGHTNING_MOTE_TEXTURE_KEY, {
@@ -6889,8 +7528,8 @@
         gravityY: -55,
         scale: { start: 0.52, end: 0 },
         alpha: { start: 0.78, end: 0 },
-        tint: [0x6e35b8, 0xb84bd0, 0x63cfc9, 0xf4b95d],
-        blendMode: "NORMAL"
+        tint: electricBlue ? [0xe9fbff, 0x7edfff, 0x287dff, 0x0b35b7] : [0x6e35b8, 0xb84bd0, 0x63cfc9, 0xf4b95d],
+        blendMode: electricBlue ? "ADD" : "NORMAL"
       }).setDepth(y + 116);
       motes.explode(Math.max(8, Math.round(quantity * 0.65)), 0, 0);
       this.time.delayedCall(720, () => {
@@ -6903,13 +7542,15 @@
       const quantity = Number(options.quantity) || 24;
       const crackCount = Math.max(3, Number(options.crackCount) || 10);
       const splashCount = Math.max(3, Number(options.splashCount) || 9);
+      const electricBlue = options.palette === "electricBlue";
       const showGround = options.ground !== false;
       const groundY = Number.isFinite(options.groundY) ? Number(options.groundY) : y + 56;
-      const groundShadow = showGround ? this.add.graphics().setPosition(x, groundY).setDepth(groundY - 42) : null;
+      const groundDepth = groundY - 76;
+      const groundShadow = showGround ? this.add.graphics().setPosition(x, groundY).setDepth(groundDepth) : null;
       const groundCharge = showGround
-        ? this.add.graphics().setPosition(x, groundY).setDepth(groundY - 41).setBlendMode(Phaser.BlendModes.ADD)
+        ? this.add.graphics().setPosition(x, groundY).setDepth(groundDepth + 1).setBlendMode(Phaser.BlendModes.ADD)
         : null;
-      const splashArcs = this.add.graphics().setDepth(y + 126);
+      const splashArcs = this.add.graphics().setDepth(showGround ? groundDepth + 5 : y + 126);
       const drawPath = (graphics, points, width, color, alpha) => {
         graphics.lineStyle(width, color, alpha);
         graphics.beginPath();
@@ -6932,9 +7573,9 @@
               y: previous.y + Math.sin(angle) * stride * 0.42
             });
           }
-          drawPath(groundShadow, points, index % 3 === 0 ? 9 : 6, 0x251a2d, 0.58);
-          drawPath(groundShadow, points, index % 3 === 0 ? 4 : 3, 0x4a315f, 0.76);
-          drawPath(groundCharge, points, index % 3 === 0 ? 2.2 : 1.4, index % 2 ? 0xa746d1 : 0x7d5be0, 0.94);
+          drawPath(groundShadow, points, index % 3 === 0 ? 9 : 6, electricBlue ? 0x071a52 : 0x251a2d, 0.58);
+          drawPath(groundShadow, points, index % 3 === 0 ? 4 : 3, electricBlue ? 0x123b8f : 0x4a315f, 0.76);
+          drawPath(groundCharge, points, index % 3 === 0 ? 2.2 : 1.4, electricBlue ? (index % 2 ? 0xe4fbff : 0x52cfff) : (index % 2 ? 0xa746d1 : 0x7d5be0), 0.94);
           [2, Math.floor(steps * 0.62)].forEach((branchStep, branchIndex) => {
             if (!points[branchStep] || (index + branchIndex) % 2) return;
             const root = points[branchStep];
@@ -6945,8 +7586,8 @@
               { x: root.x + Math.cos(branchAngle) * radius * 0.28, y: root.y + Math.sin(branchAngle) * radius * 0.12 },
               { x: root.x + Math.cos(branchAngle + side * 0.18) * radius * 0.52, y: root.y + Math.sin(branchAngle + side * 0.18) * radius * 0.23 }
             ];
-            drawPath(groundShadow, branch, 4, 0x261a30, 0.52);
-            drawPath(groundCharge, branch, 1.1, 0xba5be0, 0.78);
+            drawPath(groundShadow, branch, 4, electricBlue ? 0x071b4f : 0x261a30, 0.52);
+            drawPath(groundCharge, branch, 1.1, electricBlue ? 0x9cecff : 0xba5be0, 0.78);
           });
         }
       }
@@ -6961,15 +7602,46 @@
           y: y + Math.sin(angle) * radius * Phaser.Math.FloatBetween(0.8, 1.45)
         };
         const arc = [{ x, y }, first, end];
-        drawPath(splashArcs, arc, 7, 0x34165f, 0.28);
-        drawPath(splashArcs, arc, 2.2, index % 3 ? 0xb84bd4 : 0x65d6d1, 0.94);
+        drawPath(splashArcs, arc, 7, electricBlue ? 0x062e91 : 0x34165f, 0.28);
+        drawPath(splashArcs, arc, 2.2, electricBlue ? (index % 3 ? 0xf1fdff : 0x43cfff) : (index % 3 ? 0xb84bd4 : 0x65d6d1), 0.94);
       }
-      const impactGlow = this.add.star(x, y, 8, radius * 0.12, radius * 0.5, 0x6d2bb0, 0.58)
+      const impactGlow = this.add.star(x, y, 8, radius * 0.12, radius * 0.5, electricBlue ? 0x1a7dff : 0x6d2bb0, electricBlue ? 0.78 : 0.58)
         .setDepth(y + 128);
-      const impactCore = this.add.star(x, y, 6, radius * 0.08, radius * 0.28, 0xd16ce8, 0.94)
+      const impactCore = this.add.star(x, y, 6, radius * 0.08, radius * 0.28, electricBlue ? 0xf7feff : 0xd16ce8, 0.94)
         .setDepth(y + 130)
         .setBlendMode(Phaser.BlendModes.ADD);
-      this.emitLightningBurst(x, y, Math.round(quantity * 1.45));
+      const impactPool = electricBlue && showGround
+        ? this.add.ellipse(x, groundY, radius * 2.7, radius * 0.78, 0x2faaff, 0.3)
+          .setStrokeStyle(4, 0xbef5ff, 0.92)
+          .setDepth(groundDepth + 2)
+          .setBlendMode(Phaser.BlendModes.ADD)
+        : null;
+      const impactInnerRing = electricBlue && showGround
+        ? this.add.ellipse(x, groundY, radius * 1.72, radius * 0.42, 0x67dcff, 0.18)
+          .setStrokeStyle(2.4, 0xf4feff, 0.96)
+          .setDepth(groundDepth + 3)
+          .setBlendMode(Phaser.BlendModes.ADD)
+        : null;
+      const impactSplash = electricBlue && showGround
+        ? this.add.graphics().setPosition(x, groundY).setDepth(groundDepth + 4).setBlendMode(Phaser.BlendModes.ADD)
+        : null;
+      if (impactSplash) {
+        impactSplash.fillStyle(0xf5feff, 0.96);
+        impactSplash.lineStyle(2, 0x58d7ff, 0.9);
+        for (let index = 0; index < 9; index += 1) {
+          const side = index < 4 ? -1 : 1;
+          const distance = radius * (0.18 + Math.abs(index - 4) * 0.18);
+          const height = radius * Phaser.Math.FloatBetween(0.18, index === 4 ? 0.5 : 0.38);
+          const width = radius * Phaser.Math.FloatBetween(0.14, 0.28);
+          impactSplash.fillTriangle(side * distance, 3, side * (distance + width * 0.45), -height, side * (distance + width), 5);
+          impactSplash.beginPath();
+          impactSplash.moveTo(side * distance, 3);
+          impactSplash.lineTo(side * (distance + width * 0.45), -height);
+          impactSplash.lineTo(side * (distance + width), 5);
+          impactSplash.strokePath();
+        }
+      }
+      this.emitLightningBurst(x, y, Math.round(quantity * 1.45), electricBlue ? "electricBlue" : "arcane");
       const spray = this.add.particles(x, y, LIGHTNING_SPARK_TEXTURE_KEY, {
         emitting: false,
         lifespan: { min: 260, max: 640 },
@@ -6979,8 +7651,8 @@
         rotate: { min: 0, max: 240 },
         scale: { start: 0.66, end: 0 },
         alpha: { start: 0.96, end: 0 },
-        tint: [0x6f32bc, 0xc14bd7, 0x62d3cd, 0xffc65c],
-        blendMode: "NORMAL"
+        tint: electricBlue ? [0xffffff, 0xb8efff, 0x3ccaff, 0x185dff] : [0x6f32bc, 0xc14bd7, 0x62d3cd, 0xffc65c],
+        blendMode: electricBlue ? "ADD" : "NORMAL"
       }).setDepth(y + 122);
       spray.explode(Math.max(16, Math.round(quantity * 0.85)), 0, 0);
       this.time.delayedCall(760, () => spray.destroy());
@@ -6995,31 +7667,103 @@
           impactCore.destroy();
         }
       });
+      if (impactPool) {
+        this.tweens.add({ targets: impactPool, scaleX: 1.28, scaleY: 0.62, alpha: 0, duration: 220, ease: "Quad.easeOut", onComplete: () => impactPool.destroy() });
+      }
+      if (impactInnerRing) {
+        this.tweens.add({ targets: impactInnerRing, scaleX: 1.62, scaleY: 0.5, alpha: 0, duration: 190, ease: "Quad.easeOut", onComplete: () => impactInnerRing.destroy() });
+      }
+      if (impactSplash) {
+        this.tweens.add({ targets: impactSplash, scaleX: 1.18, scaleY: 0.66, alpha: 0, duration: 180, ease: "Quad.easeOut", onComplete: () => impactSplash.destroy() });
+      }
       this.tweens.add({
         targets: splashArcs,
         alpha: 0,
-        duration: 360,
+        duration: showGround ? 240 : 360,
         ease: "Quad.easeOut",
         onComplete: () => splashArcs.destroy()
       });
       if (showGround) {
-        this.tweens.add({ targets: groundCharge, alpha: 0, delay: 620, duration: 520, ease: "Quad.easeOut", onComplete: () => groundCharge.destroy() });
-        this.tweens.add({ targets: groundShadow, alpha: 0, delay: 900, duration: 760, ease: "Quad.easeOut", onComplete: () => groundShadow.destroy() });
+        this.tweens.add({ targets: groundCharge, alpha: 0, duration: 240, ease: "Quad.easeOut", onComplete: () => groundCharge.destroy() });
+        this.tweens.add({ targets: groundShadow, alpha: 0, duration: 340, ease: "Quad.easeOut", onComplete: () => groundShadow.destroy() });
       }
       const shake = Number(options.shake) || 0;
       if (shake > 0) this.cameras.main.shake(70, shake);
     }
 
+    renderChainLightningHit(x, y, radius = 52) {
+      const container = this.add.container(x, y).setDepth(y + 148);
+      const aura = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      const ring = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      const shards = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      const segmentAngles = [
+        [-2.88, -2.18],
+        [-1.8, -1.08],
+        [-0.72, -0.1],
+        [0.26, 1.0],
+        [1.35, 2.18],
+        [2.48, 2.92]
+      ];
+      segmentAngles.forEach(([start, end], index) => {
+        const segmentRadius = radius * (index % 2 ? 0.94 : 1.04);
+        aura.lineStyle(9, 0x095cff, 0.24);
+        aura.beginPath();
+        aura.arc(0, 0, segmentRadius, start, end, false);
+        aura.strokePath();
+        ring.lineStyle(index % 3 === 0 ? 3.2 : 2.2, index % 2 ? 0xe9fdff : 0x54d9ff, 0.96);
+        ring.beginPath();
+        ring.arc(0, 0, segmentRadius, start, end, false);
+        ring.strokePath();
+      });
+      for (let index = 0; index < 12; index += 1) {
+        const angle = index / 12 * Math.PI * 2 + Phaser.Math.FloatBetween(-0.13, 0.13);
+        const inner = radius * Phaser.Math.FloatBetween(0.36, 0.52);
+        const shoulder = radius * Phaser.Math.FloatBetween(0.68, 0.86);
+        const outer = radius * Phaser.Math.FloatBetween(1.0, 1.36);
+        const width = Phaser.Math.FloatBetween(0.06, 0.13);
+        const point = (distance, offset = 0) => ({
+          x: Math.cos(angle + offset) * distance,
+          y: Math.sin(angle + offset) * distance
+        });
+        const left = point(inner, -width);
+        const tip = point(outer);
+        const right = point(shoulder, width);
+        shards.fillStyle(index % 3 === 0 ? 0xf4feff : 0x43cfff, index % 3 === 0 ? 0.98 : 0.86);
+        shards.fillTriangle(left.x, left.y, tip.x, tip.y, right.x, right.y);
+        if (index % 2 === 0) {
+          const sparkStart = point(radius * 1.12, width * 0.4);
+          const sparkEnd = point(radius * Phaser.Math.FloatBetween(1.42, 1.7), -width * 0.3);
+          aura.lineStyle(5, 0x0a67ff, 0.22);
+          aura.lineBetween(sparkStart.x, sparkStart.y, sparkEnd.x, sparkEnd.y);
+          ring.lineStyle(1.2, 0xcdf9ff, 0.88);
+          ring.lineBetween(sparkStart.x, sparkStart.y, sparkEnd.x, sparkEnd.y);
+        }
+      }
+      container.add([aura, ring, shards]);
+      this.emitLightningBurst(x, y, 8, "electricBlue");
+      this.tweens.add({
+        targets: container,
+        scale: 1.16,
+        alpha: 0,
+        angle: Phaser.Math.Between(-8, 8),
+        duration: 230,
+        ease: "Quad.easeOut",
+        onComplete: () => container.destroy()
+      });
+      this.cameras.main.shake(42, 0.0008);
+    }
+
     renderLightningOrbImpact(x, y) {
-      const glow = this.add.star(x, y, 8, 5, 23, 0x244fff, 0.34)
+      const glow = this.add.star(x, y, 8, 3, 16, 0x176bff, 0.4)
         .setBlendMode(Phaser.BlendModes.ADD)
         .setDepth(y + 88);
-      const core = this.add.star(x, y, 6, 3, 12, 0x24bfff, 0.96)
-        .setDepth(y + 90);
-      this.emitLightningBurst(x, y, 8);
+      const core = this.add.star(x, y, 6, 2, 8, 0xf1fdff, 0.98)
+        .setDepth(y + 90)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      this.emitLightningBurst(x, y, 6, "electricBlue");
       this.tweens.add({
         targets: [glow, core],
-        scale: 1.55,
+        scale: 1.42,
         alpha: 0,
         duration: 180,
         ease: "Quad.easeOut",
@@ -7028,21 +7772,264 @@
           core.destroy();
         }
       });
-      this.cameras.main.shake(45, 0.0007);
+      this.cameras.main.shake(38, 0.00045);
+    }
+
+    drawLightningStrikeBolt(x, y, options = {}) {
+      const topY = Math.max(0, y - 460);
+      if (this.textures.exists(ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY)) {
+        const scaleX = Phaser.Math.FloatBetween(0.3, 0.335);
+        const scaleY = Math.max(0.4, (y - topY) / 540);
+        const glow = this.add.image(x, y, ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY)
+          .setOrigin(0.5, 1)
+          .setScale(scaleX * 1.34, scaleY)
+          .setTint(0x226dff)
+          .setAlpha(0.3)
+          .setDepth(y + 148)
+          .setBlendMode(Phaser.BlendModes.ADD);
+        const bolt = this.add.image(x, y, ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY)
+          .setOrigin(0.5, 1)
+          .setScale(scaleX, scaleY)
+          .setAlpha(0.9)
+          .setDepth(y + 149);
+        const core = this.add.image(x, y, ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY)
+          .setOrigin(0.5, 1)
+          .setScale(scaleX * 0.46, scaleY)
+          .setTint(0xe8fdff)
+          .setAlpha(0.62)
+          .setDepth(y + 150)
+          .setBlendMode(Phaser.BlendModes.ADD);
+        this.tweens.add({
+          targets: [glow, core],
+          alpha: { from: 0.24, to: 0.72 },
+          x: { from: x - 1.5, to: x + 1.5 },
+          duration: 32,
+          yoyo: true,
+          repeat: 1,
+          ease: "Stepped"
+        });
+        this.tweens.add({
+          targets: [glow, bolt, core],
+          alpha: 0,
+          delay: 130,
+          duration: 130,
+          ease: "Quad.easeOut",
+          onComplete: () => {
+            glow.destroy();
+            bolt.destroy();
+            core.destroy();
+          }
+        });
+        return;
+      }
+      const offsets = [-5, 12, -17, -8, 19, 7, -24, -9, 15, 5, 0];
+      const widths = [3, 7, 13, 8, 17, 10, 20, 13, 24, 17, 26];
+      const points = offsets.map((offset, index) => ({
+        x: x + offset + Phaser.Math.Between(-4, 4),
+        y: Phaser.Math.Linear(topY, y, index / (offsets.length - 1))
+      }));
+      points[points.length - 1] = { x, y };
+      const depth = y + 146;
+      const underlay = this.add.graphics().setDepth(depth);
+      const aura = this.add.graphics().setDepth(depth + 1).setBlendMode(Phaser.BlendModes.ADD);
+      const body = this.add.graphics().setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.graphics().setDepth(depth + 3).setBlendMode(Phaser.BlendModes.ADD);
+      const strokePath = (graphics, path, width, color, alpha) => {
+        graphics.lineStyle(width, color, alpha);
+        graphics.beginPath();
+        graphics.moveTo(path[0].x, path[0].y);
+        path.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
+        graphics.strokePath();
+      };
+      const makeRibbon = scale => {
+        const left = [];
+        const right = [];
+        points.forEach((point, index) => {
+          const previous = points[Math.max(0, index - 1)];
+          const next = points[Math.min(points.length - 1, index + 1)];
+          const dx = next.x - previous.x;
+          const dy = next.y - previous.y;
+          const length = Math.max(1, Math.hypot(dx, dy));
+          const nx = -dy / length;
+          const ny = dx / length;
+          const width = widths[index] * scale;
+          const leftScale = index % 3 === 0 ? 1.38 : index % 3 === 1 ? 0.72 : 1.04;
+          const rightScale = index % 2 === 0 ? 0.78 : 1.24;
+          left.push({ x: point.x + nx * width * leftScale, y: point.y + ny * width * leftScale });
+          right.push({ x: point.x - nx * width * rightScale, y: point.y - ny * width * rightScale });
+        });
+        return [...left, ...right.reverse()];
+      };
+      underlay.fillStyle(0x02164f, 0.46);
+      underlay.fillPoints(makeRibbon(1.78), true);
+      aura.fillStyle(0x073dff, 0.38);
+      aura.fillPoints(makeRibbon(1.38), true);
+      body.fillStyle(0x0b83ff, 0.94);
+      body.fillPoints(makeRibbon(1), true);
+      core.fillStyle(0x61e8ff, 0.9);
+      core.fillPoints(makeRibbon(0.42), true);
+      strokePath(core, points, 2.6, 0xf8ffff, 1);
+      points.slice(0, -1).forEach((point, index) => {
+        if (index % 2 === 0) {
+          const next = points[index + 1];
+          underlay.lineStyle(widths[index] * 2.5, 0x052eaa, 0.22);
+          underlay.lineBetween(point.x, point.y, next.x, next.y);
+        }
+      });
+      [2, 4, 6, 8].forEach((pointIndex, branchIndex) => {
+        const root = points[pointIndex];
+        const side = branchIndex % 2 ? 1 : -1;
+        const branch = [
+          root,
+          { x: root.x + side * Phaser.Math.Between(18, 31), y: root.y + Phaser.Math.Between(10, 28) },
+          { x: root.x + side * Phaser.Math.Between(34, 58), y: root.y + Phaser.Math.Between(26, 56) }
+        ];
+        strokePath(underlay, branch, 10, 0x052678, 0.34);
+        strokePath(aura, branch, 6, 0x0b68ff, 0.52);
+        strokePath(body, branch, 3.2, 0x4cdbff, 0.92);
+        strokePath(core, branch, 1.15, 0xf5ffff, 0.96);
+      });
+      [underlay, aura, body, core].forEach((layer, index) => this.tweens.add({
+        targets: layer,
+        alpha: 0,
+        delay: index === 0 ? 70 : 18,
+        duration: 210 + index * 15,
+        ease: "Quad.easeOut",
+        onComplete: () => layer.destroy()
+      }));
+    }
+
+    renderZhixiaLightningCrown(x, groundY, radius) {
+      const scale = radius / 92 * 0.7;
+      const depth = groundY - 72;
+      const shadow = this.add.graphics().setPosition(x, groundY).setDepth(depth);
+      const pool = this.add.graphics().setPosition(x, groundY).setDepth(depth + 1).setBlendMode(Phaser.BlendModes.ADD);
+      const crown = this.add.graphics().setPosition(x, groundY).setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.graphics().setPosition(x, groundY).setDepth(depth + 3).setBlendMode(Phaser.BlendModes.ADD);
+      const cracks = this.add.graphics().setPosition(x, groundY).setDepth(depth + 4).setBlendMode(Phaser.BlendModes.ADD);
+      const crownImage = this.textures.exists(ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY)
+        ? this.add.image(x, groundY, ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY)
+          .setOrigin(0.5, 0.72)
+          .setScale(scale)
+          .setDepth(depth + 2)
+        : null;
+      const point = (px, py) => ({ x: px * scale, y: py * scale });
+      const drawPath = (graphics, points, width, color, alpha) => {
+        graphics.lineStyle(width * scale, color, alpha);
+        graphics.beginPath();
+        graphics.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach(value => graphics.lineTo(value.x, value.y));
+        graphics.strokePath();
+      };
+      shadow.fillStyle(0x021541, 0.52);
+      shadow.fillEllipse(0, 10 * scale, 252 * scale, 58 * scale);
+      pool.fillStyle(0x0b55ff, 0.14);
+      pool.fillEllipse(0, 8 * scale, 220 * scale, 42 * scale);
+      pool.lineStyle(3 * scale, 0x168dff, 0.22);
+      pool.strokeEllipse(0, 8 * scale, 226 * scale, 46 * scale);
+      if (!crownImage) {
+        const crownPoints = [
+          point(-126, 8), point(-108, -16), point(-80, -10), point(-58, -38), point(-45, -9),
+          point(-20, -24), point(0, -12), point(20, -27), point(42, -9), point(62, -42),
+          point(78, -11), point(108, -24), point(126, 7), point(90, 21), point(45, 26),
+          point(0, 34), point(-44, 27), point(-92, 22)
+        ];
+        crown.fillStyle(0x0879ff, 0.92);
+        crown.fillPoints(crownPoints, true);
+        crown.lineStyle(3 * scale, 0x63e8ff, 0.9);
+        crown.strokePoints(crownPoints, true);
+        crown.fillStyle(0xbef8ff, 0.96);
+        crown.fillPoints([
+          point(-122, 7), point(-106, -15), point(-80, -8), point(-58, -36), point(-48, -8),
+          point(-22, -20), point(-6, -8), point(-34, 10), point(-76, 15)
+        ], true);
+        crown.fillPoints([
+          point(122, 7), point(106, -23), point(80, -9), point(62, -40), point(49, -7),
+          point(23, -23), point(7, -8), point(35, 11), point(78, 15)
+        ], true);
+        core.fillStyle(0xf9ffff, 0.98);
+        core.fillPoints([
+          point(-66, 11), point(-39, -3), point(-21, -18), point(-9, -5), point(0, -27),
+          point(10, -5), point(24, -20), point(43, -3), point(68, 10), point(28, 18),
+          point(0, 24), point(-28, 18)
+        ], true);
+        core.fillStyle(0x8eeeff, 0.72);
+        core.fillEllipse(0, 6 * scale, 104 * scale, 38 * scale);
+      }
+      const crackPaths = [
+        [point(-18, 13), point(-68, 25), point(-112, 22), point(-154, 31)],
+        [point(-30, 7), point(-78, 2), point(-118, 11), point(-145, 4)],
+        [point(16, 14), point(62, 25), point(104, 20), point(150, 29)],
+        [point(28, 8), point(75, 0), point(112, 9), point(143, 3)],
+        [point(-4, 17), point(8, 30), point(37, 34), point(58, 43)]
+      ];
+      crackPaths.forEach((path, index) => {
+        drawPath(cracks, path, index === 4 ? 5 : 7, 0x0752df, 0.35);
+        drawPath(cracks, path, index === 4 ? 1.3 : 2, index % 2 ? 0xf5ffff : 0x66dcff, 0.94);
+      });
+      [-44, -20, 0, 22, 48].forEach((offset, index) => {
+        const spear = [
+          point(offset, 5),
+          point(offset + (index % 2 ? -5 : 6), -Phaser.Math.Between(22, 38)),
+          point(offset + (index % 2 ? -2 : 3), -Phaser.Math.Between(8, 16))
+        ];
+        drawPath(crown, spear, index === 2 ? 4.8 : 3, index === 2 ? 0xf8ffff : 0x57dbff, 0.92);
+      });
+      const sparks = this.add.particles(x, groundY - 4 * scale, LIGHTNING_SPARK_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 170, max: 340 },
+        speed: { min: 63, max: 161 },
+        angle: { min: 190, max: 350 },
+        gravityY: 180,
+        rotate: { min: 0, max: 160 },
+        scale: { start: 0.48, end: 0 },
+        alpha: { start: 0.94, end: 0 },
+        tint: [0xffffff, 0xa7f3ff, 0x38bcff, 0x1257ee],
+        blendMode: "ADD"
+      }).setDepth(depth + 5);
+      sparks.explode(56, 0, 0);
+      const motes = this.add.particles(x, groundY - 4 * scale, LIGHTNING_MOTE_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 210, max: 430 },
+        speed: { min: 35, max: 118 },
+        angle: { min: 202, max: 338 },
+        gravityY: -55,
+        scale: { start: 0.42, end: 0 },
+        alpha: { start: 0.86, end: 0 },
+        tint: [0xffffff, 0xbff7ff, 0x47c8ff, 0x175cff],
+        blendMode: "ADD"
+      }).setDepth(depth + 5);
+      motes.explode(36, 0, 0);
+      [pool, crown, core, cracks].forEach((layer, index) => this.tweens.add({
+        targets: layer,
+        scaleX: index === 0 ? 1.2 : 1.08,
+        scaleY: index === 0 ? 0.62 : 0.76,
+        alpha: 0,
+        duration: 250 + index * 14,
+        ease: "Quad.easeOut",
+        onComplete: () => layer.destroy()
+      }));
+      if (crownImage) this.tweens.add({
+        targets: crownImage,
+        scaleX: crownImage.scaleX * 1.08,
+        scaleY: crownImage.scaleY * 0.76,
+        alpha: 0,
+        duration: 278,
+        ease: "Quad.easeOut",
+        onComplete: () => crownImage.destroy()
+      });
+      this.tweens.add({ targets: shadow, scaleX: 1.12, scaleY: 0.76, alpha: 0, duration: 320, ease: "Quad.easeOut", onComplete: () => shadow.destroy() });
+      this.time.delayedCall(470, () => {
+        sparks.destroy();
+        motes.destroy();
+      });
+      this.cameras.main.shake(72, 0.0021);
     }
 
     playLightningStrikeVisual(x, y, radius) {
-      const topY = Math.max(0, y - 460);
-      this.drawLightningArc(x + 24, topY, x, y, { intensity: 1.72 });
-      this.time.delayedCall(28, () => this.drawLightningArc(x - 18, topY + 24, x, y, { intensity: 0.76 }));
-      this.time.delayedCall(56, () => this.drawLightningArc(x + 42, topY + 70, x + Phaser.Math.Between(-12, 12), y, { intensity: 0.48, echo: false }));
-      this.renderLightningImpact(x, y, radius, {
-        quantity: 30,
-        crackCount: 7,
-        splashCount: 8,
-        groundY: y + 58,
-        shake: 0.0021
-      });
+      const groundY = y + 58;
+      this.drawLightningStrikeBolt(x, groundY);
+      this.renderZhixiaLightningCrown(x, groundY, radius);
     }
 
     strikeLightning(x, y, damage, radius) {
@@ -7056,43 +8043,64 @@
       app.audio.hit();
     }
 
-    flashSlash(x, y, angle, depth = 45) {
+    flashSlash(x, y, angle, depth = 45, charged = false) {
       const container = this.add.container(x, y).setRotation(angle).setDepth(depth);
-      const shadow = this.add.image(-34, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5)
-        .setScale(0.72, 0.5)
-        .setRotation(-0.82)
-        .setTint(0x315c87)
-        .setAlpha(0.34);
-      const body = this.add.image(-31, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5)
-        .setScale(0.68, 0.35)
-        .setRotation(-0.82)
-        .setTint(0x8fd8ff)
-        .setAlpha(0.92)
+      const scaleX = charged ? 0.92 : 0.72;
+      const scaleY = charged ? 0.54 : 0.42;
+      const shadow = this.add.image(-62, -3, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.1, 0.5)
+        .setFlipX(true)
+        .setScale(scaleX * 1.05, scaleY * 1.14)
+        .setTint(0xc7e4f2)
+        .setAlpha(charged ? 0.22 : 0.14)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const core = this.add.image(-27, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5)
-        .setScale(0.58, 0.14)
-        .setRotation(-0.82)
+      const body = this.add.image(-58, -4, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.1, 0.5)
+        .setFlipX(true)
+        .setScale(scaleX, scaleY)
         .setTint(0xffffff)
-        .setAlpha(0.9)
+        .setAlpha(1)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.image(-53, -2, SWORD_WAVE_TEXTURE_KEY)
+        .setOrigin(0.1, 0.5)
+        .setFlipX(true)
+        .setScale(scaleX * 0.86, scaleY * 0.66)
+        .setTint(0xffffff)
+        .setAlpha(1)
         .setBlendMode(Phaser.BlendModes.ADD);
       container.add([shadow, body, core]);
-      this.emitPhysicalSparks(x, y, 15, 0xbceaff);
+      if (charged) {
+        const echo = this.add.image(-68, 2, SWORD_WAVE_TEXTURE_KEY)
+          .setOrigin(0.1, 0.5)
+          .setFlipX(true)
+          .setScale(scaleX * 1.12, scaleY * 0.92)
+          .setRotation(0.13)
+          .setTint(0xeefaff)
+          .setAlpha(0.38)
+          .setBlendMode(Phaser.BlendModes.ADD);
+        container.addAt(echo, 1);
+        this.tweens.add({ targets: echo, rotation: -0.08, scaleX: echo.scaleX * 1.12, alpha: 0, duration: 280, ease: "Cubic.easeOut" });
+      }
+      this.emitPhysicalSparks(x, y, charged ? 22 : 12, 0xf8fdff);
       this.tweens.add({
         targets: container,
         alpha: 0,
-        scaleX: 1.34,
-        scaleY: 1.16,
-        duration: 210,
+        scaleX: charged ? 1.22 : 1.16,
+        scaleY: charged ? 1.15 : 1.08,
+        duration: charged ? 300 : 225,
         ease: "Cubic.easeOut",
         onComplete: () => container.destroy()
       });
+      if (charged) this.cameras.main.shake(70, 0.0022);
     }
 
-    emitPhysicalSparks(x, y, quantity = 10, tint = 0xffd27a) {
+    emitPhysicalSparks(x, y, quantity = 10, tint = 0xffd27a, depth = y + 96) {
       if (!this.textures.exists(PHYSICAL_SPARK_TEXTURE_KEY)) return;
+      const red = (tint >> 16) & 0xff;
+      const green = (tint >> 8) & 0xff;
+      const blue = tint & 0xff;
+      const nearWhite = red > 220 && green > 220 && blue > 220;
+      const blueTint = blue > red;
       const sparks = this.add.particles(x, y, PHYSICAL_SPARK_TEXTURE_KEY, {
         emitting: false,
         lifespan: { min: 150, max: 380 },
@@ -7101,79 +8109,249 @@
         rotate: { min: -120, max: 180 },
         scale: { start: 0.46, end: 0 },
         alpha: { start: 0.96, end: 0 },
-        tint: [tint, 0xffffff, 0xf4b85e],
+        tint: nearWhite ? [tint, 0xffffff, 0xdceff7] : blueTint ? [tint, 0xdff3ff, 0x2d7dff] : [tint, 0xffffff, 0xf4b85e],
         blendMode: "ADD"
-      }).setDepth(y + 96);
+      }).setDepth(depth);
       sparks.explode(quantity, 0, 0);
       this.time.delayedCall(440, () => sparks.destroy());
+      return sparks;
     }
 
     playImpactPunchVisual(x, y, angle, charged = false, berserk = false) {
-      const container = this.add.container(x, y).setRotation(angle).setDepth(y + 94);
-      const reach = berserk ? 126 : charged ? 104 : 74;
-      const cone = this.add.graphics();
-      const coneGlow = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
-      for (let index = 0; index < (berserk ? 13 : 9); index += 1) {
-        const offset = (index - (berserk ? 6 : 4)) * (berserk ? 7 : 6);
-        const length = reach * (0.76 + Math.random() * 0.28);
-        cone.fillStyle(berserk ? 0x651d28 : 0x4f3b48, 0.2 + (index % 3) * 0.04);
-        cone.fillPoints([
-          { x: -18, y: offset * 0.16 - 3 }, { x: -18, y: offset * 0.16 + 3 },
-          { x: length, y: offset + 5 }, { x: length, y: offset - 5 }
-        ], true);
-        coneGlow.fillStyle(index % 3 ? (berserk ? 0xff5b32 : 0xffd38b) : 0xffffff, index % 3 ? 0.42 : 0.72);
-        coneGlow.fillTriangle(-4, offset * 0.14 - 2, length, offset - 2, length * 0.72, offset + 3);
+      const effectScale = berserk && charged ? 1.52 : berserk ? 1.24 : 1;
+      const effectDepth = y + 260;
+      const container = this.add.container(x, y).setRotation(angle).setDepth(effectDepth).setScale(effectScale);
+      const glow = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      const body = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      glow.fillStyle(berserk ? 0xff3923 : 0x175cff, 0.26);
+      glow.fillTriangle(-30, -29, -30, 29, 62, 0);
+      body.fillStyle(berserk ? 0xff6a2d : 0x39a4ff, 0.82);
+      body.fillTriangle(-22, -18, -22, 18, 58, 0);
+      core.fillStyle(0xf8ffff, 0.96);
+      core.fillTriangle(-12, -7, -12, 7, 64, 0);
+      const spreadArrows = [];
+      if (charged) {
+        [-1, 1].forEach(side => {
+          const echo = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+          echo.fillStyle(berserk ? 0xff8a3a : 0x79c9ff, 0.34);
+          echo.fillTriangle(-18, -10, -18, 10, 52, 0);
+          echo.setRotation(side * Phaser.Math.FloatBetween(0.055, 0.135));
+          echo.setScale(0.94, 0.72);
+          spreadArrows.push(echo);
+        });
       }
-      const shock = this.add.ellipse(reach * 0.5, 0, charged ? 92 : 66, charged ? 62 : 44, berserk ? 0xff432d : 0xffd78d, 0.26)
-        .setStrokeStyle(charged ? 7 : 4, berserk ? 0xffc052 : 0xfff1c3, 0.94)
-        .setBlendMode(Phaser.BlendModes.ADD);
-      const core = this.add.star(reach * 0.55, 0, 8, charged ? 12 : 8, charged ? 38 : 28, berserk ? 0xff6a34 : 0xfff4cf, 0.9)
-        .setBlendMode(Phaser.BlendModes.ADD);
-      const debris = this.add.graphics();
-      for (let index = 0; index < (charged ? 16 : 10); index += 1) {
-        debris.fillStyle(index % 2 ? 0xd89757 : 0x6b4b3c, 0.82);
-        debris.fillRect(reach * 0.4 + Math.random() * 54, Phaser.Math.Between(-34, 34), Phaser.Math.Between(3, 8), Phaser.Math.Between(2, 6));
+      const rings = [];
+      [-20, 2, 23].forEach((offset, index) => {
+        const ring = this.add.ellipse(offset, 0, 16 + index * 5, 58 - index * 9, 0x2e8dff, 0.08)
+          .setStrokeStyle(3 - index * 0.45, index === 2 ? 0xd9f7ff : 0x55b8ff, 0.92 - index * 0.1)
+          .setBlendMode(Phaser.BlendModes.ADD);
+        rings.push(ring);
+        this.tweens.add({ targets: ring, scaleY: { from: 0.72, to: 1.22 }, alpha: { from: 0.94, to: 0.16 }, duration: 150 + index * 35, yoyo: true, repeat: 1 });
+      });
+      const streaks = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 7; index += 1) {
+        const offset = (index - 3) * 7;
+        streaks.lineStyle(index % 2 ? 2 : 3, index % 2 ? 0xff8a2c : 0xffd16c, 0.72);
+        streaks.lineBetween(-42 - Math.abs(index - 3) * 4, offset, -18, offset * 0.42);
       }
-      container.add([cone, coneGlow, shock, core, debris]);
-      this.emitPhysicalSparks(x + Math.cos(angle) * reach * 0.58, y + Math.sin(angle) * reach * 0.58, charged ? 28 : 16, berserk ? 0xff7040 : 0xffd38b);
-      this.tweens.add({ targets: container, scaleX: 1.42, scaleY: 1.2, alpha: 0, duration: charged ? 300 : 210, ease: "Cubic.easeOut", onComplete: () => container.destroy() });
-      this.cameras.main.shake(charged ? 95 : 55, charged ? 0.0032 : 0.0016);
+      container.add([glow, streaks, ...spreadArrows, body, ...rings, core]);
+      this.emitPhysicalSparks(
+        x + Math.cos(angle) * 42 * effectScale,
+        y + Math.sin(angle) * 42 * effectScale,
+        berserk ? 28 : 16,
+        berserk ? 0xff7040 : 0x7cc8ff,
+        effectDepth + 2
+      );
+      this.tweens.add({ targets: container, scaleX: effectScale * 1.28, scaleY: effectScale * 0.82, alpha: 0, duration: 230, ease: "Cubic.easeOut", onComplete: () => container.destroy() });
+      this.cameras.main.shake(52, 0.0016);
+    }
+
+    triggerLaodengBerserkExplosion(x, y, comboIndex = 0) {
+      const radius = 82;
+      const baseDamage = Math.max(1, Math.round(Number(app.profile.attackPower || MELEE.damage) * (0.1 + comboIndex * 0.006)));
+      this.playLaodengBerserkExplosionVisual(x, y, comboIndex);
+      app.audio.fireExplosion(comboIndex);
+      this.broadcastCombatEvent("laodengFireExplosion", { x, y, radius, charged: true, color: 0xff6a24 });
+
+      [24, 78].forEach((delay, tickIndex) => this.time.delayedCall(delay, () => {
+        (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
+          if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
+          const distance = Phaser.Math.Distance.Between(x, y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
+          if (distance > radius + LEAF_SLIME_HIT_RADIUS) return;
+          this.playLeafSlimeHit(slime, Math.max(1, Math.round(baseDamage * (tickIndex ? 0.82 : 1))), {
+            kind: "physical",
+            charged: true,
+            noEnergyGain: true,
+            allowComboHit: true
+          });
+        });
+      }));
+    }
+
+    playLaodengBerserkExplosionVisual(x, y, comboIndex = 0) {
+      const comboScale = 1 + Math.min(4, Math.max(0, comboIndex)) * 0.055;
+      const depth = y + 108;
+      const blast = this.add.container(x, y).setDepth(depth).setScale(0.48 * comboScale);
+      const outer = this.add.circle(0, 0, 54, 0xa91a12, 0.38)
+        .setStrokeStyle(7, 0xff5a1f, 0.9)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const middle = this.add.circle(0, 0, 34, 0xff4b17, 0.76)
+        .setStrokeStyle(5, 0xffb33e, 0.98)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.circle(0, 0, 15, 0xfff2a1, 0.98)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const shockwave = this.add.ellipse(0, 18, 116, 42, 0xff3518, 0.16)
+        .setStrokeStyle(6, 0xffa735, 0.92)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const rays = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 18; index += 1) {
+        const angle = index / 18 * Math.PI * 2 + Phaser.Math.FloatBetween(-0.08, 0.08);
+        const inner = 18 + (index % 3) * 4;
+        const outerRadius = 52 + (index % 5) * 8 + comboIndex * 2;
+        rays.lineStyle(index % 3 ? 3 : 6, index % 3 ? 0xff7a24 : 0xffeb82, index % 3 ? 0.76 : 0.96);
+        rays.lineBetween(
+          Math.cos(angle) * inner,
+          Math.sin(angle) * inner,
+          Math.cos(angle) * outerRadius,
+          Math.sin(angle) * outerRadius
+        );
+      }
+      blast.add([outer, shockwave, rays, middle, core]);
+      this.tweens.add({
+        targets: blast,
+        scale: 1.24 * comboScale,
+        alpha: 0,
+        angle: Phaser.Math.Between(-8, 8),
+        duration: 330,
+        ease: "Cubic.easeOut",
+        onComplete: () => blast.destroy()
+      });
+
+      const fire = this.add.particles(x, y, PHYSICAL_SPARK_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 260, max: 610 },
+        speed: { min: 150, max: 470 },
+        angle: { min: 0, max: 360 },
+        gravityY: 170,
+        rotate: { min: -220, max: 240 },
+        scale: { start: 0.86 * comboScale, end: 0 },
+        alpha: { start: 1, end: 0 },
+        tint: [0xfff09b, 0xffb22f, 0xff5b1d, 0xe52c18],
+        blendMode: "ADD"
+      }).setDepth(depth + 2);
+      const flameCloud = this.add.particles(x, y, LAODENG_SMOKE_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 330, max: 720 },
+        speed: { min: 48, max: 190 },
+        angle: { min: 205, max: 335 },
+        gravityY: -58,
+        scale: { start: 0.36 * comboScale, end: 1.18 * comboScale },
+        alpha: { start: 0.72, end: 0 },
+        tint: [0xff9b2e, 0xff4b1b, 0x8f2b21],
+        blendMode: "ADD"
+      }).setDepth(depth + 1);
+      const smoke = this.add.particles(x, y + 10, LAODENG_SMOKE_TEXTURE_KEY, {
+        emitting: false,
+        lifespan: { min: 440, max: 820 },
+        speed: { min: 28, max: 112 },
+        angle: { min: 210, max: 330 },
+        gravityY: -34,
+        scale: { start: 0.28, end: 1.08 },
+        alpha: { start: 0.42, end: 0 },
+        tint: [0x6c3a31, 0x493238, 0x2d2932],
+        blendMode: "NORMAL"
+      }).setDepth(depth);
+      fire.explode(30 + comboIndex * 3, 0, 0);
+      flameCloud.explode(18 + comboIndex * 2, 0, 0);
+      smoke.explode(11 + comboIndex, 0, 0);
+      this.time.delayedCall(900, () => {
+        fire.destroy();
+        flameCloud.destroy();
+        smoke.destroy();
+      });
+      this.cameras.main.shake(82, 0.0027 + comboIndex * 0.00018);
+    }
+
+    createLaodengShockwaveVisual(x, y, angle, berserk = false) {
+      const container = this.add.container(x, y).setRotation(angle).setDepth(y + 74);
+      const flare = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 26; index += 1) {
+        const theta = index / 26 * Math.PI * 2;
+        const innerX = Math.cos(theta) * 31;
+        const innerY = Math.sin(theta) * 10;
+        const outerX = Math.cos(theta) * (47 + (index % 4) * 5);
+        const outerY = Math.sin(theta) * (17 + (index % 3) * 3);
+        flare.lineStyle(index % 3 ? 2 : 4, index % 3 ? 0xff5b20 : 0xffc04a, index % 3 ? 0.68 : 0.9);
+        flare.lineBetween(innerX, innerY, outerX, outerY);
+      }
+      const outer = this.add.ellipse(0, 0, 100, 36, berserk ? 0xa31416 : 0xc71b14, 0.24)
+        .setStrokeStyle(7, 0xff4a1f, 0.82);
+      const ring = this.add.ellipse(0, 0, 78, 24, 0x3c0909, 0.36)
+        .setStrokeStyle(3, 0xffa43a, 0.98);
+      const leading = this.add.triangle(52, 0, -9, -12, 18, 0, -9, 12, 0xff7a24, 0.86)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      container.add([flare, outer, ring, leading]);
+      this.tweens.add({ targets: [outer, ring], scaleX: { from: 0.78, to: 1.12 }, scaleY: { from: 0.7, to: 1.18 }, alpha: { from: 0.96, to: 0.48 }, duration: 110, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: flare, angle: 18, alpha: { from: 0.92, to: 0.42 }, duration: 150, yoyo: true, repeat: -1 });
+      return container;
     }
 
     createSwordWaveVisual(x, y, rotation, depth) {
       const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
       const wake = this.add.image(-38, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5).setScale(0.62, 0.4).setTint(0x2f6e9d).setAlpha(0.28);
+        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.62, 0.3).setTint(0xd2eaf5).setAlpha(0.14).setBlendMode(Phaser.BlendModes.ADD);
       const wave = this.add.image(-34, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5).setScale(0.58, 0.27).setTint(0x85d8ff).setAlpha(0.92).setBlendMode(Phaser.BlendModes.ADD);
+        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.58, 0.2).setTint(0xffffff).setAlpha(1).setBlendMode(Phaser.BlendModes.ADD);
       const edge = this.add.image(-27, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5).setScale(0.48, 0.11).setTint(0xffffff).setAlpha(0.94).setBlendMode(Phaser.BlendModes.ADD);
-      const tip = this.add.triangle(54, 0, -8, -13, 22, 0, -8, 13, 0xdaf5ff, 0.88).setBlendMode(Phaser.BlendModes.ADD);
+        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.48, 0.08).setTint(0xffffff).setAlpha(1).setBlendMode(Phaser.BlendModes.ADD);
+      const tip = this.add.triangle(122, 0, -8, -9, 22, 0, -8, 9, 0xf9feff, 0.98).setBlendMode(Phaser.BlendModes.ADD);
       container.add([wake, wave, edge, tip]);
       this.tweens.add({ targets: [wake, wave, edge], scaleX: "+=0.07", alpha: "-=0.14", duration: 90, yoyo: true, repeat: -1 });
       return container;
     }
 
-    createArrowVisual(x, y, rotation, depth, charged = false) {
+    createArrowVisual(x, y, rotation, depth, charged = false, variant = "normal") {
       const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
       const wake = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
       const shaft = this.add.graphics();
-      const length = charged ? 70 : 48;
-      if (charged) {
-        for (let index = -2; index <= 2; index += 1) {
-          wake.lineStyle(index ? 2 : 5, index ? 0xc8f5b0 : 0xf7ffd6, index ? 0.38 : 0.68);
-          wake.lineBetween(-length - 26 - Math.abs(index) * 8, index * 4, 9, index * 1.2);
-        }
+      const isHeavy = variant === "heavy" || charged;
+      const isBarrage = variant === "barrage";
+      const length = isHeavy ? 82 : isBarrage ? 44 : 58;
+      const shaftColor = isHeavy ? 0x9db8c9 : isBarrage ? 0xc68a48 : 0xcab57b;
+      const headColor = isHeavy ? 0xe8f6ff : isBarrage ? 0xf0bb62 : 0xe8dfbd;
+      const trailColor = isHeavy ? 0xb9ecff : isBarrage ? 0xf6b963 : 0xe9d6a0;
+      const trailCount = isHeavy ? 5 : isBarrage ? 2 : 3;
+      for (let index = 0; index < trailCount; index += 1) {
+        const side = index - (trailCount - 1) / 2;
+        wake.lineStyle(isHeavy && !side ? 5 : 1.8, trailColor, isHeavy && !side ? 0.54 : 0.28);
+        wake.lineBetween(-length - 18 - Math.abs(side) * 7, side * 3.4, -4, side * 0.7);
       }
-      shaft.lineStyle(charged ? 5 : 3.5, charged ? 0xf5e6a4 : 0xd8be79, 1);
-      shaft.lineBetween(-length * 0.58, 0, length * 0.38, 0);
-      shaft.fillStyle(charged ? 0xc7f59c : 0xe8d8a0, 1);
-      shaft.fillTriangle(length * 0.56, 0, length * 0.26, -7, length * 0.26, 7);
-      shaft.fillStyle(0xb96a46, 0.96);
-      shaft.fillTriangle(-length * 0.58, 0, -length * 0.82, -8, -length * 0.72, 0);
-      shaft.fillTriangle(-length * 0.58, 0, -length * 0.82, 8, -length * 0.72, 0);
+      const tailX = -length * 0.62;
+      const neckX = length * 0.34;
+      const tipX = length * 0.62;
+      shaft.lineStyle(isHeavy ? 6 : isBarrage ? 3.5 : 4.5, 0x3b342c, 0.92);
+      shaft.lineBetween(tailX, 0, neckX, 0);
+      shaft.lineStyle(isHeavy ? 3.2 : isBarrage ? 1.7 : 2.4, shaftColor, 1);
+      shaft.lineBetween(tailX, 0, neckX, 0);
+      shaft.lineStyle(1, 0xf8f4df, 0.82);
+      shaft.lineBetween(tailX + 4, -1, neckX - 3, -1);
+      shaft.fillStyle(0x3a3f48, 0.96);
+      shaft.fillTriangle(tipX + 3, 0, neckX - 3, -(isHeavy ? 9 : 7), neckX - 3, isHeavy ? 9 : 7);
+      shaft.fillStyle(headColor, 1);
+      shaft.fillTriangle(tipX, 0, neckX, -(isHeavy ? 6.5 : 5), neckX, isHeavy ? 6.5 : 5);
+      shaft.fillStyle(isBarrage ? 0x7a3d2d : 0x9d6044, 0.98);
+      shaft.fillTriangle(tailX + 3, 0, tailX - 15, -7, tailX - 9, 0);
+      shaft.fillTriangle(tailX + 3, 0, tailX - 15, 7, tailX - 9, 0);
       container.add([wake, shaft]);
-      if (charged) this.tweens.add({ targets: wake, alpha: { from: 0.8, to: 0.32 }, scaleX: { from: 0.86, to: 1.12 }, duration: 72, yoyo: true, repeat: -1 });
+      this.tweens.add({
+        targets: wake,
+        alpha: { from: isHeavy ? 0.86 : 0.58, to: isHeavy ? 0.28 : 0.18 },
+        scaleX: { from: 0.9, to: isHeavy ? 1.14 : 1.06 },
+        duration: isBarrage ? 54 : 72,
+        yoyo: true,
+        repeat: -1
+      });
       return container;
     }
 
@@ -7219,6 +8397,7 @@
       projectile.knockbackForce = Math.max(0, Number(options.knockbackForce) || 0);
       projectile.largeTargetHits = new Map();
       projectile.noEnergyGain = !!options.noEnergyGain;
+      projectile.barrageDamageRamp = options.barrageDamageRamp instanceof Map ? options.barrageDamageRamp : null;
       projectile.visualType = options.visualType || "";
       projectile.hitTargets = new Set();
       projectile.trail = [];
@@ -7226,13 +8405,15 @@
       const projectileOrigin = charged
         ? (equipment.chargedProjectileOrigin || equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN)
         : (equipment.projectileOrigin || PROJECTILE_HEAD_ORIGIN);
-      if (options.visualType === "arrow") {
+      if (["arrow", "arrowHeavy", "arrowBarrage"].includes(options.visualType)) {
+        const arrowVariant = options.visualType === "arrowHeavy" ? "heavy" : options.visualType === "arrowBarrage" ? "barrage" : "normal";
         projectile.visual = this.createArrowVisual(
           castOrigin.x,
           castOrigin.y,
           projectile.visualRotation,
           Math.max(castOrigin.y + projectile.depthOffset, projectile.visualBaseDepth),
-          charged
+          charged,
+          arrowVariant
         );
       } else if (options.visualType === "swordWave") {
         projectile.visual = this.createSwordWaveVisual(
@@ -7282,84 +8463,91 @@
     }
 
     createLightningOrbVisual(x, y, rotation, depth) {
-      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
-      const tail = this.add.image(-36, 0, LIGHTNING_RIBBON_TEXTURE_KEY)
+      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth).setScale(2);
+      const tail = this.add.image(-28, 0, LIGHTNING_RIBBON_TEXTURE_KEY)
         .setOrigin(0.88, 0.5)
-        .setScale(0.22, 0.26)
-        .setTint(0xb96ae1)
-        .setAlpha(0.62)
+        .setScale(0.16, 0.14)
+        .setTint(0x2d79ff)
+        .setAlpha(0.56)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const tailCore = this.add.image(-30, 0, LIGHTNING_RIBBON_TEXTURE_KEY)
+      const tailCore = this.add.image(-24, 0, LIGHTNING_RIBBON_TEXTURE_KEY)
         .setOrigin(0.88, 0.5)
-        .setScale(0.18, 0.09)
-        .setTint(0xd9f4ff)
-        .setAlpha(0.78)
+        .setScale(0.13, 0.045)
+        .setTint(0xeefeff)
+        .setAlpha(0.9)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const glow = this.add.ellipse(-4, 0, 42, 19, 0x234cff, 0.26)
+      const glow = this.add.ellipse(-3, 0, 28, 12, 0x1766ff, 0.34)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const shell = this.add.circle(7, 0, 9, 0x1467e8, 1)
-        .setStrokeStyle(2, 0x20bfff, 1);
-      const core = this.add.circle(8, 0, 3.5, 0x76e7ff, 1);
-      const spark = this.add.star(8, 0, 4, 2, 6, 0x2bbcff, 0.92);
-      container.add([tail, tailCore, glow, shell, core, spark]);
+      const shell = this.add.circle(5, 0, 6, 0x1378ed, 0.96)
+        .setStrokeStyle(1.4, 0x6de7ff, 1)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.circle(6, 0, 2.4, 0xf4feff, 1).setBlendMode(Phaser.BlendModes.ADD);
+      const spark = this.add.star(6, 0, 4, 1.2, 4.2, 0xa7f3ff, 0.96).setBlendMode(Phaser.BlendModes.ADD);
+      const orbitA = this.add.arc(5, 0, 9, -72, 72, false, 0x59d7ff, 0.08)
+        .setStrokeStyle(1.1, 0xbaf6ff, 0.72)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const orbitB = this.add.arc(5, 0, 8, 108, 252, false, 0x277dff, 0.06)
+        .setStrokeStyle(0.8, 0x63bfff, 0.58)
+        .setRotation(Math.PI / 2.7)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      container.add([tail, tailCore, glow, shell, orbitA, orbitB, core, spark]);
       this.tweens.add({
         targets: [glow, shell],
         alpha: { from: 0.96, to: 0.62 },
-        scaleX: { from: 0.92, to: 1.1 },
-        scaleY: { from: 0.92, to: 1.1 },
+        scaleX: { from: 0.94, to: 1.08 },
+        scaleY: { from: 0.94, to: 1.08 },
         duration: 72,
         yoyo: true,
         repeat: -1
       });
       this.tweens.add({ targets: spark, angle: 90, duration: 160, repeat: -1 });
+      this.tweens.add({ targets: [orbitA, orbitB], angle: "+=28", duration: 190, yoyo: true, repeat: -1 });
       this.tweens.add({ targets: [tail, tailCore], scaleX: "+=0.04", alpha: "-=0.18", duration: 74, yoyo: true, repeat: -1 });
       return container;
     }
 
     createWindBoltVisual(x, y, rotation, depth) {
-      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
-      const ribbon = this.add.image(-38, 1, WIND_RIBBON_TEXTURE_KEY)
-        .setOrigin(0.08, 0.7)
-        .setScale(0.3, 0.2)
-        .setRotation(-0.18)
-        .setTint(0xd9efec)
-        .setAlpha(0.72);
-      const ribbonGlow = this.add.image(-40, 1, WIND_RIBBON_TEXTURE_KEY)
-        .setOrigin(0.08, 0.7)
-        .setScale(0.32, 0.26)
-        .setRotation(-0.18)
-        .setTint(0x8fd6d1)
-        .setAlpha(0.26)
+      const container = this.add.container(x, y).setRotation(rotation).setDepth(depth).setScale(2);
+      const tailGlow = this.add.image(-27, 0, WIND_RIBBON_TEXTURE_KEY)
+        .setOrigin(0.88, 0.5)
+        .setScale(0.17, 0.13)
+        .setTint(0x25c768)
+        .setAlpha(0.48)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const wake = this.add.graphics();
-      const stream = this.add.graphics();
-      const highlight = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
-      [-11, -5, 1, 7, 12].forEach((offset, index) => {
-        const points = [
-          { x: -46 - index * 3, y: offset },
-          { x: -30, y: offset + (index % 2 ? -5 : 5) },
-          { x: -10, y: offset * 0.55 },
-          { x: 13, y: offset * 0.18 }
-        ];
-        const stroke = (graphics, width, color, alpha) => {
-          graphics.lineStyle(width, color, alpha);
-          graphics.beginPath();
-          points.forEach((point, pointIndex) => pointIndex ? graphics.lineTo(point.x, point.y) : graphics.moveTo(point.x, point.y));
-          graphics.strokePath();
-        };
-        stroke(wake, index % 2 ? 9 : 12, 0x557986, 0.13);
-        stroke(stream, index % 2 ? 4 : 6, index % 2 ? 0x9dd8d6 : 0xb7e3df, 0.62);
-        if (index % 2 === 0) stroke(highlight, 1.5, 0xf1fbf8, 0.78);
+      const tailCore = this.add.image(-23, 0, WIND_RIBBON_TEXTURE_KEY)
+        .setOrigin(0.88, 0.5)
+        .setScale(0.13, 0.05)
+        .setTint(0xc9ffb7)
+        .setAlpha(0.88)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const glow = this.add.ellipse(-2, 0, 30, 15, 0x27c66a, 0.34).setBlendMode(Phaser.BlendModes.ADD);
+      const shell = this.add.circle(5, 0, 7, 0x23b963, 0.95)
+        .setStrokeStyle(1.6, 0xa6ffbb, 1);
+      const inner = this.add.circle(6, 0, 3.6, 0x57e67d, 0.88).setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.add.circle(7, -0.5, 1.35, 0xf7fff1, 0.96).setBlendMode(Phaser.BlendModes.ADD);
+      const spark = this.add.star(7, 0, 5, 1, 4.4, 0xe7ffd6, 0.9).setBlendMode(Phaser.BlendModes.ADD);
+      const curlA = this.add.arc(4, 0, 10, -82, 72, false, 0x67ef8c, 0.07)
+        .setStrokeStyle(1.2, 0xd1ffc4, 0.76)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const curlB = this.add.arc(4, 0, 8, 102, 254, false, 0x2cc76d, 0.05)
+        .setStrokeStyle(1, 0x7af09a, 0.62)
+        .setRotation(Math.PI / 2.8)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const leaf = this.add.triangle(-5, -5, -3, 2, 5, 0, -1, -4, 0x70df83, 0.9).setAngle(-22);
+      container.add([tailGlow, tailCore, glow, shell, curlA, curlB, inner, core, spark, leaf]);
+      this.tweens.add({
+        targets: [glow, shell, inner],
+        alpha: { from: 0.96, to: 0.62 },
+        scaleX: { from: 0.94, to: 1.1 },
+        scaleY: { from: 0.94, to: 1.1 },
+        duration: 78,
+        yoyo: true,
+        repeat: -1
       });
-      const pressure = this.add.arc(11, 0, 15, -74, 74, false, 0xccebe7, 0.12)
-        .setStrokeStyle(3, 0xe9f8f5, 0.72)
-        .setBlendMode(Phaser.BlendModes.ADD);
-      const leaf = this.add.triangle(-8, -4, -5, 3, 8, 0, -1, -5, 0x65a985, 0.88).setAngle(-18);
-      container.add([ribbonGlow, ribbon, wake, stream, highlight, pressure, leaf]);
-      this.tweens.add({ targets: [wake, stream, highlight], scaleX: 1.14, scaleY: 0.82, alpha: 0.52, duration: 82, yoyo: true, repeat: -1 });
-      this.tweens.add({ targets: leaf, angle: 120, x: -15, y: 5, duration: 180, yoyo: true, repeat: -1 });
-      this.tweens.add({ targets: ribbon, scaleX: "+=0.035", alpha: { from: 0.72, to: 0.42 }, duration: 86, yoyo: true, repeat: -1 });
-      this.tweens.add({ targets: ribbonGlow, scaleX: "+=0.04", alpha: { from: 0.28, to: 0.14 }, duration: 86, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: spark, angle: 100, duration: 170, repeat: -1 });
+      this.tweens.add({ targets: [curlA, curlB], angle: "+=32", duration: 210, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: [tailGlow, tailCore], scaleX: "+=0.045", alpha: "-=0.18", duration: 82, yoyo: true, repeat: -1 });
+      this.tweens.add({ targets: leaf, x: -11, y: 5, angle: 112, duration: 190, yoyo: true, repeat: -1 });
       return container;
     }
 
@@ -7367,7 +8555,7 @@
       const gust = this.add.graphics().setPosition(x, y).setRotation(rotation).setDepth(depth);
       for (let index = 0; index < 8; index += 1) {
         const offset = (index - 3.5) * 5;
-        gust.lineStyle(index % 3 === 0 ? 5 : 2.5, index % 2 ? 0xaedddb : 0xe6f4f1, 0.58);
+        gust.lineStyle(index % 3 === 0 ? 5 : 2.5, index % 2 ? 0x6be286 : 0xd9ffbf, 0.62);
         gust.beginPath();
         gust.moveTo(-6, offset * 0.25);
         gust.lineTo(-22, offset + (index % 2 ? 5 : -5));
@@ -7380,7 +8568,7 @@
     renderWindBoltImpact(x, y) {
       const slash = this.add.graphics().setPosition(x, y).setDepth(y + 72);
       [0, 1, 2].forEach(index => {
-        slash.lineStyle(4 - index, index === 1 ? 0xcafff2 : 0x55d8c5, 0.82 - index * 0.18);
+        slash.lineStyle(4 - index, index === 1 ? 0xe7ffc9 : 0x4cde7c, 0.82 - index * 0.18);
         slash.beginPath();
         slash.arc(0, 0, 22 + index * 11, -0.85 + index * 1.7, 1.45 + index * 1.4, false);
         slash.strokePath();
@@ -7444,10 +8632,12 @@
         projectile.destroy();
         return;
       }
-      if (projectile.visualType === "arrow") {
+      if (projectile.visualType?.startsWith("arrow")) {
         if (burst) {
-          this.emitPhysicalSparks(projectile.x, projectile.y, projectile.charged ? 13 : 7, projectile.charged ? 0xc8f6a1 : 0xffd38a);
-          this.flashCast(projectile.x, projectile.y, projectile.charged ? 0xbfeea1 : 0xe5cf8d, projectile.y + 88);
+          const heavyArrow = projectile.visualType === "arrowHeavy";
+          const barrageArrow = projectile.visualType === "arrowBarrage";
+          this.emitPhysicalSparks(projectile.x, projectile.y, heavyArrow ? 13 : barrageArrow ? 5 : 7, heavyArrow ? 0xb9ecff : barrageArrow ? 0xf0bb62 : 0xffd38a);
+          this.flashCast(projectile.x, projectile.y, heavyArrow ? 0xd8f6ff : barrageArrow ? 0xe0a04f : 0xe5cf8d, projectile.y + 88);
         }
         projectile.destroy();
         return;
@@ -7479,6 +8669,14 @@
       projectile.destroy();
     }
 
+    applyJiangxunBarrageDamageRamp(projectile, targetKey, baseDamage) {
+      if (projectile?.visualType !== "arrowBarrage" || !(projectile.barrageDamageRamp instanceof Map)) return baseDamage;
+      const priorHits = Math.max(0, Number(projectile.barrageDamageRamp.get(targetKey)) || 0);
+      const bonus = Math.min(1, priorHits * 0.1);
+      projectile.barrageDamageRamp.set(targetKey, priorHits + 1);
+      return Math.max(1, Math.round(baseDamage * (1 + bonus)));
+    }
+
     handleLeafSlimeProjectileHit(projectile, slime) {
       if (!slime?.active) return false;
       const targetKey = slime.slimeId || slime;
@@ -7496,6 +8694,7 @@
         if (projectile.hitTargets?.has(targetKey)) return false;
         projectile.hitTargets?.add(targetKey);
       }
+      hitDamage = this.applyJiangxunBarrageDamageRamp(projectile, targetKey, hitDamage);
       if (!projectile.piercing) this.destroyProjectile(projectile, true);
       if (slime.state === "dead" || slime.state === "vanish") return !projectile.piercing;
       this.playLeafSlimeHit(slime, hitDamage, {
@@ -7574,10 +8773,10 @@
       return node;
     }
 
-    playLevelUpEffect(levels = 1) {
-      if (!this.actor?.active) return;
-      const x = this.actor.x;
-      const y = this.actor.y - 126;
+    playLevelUpEffect(levels = 1, target = this.actor, level = app.profile?.level || 1) {
+      if (!target || target.active === false) return;
+      const x = Number(target.x) || 0;
+      const y = (Number(target.y) || 0) - 126;
       const label = this.add.text(x, y, levels > 1 ? `LEVEL UP! x${levels}` : "LEVEL UP!", {
         fontFamily: "Arial Black, Microsoft YaHei, sans-serif",
         fontSize: "30px",
@@ -7587,7 +8786,7 @@
         strokeThickness: 8,
         shadow: { offsetX: 0, offsetY: 5, color: "#2a1749", blur: 5, fill: true }
       }).setOrigin(0.5).setDepth(100200).setScale(0.35).setAngle(-9);
-      const levelText = this.add.text(x, y + 34, `Lv.${app.profile?.level || 1}`, {
+      const levelText = this.add.text(x, y + 34, `Lv.${Math.max(1, Number(level) || 1)}`, {
         fontFamily: "Arial Black, Microsoft YaHei, sans-serif",
         fontSize: "17px",
         fontStyle: "900",
@@ -7648,7 +8847,7 @@
       app.audio?.questComplete?.();
     }
 
-    playEnemyHitImpact(slime, critical = false) {
+    playEnemyHitImpact(slime, critical = false, sourceCharacterId = app.profile?.characterId) {
       const x = slime.x;
       const y = slime.y + (Number(slime.hudOffsetY) || -70) + 34;
       const color = critical ? 0xffd86b : 0xbff7ff;
@@ -7675,9 +8874,9 @@
         onComplete: () => flash.destroy()
       });
       this.cameras.main.shake(critical ? 95 : 70, critical ? 0.0042 : 0.0024);
-      if (app.profile?.characterId === "ayu") app.audio?.swordImpact?.(critical);
-      else if (app.profile?.characterId === "laodeng") app.audio?.punchImpact?.(critical);
-      else if (app.profile?.characterId === "jiangxun") app.audio?.arrowImpact?.(critical);
+      if (sourceCharacterId === "ayu") app.audio?.swordImpact?.(critical);
+      else if (sourceCharacterId === "laodeng") app.audio?.punchImpact?.(critical);
+      else if (sourceCharacterId === "jiangxun") app.audio?.arrowImpact?.(critical);
       else app.audio?.hit();
     }
 
@@ -7749,12 +8948,13 @@
     }
 
     playLeafSlimeHit(slime, baseDamage = MELEE.damage, options = {}) {
-      if (slime.state === "hit" || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return 0;
+      if ((slime.state === "hit" && !options.allowComboHit) || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return 0;
       slime.provokedUntil = this.time.now + 12000;
       const result = this.rollPlayerDamage(baseDamage, slime, options.kind || "magic");
       slime.hp = Math.max(0, Number(slime.hp || 0) - result.amount);
-      if (!options.noEnergyGain) {
-        this.restoreEnergy(options.energyGain ?? (options.charged ? ENERGY_CHARGED_HIT_GAIN : ENERGY_HIT_GAIN), slime.x, slime.y);
+      let energyGained = 0;
+      if (!options.noEnergyGain && !options.charged) {
+        energyGained = this.restoreEnergy(options.energyGain ?? ENERGY_HIT_GAIN, slime.x, slime.y);
       }
       this.refreshEnemyHpBar(slime);
       this.showFloatingText(
@@ -7777,7 +8977,12 @@
       const token = slime.actionToken;
       const defeated = slime.hp <= 0;
       slime.state = "hit";
-      this.broadcastEnemyState(slime, defeated ? "dead" : "hit");
+      this.broadcastEnemyState(slime, defeated ? "dead" : "hit", {
+        damageAmount: result.amount,
+        critical: result.critical,
+        hitKind: options.kind || "magic",
+        energyGained
+      });
       slime.body.setVelocity(0, 0);
       slime.setTint(0xfff0b0);
       this.playEnemyAnimation(slime, "hit", true);
@@ -8512,12 +9717,12 @@
           .setRotation(Math.atan2(vy, vx))
           .setDepth(Math.max(projectile.y + (projectile.depthOffset || 10), projectile.visualBaseDepth || 0));
         projectile.trail.push({ x: projectile.x, y: projectile.y });
-        if (projectile.trail.length > (["lightningOrb", "windBolt"].includes(projectile.visualType) ? 9 : 7)) projectile.trail.shift();
+        if (projectile.trail.length > (projectile.visualType === "lightningOrb" ? 7 : projectile.visualType === "windBolt" ? 9 : 7)) projectile.trail.shift();
         if (projectile.visualType === "lightningOrb") {
           projectile.trail.forEach((point, index) => {
             const progress = (index + 1) / projectile.trail.length;
-            this.projectileGraphics.fillStyle(index % 2 ? 0x174cff : 0x00a8ff, progress * 0.24);
-            this.projectileGraphics.fillCircle(point.x, point.y, 1.5 + progress * 4.5);
+            this.projectileGraphics.fillStyle(index % 2 ? 0x195fff : 0x46d6ff, progress * 0.2);
+            this.projectileGraphics.fillCircle(point.x, point.y, 0.8 + progress * 2.8);
           });
         } else if (projectile.visualType === "windBolt") {
           const windDirection = normalizeVector(vx, vy);
@@ -8525,7 +9730,7 @@
           projectile.trail.forEach((point, index) => {
             const progress = (index + 1) / projectile.trail.length;
             const length = 8 + progress * 18;
-            this.projectileGraphics.lineStyle(1 + progress * 2.4, index % 3 ? 0x9edbd8 : 0xe8f7f4, progress * 0.3);
+            this.projectileGraphics.lineStyle(1 + progress * 2.4, index % 3 ? 0x5fda7f : 0xdcffc0, progress * 0.34);
             this.projectileGraphics.lineBetween(point.x - windDirection.x * length, point.y - windDirection.y * length, point.x, point.y);
           });
           if (this.time.now - projectile.lastTrailSparkAt > 55) {
@@ -8534,22 +9739,24 @@
             const mote = this.add.image(projectile.x, projectile.y, isLeaf ? WIND_LEAF_TEXTURE_KEY : WIND_MOTE_TEXTURE_KEY)
               .setScale(0.28 + Math.random() * 0.22)
               .setRotation(projectile.visualRotation + Math.random() - 0.5)
-              .setTint(isLeaf ? 0x67a987 : 0xd9efec)
+              .setTint(isLeaf ? 0x4bb96b : 0xb8ffa1)
               .setDepth(projectile.y + 8);
             const side = Phaser.Math.FloatBetween(-1, 1) * 22;
               this.tweens.add({ targets: mote, x: mote.x + windNormal.x * side - windDirection.x * 18, y: mote.y + windNormal.y * side - windDirection.y * 18, alpha: 0, angle: mote.angle + 110, duration: 250, onComplete: () => mote.destroy() });
             }
-        } else if (projectile.visualType === "arrow") {
+        } else if (projectile.visualType?.startsWith("arrow")) {
           const direction = normalizeVector(vx, vy);
+          const heavyArrow = projectile.visualType === "arrowHeavy";
+          const barrageArrow = projectile.visualType === "arrowBarrage";
           projectile.trail.forEach((point, index) => {
             const progress = (index + 1) / projectile.trail.length;
-            const length = (projectile.charged ? 30 : 16) * progress;
-            this.projectileGraphics.lineStyle(projectile.charged ? 3.2 : 1.6, projectile.charged ? 0xd8f7ae : 0xe8d49a, progress * 0.34);
+            const length = (heavyArrow ? 32 : barrageArrow ? 10 : 17) * progress;
+            this.projectileGraphics.lineStyle(heavyArrow ? 3.2 : barrageArrow ? 1.1 : 1.7, heavyArrow ? 0xb9ecff : barrageArrow ? 0xd99a50 : 0xe8d49a, progress * (barrageArrow ? 0.24 : 0.34));
             this.projectileGraphics.lineBetween(point.x - direction.x * length, point.y - direction.y * length, point.x, point.y);
           });
-          if (projectile.charged && this.time.now - projectile.lastTrailSparkAt > 72) {
+          if (heavyArrow && this.time.now - projectile.lastTrailSparkAt > 72) {
             projectile.lastTrailSparkAt = this.time.now;
-            this.emitPhysicalSparks(projectile.x, projectile.y, 3, 0xc8f6a1);
+            this.emitPhysicalSparks(projectile.x, projectile.y, 3, 0xb9ecff);
           }
         } else if (projectile.visualType === "swordWave") {
           const direction = normalizeVector(vx, vy);
@@ -8572,7 +9779,7 @@
       if (!app.boss.active || app.boss.hp <= 0) return;
       if (projectile.hitTargets?.has("boss")) return;
       projectile.hitTargets?.add("boss");
-      const damage = projectile.damage || 18;
+      const damage = this.applyJiangxunBarrageDamageRamp(projectile, "boss", projectile.damage || 18);
       if (!projectile.piercing) this.destroyProjectile(projectile, true);
       this.applyBossDamage(damage);
     }
@@ -8613,7 +9820,7 @@
           .setAlpha(0.88)
           .setDepth(peer.y + 8);
         sprite.play(`${character.id}-idle`);
-        const label = this.add.text(peer.x, peer.y - 128, peer.name, {
+        const label = this.add.text(peer.x, peer.y - 128, playerDisplayName(peer), {
           fontFamily: "Microsoft YaHei, sans-serif",
           fontSize: "13px",
           color: "#ffffff",
@@ -8635,6 +9842,8 @@
           characterId: peer.characterId,
           hp: Number(peer.hp ?? peer.maxHp ?? 1),
           maxHp: Math.max(1, Number(peer.maxHp || 1)),
+          shield: Math.max(0, Number(peer.shield || 0)),
+          level: Math.max(1, Number(peer.level || 1)),
           down: false,
           hitFlashToken: 0,
           flags: new Set(peer.flags || [])
@@ -8643,12 +9852,20 @@
       }
       remote.target = { x: peer.x, y: peer.y };
       remote.sprite.setFlipX(!!peer.flipX);
-      remote.label.setText(peer.name);
+      remote.label.setText(playerDisplayName(peer));
+      const previousHp = Math.max(0, Number(remote.hp || 0));
+      const previousShield = Math.max(0, Number(remote.shield || 0));
       const nextMaxHp = Math.max(1, Number(peer.maxHp || remote.maxHp || 1));
       const nextHp = clamp(Number(peer.hp ?? nextMaxHp), 0, nextMaxHp);
-      const tookDamage = nextHp < (remote.hp ?? nextHp) && nextHp > 0;
+      const nextShield = Math.max(0, Number(peer.shield ?? previousShield));
+      const damageTaken = Math.max(0, previousHp - nextHp);
+      const healedAmount = Math.max(0, nextHp - previousHp);
+      const shieldSpent = Math.max(0, previousShield - nextShield);
+      const tookDamage = damageTaken > 0;
       remote.hp = nextHp;
       remote.maxHp = nextMaxHp;
+      remote.shield = nextShield;
+      remote.level = Math.max(1, Number(peer.level || remote.level || 1));
       remote.flags = new Set(peer.flags || []);
       remote.down = nextHp <= 0;
       const ratio = clamp(nextHp / nextMaxHp, 0, 1);
@@ -8656,6 +9873,25 @@
       remote.hpFill.setFillStyle(ratio > 0.45 ? 0x42c98a : ratio > 0.2 ? 0xf3c75d : 0xef7fb0, 0.92);
       remote.hpBg.setVisible(true);
       remote.hpFill.setVisible(nextHp > 0);
+      if (shieldSpent > 0) {
+        this.playShieldEffect(remote.sprite.x, remote.sprite.y, true);
+        this.showFloatingText(remote.sprite.x, remote.sprite.y - 116, `格挡 ${Math.ceil(shieldSpent)}`, {
+          color: "#bff7ff",
+          size: "17px",
+          rise: 48
+        });
+      }
+      if (damageTaken > 0) {
+        this.showFloatingText(remote.sprite.x, remote.sprite.y - 124, `-${Math.ceil(damageTaken)}`, {
+          color: "#ff9ab4",
+          size: "20px",
+          rise: 58
+        });
+        this.emitPhysicalSparks(remote.sprite.x, remote.sprite.y - 48, 12, 0xff9ab4, remote.sprite.y + 220);
+        app.audio.playerHit();
+      } else if (healedAmount > 0) {
+        this.playFriendlyHealEffect(remote.sprite.x, remote.sprite.y, Math.ceil(healedAmount));
+      }
       if (tookDamage) {
         remote.hitFlashToken += 1;
         const token = remote.hitFlashToken;
@@ -8746,7 +9982,10 @@
         }
       }
       this.restoreEnergy((Number(delta) || 16) / 1000 * ENERGY_REGEN_PER_SECOND, NaN, NaN, { silent: true });
-      if (this.isActionLocked || this.isDead) {
+      if (this.isHeavyDashing && !this.isDead) {
+        // The physics body keeps its dash velocity so obstacle collisions can
+        // stop the rush naturally without regular movement input overriding it.
+      } else if (this.isActionLocked || this.isDead) {
         this.actor.body.setVelocity(0, 0);
       } else if (app.profile.hp > 0) {
         const { dx, dy, moving } = this.getMoveVector();
@@ -8764,7 +10003,7 @@
         }
       }
       this.actor.setDepth(this.actor.y + 8);
-      if (this.berserkAura?.active) this.berserkAura.setPosition(this.actor.x, this.actor.y - 48).setDepth(this.actor.y + 86);
+      if (this.berserkAura?.active) this.berserkAura.setPosition(this.actor.x, this.actor.y - 48).setDepth(this.actor.y - 14);
       this.updateProjectiles();
       this.updateEnemyProjectiles(time);
       this.updateLeafSlimes(time, delta);

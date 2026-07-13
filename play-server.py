@@ -49,8 +49,8 @@ CHAT_HISTORY_LIMIT = max(0, int(os.environ.get("CHAT_HISTORY_LIMIT", str(MAX_CHA
 CHAT_TEXT_LIMIT = max(1, int(os.environ.get("CHAT_TEXT_LIMIT", "180")))
 CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
 MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
-COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk"}
-COMBAT_VISUAL_TYPES = {"", "arrow", "swordWave", "lightningOrb", "windBolt"}
+COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "levelUp"}
+COMBAT_VISUAL_TYPES = {"", "arrow", "arrowHeavy", "arrowBarrage", "swordWave", "lightningOrb", "windBolt"}
 ENEMY_STATES = {"move", "hit", "dead"}
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
@@ -557,7 +557,7 @@ def handle_character_create(user: sqlite3.Row, payload: dict) -> tuple[int, dict
         return 400, {"error": f"角色仓库已满（最多 {CHARACTER_LIMIT} 个角色）。"}
     used_slots = {item["slot"] for item in characters}
     slot = next(index for index in range(CHARACTER_LIMIT) if index not in used_slots)
-    name = clean_name(payload.get("name"), DEFAULT_CHARACTER_NAMES.get(requested, user["nickname"]))
+    name = clean_name(payload.get("name"), user["nickname"])
     now = time.time()
     with db() as conn:
         cursor = conn.execute(
@@ -845,6 +845,7 @@ def player_state_from_message(user: sqlite3.Row, profile: dict, incoming: dict) 
         "hp": clean_number(incoming.get("hp"), profile["hp"], 0, profile["maxHp"]),
         "maxHp": clean_number(incoming.get("maxHp"), profile["maxHp"], 1, 9999),
         "shield": clean_number(incoming.get("shield"), profile.get("shield", 0), 0, 9999),
+        "level": clean_number(profile.get("level"), 1, 1, 99),
         "mapId": clean_limited_text(incoming.get("mapId", ""), 64),
         "flags": flags,
         "updatedAt": int(time.time() * 1000),
@@ -1297,6 +1298,9 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
         "radius": clean_number(incoming.get("radius"), 96, 24, 640),
         "color": clean_number(incoming.get("color"), 0xFFFFFF, 0, 0xFFFFFF),
         "charged": bool(incoming.get("charged", False)),
+        "berserk": bool(incoming.get("berserk", False)),
+        "level": int(clean_number(incoming.get("level"), client.player.get("level", 1), 1, 99)),
+        "levels": int(clean_number(incoming.get("levels"), 1, 1, 12)),
         "points": points,
         "createdAt": int(time.time() * 1000),
     }
@@ -1334,6 +1338,11 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
         "staticImage": bool(incoming.get("staticImage", False)),
         "stationary": bool(incoming.get("stationary", False)),
         "scale": scale,
+        "damageAmount": clean_number(incoming.get("damageAmount"), 0, 0, 99999),
+        "critical": bool(incoming.get("critical", False)),
+        "hitKind": clean_limited_text(incoming.get("hitKind", "magic"), 12),
+        "energyGained": clean_number(incoming.get("energyGained"), 0, 0, 999),
+        "sourceCharacterId": clean_character(client.player.get("characterId"), "lina"),
         "ownerId": client.id,
         "createdAt": int(time.time() * 1000),
     }
@@ -1398,6 +1407,8 @@ def handle_chat_send(client: WsClient, message: dict) -> None:
     if user:
         profile = load_profile(user)
         name = clean_name(profile.get("name"), client.player.get("name") or client.id)
+        if name in DEFAULT_CHARACTER_NAMES.values():
+            name = clean_name(user["nickname"], client.id)
         character_id = clean_character(profile.get("characterId"), client.player.get("characterId", "lina"))
         player_id = profile["id"]
     else:
