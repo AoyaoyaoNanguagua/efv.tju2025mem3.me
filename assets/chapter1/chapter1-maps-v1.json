@@ -10,14 +10,14 @@
       "chapterId": "chapter1",
       "background": {
         "key": "ch1-m01-base-v4-floor-tile",
-        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
+        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.webp",
         "width": 3072,
         "height": 2048,
         "chunks": [
           {
             "id": "ch1-m01-spawn-r0-c0",
             "key": "ch1-m01-base-v4-floor-tile",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.webp",
             "x": 0,
             "y": 0,
             "width": 1024,
@@ -26,7 +26,7 @@
           {
             "id": "ch1-m01-spawn-r0-c1",
             "key": "ch1-m01-base-v4-floor-tile",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.webp",
             "x": 1024,
             "y": 0,
             "width": 1024,
@@ -35,7 +35,7 @@
           {
             "id": "ch1-m01-spawn-r0-c2",
             "key": "ch1-m01-base-v4-floor-tile",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.webp",
             "x": 2048,
             "y": 0,
             "width": 1024,
@@ -44,7 +44,7 @@
           {
             "id": "ch1-m01-spawn-r1-c0",
             "key": "ch1-m01-base-v4-floor-tile",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.webp",
             "x": 0,
             "y": 1024,
             "width": 1024,
@@ -53,7 +53,7 @@
           {
             "id": "ch1-m01-spawn-r1-c1",
             "key": "ch1-m01-base-v4-floor-tile",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.webp",
             "x": 1024,
             "y": 1024,
             "width": 1024,
@@ -62,7 +62,7 @@
           {
             "id": "ch1-m01-spawn-r1-c2",
             "key": "ch1-m01-base-v4-floor-tile",
-            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.png",
+            "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/chunks/ch1-m01-base-v4-floor-tile.webp",
             "x": 2048,
             "y": 1024,
             "width": 1024,
@@ -450,6 +450,8 @@
           "x": 1536,
           "y": 1805,
           "radius": 70,
+          "visual": "portal",
+          "portalScale": 0.82,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_classroom",
           "requiresFlags": [
@@ -519,7 +521,7 @@
         {
           "id": "m01_wall_overlay_back_v5",
           "textureKey": "ch1-m01-wall-overlay-v5",
-          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.png",
+          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-v5-3072x2048.webp",
           "x": 0,
           "y": 0,
           "w": 3072,
@@ -532,7 +534,7 @@
         {
           "id": "m01_wall_overlay_front_v5",
           "textureKey": "ch1-m01-wall-overlay-front-v5",
-          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.png",
+          "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/foreground/ch1-m01-wall-overlay-front-v5-3072x2048.webp",
           "x": 0,
           "y": 0,
           "w": 3072,
@@ -545,7 +547,7 @@
       ],
       "minimapImage": {
         "key": "ch1-map-classroom-spawn-assembled-v4",
-        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-map-classroom-spawn-assembled-v4-3072x2048.png",
+        "path": "assets/chapter1/maps/ch1_m01_classroom_spawn/background/ch1-m01-classroom-minimap-runtime-v1.webp",
         "width": 3072,
         "height": 2048
       },
@@ -1403,7 +1405,7 @@
           {
             "id": "ch1-m02-horizontal-left-v7",
             "key": "ch1-m02-horizontal-left-v7",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-left-v7.png",
+              "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-left-v7.webp",
             "x": 0,
             "y": 0,
             "width": 1536,
@@ -1412,7 +1414,7 @@
           {
             "id": "ch1-m02-horizontal-right-v7",
             "key": "ch1-m02-horizontal-right-v7",
-            "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-right-v7.png",
+              "path": "assets/chapter1/maps/ch1_m02_prompt_archive/background/ch1-m02-horizontal-right-v7.webp",
             "x": 1536,
             "y": 0,
             "width": 1536,
@@ -1444,6 +1446,12 @@
           "x": 1536,
           "y": 512,
           "facing": "S"
+        },
+        {
+          "id": "ch1_m02_spawn_from_auditorium",
+          "x": 182,
+          "y": 348,
+          "facing": "S"
         }
       ],
       "camera": {
@@ -1453,10 +1461,17 @@
       "props": [],
       "obstacles": [
         {
-          "id": "m02-north-archive-wall",
+          "id": "m02-north-archive-wall-west",
           "x": 0,
           "y": 0,
-          "w": 3072,
+          "w": 92,
+          "h": 270
+        },
+        {
+          "id": "m02-north-archive-wall-east",
+          "x": 304,
+          "y": 0,
+          "w": 2768,
           "h": 270
         },
         {
@@ -1699,6 +1714,8 @@
           "x": 120,
           "y": 512,
           "radius": 92,
+          "visual": "portal",
+          "portalScale": 0.82,
           "targetMapId": "ch1_m01_classroom_spawn",
           "targetSpawnId": "ch1_m01_spawn_from_archive"
         },
@@ -1720,6 +1737,18 @@
             "ch1_m03_unlocked"
           ],
           "lockedDialogueId": "ch1_m02_dialogue_exit_locked"
+        },
+        {
+          "id": "ch1_m02_exit_to_auditorium",
+          "type": "teleport",
+          "label": "学院大礼堂",
+          "x": 198,
+          "y": 172,
+          "radius": 92,
+          "visual": "portal",
+          "portalScale": 0.82,
+          "targetMapId": "ch1_m02a_auditorium_branch",
+          "targetSpawnId": "ch1_m02a_spawn_from_archive"
         }
       ],
       "dialogues": [
@@ -1756,13 +1785,287 @@
       "summary": "Expanded two-panel academy prompt archive with a seamless horizontal passage, role-scaled furniture, broad combat space, and a center-south route to M3.",
       "recommendedCredits": 6
     },
+    "ch1_m02a_auditorium_branch": {
+      "id": "ch1_m02a_auditorium_branch",
+      "title": "学院大礼堂",
+      "chapterId": "chapter1",
+      "background": {
+        "key": "ch1-m02a-auditorium-bg-v1",
+        "path": "assets/chapter1/maps/ch1_m02a_auditorium_branch/background/ch1-m02a-auditorium-bg-v1-3072x2304.webp",
+        "width": 3072,
+        "height": 2304
+      },
+      "spawn": {
+        "id": "ch1_m02a_spawn_from_archive",
+        "x": 1536,
+        "y": 1985,
+        "facing": "N"
+      },
+      "spawnPoints": [
+        {
+          "id": "ch1_m02a_spawn_from_archive",
+          "x": 1536,
+          "y": 1985,
+          "facing": "N"
+        }
+      ],
+      "camera": {
+        "startX": 1536,
+        "startY": 2030
+      },
+      "props": [
+        {
+          "id": "ch1_m02a_principal_bronze_statue",
+          "key": "ch1-m02a-principal-bronze-statue",
+          "path": "assets/chapter1/maps/ch1_m02a_auditorium_branch/props/ch1-m02a-principal-bronze-statue-v1.png",
+          "x": 2290,
+          "y": 905,
+          "scale": 0.9,
+          "origin": {
+            "x": 0.5,
+            "y": 1
+          },
+          "depthOffset": 2
+        }
+      ],
+      "obstacles": [
+        {
+          "id": "m02a-north-stage-backdrop",
+          "x": 0,
+          "y": 0,
+          "w": 3072,
+          "h": 650
+        },
+        {
+          "id": "m02a-west-outer-wall",
+          "x": 0,
+          "y": 0,
+          "w": 105,
+          "h": 2304
+        },
+        {
+          "id": "m02a-east-outer-wall",
+          "x": 2967,
+          "y": 0,
+          "w": 105,
+          "h": 2304
+        },
+        {
+          "id": "m02a-stage-front-left",
+          "x": 105,
+          "y": 850,
+          "w": 520,
+          "h": 230
+        },
+        {
+          "id": "m02a-stage-front-center",
+          "x": 820,
+          "y": 950,
+          "w": 1432,
+          "h": 130
+        },
+        {
+          "id": "m02a-stage-front-right",
+          "x": 2447,
+          "y": 850,
+          "w": 520,
+          "h": 230
+        },
+        {
+          "id": "m02a-seat-bank-west",
+          "x": 390,
+          "y": 1115,
+          "w": 965,
+          "h": 590
+        },
+        {
+          "id": "m02a-seat-bank-east",
+          "x": 1658,
+          "y": 1115,
+          "w": 992,
+          "h": 590
+        },
+        {
+          "id": "m02a-south-gallery-wall-west",
+          "x": 105,
+          "y": 1710,
+          "w": 1105,
+          "h": 385
+        },
+        {
+          "id": "m02a-south-gallery-wall-east",
+          "x": 1810,
+          "y": 1710,
+          "w": 1157,
+          "h": 385
+        },
+        {
+          "id": "m02a-foreground-seats-west",
+          "x": 105,
+          "y": 2095,
+          "w": 1105,
+          "h": 209
+        },
+        {
+          "id": "m02a-foreground-seats-east",
+          "x": 1810,
+          "y": 2095,
+          "w": 1157,
+          "h": 209
+        }
+      ],
+      "npcs": [
+        {
+          "id": "ch1_m02a_npc_mumu",
+          "label": "峹牧",
+          "textureKey": "ch1-m02a-mumu-npc",
+          "animationKey": "ch1-m02a-mumu-idle",
+          "x": 865,
+          "y": 865,
+          "scale": 0.82,
+          "originY": 1,
+          "animate": true,
+          "breathe": true,
+          "showLabel": false,
+          "shadowWidth": 78,
+          "shadowHeight": 20,
+          "shadowOffsetY": 2
+        },
+        {
+          "id": "ch1_m02a_pet_xiaozhu",
+          "label": "小筑",
+          "textureKey": "ch1-m02a-xiaozhu-pet",
+          "animationKey": "ch1-m02a-xiaozhu-idle",
+          "x": 1030,
+          "y": 892,
+          "scale": 0.7,
+          "originY": 1,
+          "animate": true,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 72,
+          "shadowHeight": 18,
+          "shadowOffsetY": 1
+        }
+      ],
+      "interactionNodes": [
+        {
+          "id": "ch1_m02a_node_mumu",
+          "type": "npc",
+          "label": "与峹牧交谈",
+          "x": 865,
+          "y": 900,
+          "radius": 150,
+          "npcId": "ch1_m02a_npc_mumu",
+          "visualType": "npc",
+          "showLabel": false,
+          "dialogueId": "ch1_m02a_dialogue_mumu",
+          "setFlags": [
+            "ch1_m02a_met_mumu"
+          ]
+        },
+        {
+          "id": "ch1_m02a_node_xiaozhu",
+          "type": "npc",
+          "label": "摸摸小筑",
+          "x": 1030,
+          "y": 915,
+          "radius": 125,
+          "npcId": "ch1_m02a_pet_xiaozhu",
+          "visualType": "npc",
+          "showLabel": false,
+          "dialogueId": "ch1_m02a_dialogue_xiaozhu"
+        },
+        {
+          "id": "ch1_m02a_node_principal_statue",
+          "type": "inspect",
+          "label": "校长铜像",
+          "x": 2290,
+          "y": 920,
+          "radius": 145,
+          "visualPropId": "ch1_m02a_principal_bronze_statue",
+          "showLabel": false,
+          "dialogueId": "ch1_m02a_dialogue_statue"
+        }
+      ],
+      "enemySpawns": [],
+      "disableDefaultEnemies": true,
+      "encounters": [],
+      "exitPoints": [
+        {
+          "id": "ch1_m02a_exit_back_m02",
+          "type": "teleport",
+          "label": "返回提示词资料长廊",
+          "x": 1536,
+          "y": 2190,
+          "radius": 104,
+          "visual": "portal",
+          "portalScale": 0.82,
+          "targetMapId": "ch1_m02_prompt_archive",
+          "targetSpawnId": "ch1_m02_spawn_from_auditorium"
+        }
+      ],
+      "dialogues": [
+        {
+          "id": "ch1_m02a_dialogue_mumu",
+          "speaker": "峹牧",
+          "lines": [
+            "嘿！我是峹牧，土木工程学院的。",
+            "这只黑白边牧叫小筑，是我在工地捡到的。",
+            "你要一起去体育场吗？最近老登也在那边打球。"
+          ]
+        },
+        {
+          "id": "ch1_m02a_dialogue_xiaozhu",
+          "speaker": "小筑",
+          "lines": [
+            "小筑轻快地摇着白尾尖，金色项圈碰出一声清脆的响声。"
+          ]
+        },
+        {
+          "id": "ch1_m02a_dialogue_statue",
+          "speaker": "校长铜像",
+          "lines": [
+            "铜像底座刻着学院箴言：结构承载空间，协议连接彼此。"
+          ]
+        }
+      ],
+      "foregroundOverlays": [
+        {
+          "id": "m02a-south-gallery-west-foreground",
+          "x": 0,
+          "y": 1700,
+          "w": 1210,
+          "h": 604,
+          "sourceX": 0,
+          "sourceY": 1700,
+          "sourceWidth": 1210,
+          "sourceHeight": 604,
+          "depth": 2140
+        },
+        {
+          "id": "m02a-south-gallery-east-foreground",
+          "x": 1810,
+          "y": 1700,
+          "w": 1262,
+          "h": 604,
+          "sourceX": 1810,
+          "sourceY": 1700,
+          "sourceWidth": 1262,
+          "sourceHeight": 604,
+          "depth": 2140
+        }
+      ],
+      "version": "1.0.0-contributor-2540698-efv",
+      "summary": "Optional upward M02 auditorium branch, adapted to the EFV map, collision, NPC, dialogue and transfer protocols while preserving the collaborator's warm auditorium identity."
+    },
     "ch1_m03_agent_lab": {
       "id": "ch1_m03_agent_lab",
       "title": "樱庭生态园",
       "chapterId": "chapter1",
       "background": {
         "key": "ch1-m03-botanical-garden-bg-v3",
-        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v3.png",
+        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v3.webp",
         "width": 3072,
         "height": 2048
       },
@@ -2131,12 +2434,12 @@
           "x": 1005,
           "y": 900,
           "group": "ch1_m03_encounter_garden_patrol",
-          "activeAfter": "ch1_m03_patrol_started",
-          "textureKey": "ch1-enemy-garden-thorn-hound-elite",
-          "staticImage": true,
-          "rank": "elite",
-          "label": "荆棘猎犬",
-          "scale": 0.28,
+        "activeAfter": "ch1_m03_patrol_started",
+        "textureKey": "ch1-enemy-garden-thorn-hound-elite",
+        "staticImage": false,
+        "rank": "elite",
+        "label": "荆棘猎犬",
+        "scale": 1.35,
           "tint": 16777215,
           "maxHp": 260,
           "damage": 14,
@@ -2155,19 +2458,21 @@
             "width": 630,
             "height": 580
           },
-          "hudOffsetY": -142
+        "bodyWidth": 84,
+        "bodyHeight": 46,
+        "hudOffsetY": -158
         },
         {
           "id": "ch1-m03-pollen-moth",
           "x": 2085,
           "y": 830,
           "group": "ch1_m03_encounter_garden_patrol",
-          "activeAfter": "ch1_m03_patrol_started",
-          "textureKey": "ch1-enemy-garden-pollen-moth-elite",
-          "staticImage": true,
+        "activeAfter": "ch1_m03_patrol_started",
+        "textureKey": "ch1-enemy-garden-pollen-moth-elite",
+        "staticImage": false,
           "rank": "elite",
           "label": "花粉灯蛾",
-          "scale": 0.25,
+        "scale": 1.25,
           "tint": 16777215,
           "maxHp": 235,
           "damage": 13,
@@ -2186,19 +2491,21 @@
             "width": 645,
             "height": 560
           },
-          "hudOffsetY": -150
+        "bodyWidth": 72,
+        "bodyHeight": 38,
+        "hudOffsetY": -164
         },
         {
           "id": "ch1-m03-vine-gardener",
           "x": 2055,
           "y": 1370,
           "group": "ch1_m03_encounter_garden_patrol",
-          "activeAfter": "ch1_m03_patrol_started",
-          "textureKey": "ch1-enemy-garden-vine-gardener-elite",
-          "staticImage": true,
+        "activeAfter": "ch1_m03_patrol_started",
+        "textureKey": "ch1-enemy-garden-vine-gardener-elite",
+        "staticImage": false,
           "rank": "elite",
           "label": "藤蔓园丁",
-          "scale": 0.27,
+        "scale": 1.3,
           "tint": 16777215,
           "maxHp": 290,
           "damage": 15,
@@ -2217,19 +2524,21 @@
             "width": 765,
             "height": 390
           },
-          "hudOffsetY": -152
+        "bodyWidth": 82,
+        "bodyHeight": 50,
+        "hudOffsetY": -166
         },
         {
           "id": "ch1-m03-moon-orchid",
           "x": 2273,
           "y": 760,
           "group": "ch1_m03_encounter_moon_orchid",
-          "activeAfter": "ch1_m03_rare_awakened",
-          "textureKey": "ch1-enemy-garden-moon-orchid-rare",
-          "staticImage": true,
+        "activeAfter": "ch1_m03_rare_awakened",
+        "textureKey": "ch1-enemy-garden-moon-orchid-rare",
+        "staticImage": false,
           "rank": "rare",
           "label": "月兰守卫",
-          "scale": 0.28,
+        "scale": 1.18,
           "tint": 16777215,
           "maxHp": 520,
           "damage": 18,
@@ -2249,21 +2558,23 @@
             "width": 705,
             "height": 620
           },
-          "hudOffsetY": -168
+        "bodyWidth": 78,
+        "bodyHeight": 44,
+        "hudOffsetY": -176
         },
         {
           "id": "ch1-m03-carnivora-boss",
           "x": 1536,
           "y": 530,
           "group": "ch1_m03_encounter_carnivora",
-          "activeAfter": "ch1_m03_carnivora_awakened",
-          "textureKey": "ch1-enemy-garden-carnivora-boss",
-          "staticImage": true,
+        "activeAfter": "ch1_m03_carnivora_awakened",
+        "textureKey": "ch1-enemy-garden-carnivora-boss",
+        "staticImage": false,
           "stationary": true,
           "rangedAttack": true,
           "rank": "boss",
           "label": "食人花院长",
-          "scale": 0.3,
+        "scale": 1.55,
           "tint": 16777215,
           "maxHp": 1250,
           "damage": 20,
@@ -2276,9 +2587,9 @@
           "rangedCooldown": 1500,
           "projectileSpeed": 335,
           "projectileColor": 7925970,
-          "bodyWidth": 200,
-          "bodyHeight": 82,
-          "hudOffsetY": -205
+        "bodyWidth": 140,
+        "bodyHeight": 72,
+        "hudOffsetY": -246
         }
       ],
       "encounters": [
@@ -2319,6 +2630,8 @@
           "x": 1536,
           "y": 1810,
           "radius": 88,
+          "visual": "portal",
+          "portalScale": 0.82,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_lab"
         },
@@ -2405,7 +2718,7 @@
       "foregroundOverlays": [],
       "minimapImage": {
         "key": "ch1-m03-botanical-garden-bg-v3",
-        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v3.png",
+        "path": "assets/chapter1/maps/ch1_m03_botanical_garden/background/ch1-m03-botanical-garden-bg-v3.webp",
         "width": 3072,
         "height": 2048
       },
@@ -2424,7 +2737,7 @@
           {
             "id": "ch1-m04-lab-elbow-v1",
             "key": "ch1-m04-lab-elbow-v1",
-            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-elbow-v1.png",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-elbow-v1.webp",
             "x": 0,
             "y": 0,
             "width": 1254,
@@ -2433,7 +2746,7 @@
           {
             "id": "ch1-m04-lab-middle-v1",
             "key": "ch1-m04-lab-middle-v1",
-            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-middle-v1.png",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-middle-v1.webp",
             "x": 1254,
             "y": 0,
             "width": 1254,
@@ -2442,7 +2755,7 @@
           {
             "id": "ch1-m04-lab-final-v1",
             "key": "ch1-m04-lab-final-v1",
-            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-final-v1.png",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-final-v1.webp",
             "x": 2508,
             "y": 0,
             "width": 1254,
@@ -2451,7 +2764,7 @@
           {
             "id": "ch1-m04-lab-entrance-v1",
             "key": "ch1-m04-lab-entrance-v1",
-            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-entrance-v1.png",
+            "path": "assets/chapter1/maps/ch1_m04_structural_mechanics_lab/background/ch1-m04-lab-entrance-v1.webp",
             "x": 0,
             "y": 1254,
             "width": 1254,
@@ -2576,6 +2889,8 @@
           "x": 627,
           "y": 2380,
           "radius": 110,
+          "visual": "portal",
+          "portalScale": 0.82,
           "targetMapId": "ch1_m03_agent_lab",
           "targetSpawnId": "ch1_m03_spawn_from_boss_lawn"
         }

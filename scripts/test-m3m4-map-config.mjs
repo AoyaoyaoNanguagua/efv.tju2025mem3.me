@@ -16,21 +16,22 @@ assert.equal(m2.background.width, 3072);
 assert.equal(m2.background.height, 1024);
 assert.equal(m2.background.chunks.length, 2);
 assert.ok(m2.background.chunks.every(chunk => chunk.width === 1536 && chunk.height === 1024));
-assert.ok(m2.background.chunks.every(chunk => /-v7\.png$/.test(chunk.path)));
+assert.ok(m2.background.chunks.every(chunk => /-v7\.webp$/.test(chunk.path)));
 
 assert.equal(m3.title, "樱庭生态园");
 assert.equal(m3.background.chunks, undefined, "M3 must use one coherent background");
 assert.match(m3.background.path, /botanical-garden/);
-assert.match(m3.background.path, /-v3\.png$/, "M3 must use the academy botanical garden background");
+assert.match(m3.background.path, /-v3\.webp$/, "M3 must use the optimized academy botanical garden background");
 assert.equal(m3.background.width, 3072, "M3 must provide a wide combat arena");
 assert.equal(m3.background.height, 2048);
 
-const gardenEnemies = m3.enemySpawns.filter(enemy => enemy.staticImage);
+const gardenEnemies = m3.enemySpawns.filter(enemy => /garden/.test(enemy.textureKey || ""));
 assert.equal(gardenEnemies.filter(enemy => enemy.rank === "elite").length, 3);
 assert.equal(gardenEnemies.filter(enemy => enemy.rank === "rare").length, 1);
 assert.equal(gardenEnemies.filter(enemy => enemy.rank === "boss").length, 1);
 assert.ok(gardenEnemies.filter(enemy => enemy.rank === "elite").every(enemy => enemy.patrolBounds));
 assert.ok(gardenEnemies.every(enemy => /garden/.test(enemy.textureKey)));
+assert.ok(gardenEnemies.every(enemy => enemy.staticImage === false), "M3 unique monsters must use animated sprite sheets");
 
 const carnivora = gardenEnemies.find(enemy => enemy.rank === "boss");
 assert.equal(carnivora.stationary, true);

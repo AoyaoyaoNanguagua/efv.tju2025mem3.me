@@ -49,9 +49,9 @@ CHAT_HISTORY_LIMIT = max(0, int(os.environ.get("CHAT_HISTORY_LIMIT", str(MAX_CHA
 CHAT_TEXT_LIMIT = max(1, int(os.environ.get("CHAT_TEXT_LIMIT", "180")))
 CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
 MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
-COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "levelUp"}
+COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "levelUp", "enemySkill"}
 COMBAT_VISUAL_TYPES = {"", "arrow", "arrowHeavy", "arrowBarrage", "swordWave", "lightningOrb", "windBolt"}
-ENEMY_STATES = {"move", "hit", "dead"}
+ENEMY_STATES = {"move", "hit", "dead", "attack", "transform"}
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
 
@@ -1061,8 +1061,8 @@ def handle_boss_start(client: WsClient, message: dict) -> None:
     incoming = message.get("boss") or {}
     boss = dict(DEFAULT_BOSS)
     boss["maxHp"] = clean_number(incoming.get("maxHp"), DEFAULT_BOSS["maxHp"], 1, 99999)
-    boss["hp"] = boss["maxHp"]
-    boss["active"] = True
+    boss["hp"] = clean_number(incoming.get("hp"), boss["maxHp"], 0, boss["maxHp"])
+    boss["active"] = bool(incoming.get("active", True))
     boss["x"] = clean_number(incoming.get("x"), 3200, 0, 20000)
     boss["y"] = clean_number(incoming.get("y"), 3200, 0, 20000)
     boss["phase"] = clean_limited_text(incoming.get("phase", boss.get("phase", "summoning")), 32)
@@ -1124,6 +1124,7 @@ def handle_slime_spawn(client: WsClient, message: dict) -> None:
         "y": clean_number(incoming.get("y"), 3200, 0, 20000),
         "hp": clean_number(incoming.get("hp"), max_hp, 0, max_hp),
         "maxHp": max_hp,
+        "damage": clean_number(incoming.get("damage"), 8, 1, 9999),
         "state": "move",
         "textureKey": texture_key,
         "rank": rank,
@@ -1131,6 +1132,13 @@ def handle_slime_spawn(client: WsClient, message: dict) -> None:
         "staticImage": bool(incoming.get("staticImage", False)),
         "stationary": bool(incoming.get("stationary", False)),
         "scale": clean_float(incoming.get("scale"), 0.9, 0.05, 3.0),
+        "enemyArchetype": clean_limited_text(incoming.get("enemyArchetype", ""), 32),
+        "bossForm": int(clean_number(incoming.get("bossForm"), 1, 1, 4)),
+        "hazardBonus": int(clean_number(incoming.get("hazardBonus"), 0, 0, 6)),
+        "groupId": clean_limited_text(incoming.get("groupId", ""), 64),
+        "bossSummon": bool(incoming.get("bossSummon", False)),
+        "bossWaveId": clean_limited_text(incoming.get("bossWaveId", ""), 32),
+        "bossWaveTitle": clean_limited_text(incoming.get("bossWaveTitle", ""), 64),
         "ownerId": client.id,
         "createdAt": int(time.time() * 1000),
     }
@@ -1301,6 +1309,8 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
         "berserk": bool(incoming.get("berserk", False)),
         "level": int(clean_number(incoming.get("level"), client.player.get("level", 1), 1, 99)),
         "levels": int(clean_number(incoming.get("levels"), 1, 1, 12)),
+        "skillId": clean_limited_text(incoming.get("skillId", ""), 32),
+        "enemyId": clean_slime_id(incoming.get("enemyId"), fallback=False),
         "points": points,
         "createdAt": int(time.time() * 1000),
     }
@@ -1331,6 +1341,7 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
         "y": clean_number(incoming.get("y"), client.player.get("y", 0), 0, 20000),
         "hp": clean_number(incoming.get("hp"), max_hp, 0, max_hp),
         "maxHp": max_hp,
+        "damage": clean_number(incoming.get("damage"), 8, 1, 9999),
         "state": state,
         "textureKey": texture_key,
         "rank": rank,
@@ -1338,6 +1349,13 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
         "staticImage": bool(incoming.get("staticImage", False)),
         "stationary": bool(incoming.get("stationary", False)),
         "scale": scale,
+        "enemyArchetype": clean_limited_text(incoming.get("enemyArchetype", ""), 32),
+        "bossForm": int(clean_number(incoming.get("bossForm"), 1, 1, 4)),
+        "hazardBonus": int(clean_number(incoming.get("hazardBonus"), 0, 0, 6)),
+        "groupId": clean_limited_text(incoming.get("groupId", ""), 64),
+        "bossSummon": bool(incoming.get("bossSummon", False)),
+        "bossWaveId": clean_limited_text(incoming.get("bossWaveId", ""), 32),
+        "bossWaveTitle": clean_limited_text(incoming.get("bossWaveTitle", ""), 64),
         "damageAmount": clean_number(incoming.get("damageAmount"), 0, 0, 99999),
         "critical": bool(incoming.get("critical", False)),
         "hitKind": clean_limited_text(incoming.get("hitKind", "magic"), 12),
@@ -1572,7 +1590,18 @@ class GameHandler(BaseHTTPRequestHandler):
             self.send_error(404)
             return
         ctype = CONTENT_TYPES.get(requested.suffix.lower()) or mimetypes.guess_type(str(requested))[0] or "application/octet-stream"
-        file_size = requested.stat().st_size
+        file_stat = requested.stat()
+        file_size = file_stat.st_size
+        etag = f'"{file_stat.st_mtime_ns:x}-{file_size:x}"'
+        relative_parts = requested.relative_to(ROOT).parts
+        is_versioned_asset = bool(relative_parts and relative_parts[0] == "assets")
+        cache_control = "public, max-age=2592000, immutable" if is_versioned_asset else "no-cache"
+        if not self.headers.get("range") and self.headers.get("if-none-match") == etag:
+            self.send_response(304)
+            self.send_header("etag", etag)
+            self.send_header("cache-control", cache_control)
+            self.end_headers()
+            return
         start = 0
         end = max(0, file_size - 1)
         status = 200
@@ -1600,7 +1629,8 @@ class GameHandler(BaseHTTPRequestHandler):
         content_length = max(0, end - start + 1) if file_size else 0
         self.send_response(status)
         self.send_header("content-type", ctype)
-        self.send_header("cache-control", "no-cache")
+        self.send_header("cache-control", cache_control)
+        self.send_header("etag", etag)
         self.send_header("accept-ranges", "bytes")
         if status == 206:
             self.send_header("content-range", f"bytes {start}-{end}/{file_size}")

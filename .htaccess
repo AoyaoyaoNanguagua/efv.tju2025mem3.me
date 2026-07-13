@@ -3,3 +3,13 @@ AddCharset UTF-8 .html .htm .css .js .json .txt .md .xml
 AddType text/plain .txt
 AddType text/markdown .md
 AddType audio/mpeg .mp3
+AddType image/webp .webp
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(png|jpe?g|webp|gif|svg|mp3|mp4|woff2?)$">
+    Header set Cache-Control "public, max-age=2592000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html?|css|js|json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

@@ -83,6 +83,30 @@ class CombatEffectSyncTests(unittest.TestCase):
         self.assertEqual(enemy["energyGained"], 6)
         self.assertEqual(enemy["sourceCharacterId"], "ayu")
 
+    def test_enemy_skill_event_keeps_shared_telegraph_payload(self):
+        SERVER.handle_combat_event(
+            self.client,
+            {
+                "event": {
+                    "action": "enemySkill",
+                    "mapId": "ch1_m01_classroom_spawn",
+                    "enemyId": "structural-boss",
+                    "skillId": "shearCross",
+                    "radius": 48,
+                    "points": [
+                        {"x": 640, "y": 720},
+                        {"x": 940, "y": 720},
+                    ],
+                }
+            },
+        )
+        event = self.broadcasts[-1][1]["event"]
+        self.assertEqual(event["action"], "enemySkill")
+        self.assertEqual(event["enemyId"], "structural-boss")
+        self.assertEqual(event["skillId"], "shearCross")
+        self.assertEqual(event["radius"], 48)
+        self.assertEqual(len(event["points"]), 2)
+
     def test_client_has_remote_replay_paths_for_every_combat_visual(self):
         source = (ROOT / "play.js").read_text(encoding="utf-8")
         for action in (
@@ -95,6 +119,7 @@ class CombatEffectSyncTests(unittest.TestCase):
             "laodengShockwave",
             "laodengFireExplosion",
             "levelUp",
+            "enemySkill",
         ):
             self.assertIn(f'event.action === "{action}"', source, action)
         self.assertIn("playEnemyHitImpact(slime, critical, enemy.sourceCharacterId)", source)

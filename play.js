@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260712-physical-v12`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260713-loading-optimization-v1`;
   const CHAPTER_END_CINEMATIC_PATH = "assets/cg/p1boss-end.mp4";
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
@@ -66,7 +66,7 @@
     const addImage = item => {
       const key = item?.key || item?.textureKey || item?.id;
       if (!key || !item?.path || images.has(key)) return;
-      images.set(key, { key, path: item.path });
+      images.set(key, { key, path: item.path, type: "image" });
     };
     addImage(mapData?.background);
     (mapData?.background?.chunks || []).forEach(addImage);
@@ -90,10 +90,12 @@
     const selectedMapId = maps[mapId] ? mapId : registry?.defaultMapId;
     const queued = [];
     const queuedKeys = getQueuedMapImageKeys(scene);
-    collectMapImageAssets(maps[selectedMapId]).forEach(item => {
+    const mapData = maps[selectedMapId];
+    [...collectMapImageAssets(mapData), ...collectChapterMapRuntimeAssets(mapData, selectedMapId)].forEach(item => {
       if (queuedKeys.has(item.key) || scene.textures.exists(item.key)) return;
       queuedKeys.add(item.key);
-      scene.load.image(item.key, item.path);
+      if (item.type === "spritesheet") scene.load.spritesheet(item.key, item.path, item.frameConfig);
+      else scene.load.image(item.key, item.path);
       queued.push(item);
     });
     return queued;
@@ -170,6 +172,12 @@
   const PROFESSOR_NPC_FRAME_WIDTH = 192;
   const PROFESSOR_NPC_FRAME_HEIGHT = 256;
   const PROFESSOR_NPC_IDLE_ANIMATION = "ch1-ai-professor-npc-idle";
+  const M02A_MUMU_NPC_KEY = "ch1-m02a-mumu-npc";
+  const M02A_MUMU_NPC_IMAGE = "assets/game/characters/npcs/ch1-m02a-mumu-sprites-v13-efv.png";
+  const M02A_MUMU_IDLE_ANIMATION = "ch1-m02a-mumu-idle";
+  const M02A_XIAOZHU_PET_KEY = "ch1-m02a-xiaozhu-pet";
+  const M02A_XIAOZHU_PET_IMAGE = "assets/game/characters/npcs/ch1-m02a-xiaozhu-sprites-v13-efv.png";
+  const M02A_XIAOZHU_IDLE_ANIMATION = "ch1-m02a-xiaozhu-idle";
   const LEAF_SLIME_DETECT_RANGE = MAP_TILE_SIZE * 9;
   const LEAF_SLIME_ATTACK_RANGE = 64;
   const LEAF_SLIME_ATTACK_COOLDOWN = 1250;
@@ -205,23 +213,292 @@
   const GARDEN_MOON_ORCHID_KEY = "ch1-enemy-garden-moon-orchid-rare";
   const GARDEN_CARNIVORA_BOSS_KEY = "ch1-enemy-garden-carnivora-boss";
   const M04_STRUCTURAL_BOSS_KEY = "ch1-m04-structural-instability-boss";
-  const CHAPTER_ONE_ENEMY_IMAGES = [
-    { key: QUANTUM_SCHOLAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-scholar-rare-cutout-v1.png" },
-    { key: QUANTUM_FAMILIAR_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-familiar-elite-cutout-v1.png" },
-    { key: QUANTUM_PAPER_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-quantum-paper-mob-cutout-v1.png" },
-    { key: BLOCKCHAIN_CHAINBEAST_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-blockchain-chainbeast-rare-cutout-v2.png" },
-    { key: BLOCKCHAIN_LOCK_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-blockchain-lock-elite-cutout-v1.png" },
-    { key: BLOCKCHAIN_SPIDER_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-blockchain-spider-mob-cutout-v1.png" },
-    { key: AIAGENT_CYBERMAGE_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-cybermage-rare-cutout-v1.png" },
-    { key: AIAGENT_DIGITAL_CAT_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-digital-cat-elite-cutout-v2.png" },
-    { key: AIAGENT_BOTCAT_KEY, path: "assets/game/enemies/cutouts/ch1-enemy-aiagent-botcat-mob-cutout-v1.png" },
-    { key: GARDEN_THORN_HOUND_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-thorn-hound-elite-v2.png" },
-    { key: GARDEN_POLLEN_MOTH_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-pollen-moth-elite-v2.png" },
-    { key: GARDEN_VINE_GARDENER_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-vine-gardener-elite-v2.png" },
-    { key: GARDEN_MOON_ORCHID_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-moon-orchid-rare-v2.png" },
-    { key: GARDEN_CARNIVORA_BOSS_KEY, path: "assets/game/enemies/garden/ch1-enemy-garden-carnivora-boss-v2.png" },
-    { key: M04_STRUCTURAL_BOSS_KEY, path: "assets/game/bosses/m04-structural-instability-boss-v1.png" }
+  const enemyGridFrames = (row, columns, start = 0, end = columns - 1) =>
+    Array.from({ length: end - start + 1 }, (_, index) => row * columns + start + index);
+  const CHAPTER_ONE_ANIMATED_ENEMY_SPRITES = [
+    {
+      key: GARDEN_THORN_HOUND_KEY,
+      path: "assets/game/enemies/animated/ch1-m03-garden-patrol-atlas-v3.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "gardenHound",
+      actions: {
+        move: { frames: enemyGridFrames(0, 8), frameRate: 10, repeat: -1 },
+        attack: { frames: enemyGridFrames(1, 8), frameRate: 15, repeat: 0 },
+        hit: { frames: enemyGridFrames(2, 8, 0, 2), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(2, 8, 2, 7), frameRate: 9, repeat: 0 }
+      }
+    },
+    {
+      key: GARDEN_POLLEN_MOTH_KEY,
+      path: "assets/game/enemies/animated/ch1-m03-garden-patrol-atlas-v3.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "gardenMoth",
+      actions: {
+        move: { frames: enemyGridFrames(3, 8), frameRate: 12, repeat: -1 },
+        attack: { frames: enemyGridFrames(4, 8), frameRate: 13, repeat: 0 },
+        hit: { frames: enemyGridFrames(5, 8, 0, 2), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(5, 8, 2, 7), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: GARDEN_VINE_GARDENER_KEY,
+      path: "assets/game/enemies/animated/ch1-m03-garden-patrol-atlas-v3.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "gardenGardener",
+      actions: {
+        move: { frames: enemyGridFrames(6, 8), frameRate: 9, repeat: -1 },
+        attack: { frames: enemyGridFrames(7, 8, 0, 4), frameRate: 12, repeat: 0 },
+        hit: { frames: enemyGridFrames(7, 8, 3, 5), frameRate: 12, repeat: 0 },
+        dead: { frames: enemyGridFrames(7, 8, 4, 7), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: GARDEN_MOON_ORCHID_KEY,
+      path: "assets/game/enemies/animated/ch1-m03-moon-orchid-rare-sheet-v3.png",
+      frameWidth: 196,
+      frameHeight: 147,
+      archetype: "moonOrchid",
+      actions: {
+        move: { frames: enemyGridFrames(1, 6), frameRate: 11, repeat: -1 },
+        attack: { frames: enemyGridFrames(2, 6), frameRate: 13, repeat: 0 },
+        special: { frames: enemyGridFrames(4, 6), frameRate: 12, repeat: 0 },
+        hit: { frames: enemyGridFrames(5, 6), frameRate: 13, repeat: 0 },
+        enrage: { frames: enemyGridFrames(6, 6), frameRate: 11, repeat: 0 },
+        dead: { frames: enemyGridFrames(7, 6), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: GARDEN_CARNIVORA_BOSS_KEY,
+      path: "assets/game/enemies/animated/ch1-m03-carnivora-boss-sheet-v3.png",
+      frameWidth: 196,
+      frameHeight: 168,
+      archetype: "carnivora",
+      actions: {
+        move: { frames: enemyGridFrames(1, 6), frameRate: 8, repeat: -1 },
+        attack: { frames: enemyGridFrames(2, 6), frameRate: 12, repeat: 0 },
+        devour: { frames: enemyGridFrames(3, 6), frameRate: 12, repeat: 0 },
+        special: { frames: enemyGridFrames(4, 6), frameRate: 11, repeat: 0 },
+        hit: { frames: enemyGridFrames(5, 6, 0, 2), frameRate: 12, repeat: 0 },
+        enrage: { frames: enemyGridFrames(5, 6, 2, 5), frameRate: 10, repeat: 0 },
+        dead: { frames: enemyGridFrames(6, 6), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: QUANTUM_SCHOLAR_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-quantum-family-atlas-v2.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "quantumScholar",
+      actions: {
+        move: { frames: enemyGridFrames(0, 8), frameRate: 8, repeat: -1 },
+        attack: { frames: enemyGridFrames(1, 8), frameRate: 13, repeat: 0 },
+        hit: { frames: enemyGridFrames(2, 8, 0, 2), frameRate: 12, repeat: 0 },
+        dead: { frames: enemyGridFrames(2, 8, 2, 7), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: QUANTUM_FAMILIAR_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-quantum-family-atlas-v2.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "quantumFamiliar",
+      actions: {
+        move: { frames: enemyGridFrames(3, 8), frameRate: 13, repeat: -1 },
+        attack: { frames: enemyGridFrames(4, 8), frameRate: 16, repeat: 0 },
+        hit: { frames: enemyGridFrames(5, 8, 0, 2), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(5, 8, 2, 7), frameRate: 9, repeat: 0 }
+      }
+    },
+    {
+      key: QUANTUM_PAPER_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-quantum-family-atlas-v2.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "quantumPaper",
+      actions: {
+        move: { frames: enemyGridFrames(6, 8), frameRate: 12, repeat: -1 },
+        attack: { frames: enemyGridFrames(7, 8, 0, 4), frameRate: 15, repeat: 0 },
+        hit: { frames: enemyGridFrames(7, 8, 3, 5), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(7, 8, 4, 7), frameRate: 9, repeat: 0 }
+      }
+    },
+    {
+      key: BLOCKCHAIN_CHAINBEAST_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-blockchain-family-atlas-v3.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "chainBeast",
+      actions: {
+        move: { frames: enemyGridFrames(0, 8), frameRate: 9, repeat: -1 },
+        attack: { frames: enemyGridFrames(1, 8), frameRate: 13, repeat: 0 },
+        hit: { frames: enemyGridFrames(2, 8, 0, 2), frameRate: 12, repeat: 0 },
+        dead: { frames: enemyGridFrames(2, 8, 2, 7), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: BLOCKCHAIN_LOCK_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-blockchain-family-atlas-v3.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "validationLock",
+      actions: {
+        move: { frames: enemyGridFrames(3, 8), frameRate: 9, repeat: -1 },
+        attack: { frames: enemyGridFrames(4, 8), frameRate: 12, repeat: 0 },
+        hit: { frames: enemyGridFrames(5, 8, 0, 2), frameRate: 12, repeat: 0 },
+        dead: { frames: enemyGridFrames(5, 8, 2, 7), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: BLOCKCHAIN_SPIDER_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-blockchain-family-atlas-v3.png",
+      frameWidth: 147,
+      frameHeight: 147,
+      archetype: "chainSpider",
+      actions: {
+        move: { frames: enemyGridFrames(6, 8), frameRate: 14, repeat: -1 },
+        attack: { frames: enemyGridFrames(7, 8, 0, 4), frameRate: 15, repeat: 0 },
+        hit: { frames: enemyGridFrames(7, 8, 3, 5), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(7, 8, 4, 7), frameRate: 9, repeat: 0 }
+      }
+    },
+    {
+      key: AIAGENT_CYBERMAGE_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-aiagent-family-atlas-v3.png",
+      frameWidth: 168,
+      frameHeight: 147,
+      archetype: "agentMage",
+      actions: {
+        move: { frames: enemyGridFrames(0, 7), frameRate: 8, repeat: -1 },
+        attack: { frames: enemyGridFrames(1, 7), frameRate: 13, repeat: 0 },
+        hit: { frames: enemyGridFrames(2, 7, 0, 2), frameRate: 12, repeat: 0 },
+        dead: { frames: enemyGridFrames(2, 7, 2, 6), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: AIAGENT_DIGITAL_CAT_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-aiagent-family-atlas-v3.png",
+      frameWidth: 168,
+      frameHeight: 147,
+      archetype: "digitalCat",
+      actions: {
+        move: { frames: enemyGridFrames(3, 7), frameRate: 14, repeat: -1 },
+        attack: { frames: enemyGridFrames(4, 7), frameRate: 17, repeat: 0 },
+        hit: { frames: enemyGridFrames(5, 7, 0, 2), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(5, 7, 2, 6), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: AIAGENT_BOTCAT_KEY,
+      path: "assets/game/enemies/animated/ch1-m04-aiagent-family-atlas-v3.png",
+      frameWidth: 168,
+      frameHeight: 147,
+      archetype: "botCat",
+      actions: {
+        move: { frames: enemyGridFrames(6, 7), frameRate: 13, repeat: -1 },
+        attack: { frames: enemyGridFrames(7, 7, 0, 4), frameRate: 15, repeat: 0 },
+        hit: { frames: enemyGridFrames(7, 7, 3, 5), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(7, 7, 4, 6), frameRate: 8, repeat: 0 }
+      }
+    },
+    {
+      key: M04_STRUCTURAL_BOSS_KEY,
+      path: "assets/game/bosses/m04-structural-instability-boss-sheet-v2.png",
+      frameWidth: 147,
+      frameHeight: 168,
+      archetype: "structuralBoss",
+      actions: {
+        move: { frames: enemyGridFrames(1, 8), frameRate: 8, repeat: -1 },
+        attack: { frames: enemyGridFrames(2, 8), frameRate: 12, repeat: 0 },
+        transform: { frames: enemyGridFrames(3, 8), frameRate: 8, repeat: 0 },
+        phaseMove: { frames: enemyGridFrames(4, 8), frameRate: 14, repeat: -1 },
+        phaseAttack: { frames: enemyGridFrames(5, 8), frameRate: 16, repeat: 0 },
+        phaseSpecial: { frames: enemyGridFrames(5, 8), frameRate: 13, repeat: 0 },
+        hit: { frames: enemyGridFrames(6, 8, 0, 2), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(6, 8, 2, 7), frameRate: 8, repeat: 0 }
+      }
+    }
   ];
+  const CHAPTER_ONE_ANIMATED_ENEMY_SHEETS = [];
+  const animatedEnemySheetByPath = new Map();
+  CHAPTER_ONE_ANIMATED_ENEMY_SPRITES.forEach(item => {
+    let sheet = animatedEnemySheetByPath.get(item.path);
+    if (!sheet) {
+      sheet = {
+        key: `ch1-animated-enemy-sheet-${CHAPTER_ONE_ANIMATED_ENEMY_SHEETS.length + 1}`,
+        path: item.path,
+        type: "spritesheet",
+        frameConfig: { frameWidth: item.frameWidth, frameHeight: item.frameHeight }
+      };
+      animatedEnemySheetByPath.set(item.path, sheet);
+      CHAPTER_ONE_ANIMATED_ENEMY_SHEETS.push(sheet);
+    }
+    item.sheetKey = sheet.key;
+  });
+
+  function collectChapterMapRuntimeAssets(mapData, mapId) {
+    const logicalEnemyKeys = new Set((mapData?.enemySpawns || []).map(enemy => enemy.textureKey).filter(Boolean));
+    if (mapId === "ch1_m04_library_lawn_boss") {
+      [
+        QUANTUM_SCHOLAR_KEY,
+        QUANTUM_FAMILIAR_KEY,
+        QUANTUM_PAPER_KEY,
+        BLOCKCHAIN_CHAINBEAST_KEY,
+        BLOCKCHAIN_LOCK_KEY,
+        BLOCKCHAIN_SPIDER_KEY,
+        AIAGENT_CYBERMAGE_KEY,
+        AIAGENT_DIGITAL_CAT_KEY,
+        AIAGENT_BOTCAT_KEY,
+        M04_STRUCTURAL_BOSS_KEY
+      ].forEach(key => logicalEnemyKeys.add(key));
+    }
+    const runtimeAssets = [];
+    CHAPTER_ONE_ENEMY_SPRITES
+      .filter(item => logicalEnemyKeys.has(item.key))
+      .forEach(item => runtimeAssets.push({
+        ...item,
+        type: "spritesheet",
+        frameConfig: { frameWidth: LEAF_SLIME_FRAME_SIZE, frameHeight: LEAF_SLIME_FRAME_SIZE }
+      }));
+    const animatedSheetKeys = new Set();
+    CHAPTER_ONE_ANIMATED_ENEMY_SPRITES
+      .filter(item => logicalEnemyKeys.has(item.key))
+      .forEach(item => animatedSheetKeys.add(item.sheetKey));
+    CHAPTER_ONE_ANIMATED_ENEMY_SHEETS
+      .filter(sheet => animatedSheetKeys.has(sheet.key))
+      .forEach(sheet => runtimeAssets.push(sheet));
+    if (mapId === "ch1_m02a_auditorium_branch") {
+      runtimeAssets.push(
+        {
+          key: M02A_MUMU_NPC_KEY,
+          path: M02A_MUMU_NPC_IMAGE,
+          type: "spritesheet",
+          frameConfig: { frameWidth: FRAME_SIZE, frameHeight: FRAME_SIZE }
+        },
+        {
+          key: M02A_XIAOZHU_PET_KEY,
+          path: M02A_XIAOZHU_PET_IMAGE,
+          type: "spritesheet",
+          frameConfig: { frameWidth: FRAME_SIZE, frameHeight: FRAME_SIZE }
+        }
+      );
+    }
+    if (mapId === "ch1_m04_library_lawn_boss") {
+      runtimeAssets.push(
+        { key: PROFESSOR_FLY_KEY, path: PROFESSOR_FLY_IMAGE, type: "image" },
+        {
+          key: BOSS_VOID_PORTAL_KEY,
+          path: BOSS_VOID_PORTAL_IMAGE,
+          type: "spritesheet",
+          frameConfig: { frameWidth: BOSS_VOID_PORTAL_FRAME_WIDTH, frameHeight: BOSS_VOID_PORTAL_FRAME_HEIGHT }
+        }
+      );
+    }
+    return runtimeAssets;
+  }
+  const CHAPTER_ONE_ENEMY_IMAGES = [];
   const BOSS_PORTAL_OPEN_MS = 520;
   const BOSS_PORTAL_EGRESS_MS = 820;
   const BOSS_PORTAL_CLOSE_MS = 420;
@@ -251,7 +528,7 @@
   const EQUIPMENT_CAPACITY = 10;
   const MINIMAP_UPDATE_INTERVAL_MS = 140;
   const INTERACTION_UPDATE_INTERVAL_MS = 90;
-  const ENTRY_LOADING_MIN_MS = 5000;
+  const ENTRY_LOADING_MIN_MS = 900;
   const MINIMAP_COLORS = {
     player: "#ffffff",
     task: "#5ed2df",
@@ -660,7 +937,7 @@
       title: "区块链系",
       color: 0xf3c75d,
       units: [
-        { rank: "rare", label: "链铸稀有精英", dx: -270, dy: 105, textureKey: BLOCKCHAIN_CHAINBEAST_KEY, staticImage: true, tint: 0xffffff, scale: 0.16, maxHp: 300, damage: 17, creditDefense: 5, rewardExp: 46, rewardCredits: 5, dropId: "ch1_drop_chain_forge_core", dropName: "链铸重核" },
+        { rank: "rare", label: "链铸稀有精英", dx: -270, dy: 105, textureKey: BLOCKCHAIN_CHAINBEAST_KEY, staticImage: false, tint: 0xffffff, scale: 1.35, maxHp: 300, damage: 17, creditDefense: 5, rewardExp: 46, rewardCredits: 5, dropId: "ch1_drop_chain_forge_core", dropName: "链铸重核" },
         { rank: "elite", label: "重锁精英", dx: 235, dy: 130, tint: 0x8e8172, scale: 1.12, maxHp: 175, damage: 13, rewardExp: 26, rewardCredits: 3, dropId: "ch1_drop_blockchain_lock", dropName: "验证锁片" },
         { rank: "mob", label: "链条小怪", dx: -110, dy: 270, tint: 0x786b5e, scale: 0.9, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
         { rank: "mob", label: "链条小怪", dx: 65, dy: 285, tint: 0x786b5e, scale: 0.9, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
@@ -672,7 +949,7 @@
       title: "AI Agent 系",
       color: 0x8f72d6,
       units: [
-        { rank: "rare", label: "数字猫稀有精英", dx: 270, dy: 105, textureKey: AIAGENT_DIGITAL_CAT_KEY, staticImage: true, tint: 0xffffff, scale: 0.17, maxHp: 320, damage: 18, creditDefense: 6, rewardExp: 48, rewardCredits: 5, dropId: "ch1_drop_agent_memory_core", dropName: "Agent 记忆核心" },
+        { rank: "rare", label: "数字猫稀有精英", dx: 270, dy: 105, textureKey: AIAGENT_DIGITAL_CAT_KEY, staticImage: false, tint: 0xffffff, scale: 1.2, maxHp: 320, damage: 18, creditDefense: 6, rewardExp: 48, rewardCredits: 5, dropId: "ch1_drop_agent_memory_core", dropName: "Agent 记忆核心" },
         { rank: "elite", label: "任务路由精英", dx: -235, dy: 130, tint: 0xb889ff, scale: 1.1, maxHp: 190, damage: 14, rewardExp: 28, rewardCredits: 3, dropId: "ch1_drop_agent_tool_node", dropName: "工具节点" },
         { rank: "mob", label: "提示词小怪", dx: -135, dy: 275, tint: 0x9ff7ff, scale: 0.88, maxHp: 92, damage: 11, rewardExp: 14, rewardCredits: 1 },
         { rank: "mob", label: "记忆碎片", dx: 45, dy: 285, tint: 0xd9c3ff, scale: 0.86, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 },
@@ -688,11 +965,11 @@
       mapX: 560,
       mapY: 620,
       units: [
-        { rank: "rare", label: "量子观测稀有精英", dx: 260, dy: 110, textureKey: QUANTUM_SCHOLAR_KEY, staticImage: true, tint: 0xffffff, scale: 0.68, maxHp: 260, damage: 15, creditDefense: 4, rewardExp: 44, rewardCredits: 4, dropId: "ch1_drop_quantum_probability_core", dropName: "量子概率核心" },
-        { rank: "elite", label: "波函数精英", dx: -220, dy: 120, textureKey: QUANTUM_FAMILIAR_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 150, damage: 12, rewardExp: 24, rewardCredits: 2, dropId: "ch1_drop_quantum_shard", dropName: "量子相干碎片" },
-        { rank: "mob", label: "量子纸灵", dx: -70, dy: 265, textureKey: QUANTUM_PAPER_KEY, staticImage: true, tint: 0xffffff, scale: 0.52, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
-        { rank: "mob", label: "量子纸灵", dx: 100, dy: 275, textureKey: QUANTUM_PAPER_KEY, staticImage: true, tint: 0xffffff, scale: 0.52, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
-        { rank: "mob", label: "纠缠火花", dx: 0, dy: -170, textureKey: QUANTUM_PAPER_KEY, staticImage: true, tint: 0xc7f7ff, scale: 0.5, maxHp: 68, damage: 9, rewardExp: 12, rewardCredits: 1 }
+        { rank: "rare", label: "量子观测稀有精英", dx: 260, dy: 110, textureKey: QUANTUM_SCHOLAR_KEY, staticImage: false, tint: 0xffffff, scale: 1.35, maxHp: 260, damage: 15, creditDefense: 4, rewardExp: 44, rewardCredits: 4, dropId: "ch1_drop_quantum_probability_core", dropName: "量子概率核心" },
+        { rank: "elite", label: "波函数精英", dx: -220, dy: 120, textureKey: QUANTUM_FAMILIAR_KEY, staticImage: false, tint: 0xffffff, scale: 1.3, maxHp: 150, damage: 12, rewardExp: 24, rewardCredits: 2, dropId: "ch1_drop_quantum_shard", dropName: "量子相干碎片" },
+        { rank: "mob", label: "量子纸灵", dx: -70, dy: 265, textureKey: QUANTUM_PAPER_KEY, staticImage: false, tint: 0xffffff, scale: 0.95, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
+        { rank: "mob", label: "量子纸灵", dx: 100, dy: 275, textureKey: QUANTUM_PAPER_KEY, staticImage: false, tint: 0xffffff, scale: 0.95, maxHp: 72, damage: 9, rewardExp: 12, rewardCredits: 1 },
+        { rank: "mob", label: "纠缠火花", dx: 0, dy: -170, textureKey: QUANTUM_PAPER_KEY, staticImage: false, tint: 0xc7f7ff, scale: 0.92, maxHp: 68, damage: 9, rewardExp: 12, rewardCredits: 1 }
       ]
     },
     {
@@ -701,11 +978,11 @@
       mapX: 1880,
       mapY: 620,
       units: [
-        { rank: "rare", label: "链铸重兽稀有精英", dx: -270, dy: 105, textureKey: BLOCKCHAIN_CHAINBEAST_KEY, staticImage: true, tint: 0xffffff, scale: 0.55, maxHp: 300, damage: 17, creditDefense: 5, rewardExp: 46, rewardCredits: 5, dropId: "ch1_drop_chain_forge_core", dropName: "链铸重核" },
-        { rank: "elite", label: "重锁精英", dx: 235, dy: 130, textureKey: BLOCKCHAIN_LOCK_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 175, damage: 13, rewardExp: 26, rewardCredits: 3, dropId: "ch1_drop_blockchain_lock", dropName: "验证锁片" },
-        { rank: "mob", label: "链爪小怪", dx: -110, dy: 270, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
-        { rank: "mob", label: "链爪小怪", dx: 65, dy: 285, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
-        { rank: "mob", label: "锁扣小怪", dx: 160, dy: -150, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: true, tint: 0xffe0a6, scale: 0.55, maxHp: 82, damage: 10, rewardExp: 13, rewardCredits: 1 }
+        { rank: "rare", label: "链铸重兽稀有精英", dx: -270, dy: 105, textureKey: BLOCKCHAIN_CHAINBEAST_KEY, staticImage: false, tint: 0xffffff, scale: 1.35, maxHp: 300, damage: 17, creditDefense: 5, rewardExp: 46, rewardCredits: 5, dropId: "ch1_drop_chain_forge_core", dropName: "链铸重核" },
+        { rank: "elite", label: "重锁精英", dx: 235, dy: 130, textureKey: BLOCKCHAIN_LOCK_KEY, staticImage: false, tint: 0xffffff, scale: 1.25, maxHp: 175, damage: 13, rewardExp: 26, rewardCredits: 3, dropId: "ch1_drop_blockchain_lock", dropName: "验证锁片" },
+        { rank: "mob", label: "链爪小怪", dx: -110, dy: 270, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: false, tint: 0xffffff, scale: 0.9, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
+        { rank: "mob", label: "链爪小怪", dx: 65, dy: 285, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: false, tint: 0xffffff, scale: 0.9, maxHp: 86, damage: 10, rewardExp: 13, rewardCredits: 1 },
+        { rank: "mob", label: "锁扣小怪", dx: 160, dy: -150, textureKey: BLOCKCHAIN_SPIDER_KEY, staticImage: false, tint: 0xffe0a6, scale: 0.88, maxHp: 82, damage: 10, rewardExp: 13, rewardCredits: 1 }
       ]
     },
     {
@@ -714,11 +991,11 @@
       mapX: 3135,
       mapY: 620,
       units: [
-        { rank: "rare", label: "Agent 协调稀有精英", dx: 270, dy: 105, textureKey: AIAGENT_CYBERMAGE_KEY, staticImage: true, tint: 0xffffff, scale: 0.66, maxHp: 320, damage: 18, creditDefense: 6, rewardExp: 48, rewardCredits: 5, dropId: "ch1_drop_agent_memory_core", dropName: "Agent 记忆核心" },
-        { rank: "elite", label: "数字猫精英", dx: -235, dy: 130, textureKey: AIAGENT_DIGITAL_CAT_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 190, damage: 14, rewardExp: 28, rewardCredits: 3, dropId: "ch1_drop_agent_tool_node", dropName: "工具节点" },
-        { rank: "mob", label: "工具调用小怪", dx: -135, dy: 275, textureKey: AIAGENT_BOTCAT_KEY, staticImage: true, tint: 0xffffff, scale: 0.58, maxHp: 92, damage: 11, rewardExp: 14, rewardCredits: 1 },
-        { rank: "mob", label: "记忆碎片", dx: 45, dy: 285, textureKey: AIAGENT_BOTCAT_KEY, staticImage: true, tint: 0xcff7ff, scale: 0.56, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 },
-        { rank: "mob", label: "子任务幽影", dx: -35, dy: -165, textureKey: AIAGENT_BOTCAT_KEY, staticImage: true, tint: 0xd9c3ff, scale: 0.55, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 }
+        { rank: "rare", label: "Agent 协调稀有精英", dx: 270, dy: 105, textureKey: AIAGENT_CYBERMAGE_KEY, staticImage: false, tint: 0xffffff, scale: 1.25, maxHp: 320, damage: 18, creditDefense: 6, rewardExp: 48, rewardCredits: 5, dropId: "ch1_drop_agent_memory_core", dropName: "Agent 记忆核心" },
+        { rank: "elite", label: "数字猫精英", dx: -235, dy: 130, textureKey: AIAGENT_DIGITAL_CAT_KEY, staticImage: false, tint: 0xffffff, scale: 1.2, maxHp: 190, damage: 14, rewardExp: 28, rewardCredits: 3, dropId: "ch1_drop_agent_tool_node", dropName: "工具节点" },
+        { rank: "mob", label: "工具调用小怪", dx: -135, dy: 275, textureKey: AIAGENT_BOTCAT_KEY, staticImage: false, tint: 0xffffff, scale: 0.95, maxHp: 92, damage: 11, rewardExp: 14, rewardCredits: 1 },
+        { rank: "mob", label: "记忆碎片", dx: 45, dy: 285, textureKey: AIAGENT_BOTCAT_KEY, staticImage: false, tint: 0xcff7ff, scale: 0.94, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 },
+        { rank: "mob", label: "子任务幽影", dx: -35, dy: -165, textureKey: AIAGENT_BOTCAT_KEY, staticImage: false, tint: 0xd9c3ff, scale: 0.94, maxHp: 88, damage: 11, rewardExp: 14, rewardCredits: 1 }
       ]
     }
   ].forEach((wavePatch, index) => Object.assign(BOSS_SUMMON_WAVES[index], wavePatch));
@@ -2208,10 +2485,15 @@
     entryLoadingState.timer = window.setInterval(() => {
       const state = entryLoadingState;
       if (!state) return;
-      const fakeProgress = Math.min(92, (performance.now() - state.startedAt) / ENTRY_LOADING_MIN_MS * 92);
-      const realProgress = Math.min(96, state.realProgress * 96);
+      const fakeProgress = Math.min(78, (performance.now() - state.startedAt) / ENTRY_LOADING_MIN_MS * 78);
+      const realProgress = Math.min(98, state.realProgress * 98);
       const progress = Math.max(fakeProgress, realProgress);
-      setEntryLoadingDom(progress, state.realProgress >= 1 ? "正在同步玩家出生点" : "正在加载地图、角色与怪物资产");
+      const label = state.realProgress >= 1
+        ? "正在同步玩家出生点"
+        : progress >= 84
+          ? "正在解码当前地图图像，首次进入会建立浏览器缓存"
+          : "正在加载当前地图与必要角色资产";
+      setEntryLoadingDom(progress, label);
     }, 80);
   }
 
@@ -3133,6 +3415,10 @@
   function syncBossState(boss) {
     const wasActive = app.boss.active;
     app.boss = { ...app.boss, ...boss };
+    if (boss?.phase === "awaitingProfessor" && app.scene) {
+      app.scene.bossWavePending = true;
+      app.scene.professorDeparted = false;
+    }
     renderBossHud();
     app.scene?.syncBoss();
   }
@@ -3181,18 +3467,11 @@
         frameWidth: LEAF_SLIME_FRAME_SIZE,
         frameHeight: LEAF_SLIME_FRAME_SIZE
       });
-      CHAPTER_ONE_ENEMY_SPRITES.forEach(item => {
-        this.load.spritesheet(item.key, item.path, {
-          frameWidth: LEAF_SLIME_FRAME_SIZE,
-          frameHeight: LEAF_SLIME_FRAME_SIZE
-        });
-      });
       this.load.spritesheet(PROFESSOR_NPC_KEY, PROFESSOR_NPC_IMAGE, {
         frameWidth: PROFESSOR_NPC_FRAME_WIDTH,
         frameHeight: PROFESSOR_NPC_FRAME_HEIGHT
       });
       this.load.image(BOSS_KEY, BOSS_IMAGE);
-      this.load.image(PROFESSOR_FLY_KEY, PROFESSOR_FLY_IMAGE);
       CHAPTER_ONE_ENEMY_IMAGES.forEach(item => this.load.image(item.key, item.path));
       this.load.spritesheet(MAP_PORTAL_KEY, MAP_PORTAL_IMAGE, {
         frameWidth: MAP_PORTAL_FRAME_WIDTH,
@@ -3202,16 +3481,11 @@
         frameWidth: MAP_TRANSFER_RING_FRAME_WIDTH,
         frameHeight: MAP_TRANSFER_RING_FRAME_HEIGHT
       });
-      this.load.spritesheet(BOSS_VOID_PORTAL_KEY, BOSS_VOID_PORTAL_IMAGE, {
-        frameWidth: BOSS_VOID_PORTAL_FRAME_WIDTH,
-        frameHeight: BOSS_VOID_PORTAL_FRAME_HEIGHT
-      });
       CHARACTERS.forEach(character => {
         this.load.spritesheet(character.id, character.sprite, {
           frameWidth: FRAME_SIZE,
           frameHeight: FRAME_SIZE
         });
-        this.load.image(`${character.id}-portrait`, character.portrait);
       });
     }
 
@@ -4020,6 +4294,7 @@
 
     prepareLeafSlimeAnimations() {
       [LEAF_SLIME_KEY, ...CHAPTER_ONE_ENEMY_SPRITES.map(item => item.key)].forEach(textureKey => {
+        if (!this.textures.exists(textureKey)) return;
         const texture = this.textures.get(textureKey);
         texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
         [
@@ -4043,13 +4318,59 @@
     prepareNpcAnimations() {
       const texture = this.textures.get(PROFESSOR_NPC_KEY);
       texture?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
-      if (this.anims.exists(PROFESSOR_NPC_IDLE_ANIMATION)) return;
-      this.anims.create({
-        key: PROFESSOR_NPC_IDLE_ANIMATION,
-        frames: this.anims.generateFrameNumbers(PROFESSOR_NPC_KEY, { start: 0, end: 3 }),
-        frameRate: 3,
-        repeat: -1,
-        yoyo: true
+      if (!this.anims.exists(PROFESSOR_NPC_IDLE_ANIMATION)) {
+        this.anims.create({
+          key: PROFESSOR_NPC_IDLE_ANIMATION,
+          frames: this.anims.generateFrameNumbers(PROFESSOR_NPC_KEY, { start: 0, end: 3 }),
+          frameRate: 3,
+          repeat: -1,
+          yoyo: true
+        });
+      }
+      [
+        {
+          textureKey: M02A_MUMU_NPC_KEY,
+          animationKey: M02A_MUMU_IDLE_ANIMATION,
+          start: 0,
+          end: 7,
+          frameRate: 4
+        },
+        {
+          textureKey: M02A_XIAOZHU_PET_KEY,
+          animationKey: M02A_XIAOZHU_IDLE_ANIMATION,
+          start: 56,
+          end: 63,
+          frameRate: 3
+        }
+      ].forEach(config => {
+        if (!this.textures.exists(config.textureKey)) return;
+        this.textures.get(config.textureKey)?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
+        if (this.anims.exists(config.animationKey)) return;
+        this.anims.create({
+          key: config.animationKey,
+          frames: this.anims.generateFrameNumbers(config.textureKey, {
+            start: config.start,
+            end: config.end
+          }),
+          frameRate: config.frameRate,
+          repeat: -1,
+          yoyo: true
+        });
+      });
+      CHAPTER_ONE_ANIMATED_ENEMY_SPRITES.forEach(item => {
+        if (!this.textures.exists(item.sheetKey)) return;
+        const texture = this.textures.get(item.sheetKey);
+        texture?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
+        Object.entries(item.actions).forEach(([action, config]) => {
+          const key = `${item.key}-${action}`;
+          if (this.anims.exists(key)) return;
+          this.anims.create({
+            key,
+            frames: this.anims.generateFrameNumbers(item.sheetKey, { frames: config.frames }),
+            frameRate: config.frameRate,
+            repeat: config.repeat
+          });
+        });
       });
     }
 
@@ -4059,6 +4380,7 @@
         { textureKey: MAP_TRANSFER_RING_KEY, animationKey: "ch1-map-transfer-ring-loop", frameRate: 7, end: 3 },
         { textureKey: BOSS_VOID_PORTAL_KEY, animationKey: "ch1-boss-void-portal-loop", frameRate: 12, end: 7 }
       ].forEach(({ textureKey, animationKey, frameRate, end }) => {
+        if (!this.textures.exists(textureKey)) return;
         const texture = this.textures.get(textureKey);
         texture?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
         if (this.anims.exists(animationKey)) return;
@@ -4846,6 +5168,9 @@
         const onComplete = () => {
           this.load.off("loaderror", onLoadError);
           if (!failedKeys.size) {
+            this.prepareLeafSlimeAnimations();
+            this.prepareNpcAnimations();
+            this.preparePortalAnimations();
             resolve();
             return;
           }
@@ -4940,7 +5265,7 @@
 
     syncBoss() {
       if (!this.bossSprite) return;
-      const visiblePhases = new Set(["summoning", "between", "portalOpening", "portalClosing"]);
+      const visiblePhases = new Set(["summoning", "between", "awaitingProfessor", "portalOpening", "portalClosing"]);
       if (this.professorDeparted || (!app.boss.active && !visiblePhases.has(app.boss.phase))) {
         this.bossSprite.setVisible(false).setActive(false);
         return;
@@ -5050,7 +5375,9 @@
       this.professorDeparted = false;
       const nextX = this.getCurrentMapId() === "ch1_m04_library_lawn_boss" ? Number(wave.mapX || app.boss.x) : app.boss.x;
       const nextY = this.getCurrentMapId() === "ch1_m04_library_lawn_boss" ? Number(wave.mapY || app.boss.y) : app.boss.y;
-      syncBossState({ ...app.boss, x: nextX, y: nextY, phase: "portalOpening", waveIndex: index, waveTitle: wave.title });
+      const portalState = { ...app.boss, x: nextX, y: nextY, phase: "portalOpening", waveIndex: index, waveTitle: wave.title };
+      syncBossState(portalState);
+      if (app.connected) app.multiplayer?.sendBossStart(portalState);
       this.bossSprite?.setAlpha(1).setVisible(true).setActive(true);
       this.bossSprite?.setTexture(BOSS_KEY).setScale(BOSS_VISUAL_SCALE).setAngle(0);
       this.playBossCastAnimation();
@@ -5074,7 +5401,7 @@
       if (!wave || !app.boss.active) return;
       if (!options.fromPortal) this.bossWavePending = false;
       this.bossSummonIds.clear();
-      syncBossState({
+      const waveState = {
         ...app.boss,
         active: true,
         phase: "summoning",
@@ -5085,7 +5412,9 @@
         summonsRemaining: wave.units.length,
         eliteRemaining: wave.units.filter(unit => unit.rank !== "mob").length,
         chestReady: false
-      });
+      };
+      syncBossState(waveState);
+      if (app.connected) app.multiplayer?.sendBossStart(waveState);
       wave.units.forEach((unit, unitIndex) => {
         const targetX = clamp(app.boss.x + unit.dx, 96, this.worldWidth - 96);
         const targetY = clamp(app.boss.y + unit.dy, 120, this.worldHeight - 96);
@@ -5116,7 +5445,8 @@
           rewardExp: unit.rewardExp,
           rewardCredits: unit.rewardCredits,
           dropId: unit.dropId,
-          dropName: unit.dropName
+          dropName: unit.dropName,
+          broadcast: app.connected
         });
         if (slime) this.bossSummonIds.add(slime.slimeId);
       });
@@ -5150,17 +5480,19 @@
       const x = 3135;
       const y = 650;
       this.professorDeparted = true;
-      syncBossState({ ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: 1, hp: 1, summonsRemaining: 1 });
+      const finalState = { ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: 1, hp: 1, summonsRemaining: 1 };
+      syncBossState(finalState);
+      if (app.connected) app.multiplayer?.sendBossStart(finalState);
       this.spawnLeafSlime({
         id: "ch1-m04-structural-final-boss",
         x,
         y,
         group: "ch1_m04_final_boss",
         textureKey: M04_STRUCTURAL_BOSS_KEY,
-        staticImage: true,
+        staticImage: false,
         rank: "boss",
         label: "结构失稳聚合体",
-        scale: 0.3,
+        scale: 1.9,
         maxHp: 1800,
         damage: 24,
         creditDefense: 10,
@@ -5172,9 +5504,10 @@
         wanderSpeed: 24,
         chaseSpeed: 42,
         aggroRange: 820,
-        bodyWidth: 180,
-        bodyHeight: 105,
-        hudOffsetY: -270
+        bodyWidth: 108,
+        bodyHeight: 72,
+        hudOffsetY: -292,
+        broadcast: app.connected
       });
       app.audio.ultimateBurst();
       this.cameras.main.shake(260, 0.004);
@@ -5194,24 +5527,75 @@
       });
       if (alive.length > 0 || this.bossWavePending) return;
       const nextIndex = Number(app.boss.waveIndex || 0) + 1;
-      if (nextIndex < BOSS_SUMMON_WAVES.length) {
-        this.bossWavePending = true;
-        const nextWave = BOSS_SUMMON_WAVES[nextIndex];
-        syncBossState({
-          ...app.boss,
-          phase: "between",
-          waveIndex: nextIndex,
-          waveTitle: nextWave.title,
-          hp: 0,
-          summonsRemaining: 0,
-          eliteRemaining: 0
-        });
-        showToast(`${BOSS_SUMMON_WAVES[nextIndex - 1].title}已清除，下一波即将开始`);
-        this.time.delayedCall(900, () => this.beginBossWaveSequence(nextIndex));
+      if (this.getCurrentMapId() === "ch1_m04_library_lawn_boss") {
+        this.waitForProfessorApproach(nextIndex);
         return;
       }
-      if (this.getCurrentMapId() === "ch1_m04_library_lawn_boss") this.spawnM04FinalBoss();
       else this.prepareBossChest();
+    }
+
+    waitForProfessorApproach(nextIndex) {
+      const isFinal = nextIndex >= BOSS_SUMMON_WAVES.length;
+      const nextWave = isFinal
+        ? { title: "结构失稳终局", mapX: 3135, mapY: 650 }
+        : BOSS_SUMMON_WAVES[nextIndex];
+      this.bossWavePending = true;
+      this.professorDeparted = false;
+      this.bossSprite
+        ?.setTexture(BOSS_KEY)
+        .setOrigin(0.5, 0.72)
+        .setScale(BOSS_VISUAL_SCALE)
+        .setAngle(0)
+        .setAlpha(1)
+        .setVisible(true)
+        .setActive(true);
+      const waitingState = {
+        ...app.boss,
+        active: true,
+        phase: "awaitingProfessor",
+        x: Number(nextWave.mapX || app.boss.x),
+        y: Number(nextWave.mapY || app.boss.y),
+        waveIndex: nextIndex,
+        waveTitle: nextWave.title,
+        maxHp: 1,
+        hp: 0,
+        summonsRemaining: 0,
+        eliteRemaining: 0
+      };
+      syncBossState(waitingState);
+      if (app.connected) app.multiplayer?.sendBossStart(waitingState);
+      showToast(`${BOSS_SUMMON_WAVES[Math.max(0, nextIndex - 1)].title}已清除，前往陆教授身边确认${isFinal ? "终局考核" : "下一阶段"}`);
+    }
+
+    isEncounterCoordinator() {
+      if (!app.connected) return true;
+      const ids = [String(app.profile?.id || ""), ...Array.from(this.remotePlayers?.keys?.() || []).map(String)]
+        .filter(Boolean)
+        .sort();
+      return !ids.length || ids[0] === String(app.profile?.id || "");
+    }
+
+    updateProfessorWaveProximity() {
+      if (app.boss.phase !== "awaitingProfessor" || !this.bossWavePending || !this.bossSprite?.visible) return;
+      const professor = { x: Number(app.boss.x) || 0, y: Number(app.boss.y) || 0 };
+      const players = [
+        this.actor?.active ? this.actor : null,
+        ...Array.from(this.remotePlayers?.values?.() || []).map(remote => remote?.sprite?.active && !remote.down ? remote.sprite : null)
+      ].filter(Boolean);
+      const approached = players.some(player => Phaser.Math.Distance.Between(player.x, player.y, professor.x, professor.y) <= 190);
+      if (!approached || !this.isEncounterCoordinator()) return;
+      const nextIndex = Number(app.boss.waveIndex || 0);
+      this.bossWavePending = false;
+      if (nextIndex < BOSS_SUMMON_WAVES.length) {
+        this.beginBossWaveSequence(nextIndex);
+        return;
+      }
+      this.bossWavePending = true;
+      this.playProfessorFlyAway();
+      this.time.delayedCall(520, () => {
+        this.bossWavePending = false;
+        this.spawnM04FinalBoss();
+      });
     }
 
     prepareBossChest() {
@@ -5364,7 +5748,13 @@
         this.playStaticEnemyAnimation(slime, action, restart);
         return;
       }
-      const key = `${slime.textureKey || LEAF_SLIME_KEY}-${action}`;
+      let resolvedAction = action;
+      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && Number(slime.bossForm || 1) >= 2) {
+        if (action === "move") resolvedAction = "phaseMove";
+        if (action === "attack") resolvedAction = "phaseAttack";
+        if (action === "special") resolvedAction = "phaseSpecial";
+      }
+      const key = `${slime.textureKey || LEAF_SLIME_KEY}-${resolvedAction}`;
       if (this.anims.exists(key)) slime.play(key, restart);
     }
 
@@ -5476,6 +5866,30 @@
       this.refreshEnemyHpBar(slime);
     }
 
+    getAnimatedEnemyDefinition(textureKey) {
+      return CHAPTER_ONE_ANIMATED_ENEMY_SPRITES.find(item => item.key === textureKey) || null;
+    }
+
+    getEncounterPartySize() {
+      if (!app.connected) return 1;
+      const activeRemoteCount = Array.from(this.remotePlayers?.values?.() || [])
+        .filter(remote => remote?.sprite?.active && !remote.down).length;
+      return clamp(1 + activeRemoteCount, 1, 6);
+    }
+
+    getEnemyDifficultyScale(rank, networkSynced = false) {
+      if (networkSynced) return { partySize: 1, health: 1, damage: 1, hazards: 0 };
+      const partySize = this.getEncounterPartySize();
+      const extra = partySize - 1;
+      const healthStep = rank === "boss" ? 0.75 : ["rare", "elite"].includes(rank) ? 0.6 : 0.35;
+      return {
+        partySize,
+        health: 1 + extra * healthStep,
+        damage: 1 + extra * 0.16,
+        hazards: Math.min(3, extra)
+      };
+    }
+
     spawnLeafSlime(options = {}) {
       if (!this.actor || !this.leafSlimes) return null;
       const slimeId = String(options.id || makeId());
@@ -5491,7 +5905,10 @@
       const elite = !!options.elite || rank === "elite" || rank === "rare" || rank === "boss";
       const visualScale = Number(options.scale) || (elite ? 1.18 : 0.9);
       const textureKey = options.textureKey || LEAF_SLIME_KEY;
-      const slime = this.leafSlimes.create(x, y, textureKey, options.staticImage ? undefined : 0)
+      const animatedDefinition = this.getAnimatedEnemyDefinition(textureKey);
+      const renderTextureKey = animatedDefinition?.sheetKey || textureKey;
+      const difficulty = this.getEnemyDifficultyScale(rank, !!options.networkSynced);
+      const slime = this.leafSlimes.create(x, y, renderTextureKey, options.staticImage ? undefined : 0)
         .setOrigin(0.5, 0.72)
         .setScale(visualScale)
         .setDepth(y + 6);
@@ -5511,6 +5928,12 @@
       slime.baseTint = Number(options.tint) || (elite ? 0xffd56b : 0xffffff);
       slime.textureKey = textureKey;
       slime.staticImage = !!options.staticImage;
+      slime.enemyArchetype = options.enemyArchetype || animatedDefinition?.archetype || "";
+      slime.networkReplica = !!options.networkSynced;
+      slime.partySizeAtSpawn = difficulty.partySize;
+      slime.hazardBonus = difficulty.hazards;
+      slime.bossForm = Math.max(1, Number(options.bossForm) || 1);
+      slime.transforming = false;
       slime.baseVisualScale = visualScale;
       slime.stationary = !!options.stationary;
       slime.rangedAttack = !!options.rangedAttack;
@@ -5537,20 +5960,33 @@
       slime.wanderUntil = 0;
       const configuredMaxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "boss" ? 1200 : rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
       const mobHealthMultiplier = rank === "mob" ? 2 : 1;
-      slime.maxHp = configuredMaxHp * mobHealthMultiplier;
+      slime.maxHp = Math.round(configuredMaxHp * mobHealthMultiplier * difficulty.health);
       const incomingHp = Number(options.hp);
       const currentHp = Number.isFinite(incomingHp)
-        ? incomingHp * (options.maxHp ? 1 : mobHealthMultiplier)
+        ? incomingHp * (options.maxHp ? 1 : mobHealthMultiplier) * (options.networkSynced ? 1 : difficulty.health)
         : slime.maxHp;
       slime.hp = clamp(currentHp, 0, slime.maxHp);
-      slime.damage = Math.max(1, Number(options.damage) || (rank === "rare" ? 16 : rank === "elite" ? 12 : 8));
+      slime.damage = Math.max(1, Math.round((Number(options.damage) || (rank === "rare" ? 16 : rank === "elite" ? 12 : 8)) * difficulty.damage));
       slime.creditDefense = Math.max(0, Number(options.creditDefense || 0));
-      slime.hudOffsetY = options.staticImage ? Number(options.hudOffsetY || -Math.max(104, slime.displayHeight * 0.62)) : -104;
+      slime.hudOffsetY = Number.isFinite(options.hudOffsetY)
+        ? Number(options.hudOffsetY)
+        : options.staticImage
+          ? -Math.max(104, slime.displayHeight * 0.62)
+          : animatedDefinition
+            ? -Math.max(104, slime.displayHeight * 0.58)
+            : -104;
       if (options.staticImage) {
         const bodyWidth = Number(options.bodyWidth) || Math.max(38, Math.min(124, slime.width * 0.26));
         const bodyHeight = Number(options.bodyHeight) || Math.max(28, Math.min(82, slime.height * 0.15));
         const bodyOffsetX = Number.isFinite(options.bodyOffsetX) ? options.bodyOffsetX : (slime.width - bodyWidth) / 2;
         const bodyOffsetY = Number.isFinite(options.bodyOffsetY) ? options.bodyOffsetY : slime.height * 0.72 - bodyHeight / 2;
+        slime.body.setSize(bodyWidth, bodyHeight);
+        slime.body.setOffset(bodyOffsetX, bodyOffsetY);
+      } else if (animatedDefinition) {
+        const bodyWidth = Number(options.bodyWidth) || Math.max(44, animatedDefinition.frameWidth * 0.42);
+        const bodyHeight = Number(options.bodyHeight) || Math.max(30, animatedDefinition.frameHeight * 0.24);
+        const bodyOffsetX = Number.isFinite(options.bodyOffsetX) ? options.bodyOffsetX : (animatedDefinition.frameWidth - bodyWidth) / 2;
+        const bodyOffsetY = Number.isFinite(options.bodyOffsetY) ? options.bodyOffsetY : animatedDefinition.frameHeight * 0.72 - bodyHeight / 2;
         slime.body.setSize(bodyWidth, bodyHeight);
         slime.body.setOffset(bodyOffsetX, bodyOffsetY);
       } else {
@@ -5635,12 +6071,20 @@
           y,
           hp: slime.hp,
           maxHp: slime.maxHp,
+          damage: slime.damage,
           textureKey,
           rank,
           label: slime.displayLabel,
           staticImage: slime.staticImage,
           stationary: slime.stationary,
-          scale: visualScale
+          scale: visualScale,
+          enemyArchetype: slime.enemyArchetype,
+          bossForm: slime.bossForm,
+          hazardBonus: slime.hazardBonus,
+          groupId: slime.groupId,
+          bossSummon: slime.isBossSummon,
+          bossWaveId: slime.bossWaveId,
+          bossWaveTitle: slime.bossWaveTitle
         });
       }
       return slime;
@@ -5653,21 +6097,31 @@
         this.syncSlimeRemove(slime.id);
         return;
       }
-      this.spawnLeafSlime({
+      const syncedEnemy = this.spawnLeafSlime({
         id: String(slime.id),
         x: Number(slime.x),
         y: Number(slime.y),
         ownerId: String(slime.ownerId || ""),
         hp: Number(slime.hp),
         maxHp: Number(slime.maxHp),
+        damage: Number(slime.damage) || undefined,
         textureKey: slime.textureKey || LEAF_SLIME_KEY,
         rank: slime.rank || "mob",
         label: slime.label || "",
         staticImage: !!slime.staticImage,
         stationary: !!slime.stationary,
         scale: Number(slime.scale) || undefined,
+        enemyArchetype: slime.enemyArchetype || "",
+        bossForm: Number(slime.bossForm) || 1,
+        hazardBonus: Number(slime.hazardBonus) || 0,
+        group: slime.groupId || "",
+        bossSummon: !!slime.bossSummon,
+        bossWaveId: slime.bossWaveId || "",
+        bossWaveTitle: slime.bossWaveTitle || "",
+        networkSynced: true,
         broadcast: false
       });
+      if (syncedEnemy?.isBossSummon && app.boss.phase === "summoning") this.bossWavePending = false;
     }
 
     enemyNetworkSnapshot(slime, state = slime?.state || "move", effect = {}) {
@@ -5679,6 +6133,7 @@
         y: slime.y,
         hp: Math.max(0, Number(slime.hp || 0)),
         maxHp: Math.max(1, Number(slime.maxHp || 1)),
+        damage: Math.max(1, Number(slime.damage || 1)),
         state,
         textureKey: slime.textureKey || LEAF_SLIME_KEY,
         rank: slime.rank || "mob",
@@ -5686,6 +6141,13 @@
         staticImage: !!slime.staticImage,
         stationary: !!slime.stationary,
         scale: Number(slime.baseVisualScale || slime.scaleX || 0.9),
+        enemyArchetype: slime.enemyArchetype || "",
+        bossForm: Math.max(1, Number(slime.bossForm) || 1),
+        hazardBonus: Math.max(0, Number(slime.hazardBonus) || 0),
+        groupId: slime.groupId || "",
+        bossSummon: !!slime.isBossSummon,
+        bossWaveId: slime.bossWaveId || "",
+        bossWaveTitle: slime.bossWaveTitle || "",
         damageAmount: Math.max(0, Number(effect.damageAmount || 0)),
         critical: !!effect.critical,
         hitKind: effect.hitKind === "physical" ? "physical" : "magic",
@@ -5711,6 +6173,12 @@
       slime.setPosition(Number(enemy.x) || slime.x, Number(enemy.y) || slime.y);
       slime.maxHp = Math.max(1, Number(enemy.maxHp || slime.maxHp || 1));
       slime.hp = clamp(Number(enemy.hp ?? slime.hp), 0, slime.maxHp);
+      slime.damage = Math.max(1, Number(enemy.damage ?? slime.damage) || 1);
+      slime.groupId = enemy.groupId || slime.groupId || "";
+      slime.isBossSummon = !!(enemy.bossSummon ?? slime.isBossSummon);
+      slime.enemyArchetype = enemy.enemyArchetype || slime.enemyArchetype || "";
+      slime.hazardBonus = Math.max(0, Number(enemy.hazardBonus ?? slime.hazardBonus) || 0);
+      if (enemy.state !== "transform") slime.bossForm = Math.max(1, Number(enemy.bossForm ?? slime.bossForm) || 1);
       this.refreshEnemyHpBar(slime);
       const damageAmount = Math.max(0, Number(enemy.damageAmount || previousHp - slime.hp));
       if (damageAmount > 0) {
@@ -5740,6 +6208,16 @@
           rise: 34,
           duration: 540
         });
+      }
+      if (enemy.state === "transform") {
+        this.triggerStructuralBossTransform(slime, { network: true });
+        return;
+      }
+      if (enemy.state === "attack") {
+        slime.state = "attack";
+        slime.body?.setVelocity(0, 0);
+        this.playEnemyAnimation(slime, this.getAnimatedEnemySkillAction(String(event.skillId || "")), true);
+        return;
       }
       if (enemy.state === "dead" || slime.hp <= 0) {
         slime.state = "dead";
@@ -5807,6 +6285,28 @@
           remote?.sprite?.active ? remote.sprite : { x: Number(event.x) || 0, y: Number(event.y) || 0 },
           Math.max(1, Number(event.level) || remote?.level || 1)
         );
+        return;
+      }
+      if (event.action === "enemySkill") {
+        const slime = this.findLeafSlime(String(event.enemyId || ""));
+        if (!slime?.active) return;
+        const points = (Array.isArray(event.points) ? event.points : [])
+          .map(point => ({ x: Number(point.x) || 0, y: Number(point.y) || 0 }));
+        slime.state = "attack";
+        slime.body?.setVelocity(0, 0);
+        this.playEnemyAnimation(slime, "attack", true);
+        const duration = this.playAnimatedEnemySkillPlan(
+          slime,
+          String(event.skillId || "probabilityCut"),
+          points,
+          Math.max(24, Number(event.radius) || 72),
+          { damage: true }
+        );
+        this.time.delayedCall(duration, () => {
+          if (!slime.active || ["dead", "vanish", "transform"].includes(slime.state)) return;
+          slime.state = "move";
+          this.playEnemyAnimation(slime, "move", true);
+        });
         return;
       }
       if (remote?.sprite?.active && !remote.down) {
@@ -8947,8 +9447,100 @@
       return true;
     }
 
+    playStructuralBreakBurst(x, y) {
+      const profile = {
+        kind: "structural",
+        primary: 0x24bad8,
+        secondary: 0xffb74f,
+        core: 0xf2ffff,
+        shadow: 0x173747,
+        warning: 0x74edff,
+        particles: [0x173747, 0x24bad8, 0xffb74f, 0xe8fbff]
+      };
+      this.renderEnemyAreaBurst(x, y + 18, profile);
+      this.time.delayedCall(170, () => this.renderEnemyAreaBurst(x, y + 10, profile));
+      const shards = this.add.graphics().setPosition(x, y - 56).setDepth(y + 160);
+      for (let index = 0; index < 34; index += 1) {
+        const angle = Math.PI * 2 * index / 34 + Phaser.Math.FloatBetween(-0.16, 0.16);
+        const length = Phaser.Math.Between(34, 138);
+        const width = Phaser.Math.Between(3, 9);
+        shards.lineStyle(width + 5, 0x132f3c, 0.58);
+        shards.lineBetween(0, 0, Math.cos(angle) * length, Math.sin(angle) * length * 0.7);
+        shards.lineStyle(Math.max(1, width * 0.34), index % 3 ? 0x63dded : 0xffc562, 0.94);
+        shards.lineBetween(0, 0, Math.cos(angle) * length, Math.sin(angle) * length * 0.7);
+      }
+      this.tweens.add({ targets: shards, scale: 1.24, alpha: 0, duration: 720, ease: "Cubic.easeOut", onComplete: () => shards.destroy() });
+      for (let index = 0; index < 56; index += 1) {
+        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        const mote = this.add.image(x, y - 42, index % 3 ? LIGHTNING_SPARK_TEXTURE_KEY : LIGHTNING_MOTE_TEXTURE_KEY)
+          .setTint(index % 4 === 0 ? 0xffbd56 : index % 2 ? 0x5ee8f5 : 0x1d5268)
+          .setScale(0.22 + Math.random() * 0.52)
+          .setDepth(y + 164)
+          .setBlendMode(index % 4 ? Phaser.BlendModes.NORMAL : Phaser.BlendModes.ADD);
+        this.tweens.add({
+          targets: mote,
+          x: x + Math.cos(angle) * Phaser.Math.Between(65, 220),
+          y: y - 42 + Math.sin(angle) * Phaser.Math.Between(48, 150) + Phaser.Math.Between(0, 72),
+          angle: Phaser.Math.Between(-240, 240),
+          alpha: 0,
+          scale: 0.04,
+          duration: Phaser.Math.Between(520, 980),
+          ease: "Cubic.easeOut",
+          onComplete: () => mote.destroy()
+        });
+      }
+      this.cameras.main.shake(360, 0.0085);
+    }
+
+    triggerStructuralBossTransform(slime, options = {}) {
+      if (!slime?.active || slime.transforming || Number(slime.bossForm || 1) >= 2) return false;
+      slime.transforming = true;
+      slime.actionToken = (slime.actionToken || 0) + 1;
+      const token = slime.actionToken;
+      slime.state = "transform";
+      slime.body?.setVelocity(0, 0);
+      if (slime.body) slime.body.enable = false;
+      slime.clearTint();
+      this.playEnemyAnimation(slime, "transform", true);
+      this.playStructuralBreakBurst(slime.x, slime.y);
+      app.audio?.ultimateBurst();
+      this.time.delayedCall(230, () => app.audio?.hit());
+      this.time.delayedCall(470, () => app.audio?.fireExplosion?.(1));
+      if (!options.network) this.broadcastEnemyState(slime, "transform", options.effect || {});
+      this.tweens.add({
+        targets: slime,
+        scaleX: slime.baseVisualScale * 1.14,
+        scaleY: slime.baseVisualScale * 0.9,
+        duration: 720,
+        yoyo: true,
+        ease: "Sine.easeInOut"
+      });
+      this.time.delayedCall(1420, () => {
+        if (!slime.active || slime.actionToken !== token) return;
+        slime.bossForm = 2;
+        slime.transforming = false;
+        slime.state = "move";
+        slime.stationary = false;
+        slime.smoothMovement = true;
+        slime.wanderSpeed = Math.max(42, Number(slime.wanderSpeed) || 0);
+        slime.chaseSpeed = Math.max(88, Number(slime.chaseSpeed) || 0);
+        slime.damage = Math.round(Math.max(1, slime.damage) * 1.18);
+        slime.setScale(slime.baseVisualScale * 1.05).setOrigin(0.5, 0.72);
+        if (slime.body) {
+          slime.body.enable = true;
+          slime.body.setImmovable(false);
+          slime.body.reset(slime.x, slime.y);
+        }
+        this.playEnemyAnimation(slime, "move", true);
+        this.refreshEnemyHpBar(slime);
+        if (!options.network) this.broadcastEnemyState(slime, "move");
+        showToast("结构外壳已破碎：BOSS 重构为高速剪切兽形态");
+      });
+      return true;
+    }
+
     playLeafSlimeHit(slime, baseDamage = MELEE.damage, options = {}) {
-      if ((slime.state === "hit" && !options.allowComboHit) || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return 0;
+      if (slime.transforming || (slime.state === "hit" && !options.allowComboHit) || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return 0;
       slime.provokedUntil = this.time.now + 12000;
       const result = this.rollPlayerDamage(baseDamage, slime, options.kind || "magic");
       slime.hp = Math.max(0, Number(slime.hp || 0) - result.amount);
@@ -8973,6 +9565,19 @@
         }
       );
       this.playEnemyHitImpact(slime, result.critical);
+      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && Number(slime.bossForm || 1) < 2 && slime.hp <= slime.maxHp * 0.55) {
+        slime.hp = Math.max(1, Math.ceil(slime.maxHp * 0.55));
+        this.refreshEnemyHpBar(slime);
+        this.triggerStructuralBossTransform(slime, {
+          effect: {
+            damageAmount: result.amount,
+            critical: result.critical,
+            hitKind: options.kind || "magic",
+            energyGained
+          }
+        });
+        return result.amount;
+      }
       slime.actionToken = (slime.actionToken || 0) + 1;
       const token = slime.actionToken;
       const defeated = slime.hp <= 0;
@@ -9136,6 +9741,20 @@
 
     tryTriggerEnemyLightSkill(slime, time) {
       if (!slime?.active || !this.actor?.active || this.isDead) return false;
+      if (slime.enemyArchetype) {
+        if (slime.networkReplica || (app.connected && !slime.isBossSummon && !this.isEncounterCoordinator())) return false;
+        const cooldown = slime.rank === "boss"
+          ? (Number(slime.bossForm || 1) >= 2 ? 2250 : 2850)
+          : slime.rank === "rare"
+            ? 3600
+            : slime.rank === "elite"
+              ? 4300
+              : 5500;
+        if (time - Number(slime.lastLightSkillAt || -cooldown) < cooldown) return false;
+        slime.lastLightSkillAt = time;
+        this.triggerAnimatedEnemySkill(slime);
+        return true;
+      }
       if (slime.rank === "rare" || slime.rank === "elite") {
         const cooldown = slime.rank === "rare" ? 4200 : 5200;
         if (time - Number(slime.lastLightSkillAt || -cooldown) < cooldown) return false;
@@ -9153,11 +9772,175 @@
       return true;
     }
 
+    getAnimatedEnemySkillId(slime) {
+      const cycle = Number(slime.specialSkillIndex || 0);
+      const skills = {
+        gardenHound: ["thornPounce"],
+        gardenMoth: ["pollenFan"],
+        gardenGardener: ["rootPrison"],
+        moonOrchid: ["moonCrescent", "moonMirror"],
+        carnivora: ["thornMaze", "devourRing"],
+        quantumScholar: ["quantumInterference"],
+        quantumFamiliar: ["phasePounce"],
+        quantumPaper: ["probabilityCut"],
+        chainBeast: ["chainRush"],
+        validationLock: ["validationBurst"],
+        chainSpider: ["chainMine"],
+        agentMage: ["promptLance"],
+        digitalCat: ["agentBlink"],
+        botCat: ["toolCall"],
+        structuralBoss: Number(slime.bossForm || 1) >= 2
+          ? ["shearCross", "torsionField"]
+          : ["loadCollapse", "trussFan"]
+      };
+      const options = skills[slime.enemyArchetype] || ["probabilityCut"];
+      return options[cycle % options.length];
+    }
+
+    getAnimatedEnemySkillKind(skillId) {
+      if (["thornPounce", "phasePounce", "chainRush", "agentBlink"].includes(skillId)) return "dash";
+      if (["rootPrison", "thornMaze", "devourRing", "validationBurst", "chainMine", "toolCall", "loadCollapse", "torsionField", "moonMirror"].includes(skillId)) return "zone";
+      return "beam";
+    }
+
+    getAnimatedEnemySkillAction(skillId) {
+      if (skillId === "devourRing") return "devour";
+      if (["thornMaze", "moonMirror", "torsionField"].includes(skillId)) return "special";
+      return "attack";
+    }
+
+    getAnimatedEnemySkillMultiplier(skillId) {
+      if (["loadCollapse", "shearCross", "torsionField", "trussFan"].includes(skillId)) return 1.72;
+      if (["thornMaze", "devourRing", "moonMirror"].includes(skillId)) return 1.48;
+      if (["thornPounce", "chainRush", "agentBlink"].includes(skillId)) return 1.34;
+      return 1.24;
+    }
+
+    createAnimatedEnemySkillPlan(slime, skillId) {
+      const kind = this.getAnimatedEnemySkillKind(skillId);
+      const origin = { x: slime.x, y: slime.y - Math.min(86, Math.max(28, slime.displayHeight * 0.2)) };
+      const target = { x: this.actor.x, y: this.actor.y - 34 };
+      const hazardBonus = Math.max(0, Number(slime.hazardBonus) || 0);
+      const points = [];
+      if (kind === "zone") {
+        const count = Math.min(8, (skillId === "loadCollapse" ? 5 : skillId === "torsionField" ? 7 : 3) + hazardBonus);
+        for (let index = 0; index < count; index += 1) {
+          const angle = Math.PI * 2 * index / Math.max(1, count) + (skillId === "thornMaze" ? 0.32 : 0);
+          const distance = index === 0 ? 0 : 74 + (index % 3) * 54;
+          points.push({
+            x: clamp(target.x + Math.cos(angle) * distance, 70, this.worldWidth - 70),
+            y: clamp(target.y + 34 + Math.sin(angle) * distance * 0.72, 90, this.worldHeight - 70)
+          });
+        }
+        return { kind, points, radius: skillId === "torsionField" ? 104 : 82 };
+      }
+      const aim = Math.atan2(target.y - origin.y, target.x - origin.x);
+      if (kind === "dash") {
+        const distance = skillId === "agentBlink" ? 440 : 360;
+        points.push(origin, {
+          x: clamp(origin.x + Math.cos(aim) * distance, 70, this.worldWidth - 70),
+          y: clamp(origin.y + Math.sin(aim) * distance, 90, this.worldHeight - 70)
+        });
+        return { kind, points, radius: 50 };
+      }
+      const lineCount = Math.min(6, (skillId === "shearCross" ? 4 : skillId === "trussFan" ? 5 : 3) + Math.min(2, hazardBonus));
+      const offsets = lineCount === 4 && skillId === "shearCross"
+        ? [-Math.PI / 2, 0, Math.PI / 2, Math.PI]
+        : Array.from({ length: lineCount }, (_, index) => (index - (lineCount - 1) / 2) * (skillId === "pollenFan" ? 0.22 : 0.14));
+      offsets.forEach(offset => {
+        const angle = skillId === "shearCross" ? aim + offset + Math.PI / 4 : aim + offset;
+        points.push(origin, {
+          x: clamp(origin.x + Math.cos(angle) * 790, 40, this.worldWidth - 40),
+          y: clamp(origin.y + Math.sin(angle) * 790, 60, this.worldHeight - 40)
+        });
+      });
+      return { kind, points, radius: skillId === "shearCross" ? 42 : 34 };
+    }
+
+    playAnimatedEnemySkillPlan(slime, skillId, points, radius, options = {}) {
+      const kind = this.getAnimatedEnemySkillKind(skillId);
+      const profile = this.getEnemyMagicProfile(slime);
+      const impactDelay = kind === "dash" ? 430 : kind === "zone" ? 680 : 570;
+      const warning = this.add.graphics().setDepth(Math.max(slime?.y || 0, ...points.map(point => point.y)) + 96);
+      if (kind === "zone") {
+        points.forEach((point, index) => {
+          warning.lineStyle(index === 0 ? 5 : 3, profile.warning, index === 0 ? 0.8 : 0.58);
+          warning.strokeEllipse(point.x, point.y, radius * 2, radius * 1.16);
+          warning.lineStyle(1, profile.core, 0.66);
+          warning.lineBetween(point.x - radius * 0.52, point.y, point.x + radius * 0.52, point.y);
+          warning.lineBetween(point.x, point.y - radius * 0.34, point.x, point.y + radius * 0.34);
+        });
+      } else {
+        for (let index = 0; index < points.length; index += 2) {
+          const start = points[index];
+          const end = points[index + 1];
+          if (!start || !end) continue;
+          warning.lineStyle(kind === "dash" ? 10 : 4, profile.shadow, 0.25);
+          warning.lineBetween(start.x, start.y, end.x, end.y);
+          warning.lineStyle(kind === "dash" ? 3 : 1.5, profile.warning, 0.82);
+          warning.lineBetween(start.x, start.y, end.x, end.y);
+        }
+      }
+      this.tweens.add({ targets: warning, alpha: 0.18, duration: 150, yoyo: true, repeat: 2 });
+      this.time.delayedCall(impactDelay, () => {
+        warning.destroy();
+        if (options.token && (!slime?.active || slime.actionToken !== options.token)) return;
+        let hit = false;
+        if (kind === "zone") {
+          points.forEach(point => {
+            this.renderEnemyAreaBurst(point.x, point.y, profile);
+            if (this.actor?.active && Phaser.Math.Distance.Between(this.actor.x, this.actor.y, point.x, point.y) <= radius) hit = true;
+          });
+        } else {
+          for (let index = 0; index < points.length; index += 2) {
+            const start = points[index];
+            const end = points[index + 1];
+            if (!start || !end) continue;
+            this.renderEnemyEnergyBeam(start, end, profile, kind === "dash" ? 230 : 340);
+            if (this.actor?.active && this.distanceToSegment(this.actor.x, this.actor.y - 30, start, end) <= radius) hit = true;
+          }
+          if (kind === "dash" && slime?.active && options.token && points[1]) {
+            const end = points[1];
+            slime.body?.reset(end.x, end.y + 30);
+            slime.setPosition(end.x, end.y + 30).setDepth(end.y + 36);
+          }
+        }
+        if (hit && options.damage) this.damagePlayer(Math.round(Math.max(1, Number(slime?.damage) || 12) * this.getAnimatedEnemySkillMultiplier(skillId)));
+        app.audio?.enemyAttack();
+        if (["loadCollapse", "shearCross", "torsionField", "trussFan"].includes(skillId)) {
+          app.audio?.fireExplosion?.(1);
+          this.cameras.main.shake(190, 0.0048);
+        } else this.cameras.main.shake(95, 0.0024);
+      });
+      return impactDelay + 420;
+    }
+
+    triggerAnimatedEnemySkill(slime) {
+      slime.specialSkillIndex = Number(slime.specialSkillIndex || 0) + 1;
+      const skillId = this.getAnimatedEnemySkillId(slime);
+      const token = this.beginEnemySpecialSkill(slime);
+      this.playEnemyAnimation(slime, this.getAnimatedEnemySkillAction(skillId), true);
+      const plan = this.createAnimatedEnemySkillPlan(slime, skillId);
+      this.broadcastCombatEvent("enemySkill", {
+        enemyId: slime.slimeId,
+        skillId,
+        x: slime.x,
+        y: slime.y,
+        targetX: this.actor.x,
+        targetY: this.actor.y,
+        radius: plan.radius,
+        points: plan.points
+      });
+      const duration = this.playAnimatedEnemySkillPlan(slime, skillId, plan.points, plan.radius, { damage: true, token });
+      this.finishEnemySpecialSkill(slime, token, duration);
+    }
+
     beginEnemySpecialSkill(slime) {
       slime.actionToken = (slime.actionToken || 0) + 1;
       slime.state = "attack";
       slime.body?.setVelocity(0, 0);
       this.playEnemyAnimation(slime, "attack", true);
+      this.broadcastEnemyState(slime, "attack");
       app.audio?.enemyAttack();
       return slime.actionToken;
     }
@@ -9168,11 +9951,25 @@
         slime.state = "move";
         slime.body?.setVelocity(0, 0);
         this.playEnemyAnimation(slime, "move", true);
+        this.broadcastEnemyState(slime, "move");
       });
     }
 
     getEnemyMagicProfile(slime) {
       const key = String(slime?.textureKey || "");
+      const archetype = String(slime?.enemyArchetype || "");
+      if (archetype === "structuralBoss") {
+        const secondForm = Number(slime?.bossForm || 1) >= 2;
+        return {
+          kind: secondForm ? "fire" : "structural",
+          primary: secondForm ? 0xff6a2c : 0x28bdd9,
+          secondary: secondForm ? 0x4ce5f4 : 0xffb64d,
+          core: 0xf4ffff,
+          shadow: secondForm ? 0x572318 : 0x183b4c,
+          warning: secondForm ? 0xff8b3d : 0x67eafa,
+          particles: secondForm ? [0xff5524, 0xffb342, 0x59eafa] : [0x24bad8, 0xffb74f, 0xe8fbff]
+        };
+      }
       if (key.includes("garden") || key === GARDEN_CARNIVORA_BOSS_KEY) {
         return {
           kind: "poison",
@@ -9184,15 +9981,37 @@
           particles: [0x37a83d, 0x79d947, 0xc7f36b]
         };
       }
-      if (key.includes("blockchain") || key === M04_STRUCTURAL_BOSS_KEY) {
+      if (key.includes("quantum")) {
+        return {
+          kind: "quantum",
+          primary: 0x43dff2,
+          secondary: 0x8978ff,
+          core: 0xf0ffff,
+          shadow: 0x182f61,
+          warning: 0x77efff,
+          particles: [0x3bd9ea, 0x8874ff, 0xe8feff]
+        };
+      }
+      if (key.includes("blockchain")) {
         return {
           kind: "fire",
-          primary: 0xf04b23,
-          secondary: 0xff9a32,
+          primary: 0xe96d28,
+          secondary: 0xffc044,
           core: 0xffdf78,
-          shadow: 0x5b1711,
-          warning: 0xff7138,
-          particles: [0xe83a20, 0xff7728, 0xffc24f]
+          shadow: 0x55321a,
+          warning: 0xffae3c,
+          particles: [0xc95b24, 0xff982f, 0xffd76a]
+        };
+      }
+      if (key.includes("aiagent")) {
+        return {
+          kind: "agent",
+          primary: 0x8b65ef,
+          secondary: 0x4ce3cf,
+          core: 0xf0edff,
+          shadow: 0x29204b,
+          warning: 0xa78aff,
+          particles: [0x7655d9, 0x55dbc7, 0xe9e3ff]
         };
       }
       return {
@@ -9791,6 +10610,11 @@
     }
 
     updateBoss(time) {
+      if (app.boss.phase === "awaitingProfessor") {
+        if (this.bossSprite?.visible) this.bossSprite.setDepth(this.bossSprite.y + 18);
+        this.updateProfessorWaveProximity();
+        return;
+      }
       if (!app.boss.active || app.boss.hp <= 0 || !this.bossSprite.visible) return;
       this.bossSprite.setDepth(this.bossSprite.y + 18);
       if (time - this.lastBossHitAt > BOSS.attackCooldown) {
