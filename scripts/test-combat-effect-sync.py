@@ -107,6 +107,28 @@ class CombatEffectSyncTests(unittest.TestCase):
         self.assertEqual(event["radius"], 48)
         self.assertEqual(len(event["points"]), 2)
 
+    def test_player_status_event_keeps_exact_damage_and_shield_numbers(self):
+        SERVER.handle_combat_event(
+            self.client,
+            {
+                "event": {
+                    "action": "playerStatus",
+                    "mapId": "ch1_m01_classroom_spawn",
+                    "x": 650,
+                    "y": 730,
+                    "damageAmount": 27,
+                    "shieldSpent": 11,
+                    "healAmount": 0,
+                    "shieldGain": 0,
+                    "down": False,
+                }
+            },
+        )
+        event = self.broadcasts[-1][1]["event"]
+        self.assertEqual(event["damageAmount"], 27)
+        self.assertEqual(event["shieldSpent"], 11)
+        self.assertFalse(event["down"])
+
     def test_client_has_remote_replay_paths_for_every_combat_visual(self):
         source = (ROOT / "play.js").read_text(encoding="utf-8")
         for action in (
@@ -120,12 +142,16 @@ class CombatEffectSyncTests(unittest.TestCase):
             "laodengFireExplosion",
             "levelUp",
             "enemySkill",
+            "playerStatus",
         ):
             self.assertIn(f'event.action === "{action}"', source, action)
         self.assertIn("playEnemyHitImpact(slime, critical, enemy.sourceCharacterId)", source)
         self.assertIn("this.playHealingChainCastBurst(previous.x, previous.y)", source)
         self.assertIn("const damageTaken = Math.max(0, previousHp - nextHp)", source)
         self.assertIn("const shieldSpent = Math.max(0, previousShield - nextShield)", source)
+        self.assertIn("slime.body.pushable = false", source)
+        self.assertIn("if (options.knockback && slime.rank !== \"boss\"", source)
+        self.assertIn("if (projectile.knockbackForce > 0", source)
 
 
 if __name__ == "__main__":

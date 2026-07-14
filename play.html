@@ -6,7 +6,7 @@
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="play.css?v=20260712-assets-cinematic-v13">
-  <link rel="stylesheet" href="play-overrides.css?v=20260711-lina-maps-m04-v8">
+  <link rel="stylesheet" href="play-overrides.css?v=20260714-hud-collision-v9">
 </head>
 <body>
   <main class="play-shell">
@@ -290,11 +290,9 @@
 
         <nav class="quickbar" aria-label="快捷操作">
           <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest"><small>T</small><span>任务</span></button>
-          <button id="chatToggleButton" type="button" data-panel-toggle="publicChat" data-icon="chat"><small>Enter</small><span>频道</span></button>
           <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map"><small>M</small><span>地图</span></button>
           <button id="inventoryToggleButton" type="button" data-icon="inventory"><small>I</small><span>背包</span></button>
           <button id="musicToggle" type="button" data-icon="music"><small>B</small><span>音乐</span></button>
-          <button id="reconnectButton" type="button" data-icon="reconnect"><small>R</small><span>同步</span></button>
           <button id="fullscreenButton" type="button" data-icon="fullscreen"><small>F</small><span>全屏</span></button>
           <button id="exitButton" type="button" data-icon="exit"><small>Esc</small><span>退出</span></button>
         </nav>
@@ -364,6 +362,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-  <script src="play.js?v=20260713-loading-optimization-v1"></script>
+  <script src="play.js?v=20260714-hud-collision-v4"></script>
 </body>
 </html>

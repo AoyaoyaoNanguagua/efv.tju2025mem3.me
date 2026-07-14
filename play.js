@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260713-loading-optimization-v1`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260714-hud-collision-v3`;
   const CHAPTER_END_CINEMATIC_PATH = "assets/cg/p1boss-end.mp4";
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
@@ -440,6 +440,10 @@
 
   function collectChapterMapRuntimeAssets(mapData, mapId) {
     const logicalEnemyKeys = new Set((mapData?.enemySpawns || []).map(enemy => enemy.textureKey).filter(Boolean));
+    (mapData?.ambientEnemyRefresh?.enemies || [])
+      .map(enemy => enemy?.textureKey)
+      .filter(Boolean)
+      .forEach(key => logicalEnemyKeys.add(key));
     if (mapId === "ch1_m04_library_lawn_boss") {
       [
         QUANTUM_SCHOLAR_KEY,
@@ -499,10 +503,10 @@
     return runtimeAssets;
   }
   const CHAPTER_ONE_ENEMY_IMAGES = [];
-  const BOSS_PORTAL_OPEN_MS = 520;
-  const BOSS_PORTAL_EGRESS_MS = 820;
-  const BOSS_PORTAL_CLOSE_MS = 420;
-  const BOSS_PORTAL_STAGGER_MS = 110;
+  const BOSS_PORTAL_OPEN_MS = 360;
+  const BOSS_PORTAL_EGRESS_MS = 520;
+  const BOSS_PORTAL_CLOSE_MS = 260;
+  const BOSS_PORTAL_STAGGER_MS = 55;
   const PLAYER_CRIT_CHANCE = 0.16;
   const PLAYER_MAGIC_CRIT_MULTIPLIER = 2;
   const PLAYER_PHYSICAL_CRIT_MULTIPLIER = 1.5;
@@ -514,7 +518,9 @@
   const CHAPTER_ONE_KEY = "efv-chapter-one-slice-v1";
   const CHAPTER_ONE_PROTOCOL_CARD_GOAL = 3;
   const BOSS_SUMMON_GROUP = "ch1_final_professor_summons";
+  const M04_MAP_ID = "ch1_m04_library_lawn_boss";
   const BOSS_CHEST_FLAG = "ch1_boss_chest_opened";
+  const PLAYER_STATUS_SUPPRESS_MS = 260;
   const CHAT_HISTORY_LIMIT = 40;
   const CHAT_TEXT_LIMIT = 80;
   const WORLD_DROP_TTL_MS = 5 * 60 * 1000;
@@ -1435,17 +1441,18 @@
       button.style.left = `${spot.x}%`;
       button.style.top = `${spot.y}%`;
       if (entry) {
+        const character = getCharacter(entry.characterId);
         const stand = document.createElement("div");
         stand.className = "sprite-stand";
         const shadow = document.createElement("i");
         shadow.className = "sprite-shadow";
         const sprite = document.createElement("div");
         sprite.className = "sprite-anim";
-        setupSpriteAnim(sprite, getCharacter(entry.characterId), 128);
+        setupSpriteAnim(sprite, character, 128);
         stand.append(shadow, sprite);
         const label = document.createElement("span");
         label.className = "slot-name";
-        label.textContent = `${entry.name} · Lv.${entry.level || 1}`;
+        label.textContent = `${character.name} · Lv.${entry.level || 1}`;
         const remove = document.createElement("span");
         remove.className = "slot-delete";
         remove.textContent = "\u00d7";
@@ -1507,7 +1514,8 @@
 
   function openDeleteDialog(entry) {
     pendingDeleteSlot = Number(entry.slot);
-    $("#deleteDialogText").textContent = `确定要删除「${entry.name} · Lv.${entry.level || 1}」吗？角色的等级和进度将无法找回。`;
+    const characterName = getCharacter(entry.characterId).name;
+    $("#deleteDialogText").textContent = `确定要删除「${characterName} · Lv.${entry.level || 1}」吗？角色的等级和进度将无法找回。`;
     $("#deleteDialog").hidden = false;
   }
 
@@ -1579,7 +1587,7 @@
           account: "local-guest",
           slot,
           characterId: meta.id,
-          name: "离线玩家",
+          name: getCharacter(meta.id).name,
           ...BASE_STATS,
           chapterId: "chapter1",
           mapId: "ch1_m01_classroom_spawn",
@@ -1593,9 +1601,10 @@
         saveLocalRoster(roster);
         app.characters = roster;
       } else {
+        const characterName = getCharacter(meta.id).name;
         const data = await apiRequest("/api/characters/create", {
           method: "POST",
-          body: { characterId: meta.id }
+          body: { characterId: meta.id, name: characterName }
         });
         app.characters = Array.isArray(data.characters) ? data.characters : [];
       }
@@ -1830,12 +1839,40 @@
     return app.profile.flags;
   }
 
+  function currentM04Session() {
+    return app.multiplayer?.m04Session || null;
+  }
+
+  function isM04SessionActive() {
+    const session = currentM04Session();
+    return app.profile?.mapId === M04_MAP_ID && !!session?.active;
+  }
+
+  function isM04SessionLeader() {
+    if (app.offlineMode) return true;
+    const session = currentM04Session();
+    return !!session?.active && String(session.leaderId || "") === String(app.profile?.id || "");
+  }
+
+  function isM04SharedFlag(flag) {
+    return isM04SessionActive() && /^ch1_/.test(String(flag || ""));
+  }
+
   function hasFlag(flag) {
+    if (isM04SharedFlag(flag)) return currentM04Session().flagSet?.has(flag) || false;
     return !!flag && !!profileFlags()[flag];
   }
 
   function setFlag(flag, value = true, options = {}) {
     if (!flag || !app.profile) return;
+    if (isM04SharedFlag(flag)) {
+      const session = currentM04Session();
+      if (!(session.flagSet instanceof Set)) session.flagSet = new Set(session.flags || []);
+      if (value) session.flagSet.add(flag);
+      else session.flagSet.delete(flag);
+      session.flags = Array.from(session.flagSet);
+      if (!isM04SessionLeader()) return;
+    }
     const existed = !!profileFlags()[flag];
     profileFlags()[flag] = !!value;
     if (value && !existed && options.broadcast !== false && app.connected) {
@@ -2139,15 +2176,34 @@
 
   function renderBossHud() {
     const panel = $("#bossPanel");
+    const m04TextOnly = app.profile?.mapId === M04_MAP_ID;
+    panel.classList.toggle("m04-text-only", m04TextOnly);
     panel.classList.toggle("open", !!app.boss.active);
     panel.setAttribute("aria-hidden", String(!app.boss.active));
     const ratio = clamp(app.boss.hp / app.boss.maxHp, 0, 1);
     $("#bossHpBar").style.width = `${Math.round(ratio * 100)}%`;
     const wave = Number(app.boss.waveIndex || 0) + 1;
     const total = Number(app.boss.wavesTotal || BOSS_SUMMON_WAVES.length);
-    $("#bossHpText").textContent = app.boss.active
-      ? `第 ${wave}/${total} 波 ${Math.max(0, Math.ceil(app.boss.hp))} / ${app.boss.maxHp}`
-      : `${Math.max(0, Math.ceil(app.boss.hp))} / ${app.boss.maxHp}`;
+    const hpText = `${Math.max(0, Math.ceil(app.boss.hp))} / ${app.boss.maxHp}`;
+    const waveTitle = String(app.boss.waveTitle || "协议考核");
+    const m04ProgressText = app.boss.phase === "final"
+      ? `终局 · ${waveTitle} · ${hpText}`
+      : app.boss.phase === "awaitingProfessor"
+        ? wave > total
+          ? "三波完成 · 靠近陆教授启动终局"
+          : `第 ${Math.max(1, wave - 1)}/${total} 波完成 · 靠近陆教授继续`
+        : app.boss.phase === "portalOpening"
+          ? `第 ${wave}/${total} 波 · ${waveTitle} · 传送门开启`
+          : `第 ${wave}/${total} 波 · ${waveTitle} · 剩余 ${Math.max(0, Math.ceil(app.boss.hp))}`;
+    $("#bossHpText").textContent = !app.boss.active
+      ? hpText
+      : m04TextOnly
+        ? m04ProgressText
+        : app.boss.phase === "final"
+          ? `终局 ${hpText}`
+          : app.boss.phase === "awaitingProfessor" && wave > total
+            ? "终局待启动"
+            : `第 ${wave}/${total} 波 ${hpText}`;
   }
 
   function setPanelCollapsed(panelId, collapsed) {
@@ -2515,6 +2571,7 @@
       $("#startOverlay")?.classList.add("hidden");
       entryLoadingState = null;
       app.audio.switchMode("game");
+      window.setTimeout(() => app.scene?.showAreaTitle?.(), 260);
     }, wait);
   }
 
@@ -3170,6 +3227,7 @@
       this.drops = new Map();
       this.progressEvents = new Map();
       this.enemyStates = new Map();
+      this.m04Session = { active: false, sessionId: "", leaderId: "", leaderName: "", flags: [], flagSet: new Set(), started: false, phase: "idle", waveIndex: 0, memberIds: [] };
       this.url = "";
     }
 
@@ -3212,6 +3270,7 @@
       this.drops.clear();
       this.progressEvents.clear();
       this.enemyStates.clear();
+      this.m04Session = { active: false, sessionId: "", leaderId: "", leaderName: "", flags: [], flagSet: new Set(), started: false, phase: "idle", waveIndex: 0, memberIds: [] };
       app.scene?.clearWorldDrops();
       renderPeers(this.peers);
     }
@@ -3306,6 +3365,30 @@
       return true;
     }
 
+    applyM04Session(session = {}) {
+      const previousSessionId = this.m04Session?.sessionId || "";
+      const flags = Array.isArray(session.flags) ? session.flags.map(String) : [];
+      this.m04Session = {
+        active: !!session.active,
+        sessionId: String(session.sessionId || ""),
+        leaderId: String(session.leaderId || ""),
+        leaderName: String(session.leaderName || ""),
+        flags,
+        flagSet: new Set(flags),
+        started: !!session.started,
+        phase: String(session.phase || "idle"),
+        waveIndex: Math.max(0, Number(session.waveIndex) || 0),
+        memberIds: Array.isArray(session.memberIds) ? session.memberIds.map(String) : []
+      };
+      if (app.profile?.mapId === M04_MAP_ID) {
+        app.scene?.refreshQuestUi?.();
+        if (this.m04Session.active && this.m04Session.sessionId !== previousSessionId) {
+          const leaderText = isM04SessionLeader() ? "你是本轮考核主控" : `${this.m04Session.leaderName || "首位玩家"}是本轮考核主控`;
+          showToast(`${leaderText}，M04 进度将在全员离场后重置`);
+        }
+      }
+    }
+
     syncDropsForCurrentMap() {
       app.scene?.syncWorldDrops(Array.from(this.drops.values()));
     }
@@ -3350,6 +3433,7 @@
         (Array.isArray(message.progress) ? message.progress : []).forEach(event => {
           if (event?.id) this.progressEvents.set(String(event.id), event);
         });
+        this.applyM04Session(message.m04Session || {});
         renderPeers(this.peers);
         app.scene?.syncAllPeers(this.peers);
         this.syncDropsForCurrentMap();
@@ -3408,6 +3492,7 @@
         this.progressEvents.set(String(message.event.id), message.event);
         app.scene?.applyNetworkProgressEvent(message.event);
       }
+      if (message.type === "m04Session" && message.session) this.applyM04Session(message.session);
       if (message.type === "notice" && message.text) showToast(message.text);
     }
   }
@@ -3415,6 +3500,11 @@
   function syncBossState(boss) {
     const wasActive = app.boss.active;
     app.boss = { ...app.boss, ...boss };
+    if (app.profile?.mapId === M04_MAP_ID && currentM04Session()?.active) {
+      currentM04Session().phase = String(app.boss.phase || "idle");
+      currentM04Session().waveIndex = Math.max(0, Number(app.boss.waveIndex) || 0);
+      currentM04Session().started = app.boss.phase !== "idle" || !!app.boss.active;
+    }
     if (boss?.phase === "awaitingProfessor" && app.scene) {
       app.scene.bossWavePending = true;
       app.scene.professorDeparted = false;
@@ -3434,6 +3524,7 @@
       this.bossSummonIds = new Set();
       this.bossWavePending = false;
       this.ambientEnemyRefreshTimer = null;
+      this.ambientEnemyInitialTimer = null;
       this.ambientEnemySequence = 0;
       this.worldDrops = new Map();
       this.lastMinimapUpdateAt = 0;
@@ -3609,9 +3700,37 @@
       return maps[requested] ? requested : (this.chapterMapRegistry?.defaultMapId || "ch1_m01_classroom_spawn");
     }
 
+    scaleRuntimeMapDefinition(mapData) {
+      const scale = Math.max(1, Number(mapData?.runtimeScale) || 1);
+      if (scale === 1) return mapData;
+      const scaled = JSON.parse(JSON.stringify(mapData));
+      const scaleFields = (item, fields) => {
+        if (!item) return;
+        fields.forEach(field => {
+          if (Number.isFinite(Number(item[field]))) item[field] = Number((Number(item[field]) * scale).toFixed(2));
+        });
+      };
+      scaleFields(scaled.background, ["width", "height"]);
+      (scaled.background?.chunks || []).forEach(item => scaleFields(item, ["x", "y", "width", "height"]));
+      scaleFields(scaled.spawn, ["x", "y"]);
+      (scaled.spawnPoints || []).forEach(item => scaleFields(item, ["x", "y"]));
+      scaleFields(scaled.camera, ["startX", "startY"]);
+      (scaled.obstacles || []).forEach(item => scaleFields(item, ["x", "y", "w", "h"]));
+      (scaled.npcs || []).forEach(item => scaleFields(item, ["x", "y", "labelOffsetY", "shadowWidth", "shadowHeight"]));
+      (scaled.interactionNodes || []).forEach(item => scaleFields(item, ["x", "y", "radius", "hintX", "hintY", "hintWidth", "hintHeight", "labelX", "labelY"]));
+      (scaled.exitPoints || []).forEach(item => scaleFields(item, ["x", "y", "radius", "labelX", "labelY"]));
+      (scaled.enemySpawns || []).forEach(item => scaleFields(item, ["x", "y", "targetX", "targetY"]));
+      (scaled.props || []).forEach(item => scaleFields(item, ["x", "y", "w", "h", "width", "height"]));
+      (scaled.foregroundOverlays || []).forEach(item => scaleFields(item, ["x", "y", "w", "h"]));
+      scaleFields(scaled.ambientEnemyRefresh?.spawnBounds, ["x", "y", "width", "height"]);
+      scaleFields(scaled.chapterBossPoint, ["x", "y"]);
+      scaled.runtimeScaleApplied = scale;
+      return scaled;
+    }
+
     composeRuntimeMapData(mapId = this.getCurrentMapId()) {
       const maps = this.getChapterMapRegistry();
-      if (maps[mapId]) return { ...maps[mapId] };
+      if (maps[mapId]) return this.scaleRuntimeMapDefinition(maps[mapId]);
       return { ...this.baseMapData };
     }
 
@@ -3831,6 +3950,58 @@
       return `${node.id}_done`;
     }
 
+    createMapTransferArray(node) {
+      const scale = Number(node.ringScale || node.portalScale) || 1.02;
+      const glow = this.add.ellipse(0, 10, 148 * scale, 52 * scale, 0x2d8cff, 0.2)
+        .setStrokeStyle(2, 0xa9e8ff, 0.72)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const ring = this.add.sprite(0, 8, MAP_TRANSFER_RING_KEY)
+        .setOrigin(0.5)
+        .setScale(scale)
+        .setAlpha(0.98)
+        .play("ch1-map-transfer-ring-loop");
+      const beams = [-42, -16, 18, 44].map((offsetX, index) => this.add.rectangle(
+        offsetX * scale,
+        8,
+        (index % 2 ? 3 : 2) * scale,
+        (118 + index * 20) * scale,
+        index % 2 ? 0x2d8cff : 0x72d9ff,
+        0.42
+      ).setOrigin(0.5, 1).setBlendMode(Phaser.BlendModes.ADD));
+      const core = this.add.ellipse(0, 7, 68 * scale, 21 * scale, 0xcaf7ff, 0.5)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const motes = Array.from({ length: 7 }, (_, index) => this.add.circle(
+        ((index * 37) % 94 - 47) * scale,
+        (-10 - (index * 29) % 112) * scale,
+        (1.5 + index % 3) * scale,
+        index % 2 ? 0xffffff : 0x72d9ff,
+        0.74
+      ).setBlendMode(Phaser.BlendModes.ADD));
+      const marker = this.add.container(node.x, node.y + 3, [glow, ...beams, ring, core, ...motes])
+        .setDepth(node.y + 2);
+      this.tweens.add({ targets: glow, scaleX: 1.12, scaleY: 1.18, alpha: 0.34, duration: 780, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      this.tweens.add({ targets: core, scaleX: 1.18, alpha: 0.82, duration: 520, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      beams.forEach((beam, index) => this.tweens.add({
+        targets: beam,
+        alpha: 0.12,
+        scaleY: 0.68 + (index % 2) * 0.18,
+        duration: 460 + index * 90,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut"
+      }));
+      motes.forEach((mote, index) => this.tweens.add({
+        targets: mote,
+        y: mote.y - (72 + index * 6) * scale,
+        alpha: 0,
+        duration: 920 + index * 80,
+        delay: index * 90,
+        repeat: -1,
+        ease: "Sine.easeOut"
+      }));
+      return marker;
+    }
+
     createStaticInteractionHint(node) {
       if (node.npcId || node.visualType === "npc") return null;
       const x = Number.isFinite(Number(node.hintX)) ? Number(node.hintX) : node.x;
@@ -3912,21 +4083,9 @@
       });
       this.interactionMarkers = [];
       this.interactionNodes.forEach(node => {
-        const marker = node.type === "teleport" && node.visual === "portal"
-          ? this.add.sprite(node.x, node.y + 5, MAP_PORTAL_KEY)
-            .setOrigin(0.5, 0.62)
-            .setScale(Number(node.portalScale) || 0.72)
-            .setAlpha(0.88)
-            .setDepth(node.y + 2)
-            .play("ch1-map-portal-loop")
-          : node.type === "teleport"
-            ? this.add.sprite(node.x, node.y + 2, MAP_TRANSFER_RING_KEY)
-              .setOrigin(0.5, 0.5)
-              .setScale(Number(node.ringScale) || 0.92)
-              .setAlpha(0.9)
-              .setDepth(node.y - 2)
-              .play("ch1-map-transfer-ring-loop")
-            : this.createStaticInteractionHint(node);
+        const marker = node.type === "teleport"
+          ? this.createMapTransferArray(node)
+          : this.createStaticInteractionHint(node);
         const labelX = Number.isFinite(Number(node.labelX)) ? Number(node.labelX) : (Number(node.hintX) || node.x);
         const labelY = Number.isFinite(Number(node.labelY)) ? Number(node.labelY) : (Number(node.hintY) || node.y) - 24;
         const label = node.showLabel === false
@@ -4003,6 +4162,10 @@
         return;
       }
       const locked = !this.flagRequirementsMet(node.requiresFlags);
+      if (this.getCurrentMapId() === M04_MAP_ID && node.type === "boss" && !isM04SessionLeader()) {
+        renderInteractionPrompt(`等待主控 ${currentM04Session()?.leaderName || "首位玩家"} 与陆教授交互`);
+        return;
+      }
       renderInteractionPrompt(`${locked ? "条件未满足：" : ""}${node.label || "交互"}`);
     }
 
@@ -4092,6 +4255,16 @@
       if (node.type === "bossChest") {
         this.openBossChest();
         return;
+      }
+      if (this.getCurrentMapId() === M04_MAP_ID && node.type === "boss") {
+        if (!isM04SessionLeader()) {
+          showToast(`本轮由${currentM04Session()?.leaderName || "首位进入者"}推进，只有主控可与陆教授对话`);
+          return;
+        }
+        if (app.boss.phase !== "idle" || currentM04Session()?.started) {
+          showToast("本轮陆教授考核已经启动，请前往当前阶段继续战斗");
+          return;
+        }
       }
       if (node.questGiver) {
         this.triggerQuestGiver(node);
@@ -4338,8 +4511,8 @@
         {
           textureKey: M02A_XIAOZHU_PET_KEY,
           animationKey: M02A_XIAOZHU_IDLE_ANIMATION,
-          start: 56,
-          end: 63,
+          start: 0,
+          end: 7,
           frameRate: 3
         }
       ].forEach(config => {
@@ -5109,6 +5282,8 @@
     clearRuntimeMapObjects() {
       this.ambientEnemyRefreshTimer?.remove(false);
       this.ambientEnemyRefreshTimer = null;
+      this.ambientEnemyInitialTimer?.remove(false);
+      this.ambientEnemyInitialTimer = null;
       this.mapProps?.forEach(prop => prop.destroy());
       this.mapProps = [];
       this.foregroundOverlays?.forEach(item => item.destroy());
@@ -5150,9 +5325,69 @@
       });
       this.syncedSlimeIds?.clear();
       this.bossSummonIds?.clear();
+      (this.bossPortals || []).forEach(item => item?.portal?.destroy());
+      this.bossPortals = [];
       this.bossChest?.setVisible(false).setActive(false);
       this.bossSprite?.setVisible(false).setActive(false);
       syncBossState({ ...BOSS });
+    }
+
+    showAreaTitle(mapData = this.mapData) {
+      const title = String(mapData?.title || "未知区域").trim() || "未知区域";
+      this.areaTitleTimer?.remove(false);
+      this.areaTitleTimer = null;
+      if (this.areaTitleContainer) {
+        this.tweens.killTweensOf(this.areaTitleContainer);
+        this.areaTitleContainer.destroy(true);
+        this.areaTitleContainer = null;
+      }
+
+      const camera = this.cameras.main;
+      const targetY = Math.round(Math.max(104, Math.min(camera.height * 0.19, 168)));
+      const titleText = this.add.text(0, 0, title, {
+        fontFamily: "Microsoft YaHei, PingFang SC, sans-serif",
+        fontSize: "50px",
+        fontStyle: "bold",
+        color: "#fff4cc",
+        stroke: "#291a40",
+        strokeThickness: 7,
+        align: "center",
+        shadow: { offsetX: 0, offsetY: 4, color: "#0c0715", blur: 8, stroke: true, fill: true }
+      }).setOrigin(0.5);
+
+      const container = this.add.container(Math.round(camera.width / 2), targetY - 16, [titleText])
+        .setScrollFactor(0)
+        .setDepth(100500)
+        .setAlpha(0)
+        .setScale(0.92);
+      this.areaTitleContainer = container;
+      this.tweens.add({
+        targets: container,
+        alpha: 1,
+        y: targetY,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 280,
+        ease: "Cubic.easeOut",
+        onComplete: () => {
+          if (this.areaTitleContainer !== container) return;
+          this.areaTitleTimer = this.time.delayedCall(1220, () => {
+            this.tweens.add({
+              targets: container,
+              alpha: 0,
+              y: targetY - 12,
+              scaleX: 1.035,
+              scaleY: 1.035,
+              duration: 420,
+              ease: "Cubic.easeIn",
+              onComplete: () => {
+                if (this.areaTitleContainer === container) this.areaTitleContainer = null;
+                container.destroy(true);
+              }
+            });
+          });
+        }
+      });
     }
 
     ensureMapAssetsLoaded(mapId) {
@@ -5231,6 +5466,7 @@
           this.mapTransitioning = false;
           this.isActionLocked = false;
           hideMapLoading();
+          this.time.delayedCall(260, () => this.showAreaTitle(this.mapData));
           showToast(`进入${this.mapData.title || "新区域"}`);
           scheduleChapterEndCinematicPreload(targetMapId);
         });
@@ -5282,9 +5518,18 @@
         showToast("协议卡不足也可挑战，但稀有精英会更难处理");
       }
       const firstWave = BOSS_SUMMON_WAVES[0];
-      const structuralExam = this.getCurrentMapId() === "ch1_m04_library_lawn_boss";
-      const x = structuralExam ? firstWave.mapX : (Number.isFinite(options.x) ? options.x : clamp(this.actor.x + 420, 420, this.worldWidth - 420));
-      const y = structuralExam ? firstWave.mapY : (Number.isFinite(options.y) ? options.y : clamp(this.actor.y - 70, 640, this.worldHeight - 420));
+      const structuralExam = this.getCurrentMapId() === M04_MAP_ID;
+      if (structuralExam && !isM04SessionLeader()) {
+        showToast("只有本轮首位进入 M04 的玩家可启动陆教授考核");
+        return null;
+      }
+      if (structuralExam && (app.boss.phase !== "idle" || currentM04Session()?.started)) {
+        showToast("本轮考核已经启动，不能从第一个交互点重复召唤");
+        return null;
+      }
+      const runtimeScale = structuralExam ? this.getM04RuntimeScale() : 1;
+      const x = structuralExam ? firstWave.mapX * runtimeScale : (Number.isFinite(options.x) ? options.x : clamp(this.actor.x + 420, 420, this.worldWidth - 420));
+      const y = structuralExam ? firstWave.mapY * runtimeScale : (Number.isFinite(options.y) ? options.y : clamp(this.actor.y - 70, 640, this.worldHeight - 420));
       const boss = {
         ...BOSS,
         active: true,
@@ -5301,6 +5546,7 @@
         chestReady: false
       };
       app.bossRewardClaimed = false;
+      if (structuralExam && currentM04Session()) currentM04Session().started = true;
       setFlag(BOSS_CHEST_FLAG, false);
       this.bossWavePending = false;
       this.professorDeparted = false;
@@ -5347,25 +5593,57 @@
       });
     }
 
-    createBossPortal(wave) {
-      const x = clamp(app.boss.x, 150, this.worldWidth - 150);
-      const y = clamp(app.boss.y + 130, 160, this.worldHeight - 130);
-      const portal = this.add.sprite(x, y, BOSS_VOID_PORTAL_KEY)
-        .setOrigin(0.5)
-        .setScale(0.28)
-        .setAlpha(0)
-        .setDepth(y + 34)
-        .play("ch1-boss-void-portal-loop");
-      this.bossPortal = { portal, x, y };
-      this.tweens.add({ targets: portal, alpha: 0.96, scale: 1.18, duration: BOSS_PORTAL_OPEN_MS, ease: "Sine.easeOut" });
-      return this.bossPortal;
+    getM04RuntimeScale() {
+      return this.getCurrentMapId() === M04_MAP_ID
+        ? Math.max(1, Number(this.mapData?.runtimeScaleApplied || this.mapData?.runtimeScale) || 1)
+        : 1;
     }
 
-    closeBossPortal() {
-      const portal = this.bossPortal;
-      if (!portal) return;
-      this.tweens.add({ targets: portal.portal, alpha: 0, scale: 0.24, duration: BOSS_PORTAL_CLOSE_MS, ease: "Sine.easeIn", onComplete: () => portal.portal.destroy() });
-      this.bossPortal = null;
+    getBossWaveUnitTarget(unit) {
+      const scale = this.getM04RuntimeScale();
+      return {
+        x: clamp(app.boss.x + Number(unit.dx || 0) * scale, 96, this.worldWidth - 96),
+        y: clamp(app.boss.y + Number(unit.dy || 0) * scale, 120, this.worldHeight - 96)
+      };
+    }
+
+    createBossPortals(wave) {
+      (this.bossPortals || []).forEach(item => item?.portal?.destroy());
+      const scale = this.getM04RuntimeScale();
+      this.bossPortals = (wave.units || []).map((unit, unitIndex) => {
+        const target = this.getBossWaveUnitTarget(unit);
+        const targetScale = unit.rank === "rare" ? 1.28 : unit.rank === "elite" ? 0.98 : 0.64;
+        const x = target.x;
+        const y = clamp(target.y + (unit.rank === "mob" ? 58 : 82) * scale, 150, this.worldHeight - 100);
+        const portal = this.add.sprite(x, y, BOSS_VOID_PORTAL_KEY)
+          .setOrigin(0.5)
+          .setScale(0.16)
+          .setAlpha(0)
+          .setDepth(y + 34)
+          .play("ch1-boss-void-portal-loop");
+        this.tweens.add({
+          targets: portal,
+          alpha: 0.96,
+          scale: targetScale,
+          duration: BOSS_PORTAL_OPEN_MS + unitIndex * 24,
+          ease: "Back.easeOut"
+        });
+        return { portal, x, y, target, targetScale, rank: unit.rank };
+      });
+      return this.bossPortals;
+    }
+
+    closeBossPortals() {
+      const portals = this.bossPortals || [];
+      this.bossPortals = [];
+      portals.forEach((item, index) => this.tweens.add({
+        targets: item.portal,
+        alpha: 0,
+        scale: 0.12,
+        duration: BOSS_PORTAL_CLOSE_MS + index * 18,
+        ease: "Sine.easeIn",
+        onComplete: () => item.portal.destroy()
+      }));
     }
 
     beginBossWaveSequence(index) {
@@ -5373,21 +5651,22 @@
       if (!wave || !app.boss.active) return;
       this.bossWavePending = true;
       this.professorDeparted = false;
-      const nextX = this.getCurrentMapId() === "ch1_m04_library_lawn_boss" ? Number(wave.mapX || app.boss.x) : app.boss.x;
-      const nextY = this.getCurrentMapId() === "ch1_m04_library_lawn_boss" ? Number(wave.mapY || app.boss.y) : app.boss.y;
+      const runtimeScale = this.getM04RuntimeScale();
+      const nextX = this.getCurrentMapId() === M04_MAP_ID ? Number(wave.mapX || app.boss.x) * runtimeScale : app.boss.x;
+      const nextY = this.getCurrentMapId() === M04_MAP_ID ? Number(wave.mapY || app.boss.y) * runtimeScale : app.boss.y;
       const portalState = { ...app.boss, x: nextX, y: nextY, phase: "portalOpening", waveIndex: index, waveTitle: wave.title };
       syncBossState(portalState);
       if (app.connected) app.multiplayer?.sendBossStart(portalState);
       this.bossSprite?.setAlpha(1).setVisible(true).setActive(true);
       this.bossSprite?.setTexture(BOSS_KEY).setScale(BOSS_VISUAL_SCALE).setAngle(0);
       this.playBossCastAnimation();
-      const portal = this.createBossPortal(wave);
-      showToast(`陆教授正在展开${wave.title}传送门`);
+      const portals = this.createBossPortals(wave);
+      showToast(`陆教授同时展开 ${portals.length} 座${wave.title}传送门：大门对应精英，小门对应小怪`);
       this.time.delayedCall(BOSS_PORTAL_OPEN_MS, () => {
         if (!app.boss.active) return;
-        this.spawnBossWave(index, { fromPortal: true, portal });
-        this.time.delayedCall(BOSS_PORTAL_EGRESS_MS + wave.units.length * BOSS_PORTAL_STAGGER_MS + 120, () => {
-          this.closeBossPortal();
+        this.spawnBossWave(index, { fromPortal: true, portals });
+        this.time.delayedCall(BOSS_PORTAL_EGRESS_MS + Math.max(0, wave.units.length - 1) * BOSS_PORTAL_STAGGER_MS + 80, () => {
+          this.closeBossPortals();
           syncBossState({ ...app.boss, phase: "summoning" });
           this.bossWavePending = false;
           this.playProfessorFlyAway();
@@ -5416,10 +5695,12 @@
       syncBossState(waveState);
       if (app.connected) app.multiplayer?.sendBossStart(waveState);
       wave.units.forEach((unit, unitIndex) => {
-        const targetX = clamp(app.boss.x + unit.dx, 96, this.worldWidth - 96);
-        const targetY = clamp(app.boss.y + unit.dy, 120, this.worldHeight - 96);
-        const spawnX = options.fromPortal ? options.portal?.x || app.boss.x : targetX;
-        const spawnY = options.fromPortal ? options.portal?.y || app.boss.y + 120 : targetY;
+        const target = this.getBossWaveUnitTarget(unit);
+        const unitPortal = options.portals?.[unitIndex];
+        const targetX = target.x;
+        const targetY = target.y;
+        const spawnX = options.fromPortal ? unitPortal?.x || targetX : targetX;
+        const spawnY = options.fromPortal ? unitPortal?.y || targetY : targetY;
         const slime = this.spawnLeafSlime({
           id: `ch1-boss-${wave.id}-${unit.rank}-${unitIndex}`,
           x: spawnX,
@@ -5476,14 +5757,16 @@
     }
 
     spawnM04FinalBoss() {
-      if (this.findLeafSlime("ch1-m04-structural-final-boss") || hasFlag("ch1_final_boss_defeated")) return;
-      const x = 3135;
-      const y = 650;
+      const existingFinalBoss = this.findLeafSlime("ch1-m04-structural-final-boss");
+      if (existingFinalBoss || hasFlag("ch1_final_boss_defeated")) return existingFinalBoss;
+      const scale = this.getM04RuntimeScale();
+      const x = 3135 * scale;
+      const y = 650 * scale;
       this.professorDeparted = true;
-      const finalState = { ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: 1, hp: 1, summonsRemaining: 1 };
+      const finalState = { ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: 1800, hp: 1800, summonsRemaining: 1 };
       syncBossState(finalState);
       if (app.connected) app.multiplayer?.sendBossStart(finalState);
-      this.spawnLeafSlime({
+      const finalBoss = this.spawnLeafSlime({
         id: "ch1-m04-structural-final-boss",
         x,
         y,
@@ -5509,9 +5792,25 @@
         hudOffsetY: -292,
         broadcast: app.connected
       });
+      if (!finalBoss) {
+        showToast("终极大机器人加载失败，正在重新构建");
+        this.time.delayedCall(260, () => this.spawnM04FinalBoss());
+        return null;
+      }
+      this.bossSprite?.setVisible(false).setActive(false);
       app.audio.ultimateBurst();
-      this.cameras.main.shake(260, 0.004);
-      showToast("三阶段考核完成：结构失稳聚合体进入最终加载状态");
+      this.cameras.main.flash(420, 76, 196, 255, false);
+      this.cameras.main.shake(360, 0.006);
+      this.spawnHealingMotes(x, y - 80, 58, 132, 820);
+      this.showFloatingText(x, y - 238, "终极大机器人 · 结构失稳聚合体", {
+        color: "#bff7ff",
+        size: "25px",
+        rise: 72,
+        duration: 1300
+      });
+      showToast("三阶段考核完成：终极大机器人已在陆教授所在位置完成加载");
+      renderMinimap(this);
+      return finalBoss;
     }
 
     updateBossSummonState() {
@@ -5526,6 +5825,7 @@
         eliteRemaining: alive.filter(slime => slime.isElite).length
       });
       if (alive.length > 0 || this.bossWavePending) return;
+      if (this.getCurrentMapId() === M04_MAP_ID && !this.isEncounterCoordinator()) return;
       const nextIndex = Number(app.boss.waveIndex || 0) + 1;
       if (this.getCurrentMapId() === "ch1_m04_library_lawn_boss") {
         this.waitForProfessorApproach(nextIndex);
@@ -5539,8 +5839,10 @@
       const nextWave = isFinal
         ? { title: "结构失稳终局", mapX: 3135, mapY: 650 }
         : BOSS_SUMMON_WAVES[nextIndex];
+      const runtimeScale = this.getM04RuntimeScale();
       this.bossWavePending = true;
       this.professorDeparted = false;
+      if (this.bossSprite) this.tweens.killTweensOf(this.bossSprite);
       this.bossSprite
         ?.setTexture(BOSS_KEY)
         .setOrigin(0.5, 0.72)
@@ -5553,8 +5855,8 @@
         ...app.boss,
         active: true,
         phase: "awaitingProfessor",
-        x: Number(nextWave.mapX || app.boss.x),
-        y: Number(nextWave.mapY || app.boss.y),
+        x: Number.isFinite(Number(nextWave.mapX)) ? Number(nextWave.mapX) * runtimeScale : app.boss.x,
+        y: Number.isFinite(Number(nextWave.mapY)) ? Number(nextWave.mapY) * runtimeScale : app.boss.y,
         waveIndex: nextIndex,
         waveTitle: nextWave.title,
         maxHp: 1,
@@ -5564,11 +5866,14 @@
       };
       syncBossState(waitingState);
       if (app.connected) app.multiplayer?.sendBossStart(waitingState);
-      showToast(`${BOSS_SUMMON_WAVES[Math.max(0, nextIndex - 1)].title}已清除，前往陆教授身边确认${isFinal ? "终局考核" : "下一阶段"}`);
+      showToast(isFinal
+        ? `${BOSS_SUMMON_WAVES[Math.max(0, nextIndex - 1)].title}已清除，前往地图右上方陆教授身边启动终极大机器人`
+        : `${BOSS_SUMMON_WAVES[Math.max(0, nextIndex - 1)].title}已清除，前往陆教授身边确认下一阶段`);
     }
 
     isEncounterCoordinator() {
       if (!app.connected) return true;
+      if (this.getCurrentMapId() === M04_MAP_ID) return isM04SessionLeader();
       const ids = [String(app.profile?.id || ""), ...Array.from(this.remotePlayers?.keys?.() || []).map(String)]
         .filter(Boolean)
         .sort();
@@ -5578,11 +5883,8 @@
     updateProfessorWaveProximity() {
       if (app.boss.phase !== "awaitingProfessor" || !this.bossWavePending || !this.bossSprite?.visible) return;
       const professor = { x: Number(app.boss.x) || 0, y: Number(app.boss.y) || 0 };
-      const players = [
-        this.actor?.active ? this.actor : null,
-        ...Array.from(this.remotePlayers?.values?.() || []).map(remote => remote?.sprite?.active && !remote.down ? remote.sprite : null)
-      ].filter(Boolean);
-      const approached = players.some(player => Phaser.Math.Distance.Between(player.x, player.y, professor.x, professor.y) <= 190);
+      const approached = !!this.actor?.active
+        && Phaser.Math.Distance.Between(this.actor.x, this.actor.y, professor.x, professor.y) <= 190 * this.getM04RuntimeScale();
       if (!approached || !this.isEncounterCoordinator()) return;
       const nextIndex = Number(app.boss.waveIndex || 0);
       this.bossWavePending = false;
@@ -5684,9 +5986,10 @@
       return null;
     }
 
-    spawnAmbientEnemyWave() {
+    spawnAmbientEnemyWave(requestedCount = null) {
       const config = this.getAmbientEnemyRefreshConfig();
       if (!config || this.mapTransitioning || !this.actor?.active) return 0;
+      if (app.connected && !this.isEncounterCoordinator()) return 0;
       const alive = (this.leafSlimes?.getChildren?.() || []).filter(enemy =>
         enemy?.active && enemy.ambientWander && enemy.state !== "dead" && enemy.state !== "vanish"
       ).length;
@@ -5694,7 +5997,10 @@
       if (!available) return 0;
       const minimum = Math.max(1, Number(config.minCount) || 1);
       const maximum = Math.max(minimum, Number(config.maxCount) || 3);
-      const count = Math.min(available, Phaser.Math.Between(minimum, maximum));
+      const configuredCount = Number.isFinite(Number(requestedCount))
+        ? Math.max(0, Math.floor(Number(requestedCount)))
+        : Phaser.Math.Between(minimum, maximum);
+      const count = Math.min(available, configuredCount);
       let spawned = 0;
       for (let index = 0; index < count; index += 1) {
         const point = this.getRandomAmbientEnemyPoint(config);
@@ -5704,10 +6010,11 @@
         if (this.spawnLeafSlime({
           ...enemy,
           ...point,
-          id: `ambient-${this.getCurrentMapId()}-${this.ambientEnemySequence}`,
+          id: `ambient-${this.getCurrentMapId()}-${Date.now().toString(36)}-${this.ambientEnemySequence}`,
           ambientWander: true,
           passiveWander: true,
-          smoothMovement: true
+          smoothMovement: true,
+          broadcast: app.connected
         })) spawned += 1;
       }
       return spawned;
@@ -5716,8 +6023,18 @@
     scheduleAmbientEnemyRefresh() {
       this.ambientEnemyRefreshTimer?.remove(false);
       this.ambientEnemyRefreshTimer = null;
+      this.ambientEnemyInitialTimer?.remove(false);
+      this.ambientEnemyInitialTimer = null;
       const config = this.getAmbientEnemyRefreshConfig();
       if (!config) return;
+      const initialCount = Math.max(0, Math.floor(Number(config.initialCount) || 0));
+      if (initialCount) {
+        const initialDelay = app.offlineMode ? 1 : Math.max(500, Number(config.initialDelayMs) || 1200);
+        this.ambientEnemyInitialTimer = this.time.delayedCall(initialDelay, () => {
+          this.ambientEnemyInitialTimer = null;
+          this.spawnAmbientEnemyWave(initialCount);
+        });
+      }
       this.ambientEnemyRefreshTimer = this.time.addEvent({
         delay: Math.max(10000, Number(config.intervalMs) || 60000),
         loop: true,
@@ -5996,6 +6313,10 @@
       slime.body.setAllowGravity(false);
       slime.body.setCollideWorldBounds(true);
       slime.body.setImmovable(slime.stationary);
+      // This Phaser build exposes `pushable` as a Body property rather than
+      // the newer setPushable() helper. Player movement must never displace an
+      // enemy; skills can still apply explicit velocity-based knockback.
+      slime.body.pushable = false;
       slime.state = "move";
       slime.nextHopAt = 0;
       slime.lastAttackAt = -LEAF_SLIME_ATTACK_COOLDOWN;
@@ -6084,7 +6405,12 @@
           groupId: slime.groupId,
           bossSummon: slime.isBossSummon,
           bossWaveId: slime.bossWaveId,
-          bossWaveTitle: slime.bossWaveTitle
+          bossWaveTitle: slime.bossWaveTitle,
+          ambientWander: !!slime.ambientWander,
+          passiveWander: !!slime.passiveWander,
+          smoothMovement: !!slime.smoothMovement,
+          wanderSpeed: Number(slime.wanderSpeed) || 0,
+          chaseSpeed: Number(slime.chaseSpeed) || 0
         });
       }
       return slime;
@@ -6118,6 +6444,11 @@
         bossSummon: !!slime.bossSummon,
         bossWaveId: slime.bossWaveId || "",
         bossWaveTitle: slime.bossWaveTitle || "",
+        ambientWander: !!slime.ambientWander,
+        passiveWander: !!slime.passiveWander,
+        smoothMovement: !!slime.smoothMovement,
+        wanderSpeed: Number(slime.wanderSpeed) || undefined,
+        chaseSpeed: Number(slime.chaseSpeed) || undefined,
         networkSynced: true,
         broadcast: false
       });
@@ -6216,7 +6547,7 @@
       if (enemy.state === "attack") {
         slime.state = "attack";
         slime.body?.setVelocity(0, 0);
-        this.playEnemyAnimation(slime, this.getAnimatedEnemySkillAction(String(event.skillId || "")), true);
+        this.playEnemyAnimation(slime, this.getAnimatedEnemySkillAction(String(enemy.skillId || "")), true);
         return;
       }
       if (enemy.state === "dead" || slime.hp <= 0) {
@@ -6224,6 +6555,12 @@
         slime.body.setVelocity(0, 0);
         slime.body.enable = false;
         this.playEnemyAnimation(slime, "dead", true);
+        if (this.isEncounterCoordinator()) {
+          this.time.delayedCall(40, () => {
+            if (slime.groupId === BOSS_SUMMON_GROUP) this.updateBossSummonState();
+            else this.checkEncounterClear(slime.groupId);
+          });
+        }
         this.time.delayedCall(360, () => this.syncSlimeRemove(slime.slimeId));
         return;
       }
@@ -6279,6 +6616,37 @@
       const event = message?.event;
       if (!event || event.sourceId === app.profile?.id || event.mapId !== this.getCurrentMapId()) return;
       const remote = this.remotePlayers.get(event.sourceId);
+      if (event.action === "playerStatus") {
+        const target = remote?.sprite?.active ? remote.sprite : { x: Number(event.x) || 0, y: Number(event.y) || 0 };
+        if (remote) remote.explicitStatusUntil = this.time.now + PLAYER_STATUS_SUPPRESS_MS;
+        const shieldSpent = Math.max(0, Number(event.shieldSpent) || 0);
+        const damageAmount = Math.max(0, Number(event.damageAmount) || 0);
+        const healAmount = Math.max(0, Number(event.healAmount) || 0);
+        const shieldGain = Math.max(0, Number(event.shieldGain) || 0);
+        if (shieldSpent > 0) {
+          this.playShieldEffect(target.x, target.y, true);
+          this.showFloatingText(target.x, target.y - 116, `格挡 ${Math.ceil(shieldSpent)}`, { color: "#bff7ff", size: "17px", rise: 48 });
+        }
+        if (damageAmount > 0) {
+          this.showFloatingText(target.x, target.y - 124, `-${Math.ceil(damageAmount)}`, { color: "#ff9ab4", size: "20px", rise: 58 });
+          this.emitPhysicalSparks(target.x, target.y - 48, 12, 0xff9ab4, target.y + 220);
+          if (remote?.sprite?.active) {
+            remote.hitFlashToken += 1;
+            const token = remote.hitFlashToken;
+            remote.sprite.setTint(0xffe6a0);
+            this.time.delayedCall(180, () => {
+              if (remote.hitFlashToken === token && !remote.down) remote.sprite.clearTint();
+            });
+          }
+          app.audio.playerHit();
+        }
+        if (healAmount > 0) this.playFriendlyHealEffect(target.x, target.y, Math.ceil(healAmount));
+        if (shieldGain > 0) {
+          this.playShieldEffect(target.x, target.y, false);
+          this.showFloatingText(target.x, target.y - 96, `护盾 +${Math.ceil(shieldGain)}`, { color: "#bff7ff", size: "15px", rise: 42 });
+        }
+        return;
+      }
       if (event.action === "levelUp") {
         this.playLevelUpEffect(
           Math.max(1, Number(event.levels) || 1),
@@ -9625,8 +9993,11 @@
       const levelText = levels ? `，等级 +${levels}` : "";
       if (droppedItem) showToast(`击败${slime.displayLabel || "怪物"}，EXP +${expGain}${levelText}，掉落 ${droppedItem.name}`);
       else showToast(gotCard ? `击败叶灵怪，EXP +${expGain}${levelText}，协议卡 +1` : `击败召唤小怪，EXP +${expGain}${levelText}`);
-      if (slime.groupId === BOSS_SUMMON_GROUP) this.updateBossSummonState();
-      else this.checkEncounterClear(slime.groupId);
+      const canAdvanceEncounter = this.getCurrentMapId() !== M04_MAP_ID || this.isEncounterCoordinator();
+      if (canAdvanceEncounter) {
+        if (slime.groupId === BOSS_SUMMON_GROUP) this.updateBossSummonState();
+        else this.checkEncounterClear(slime.groupId);
+      }
       const beginVanish = () => {
         if (!slime.active || slime.actionToken !== token) return;
         slime.state = "vanish";
@@ -9661,6 +10032,15 @@
       if (incoming > 0) {
         app.profile.hp = Math.max(0, app.profile.hp - incoming);
         this.showFloatingText(this.actor.x, this.actor.y - 124, `-${Math.ceil(incoming)}`, { color: "#ff9ab4", size: "20px", rise: 58 });
+      }
+      if (incoming > 0 || blocked > 0) {
+        this.broadcastCombatEvent("playerStatus", {
+          x: this.actor.x,
+          y: this.actor.y,
+          damageAmount: Math.ceil(incoming),
+          shieldSpent: Math.ceil(blocked),
+          down: app.profile.hp <= 0
+        });
       }
       renderHud();
       app.audio.playerHit();
@@ -10427,9 +10807,11 @@
       if (!app.profile) return;
       if (!this.spendEnergy(HEAL_COST, "治疗")) return;
       const before = app.profile.hp;
+      const beforeShield = Number(app.profile.shield || 0);
       app.profile.hp = Math.min(app.profile.maxHp, app.profile.hp + 42);
       const healed = app.profile.hp - before;
       app.profile.shield = Math.min(Math.max(36, app.profile.maxHp * 0.28), Number(app.profile.shield || 0) + 36);
+      const shieldGain = Math.max(0, Number(app.profile.shield || 0) - beforeShield);
       if (app.profile.hp > 0 && this.isDead) {
         this.revivePlayer();
         return;
@@ -10438,7 +10820,13 @@
       this.playHealEffect(this.actor?.x || 0, this.actor?.y || 0);
       this.playShieldEffect(this.actor?.x || 0, this.actor?.y || 0, false);
       if (healed > 0) this.showFloatingText(this.actor.x, this.actor.y - 122, `+${Math.ceil(healed)}`, { color: "#7dffbd", size: "20px", rise: 56 });
-      this.showFloatingText(this.actor.x, this.actor.y - 96, `护盾 +36`, { color: "#bff7ff", size: "15px", rise: 42 });
+      if (shieldGain > 0) this.showFloatingText(this.actor.x, this.actor.y - 96, `护盾 +${Math.ceil(shieldGain)}`, { color: "#bff7ff", size: "15px", rise: 42 });
+      this.broadcastCombatEvent("playerStatus", {
+        x: this.actor.x,
+        y: this.actor.y,
+        healAmount: Math.ceil(healed),
+        shieldGain: Math.ceil(shieldGain)
+      });
       renderHud();
     }
 
@@ -10670,6 +11058,7 @@
           level: Math.max(1, Number(peer.level || 1)),
           down: false,
           hitFlashToken: 0,
+          explicitStatusUntil: 0,
           flags: new Set(peer.flags || [])
         };
         this.remotePlayers.set(peer.id, remote);
@@ -10686,6 +11075,7 @@
       const healedAmount = Math.max(0, nextHp - previousHp);
       const shieldSpent = Math.max(0, previousShield - nextShield);
       const tookDamage = damageTaken > 0;
+      const statusVisualSuppressed = this.time.now < Number(remote.explicitStatusUntil || 0);
       remote.hp = nextHp;
       remote.maxHp = nextMaxHp;
       remote.shield = nextShield;
@@ -10697,7 +11087,7 @@
       remote.hpFill.setFillStyle(ratio > 0.45 ? 0x42c98a : ratio > 0.2 ? 0xf3c75d : 0xef7fb0, 0.92);
       remote.hpBg.setVisible(true);
       remote.hpFill.setVisible(nextHp > 0);
-      if (shieldSpent > 0) {
+      if (shieldSpent > 0 && !statusVisualSuppressed) {
         this.playShieldEffect(remote.sprite.x, remote.sprite.y, true);
         this.showFloatingText(remote.sprite.x, remote.sprite.y - 116, `格挡 ${Math.ceil(shieldSpent)}`, {
           color: "#bff7ff",
@@ -10705,7 +11095,7 @@
           rise: 48
         });
       }
-      if (damageTaken > 0) {
+      if (damageTaken > 0 && !statusVisualSuppressed) {
         this.showFloatingText(remote.sprite.x, remote.sprite.y - 124, `-${Math.ceil(damageTaken)}`, {
           color: "#ff9ab4",
           size: "20px",
@@ -10713,10 +11103,10 @@
         });
         this.emitPhysicalSparks(remote.sprite.x, remote.sprite.y - 48, 12, 0xff9ab4, remote.sprite.y + 220);
         app.audio.playerHit();
-      } else if (healedAmount > 0) {
+      } else if (healedAmount > 0 && !statusVisualSuppressed) {
         this.playFriendlyHealEffect(remote.sprite.x, remote.sprite.y, Math.ceil(healedAmount));
       }
-      if (tookDamage) {
+      if (tookDamage && !statusVisualSuppressed) {
         remote.hitFlashToken += 1;
         const token = remote.hitFlashToken;
         remote.sprite.setTint(0xffe6a0);
@@ -11288,7 +11678,7 @@
     });
     $("#inventoryCloseButton")?.addEventListener("click", () => setInventoryOpen(false));
     $("#inventoryActionButton")?.addEventListener("click", () => toggleSelectedInventoryItem());
-    $("#reconnectButton").addEventListener("click", () => app.multiplayer?.connect());
+    $("#reconnectButton")?.addEventListener("click", () => app.multiplayer?.connect());
     $("#exitButton").addEventListener("click", () => exitGame());
     $("#reviveButton").addEventListener("click", () => app.scene?.revivePlayer());
     $("#stayDownButton").addEventListener("click", () => renderReviveDialog(false));

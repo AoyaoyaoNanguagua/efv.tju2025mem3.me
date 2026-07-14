@@ -49,12 +49,41 @@ assert.ok(Math.hypot(
 
 const teleports = Object.values(maps).flatMap(map => (map.exitPoints || []).filter(exit => exit.type === "teleport"));
 assert.ok(teleports.length >= 8);
-assert.ok(teleports.every(exit => exit.visual === "portal"), "Every map transfer must use the M01 portal visual");
-assert.ok(teleports.every(exit => exit.portalScale === 0.82), "Every map transfer must use the shared portal scale");
+assert.ok(teleports.every(exit => exit.visual === "transferArray"), "Every map transfer must use the blue transfer-array visual");
+assert.ok(teleports.every(exit => exit.ringScale === 1.05), "Every map transfer must use the shared transfer-ring scale");
 for (const exit of teleports) {
   const targetMap = maps[exit.targetMapId];
   assert.ok(targetMap, `Missing target map for ${exit.id}`);
   assert.ok((targetMap.spawnPoints || [targetMap.spawn]).some(spawn => spawn.id === exit.targetSpawnId), `Missing target spawn for ${exit.id}`);
 }
+
+const stageFront = auditorium.obstacles.filter(item => item.id.startsWith("m02a-stage-front-center"));
+assert.equal(stageFront.length, 2, "The stage front must be split around the central approach");
+assert.ok(stageFront.every(item => item.x + item.w <= 1320 || item.x >= 1752), "The central red-carpet approach must remain open");
+const seatBanks = auditorium.obstacles.filter(item => item.id.startsWith("m02a-seat-bank"));
+assert.equal(seatBanks.length, 2);
+assert.ok(seatBanks.every(item => item.y === 1225 && item.h === 480), "Seat collision must start at the chair footprint, not in the front aisle");
+assert.ok(!(auditorium.obstacles || []).some(rect => pointInside({ x: 720, y: 1150 }, rect)), "The west front-row aisle must be walkable");
+assert.ok(!(auditorium.obstacles || []).some(rect => pointInside({ x: 2330, y: 1150 }, rect)), "The east front-row aisle must be walkable");
+const lectern = auditorium.obstacles.find(item => item.id === "m02a-stage-lectern");
+assert.deepEqual(lectern, { id: "m02a-stage-lectern", x: 1450, y: 785, w: 172, h: 150 });
+assert.ok(pointInside({ x: 1536, y: 860 }, lectern), "The lectern itself must block walking");
+const statue = auditorium.props.find(item => item.id === "ch1_m02a_principal_bronze_statue");
+const statueNode = auditorium.interactionNodes.find(item => item.id === "ch1_m02a_node_principal_statue");
+assert.equal(statue.x, 2100, "The principal statue must stand left of the right stairway");
+assert.equal(statueNode.x, statue.x, "The statue interaction must follow the visual prop");
+assert.equal(statueNode.hintY, 904, "The statue shadow must sit directly under its base");
+assert.equal(statueNode.hintWidth, 78);
+assert.equal(statueNode.hintHeight, 18);
+const m2TaskProps = m2.interactionNodes.filter(node => node.markerImage);
+assert.equal(m2TaskProps.length, 4);
+assert.ok(m2TaskProps.every(node => node.markerShadowWidth <= 88 && node.markerShadowHeight === 14), "M02 task-prop shadows must stay compact");
+assert.ok(m2TaskProps.every(node => node.markerGlowWidth <= 100 && node.markerGlowHeight === 24), "M02 task-prop glows must not read as oversized shadows");
+assert.equal(auditorium.ambientEnemyRefresh.initialCount, 2);
+assert.equal(auditorium.ambientEnemyRefresh.intervalMs, 30000);
+assert.equal(auditorium.ambientEnemyRefresh.minCount, 1);
+assert.equal(auditorium.ambientEnemyRefresh.maxCount, 1);
+assert.equal(auditorium.ambientEnemyRefresh.maxAlive, 5);
+assert.deepEqual(auditorium.ambientEnemyRefresh.enemies.map(item => item.textureKey), ["ch1-runaway-magic-broom"]);
 
 console.log("M02-A auditorium branch configuration passed");

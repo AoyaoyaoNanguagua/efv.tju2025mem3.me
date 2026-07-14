@@ -24,6 +24,13 @@ assert.match(m3.background.path, /botanical-garden/);
 assert.match(m3.background.path, /-v3\.webp$/, "M3 must use the optimized academy botanical garden background");
 assert.equal(m3.background.width, 3072, "M3 must provide a wide combat arena");
 assert.equal(m3.background.height, 2048);
+const gardenPointBlocked = (x, y) => (m3.obstacles || []).some(obstacle =>
+  x >= obstacle.x && x <= obstacle.x + obstacle.w && y >= obstacle.y && y <= obstacle.y + obstacle.h
+);
+assert.equal(gardenPointBlocked(800, 1500), false, "M3 west lawn and curved path must remain walkable");
+assert.equal(gardenPointBlocked(2270, 1500), false, "M3 east lawn and curved path must remain walkable");
+assert.equal(gardenPointBlocked(1536, 1880), false, "M3 south entrance must have a generous opening");
+assert.ok(!(m3.obstacles || []).some(obstacle => /flowerbed/.test(obstacle.id)), "Decorative flowerbeds must not block broad lawn movement");
 
 const gardenEnemies = m3.enemySpawns.filter(enemy => /garden/.test(enemy.textureKey || ""));
 assert.equal(gardenEnemies.filter(enemy => enemy.rank === "elite").length, 3);

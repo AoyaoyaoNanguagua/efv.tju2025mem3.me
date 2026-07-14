@@ -90,6 +90,35 @@ def test_ayu_unarmed_walk_and_seated_transform(path: Path) -> None:
     )
 
 
+def test_m02a_idle_alignment(path: Path) -> None:
+    image = Image.open(path).convert("RGBA")
+    centers = []
+    baselines = []
+    top_margins = []
+    for column in range(8):
+        frame = image.crop((column * FRAME, 0, (column + 1) * FRAME, FRAME))
+        bbox = frame.getchannel("A").point(lambda value: 255 if value >= 8 else 0).getbbox()
+        assert bbox, f"{path.name}: empty idle frame {column}"
+        centers.append((bbox[0] + bbox[2]) / 2)
+        baselines.append(bbox[3])
+        top_margins.append(bbox[1])
+    assert max(centers) - min(centers) <= 1, f"{path.name}: idle frames drift horizontally"
+    assert max(baselines) - min(baselines) == 0, f"{path.name}: idle baselines drift"
+    assert min(top_margins) >= 8, f"{path.name}: idle head touches the frame edge"
+
+
+def test_runtime_enemy_grid(path: Path, frame_width: int, frame_height: int, columns: int, rows: int) -> None:
+    image = Image.open(path).convert("RGBA")
+    assert image.size == (frame_width * columns, frame_height * rows), f"{path.name}: invalid runtime grid"
+    for row in range(rows):
+        for column in range(columns):
+            frame = image.crop((column * frame_width, row * frame_height, (column + 1) * frame_width, (row + 1) * frame_height))
+            bbox = frame.getchannel("A").point(lambda value: 255 if value >= 8 else 0).getbbox()
+            assert bbox, f"{path.name}: empty frame {row},{column}"
+            assert bbox[0] >= 4 and bbox[1] >= 4, f"{path.name}: frame touches top/left edge {row},{column} {bbox}"
+            assert bbox[2] <= frame_width - 4 and bbox[3] <= frame_height - 4, f"{path.name}: frame touches bottom/right edge {row},{column} {bbox}"
+
+
 def main() -> None:
     for name in SHEETS:
         test_sheet(ROOT / "assets" / "sprites" / name)
@@ -98,6 +127,25 @@ def main() -> None:
     test_regenerated_jiangxun(ROOT / "assets" / "sprites" / "jiangxun-sprites-v8-lina-edge.png")
     test_ayu_unarmed_walk_and_seated_transform(
         ROOT / "assets" / "sprites" / "ayu-sprites-v17-unarmed-walk-seat-lina-edge.png"
+    )
+    for name in (
+        "ch1-m02a-mumu-sprites-v13-efv.png",
+        "ch1-m02a-xiaozhu-sprites-v13-efv.png",
+    ):
+        test_m02a_idle_alignment(ROOT / "assets" / "game" / "characters" / "npcs" / name)
+    enemy_dir = ROOT / "assets" / "game" / "enemies" / "animated"
+    test_runtime_enemy_grid(enemy_dir / "ch1-m03-garden-patrol-atlas-v3.png", 147, 147, 8, 8)
+    test_runtime_enemy_grid(enemy_dir / "ch1-m03-moon-orchid-rare-sheet-v3.png", 196, 147, 6, 8)
+    test_runtime_enemy_grid(enemy_dir / "ch1-m03-carnivora-boss-sheet-v3.png", 196, 168, 6, 7)
+    test_runtime_enemy_grid(enemy_dir / "ch1-m04-quantum-family-atlas-v2.png", 147, 147, 8, 8)
+    test_runtime_enemy_grid(enemy_dir / "ch1-m04-blockchain-family-atlas-v3.png", 147, 147, 8, 8)
+    test_runtime_enemy_grid(enemy_dir / "ch1-m04-aiagent-family-atlas-v3.png", 168, 147, 7, 8)
+    test_runtime_enemy_grid(
+        ROOT / "assets" / "game" / "bosses" / "m04-structural-instability-boss-sheet-v2.png",
+        147,
+        168,
+        8,
+        7,
     )
     print("Character asset protocol passed for five playable characters")
 

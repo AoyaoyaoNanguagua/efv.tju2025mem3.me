@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
 
 const play = readFileSync("play.js", "utf8");
+const html = readFileSync("play.html", "utf8");
+const overrides = readFileSync("play-overrides.css", "utf8");
 const server = readFileSync("play-server.py", "utf8");
 const apache = readFileSync(".htaccess", "utf8");
 const registry = JSON.parse(readFileSync("assets/chapter1/chapter1-maps-v1.json", "utf8"));
@@ -19,6 +21,14 @@ assert.doesNotMatch(preload, /M02A_XIAOZHU_PET_KEY/);
 assert.doesNotMatch(preload, /PROFESSOR_FLY_KEY/);
 assert.doesNotMatch(preload, /BOSS_VOID_PORTAL_KEY/);
 assert.doesNotMatch(preload, /-portrait/);
+
+const areaTitle = play.slice(play.indexOf("    showAreaTitle("), play.indexOf("    ensureMapAssetsLoaded("));
+assert.match(areaTitle, /fontFamily: "Microsoft YaHei, PingFang SC, sans-serif"/);
+assert.doesNotMatch(areaTitle, /STKaiti|KaiTi|fillRoundedRect|区域发现/);
+assert.doesNotMatch(html, /id="chatToggleButton"/);
+assert.doesNotMatch(html, /id="reconnectButton"/);
+assert.match(overrides, /\.boss-panel\.m04-text-only/);
+assert.match(overrides, /background: transparent;/);
 
 const mapAssetPaths = map => [
   map.background,

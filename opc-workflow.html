@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OPC 工作流 | Third Academy OPC</title>
-  <meta name="description" content="第三学院 OPC 的一人公司工作流：人类主理人、协议化 Agent 生产、人工测试、AI 视频宣发、财务与市场反馈闭环。">
+  <title>OPC 决策与工作流 | Third Academy OPC</title>
+  <meta name="description" content="第三学院 OPC 的资本配置、决策与运营系统：一位主理人、一个 Codex 账户、三台工作节点与一个数据中枢共同管理多 IP 资产。">
   <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
   <link rel="stylesheet" href="opc.css">
 </head>
-<body>
+<body class="workflow-v2">
   <div class="site-shell">
     <header class="site-nav">
       <a class="brand" href="opc.html" aria-label="第三学院 OPC 首页">
@@ -22,227 +22,329 @@
         <a href="opc.html">公司 Company</a>
         <a href="opc-products.html">IP 与产品 Products</a>
         <a class="active" href="opc-workflow.html">OPC 工作流 Workflow</a>
-        <a href="opc-console.html">OPC 控制台 Console</a>
+        <a href="opc-console.html">决策中枢 Console</a>
         <a href="play.html">在线试玩 Play</a>
         <a href="https://github.com/opc-studios/campus-daze">代码仓库 GitHub</a>
       </nav>
     </header>
 
-    <section class="hero workflow-hero">
-      <img class="hero-bg" src="assets/opc/promo-engine-v1.png" alt="">
+    <section class="hero workflow-hero decision-hero">
+      <img class="hero-bg" src="assets/opc/promo-engine-v1.png" alt="学术喵站在控制台前观察由多个产品与内容节点组成的运营网络">
       <div class="hero-inner">
-        <p class="kicker">IP 资产 · Agent 产能 · 宣发增长 · 财务反馈</p>
-        <h1>OPC 工作流<span class="cn">OPC Workflow · Owner, Protocol, Agents and Finance Loop</span></h1>
-        <p class="hero-copy">第三学院 OPC 使用一套面向增长的生产系统开发独立游戏：人类定向、协议设计、Agent 执行、版本整合、AI 视频宣发、平台分发、市场数据和财务感知决策，并以 Third Academy Agent Hub 承载可运行的中间件入口。</p>
+        <p class="kicker">ONE PERSON · ONE ACCOUNT · THREE NODES · ONE OPERATING SYSTEM</p>
+        <h1>让 Token 像资本一样，<br>流向最有价值的 IP<span class="cn">OPC Portfolio Decision & Operating System</span></h1>
+        <p class="hero-copy">第三学院 OPC 是一家 AI 原生 IP 资产运营公司。人类主理人确定长期方向，决策 Agent 在多个 IP、游戏与玩法之间配置算力、时间和预算，三台 Codex 工作节点通过统一数据中枢完成策划、生产、部署、市场与财务循环。</p>
         <div class="hero-actions">
-          <a class="button primary" href="opc-console.html">进入 OPC 控制台 Console</a>
-          <a class="button" href="#middleware">查看中间件架构 Middleware</a>
+          <a class="button primary" href="#allocation">查看今日资源配置</a>
+          <a class="button" href="opc-console.html">进入决策与订单中枢</a>
+        </div>
+        <div class="operating-facts" aria-label="OPC 运行结构">
+          <article><strong>1</strong><span>Human Owner<br>最终责任人</span></article>
+          <article><strong>1</strong><span>Codex Account<br>统一运行身份</span></article>
+          <article><strong>3</strong><span>Work Nodes<br>物理工作节点</span></article>
+          <article><strong>N</strong><span>IP Assets<br>可扩展资产组合</span></article>
+          <article><strong>1</strong><span>Agent Hub<br>公司数据中枢</span></article>
         </div>
       </div>
     </section>
 
     <main>
-      <section class="band">
-        <div class="inner">
-          <div class="section-head">
-            <div>
-              <p class="section-label">增长闭环 Growth Loop</p>
-              <h2>一人公司通过 Agent 网络获得持续生产、宣发和复盘能力。<span class="en">An OPC gains production, campaign and feedback capacity through Agents.</span></h2>
-            </div>
-            <p>主理人保留方向和质量判断，Agent 承担可规模化的生产与分发任务，合作伙伴可以在内容、测试、渠道和商业判断上贡献价值。</p>
-          </div>
-          <div class="loop-board" aria-label="OPC 闭环工作流">
-            <article class="loop-node accent"><b>1. 主理人定向 Owner Direction</b><span>IP 命题、审美、预算、风险边界、产品里程碑和验收标准。</span></article>
-            <article class="loop-node"><b>2. 协议设计 Protocol Design</b><span>任务契约、提示词规则、文件边界、素材规格、API 形态和测试关卡。</span></article>
-            <article class="loop-node"><b>3. Agent 生产 Agent Production</b><span>策划、叙事、概念图、精灵、地图、代码、音频、测试和文档。</span></article>
-            <article class="loop-node"><b>4. 版本整合 Integration Build</b><span>合并资产、连接系统、检查质量，形成可展示、可试玩、可传播的网页版本。</span></article>
-            <article class="loop-node"><b>5. 体验评估 Experience Review</b><span>主理人与协作者评估手感、可读性、趣味性、公共质量和品牌契合度。</span></article>
-            <article class="loop-node"><b>6. AI 宣发 AI Campaign</b><span>生成预告片、短视频、封面、文案变体和发布包。</span></article>
-            <article class="loop-node"><b>7. Agent 分发 Agent Distribution</b><span>在主理人监督下，为小红书等平台准备差异化发布队列。</span></article>
-            <article class="loop-node accent"><b>8. 市场与财务 Market & Finance</b><span>流量、留存、评论、转化、成本、营收信号和产品组合决策回到主理人。</span></article>
-          </div>
+      <section class="public-demo-disclosure" aria-label="模拟演示说明">
+        <div>
+          <b>DEMO · 模拟经营演示</b>
+          <span>页面中的资源权重、订单编号、执行时间、节点负载、财务金额和反馈统计用于说明 OPC 的运作机制，不代表真实经营结果；“学术喵”及其游戏、章节、角色与视觉资产属于当前项目内容。</span>
         </div>
       </section>
 
-      <section class="band alt" id="middleware">
+      <section class="band portfolio-strategy">
         <div class="inner">
           <div class="section-head">
             <div>
-              <p class="section-label">OPC 中间件 OPC Middleware</p>
-              <h2>Third Academy Agent Hub 把公司工作流沉淀为可执行的操作层。<span class="en">Third Academy Agent Hub turns company workflow into an executable operating layer.</span></h2>
+              <p class="section-label">公司定位 Company Thesis</p>
+              <h2>OPC 经营的不是一款游戏，而是一组持续增值的 IP 资产。<span class="en">The OPC operates a compounding portfolio of IP assets, not a single game.</span></h2>
             </div>
-            <p>控制台把目标、协议、Agent、工具调用、验收、宣发、财务和复盘放在同一张运行面板中，帮助合作方理解公司如何持续把创意转化为产品资产和市场信号。</p>
+            <p>游戏只是 IP 价值的一种载体。玩法、章节、活动、视频、实体周边、授权与社群关系都会进入同一套资产账本，接受持续投资、验证、扩张或止损。</p>
           </div>
-          <div class="middleware-grid">
-            <article class="middleware-panel">
-              <p class="section-label">控制台入口 Console Entry</p>
-              <h3>主理人用一个面板管理产品周期。<span class="en">The owner manages product cycles from one panel.</span></h3>
-              <p>每个周期以业务目标开始，进入任务协议、Agent 编排、MCP 工具调用、人工验收、AI 宣发、平台分发和财务复盘，最终回到下一轮产品组合决策。</p>
-              <div class="hero-actions">
-                <a class="button dark" href="opc-console.html">打开 Agent Hub</a>
-                <a class="button light" href="opc-products.html">查看 IP 产品</a>
+
+          <div class="company-thesis-grid">
+            <article><em>01</em><b>IP 资产运营</b><span>管理原创世界、角色、故事和品牌识别，形成长期可复用资产。</span></article>
+            <article><em>02</em><b>AI 生产系统</b><span>策划、代码、美术、测试、部署与内容 Agent 按工作订单执行。</span></article>
+            <article><em>03</em><b>组合投资决策</b><span>把 Token、注意力、现金与渠道配置到回报最高的资产线。</span></article>
+            <article><em>04</em><b>市场反馈系统</b><span>玩家、客户、平台与营收信号持续回流下一轮决策。</span></article>
+          </div>
+
+          <div class="portfolio-system">
+            <div class="portfolio-tree" aria-label="第三学院 OPC IP 资产树">
+              <header>
+                <span class="tree-status active">ACTIVE PORTFOLIO</span>
+                <h3>IP-01 · 学术喵</h3>
+                <p>围绕学习、成长与守护建立的校园幻想 IP。</p>
+              </header>
+              <div class="portfolio-branches">
+                <article class="portfolio-branch primary">
+                  <small>GAME · 当前生产线</small>
+                  <b>樱花同济篇</b>
+                  <span>主线章节 · 角色战斗 · 多人体验 · 校园探索</span>
+                </article>
+                <article class="portfolio-branch">
+                  <small>CHAPTER · 验证线</small>
+                  <b>远洋逐梦篇</b>
+                  <span>海洋科考 · 深海探索 · 新章节与新玩法</span>
+                </article>
+                <article class="portfolio-branch">
+                  <small>GROWTH · 增长线</small>
+                  <b>校庆、角色 PV 与周边</b>
+                  <span>120 周年内容 · 手办 · 毛绒 · 视频与授权</span>
+                </article>
               </div>
+            </div>
+            <aside class="portfolio-pipeline">
+              <article><span class="tree-status incubation">INCUBATION</span><b>IP-02 · 孵化中</b><p>以低成本概念验证判断世界观、角色和玩法潜力。</p></article>
+              <article><span class="tree-status reserve">RESERVE</span><b>IP-03 · 战略储备</b><p>只保留命题、资产种子和启动条件，不提前消耗生产预算。</p></article>
+              <div class="resource-pool">
+                <small>SHARED CAPITAL POOL</small>
+                <span>Codex Token</span><span>Human Attention</span><span>Cash Budget</span><span>Channel Reach</span>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="band dark allocation-band" id="allocation">
+        <div class="inner">
+          <div class="section-head">
+            <div>
+              <p class="section-label">决策 Agent Decision Agent</p>
+              <h2>决策 Agent 是 OPC 的投资委员会。<span class="en">The Decision Agent acts as the portfolio investment committee.</span></h2>
+            </div>
+            <p>它不直接制作产品，而是读取产品、市场、财务和风险信号，向主理人提交当天的组合投资建议，再由数据中枢生成可执行工作订单。</p>
+          </div>
+
+          <div class="decision-system">
+            <div class="decision-inputs">
+              <p class="decision-caption">输入信号 Decision Inputs</p>
+              <div class="decision-input-grid">
+                <article><b>产品成熟度</b><span>版本质量、关键缺口、复用资产</span></article>
+                <article><b>玩家需求</b><span>问题频次、情绪、建议与留存</span></article>
+                <article><b>市场势能</b><span>内容表现、渠道反馈、合作线索</span></article>
+                <article><b>财务效率</b><span>Token、工具成本、收入与现金流</span></article>
+                <article><b>战略价值</b><span>IP 一致性、长期扩展与差异化</span></article>
+                <article><b>风险边界</b><span>安全、品牌、依赖与人工审批</span></article>
+              </div>
+              <div class="owner-gate"><strong>Human Owner Gate</strong><span>主理人批准方向、预算上限、停止条件与对外发布边界。</span></div>
+            </div>
+
+            <div class="allocation-board">
+              <header><div><small>TODAY · ALLOCATION MODEL</small><b>今日组合配置</b></div><span>结构示意</span></header>
+              <div class="allocation-lanes">
+                <article style="--allocation:48%"><div><b>主生产线</b><span>樱花同济篇 · 版本与核心体验</span></div><i><em>48</em></i></article>
+                <article style="--allocation:22%"><div><b>验证线</b><span>远洋逐梦篇 · 章节与玩法试验</span></div><i><em>22</em></i></article>
+                <article style="--allocation:18%"><div><b>增长线</b><span>宣发、反馈与周边产品</span></div><i><em>18</em></i></article>
+                <article style="--allocation:12%"><div><b>战略预留</b><span>QA、修复与突发机会</span></div><i><em>12</em></i></article>
+              </div>
+              <div class="decision-output">
+                <small>输出 Decision Pack</small>
+                <span>IP / 游戏 / 玩法</span><span>优先级</span><span>预算上限</span><span>验收标准</span><span>停止条件</span>
+              </div>
+              <a class="console-inline-link" href="opc-console.html">在决策中枢查看组合与订单 →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="hub">
+        <div class="inner">
+          <div class="section-head">
+            <div>
+              <p class="section-label">公司操作系统 Agent Hub</p>
+              <h2>数据中枢是公司的长期记忆，Agent 是可替换的执行能力。<span class="en">The hub is the company memory; agents are replaceable execution capacity.</span></h2>
+            </div>
+            <p>Agent 之间不直接传递任务。所有角色从同一个中枢读取工作订单、提交交付物与证据，并由状态机、审批门和调度器决定下一步。</p>
+          </div>
+
+          <div class="hub-architecture" aria-label="Third Academy Agent Hub 数据中枢架构">
+            <div class="hub-column hub-sources">
+              <p>INPUT SIGNALS</p>
+              <article><b>人类方向</b><span>价值、审美、边界</span></article>
+              <article><b>产品数据</b><span>版本、QA、资产</span></article>
+              <article><b>市场与客户</b><span>传播、评论、建议</span></article>
+              <article><b>财务信号</b><span>消耗、营收、现金流</span></article>
+            </div>
+
+            <div class="hub-center">
+              <div class="hub-agent-row">
+                <span>决策 Agent</span><span>策划 Agent</span><span>财务 Agent</span>
+              </div>
+              <div class="hub-core">
+                <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
+                <small>THIRD ACADEMY</small>
+                <strong>Agent Hub</strong>
+                <span>Portfolio · Orders · Evidence · Approval</span>
+              </div>
+              <div class="hub-agent-row">
+                <span>生产 Agent</span><span>QA / 部署 Agent</span><span>市场 Agent</span>
+              </div>
+            </div>
+
+            <div class="hub-column hub-ledgers">
+              <p>CONTROL & LEDGERS</p>
+              <article><b>Portfolio Registry</b><span>IP、游戏与玩法资产树</span></article>
+              <article><b>Work Order Queue</b><span>任务、预算、依赖与负责人</span></article>
+              <article><b>Asset & Signal Ledger</b><span>资产、市场、财务与反馈</span></article>
+              <article><b>Approval & Audit</b><span>审批、证据、历史与责任</span></article>
+            </div>
+          </div>
+          <div class="hub-principle"><b>唯一事实源 Single Source of Truth</b><span>页面是给人看的操作界面；MCP / API、队列与数据库才是 Agent 读取和写入状态的正式接口。</span></div>
+        </div>
+      </section>
+
+      <section class="band mist node-band">
+        <div class="inner">
+          <div class="section-head">
+            <div>
+              <p class="section-label">三节点运行 Three-Node Operation</p>
+              <h2>三台电脑提供物理并行，一个账户保持统一身份。<span class="en">Three computers provide physical parallelism under one operating identity.</span></h2>
+            </div>
+            <p>三台电脑并不依赖聊天记录互相理解工作，而是依赖同一数据中枢、项目仓库、角色 Skill 与工作订单获得一致上下文。</p>
+          </div>
+
+          <div class="node-architecture">
+            <article class="work-node strategy-node">
+              <header><em>A</em><div><small>STRATEGY & CONTROL</small><b>控制塔节点</b></div><span>LAN CORE</span></header>
+              <p>长期在线，保管中枢状态并生成组合决策。</p>
+              <ul><li>数据中枢与调度器</li><li>决策 Agent</li><li>财务 Agent</li><li>人类审批入口</li></ul>
+              <footer>权限：全局读取 · 有限写入 · 关键审批</footer>
             </article>
-            <div class="ops-strip" aria-label="OPC 中间件运行层">
-              <article><b>Protocol Registry</b><span>任务边界、验收标准、预算、素材规格和发布口径。</span></article>
-              <article><b>Agent Runner</b><span>Codex 类 Agent 读取仓库、调用 MCP 工具并产出版本资产。</span></article>
-              <article><b>Asset Ledger</b><span>代码、图像、视频、文档、测试报告和发布包持续沉淀。</span></article>
-              <article><b>Market Ledger</b><span>小红书等平台的内容表现、评论洞察和合作线索进入增长面板。</span></article>
-              <article><b>Finance Loop</b><span>模型消耗、工具成本、托管、宣发投入、营收假设和现金流周期回流决策。</span></article>
-            </div>
+            <article class="work-node production-node">
+              <header><em>B</em><div><small>PRODUCT STUDIO</small><b>生产工厂节点</b></div><span>WORKSPACE</span></header>
+              <p>领取已批准订单，组织专业子 Agent 生产和验证资产。</p>
+              <ul><li>策划与生产总 Agent</li><li>代码 / 美术 / 内容 subagent</li><li>QA、构建与版本证据</li><li>隔离工作区与仓库</li></ul>
+              <footer>权限：项目写入 · 测试 · 构建</footer>
+            </article>
+            <article class="work-node market-node">
+              <header><em>C</em><div><small>MARKET & RELEASE</small><b>市场发布节点</b></div><span>PUBLIC EDGE</span></header>
+              <p>把已验收资产转化为发布、宣发、反馈与商业信号。</p>
+              <ul><li>部署与发布 Agent</li><li>宣发与周边设计</li><li>玩家反馈与客户关系</li><li>有限公网和平台接口</li></ul>
+              <footer>权限：公开资产 · 受控外部访问</footer>
+            </article>
           </div>
+          <div class="node-hub-rail"><span>NODE A</span><i></i><b>Third Academy Agent Hub</b><i></i><span>NODE B</span><i></i><span>NODE C</span></div>
         </div>
       </section>
 
-      <section class="band dark">
+      <section class="band dark daily-cycle-band">
         <div class="inner">
           <div class="section-head">
             <div>
-              <p class="section-label">Agent 系统 Agent System</p>
-              <h2>每个 Agent 都服务于明确的公司资产目标。<span class="en">Each Agent serves a clear company asset goal.</span></h2>
+              <p class="section-label">每日循环 Daily Operating Cycle</p>
+              <h2>每天从信号开始，以新的投资判断结束。<span class="en">Every day begins with signals and ends with a new capital decision.</span></h2>
             </div>
-            <p>资产目标让内容、美术、代码、测试、宣发和财务分析可以并行推进，并在主理人审阅后进入下一轮增长。</p>
+            <p>定时任务只负责唤醒相应角色。订单状态、实际消耗、交付证据和人工审批全部沉淀在中枢，不依赖某个 Agent 永久在线。</p>
           </div>
-          <div class="tabs" role="tablist" aria-label="Agent 工作流角色">
-            <button class="tab" type="button" role="tab" aria-selected="true" data-tab="production"><span class="dual-label">生产 Agent<small>Production</small></span></button>
-            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="validation"><span class="dual-label">体验评估<small>Review</small></span></button>
-            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="campaign"><span class="dual-label">宣发 Agent<small>Campaign</small></span></button>
-            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="finance"><span class="dual-label">财务反馈<small>Finance</small></span></button>
+          <div class="daily-timeline">
+            <article><time>08:00</time><b>数据汇总</b><span>市场、玩家、产品与财务信号进入账本。</span></article>
+            <article><time>08:30</time><b>组合决策</b><span>决策 Agent 提交今日配置与停止条件。</span></article>
+            <article><time>09:00</time><b>人类批准</b><span>主理人确认方向、预算和高风险动作。</span></article>
+            <article><time>09:10</time><b>订单生成</b><span>中枢按角色、优先级和依赖创建队列。</span></article>
+            <article><time>DAY</time><b>生产与 QA</b><span>工作节点领取、执行、测试并提交证据。</span></article>
+            <article><time>RELEASE</time><b>部署与宣发</b><span>通过验收的资产进入发布与市场节点。</span></article>
+            <article><time>23:00</time><b>财务复盘</b><span>消耗、收入和客户信号返回下一轮决策。</span></article>
           </div>
-          <section class="tab-panel active" role="tabpanel" data-panel="production">
-            <div>
-              <h3>生产 Agent 扩大内容和技术产能。<span class="en">Production Agents scale content and technology capacity.</span></h3>
-              <p>它们把协议转化为概念图、精灵表、地图、UI、服务端功能、对话、数据文件、测试报告和部署说明，持续增加可复用资产。</p>
-            </div>
-            <div class="agent-list">
-              <span>策划 Agent Planning - 产品方向、功能范围和里程碑切片</span>
-              <span>美术 Agent Art - 主视觉、角色资产、地图、UI 素材和未来轮廓</span>
-              <span>代码 Agent Code - Phaser 前端、Python 后端、同步逻辑和部署检查</span>
-              <span>测试 Agent QA - 语法检查、浏览器检查、多人验证和问题报告</span>
-            </div>
-          </section>
-          <section class="tab-panel" role="tabpanel" data-panel="validation">
-            <div>
-              <h3>体验评估提升产品质感和合作信心。<span class="en">Experience review improves product quality and partner confidence.</span></h3>
-              <p>主理人与精选协作者测试游戏、判断情绪质量、审阅公开资产，并形成面向下一轮版本和宣发的改进建议。</p>
-            </div>
-            <div class="agent-list">
-              <span>试玩 Playtest - 移动、战斗手感、可读性、新手体验和多人体验</span>
-              <span>监督 Supervision - 安全、品牌契合、准确性、受众语气和发布风险</span>
-              <span>创意审阅 Creative Review - IP 一致性、故事质量、视觉完成度和伙伴反馈</span>
-              <span>决策 Decision - 继续、修改、公开、投入、合作或转向</span>
-            </div>
-          </section>
-          <section class="tab-panel" role="tabpanel" data-panel="campaign">
-            <div>
-              <h3>宣发 Agent 把版本转化为可传播内容。<span class="en">Campaign Agents turn builds into shareable content.</span></h3>
-              <p>工作室已经跑通 AI 视频创作与 Agent 辅助分发路线，可为小红书等短视频和图文平台准备差异化内容版本。</p>
-            </div>
-            <div class="agent-list">
-              <span>视频 Agent Video - 预告片脚本、分镜、AI 片段、切条和封面帧</span>
-              <span>文案 Agent Copy - 平台标题、钩子变体、开发日志和合作邀约</span>
-              <span>分发 Agent Distribution - 在主理人审核下发布小红书等平台内容</span>
-              <span>洞察 Agent Insight - 评论、互动、受众问题和宣发总结</span>
-            </div>
-          </section>
-          <section class="tab-panel" role="tabpanel" data-panel="finance">
-            <div>
-              <h3>财务反馈让增长更可持续。<span class="en">Finance feedback makes growth more sustainable.</span></h3>
-              <p>宣发成本、素材成本、基础设施成本、转化信号和商业化假设会进入下一轮产品、预算和合作决策。</p>
-            </div>
-            <div class="agent-list">
-              <span>成本追踪 Cost - 算力、工具、宣发资产、托管和外部协作需求</span>
-              <span>营收信号 Revenue - 试玩意愿、付费测试、赞助、授权或投资兴趣</span>
-              <span>组合分配 Portfolio - 扩展当前 IP、测试未来轮廓或收缩范围</span>
-              <span>现金流逻辑 Runway - 将每个周期转化为可衡量的资源配置决策</span>
-            </div>
-          </section>
         </div>
       </section>
 
-      <section class="band agent-orchestration">
+      <section class="band order-protocol-band">
         <div class="inner">
           <div class="section-head">
             <div>
-              <p class="section-label">三 Agent 编排 Three-Agent Orchestration</p>
-              <h2>三个主 Agent 通过协议交接，构成自动工作循环。<span class="en">Three principal agents form an automated operating loop.</span></h2>
+              <p class="section-label">工作订单 Work Order</p>
+              <h2>Agent 领取的不是一句提示词，而是一份可验收的业务订单。<span class="en">Agents claim reviewable business orders, not loose prompts.</span></h2>
             </div>
-            <p>策划负责定义价值与验收，生产负责组织专业子 Agent 交付，市场负责验证传播、财务与客户关系；所有交接都使用同一份可追踪任务信封。</p>
+            <p>订单把资本决策转化为边界清楚、可暂停、可重试、可审计的执行单元，也让人类可以在任何阶段介入。</p>
           </div>
-          <div class="orchestration-flow">
-            <article><em>01</em><b>策划 Agent</b><p>读取主理人目标、客户反馈与财务信号，输出 Product Brief、优先级、预算上限和验收标准。</p><small>输入：目标 / 反馈 / 财务<br>输出：brief.v1 + acceptance.json</small></article>
-            <i>brief.v1 →</i>
-            <article><em>02</em><b>生产 Agent</b><p>拆分任务并编排美术、代码、测试等 subagent，聚合资产、构建版本与 QA 证据。</p><small>子集：Art / Code / QA / Content<br>输出：build.v1 + qa-report.json</small></article>
-            <i>release.v1 →</i>
-            <article><em>03</em><b>市场 Agent</b><p>编排宣发、财务、市场关系 subagent，发布内容、读取财务报表并结构化客户反馈。</p><small>子集：Campaign / Finance / CRM<br>输出：market-signal.json</small></article>
+          <div class="order-protocol-layout">
+            <article class="sample-order">
+              <header><div><small>WO-2026-0714-003</small><b>远洋逐梦篇 · 海上移动玩法验证</b></div><span class="order-status ready">READY</span></header>
+              <dl>
+                <div><dt>所属资产</dt><dd>学术喵 / 远洋逐梦篇 / 玩法验证</dd></div>
+                <div><dt>负责角色</dt><dd>生产 Agent · Code / QA subagent</dd></div>
+                <div><dt>预算上限</dt><dd>计算预算 12 单位 · 最多 2 次重试</dd></div>
+                <div><dt>交付物</dt><dd>可运行原型、测试证据、风险清单</dd></div>
+                <div><dt>审批门</dt><dd>进入公开版本前必须由主理人验收</dd></div>
+              </dl>
+            </article>
+            <div class="order-contract">
+              <div class="status-machine" aria-label="工作订单状态机">
+                <span>DRAFT</span><i>→</i><span>APPROVED</span><i>→</i><span class="active">READY</span><i>→</i><span>CLAIMED</span><i>→</i><span>RUNNING</span><i>→</i><span>REVIEW</span><i>→</i><span>ACCEPTED</span><i>→</i><span>PUBLISHED</span><i>→</i><span>MEASURED</span>
+              </div>
+              <code>{ portfolio_id, ip_id, product_id, work_order_id, assigned_role, objective, inputs[], deliverables[], budget_cap, dependencies[], acceptance[], evidence[], approval_gate, status, retry_policy, next_check_at }</code>
+              <p>遇到阻塞时进入 <b>BLOCKED</b> 或 <b>RETRY</b>，而不是把不完整结果继续传递给下一角色。</p>
+            </div>
           </div>
-          <div class="protocol-contract">
-            <b>统一接口协议 Workflow Envelope v1</b>
-            <code>{ cycle_id, objective, inputs[], deliverables[], owner, budget_cap, acceptance[], evidence[], status, next_agent }</code>
-            <span>状态门：DRAFT → READY → RUNNING → REVIEW → ACCEPTED；失败返回 issue_code、evidence 与 retry_policy，市场信号自动回流下一轮策划。</span>
+          <div class="demo-case-flow">
+            <header><span>SIMULATED CASE · FB-2035 → WO-0714-006</span><b>模拟案例：一条客户反馈如何变成下一轮产品投资</b></header>
+            <div>
+              <article><em>01</em><b>反馈进入台账</b><span>多位体验者提出“移动端首次进入时按钮偏多”。</span></article>
+              <article><em>02</em><b>信号归因</b><span>客户关系 Agent 将问题归类为网站体验与新手引导。</span></article>
+              <article><em>03</em><b>决策评分</b><span>决策 Agent 综合用户价值、修改成本和 IP 影响给出高优先级。</span></article>
+              <article><em>04</em><b>订单执行</b><span>中枢生成 WO-0714-006，由生产节点收敛首屏入口并提交测试证据。</span></article>
+              <article><em>05</em><b>人类验收</b><span>主理人检查移动端效果、品牌表达和公开发布风险。</span></article>
+              <article><em>06</em><b>发布与复盘</b><span>市场节点部署版本，新的体验数据与成本重新进入组合决策。</span></article>
+            </div>
           </div>
-          <div class="loop-ribbon"><span>客户反馈</span><i>→</i><span>策划决策</span><i>→</i><span>生产交付</span><i>→</i><span>市场验证</span><i>→</i><span>财务与关系信号</span><i>↺</i></div>
         </div>
       </section>
 
-      <section class="band mist">
+      <section class="band alt signal-governance-band">
         <div class="inner">
           <div class="section-head">
             <div>
-              <p class="section-label">市场与财务指标 Market & Finance Metrics</p>
-              <h2>增长指标让 IP 价值、宣发效率和商业机会更清晰。<span class="en">Growth metrics clarify IP value, campaign efficiency and business opportunity.</span></h2>
+              <p class="section-label">信号回流 Signal Return</p>
+              <h2>市场、财务和客户声音共同决定下一轮投资。<span class="en">Market, finance and customer signals shape the next allocation.</span></h2>
             </div>
-            <p>每个周期都会积累产品反馈、社群兴趣、成本数据、宣发表现和潜在合作线索。</p>
+            <p>工作流页只呈现公司级摘要；财务报表、反馈提交和反馈台账继续作为专业明细页，并接入新的决策中枢。</p>
           </div>
-          <div class="metrics-grid">
-            <article class="metric"><b>产品信号 Product Signal</b><span>试玩留存、会话质量、问题数量、内容需求和多人稳定性。</span></article>
-            <article class="metric"><b>宣发信号 Campaign Signal</b><span>视频完播、收藏、评论、转发、协作者流入和平台势能。</span></article>
-            <article class="metric"><b>成本信号 Cost Signal</b><span>Agent 时间、模型消耗、资产迭代次数、托管负载和测试成本。</span></article>
-            <article class="metric"><b>营收信号 Revenue Signal</b><span>Demo 兴趣、赞助匹配、付费内容潜力、授权和投资沟通。</span></article>
+          <div class="signal-source-grid">
+            <a href="opc-finance-report.html"><small>FINANCE LEDGER</small><b>财务确认与现金流</b><span>支付、应收、到账、异常与下一轮预算建议。</span><em>打开财务报表 →</em></a>
+            <a href="opc-customer-feedback.html"><small>FEEDBACK INTAKE</small><b>客户反馈入口</b><span>收集正面反馈、问题和优化建议。</span><em>提交客户反馈 →</em></a>
+            <a href="opc-feedback-records.html"><small>FEEDBACK LEDGER</small><b>客户反馈管理台账</b><span>分类、优先级、负责人、状态与闭环结果。</span><em>查看反馈台账 →</em></a>
+            <a href="opc-console.html"><small>DECISION HUB</small><b>决策与订单中枢</b><span>把信号转成组合判断、工作订单和审批事项。</span><em>进入中枢 →</em></a>
           </div>
-        </div>
-      </section>
 
-      <section class="band alt">
-        <div class="inner feature-split">
-          <figure class="feature-media">
-            <img src="assets/opc/growth-workflow-v2.png" alt="Agent 资产生产、市场反馈和财务复盘增长循环">
-          </figure>
-          <div class="feature-body">
-            <p class="section-label">增长工作流 Growth Workflow</p>
-            <h2>每一次发布都会扩大 IP 的可见度和合作半径。<span class="en">Every release expands IP visibility and partnership reach.</span></h2>
-            <p>公开发布、AI 视频、试玩会话和协作者反馈会形成结构化信号。Agent 汇总信号，主理人做产品组合决策，下一轮协议再更新版本、宣发或预算。</p>
-            <div class="meta-list">
-              <div class="meta-item"><b>视频创作 Video Creation</b><span>预告片、短视频切条、封面帧和开发日志剪辑。</span></div>
-              <div class="meta-item"><b>平台分发 Platform Distribution</b><span>小红书等平台的差异化内容版本和受监督发布队列。</span></div>
-              <div class="meta-item"><b>洞察捕获 Insight Capture</b><span>评论、收藏、转发、用户问题和合作兴趣。</span></div>
-              <div class="meta-item"><b>财务复盘 Finance Review</b><span>成本、转化、现金流周期和机会评估。</span></div>
+          <div class="governance-block">
+            <div><p class="section-label">人类治理 Human Governance</p><h3>Agent 扩大产能，人类保留意义、边界与最终责任。</h3></div>
+            <div class="approval-gates">
+              <article><b>资本配置</b><span>新 IP、大额预算和主生产线切换</span></article>
+              <article><b>公开发布</b><span>正式版本、宣发内容和玩家回应</span></article>
+              <article><b>资金行为</b><span>付款、退款、采购、授权与报价</span></article>
+              <article><b>品牌与安全</b><span>敏感数据、账号权限和高风险操作</span></article>
             </div>
           </div>
         </div>
       </section>
     </main>
 
-    <section class="contact-band">
+    <section class="contact-band workflow-cta">
       <div class="contact-inner">
         <div>
-          <h2>原创 IP、Agent 产能和市场反馈正在形成同一个增长系统。<span class="en">Original IP, Agent capacity and market feedback form one growth system.</span></h2>
-          <p>第三学院 OPC 以小型组织承载更大的生产弹性，为协作者、渠道伙伴和早期投资观察提供清晰入口。</p>
+          <p class="section-label">FROM STRATEGY TO OPERATIONS</p>
+          <h2>从公司工作流进入可交互的决策与订单数据中枢。<span class="en">Move from the company narrative into the interactive control plane.</span></h2>
+          <p>查看今日资源配置、IP 组合、工作订单、三节点负载、审批队列以及财务与客户信号。</p>
         </div>
         <div class="contact-actions">
-          <a class="button primary" href="opc-console.html">OPC 控制台 Console</a>
-          <a class="button" href="opc-products.html">查看产品 Products</a>
+          <a class="button primary" href="opc-console.html">打开决策中枢 Console</a>
+          <a class="button" href="opc-products.html">查看 IP 资产 Products</a>
         </div>
       </div>
     </section>
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <span>第三学院 OPC · OPC 工作流</span>
+        <span>第三学院 OPC · Portfolio Decision & Operating System</span>
         <div class="footer-links">
           <a href="opc.html">公司 Company</a>
           <a href="opc-products.html">产品 Products</a>
-          <a href="opc-console.html">控制台 Console</a>
+          <a href="opc-console.html">决策中枢 Console</a>
           <a href="play.html">试玩 Play</a>
         </div>
       </div>

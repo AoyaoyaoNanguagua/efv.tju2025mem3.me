@@ -39,6 +39,7 @@ class CharacterSaveTests(unittest.TestCase):
 
     def test_all_five_characters_can_fill_the_roster(self):
         expected = ["lina", "ayu", "zhixia", "laodeng", "jiangxun"]
+        expected_names = ["莉娜", "阿宇", "知夏", "老登", "江寻"]
         for slot, character_id in enumerate(expected):
             status, body = SERVER.handle_character_create(
                 self.user, {"characterId": character_id}
@@ -46,6 +47,13 @@ class CharacterSaveTests(unittest.TestCase):
             self.assertEqual(status, 200)
             self.assertEqual(body["slot"], slot)
             self.assertEqual(self.select(slot)["characterId"], character_id)
+            self.assertEqual(self.select(slot)["name"], expected_names[slot])
+
+        with SERVER.db() as conn:
+            nickname = conn.execute(
+                "SELECT nickname FROM users WHERE id = ?", (self.user["id"],)
+            ).fetchone()["nickname"]
+        self.assertEqual(nickname, "Save Test")
 
         status, body = SERVER.handle_character_create(
             self.user, {"characterId": "lina"}
