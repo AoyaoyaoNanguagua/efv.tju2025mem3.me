@@ -2,21 +2,21 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
 const assets = [
-  "assets/game/enemies/animated/ch1-m03-garden-patrol-atlas-v3.png",
-  "assets/game/enemies/animated/ch1-m03-moon-orchid-rare-sheet-v3.png",
-  "assets/game/enemies/animated/ch1-m03-carnivora-boss-sheet-v3.png",
-  "assets/game/enemies/animated/ch1-m04-quantum-family-atlas-v2.png",
-  "assets/game/enemies/animated/ch1-m04-blockchain-family-atlas-v3.png",
-  "assets/game/enemies/animated/ch1-m04-aiagent-family-atlas-v3.png",
-  "assets/game/bosses/m04-structural-instability-boss-sheet-v2.png"
+  ["assets/game/enemies/animated/ch1-m03-garden-patrol-atlas-v3.png", 1176, 1176],
+  ["assets/game/enemies/animated/ch1-m03-moon-orchid-rare-sheet-v3.png", 1176, 1176],
+  ["assets/game/enemies/animated/ch1-m03-carnivora-boss-sheet-v3.png", 1176, 1176],
+  ["assets/game/enemies/animated/ch1-m04-quantum-family-atlas-v2.png", 1176, 1176],
+  ["assets/game/enemies/animated/ch1-m04-blockchain-family-atlas-v3.png", 1176, 1176],
+  ["assets/game/enemies/animated/ch1-m04-aiagent-family-atlas-v3.png", 1176, 1176],
+  ["assets/game/bosses/m04-structural-instability-boss-sheet-v3-hd.png", 1792, 2304]
 ];
 
-for (const asset of assets) {
+for (const [asset, width, height] of assets) {
   assert.ok(existsSync(asset), `missing ${asset}`);
   const png = readFileSync(asset);
   assert.equal(png.toString("ascii", 1, 4), "PNG", `${asset} must be PNG`);
-  assert.equal(png.readUInt32BE(16), 1176, `${asset} width`);
-  assert.equal(png.readUInt32BE(20), 1176, `${asset} height`);
+  assert.equal(png.readUInt32BE(16), width, `${asset} width`);
+  assert.equal(png.readUInt32BE(20), height, `${asset} height`);
   assert.equal(png[25], 6, `${asset} must be RGBA`);
 }
 
@@ -35,7 +35,8 @@ assert.match(play, /phase: "awaitingProfessor"/);
 assert.match(play, /if \(this\.bossSprite\) this\.tweens\.killTweensOf\(this\.bossSprite\);/);
 assert.match(play, /updateProfessorWaveProximity\(\)/);
 assert.doesNotMatch(play, /delayedCall\(900, \(\) => this\.beginBossWaveSequence/);
-assert.match(play, /phase: "final"[^\n]+maxHp: 1800, hp: 1800/);
+assert.match(play, /const finalBossMaxHp = Math\.round\(1800 \* 3 \* finalDifficulty\.health\)/);
+assert.match(play, /baseHealthMultiplier: 3/);
 assert.match(play, /const finalBoss = this\.spawnLeafSlime\(\{/);
 assert.match(play, /终极大机器人已在陆教授所在位置完成加载/);
 assert.match(play, /return finalBoss;/);
@@ -43,7 +44,14 @@ assert.match(play, /app\.boss\.phase === "final"[\s\S]+`终局 \$\{hpText\}`/);
 assert.match(play, /slime\.hp <= slime\.maxHp \* 0\.55/);
 assert.match(play, /triggerStructuralBossTransform/);
 assert.match(play, /getEnemyDifficultyScale/);
-assert.match(play, /healthStep = rank === "boss" \? 0\.75/);
+assert.match(play, /health: 1 \+ extra \* 0\.75/);
+assert.match(play, /damage: 1 \+ extra \* 0\.10/);
+assert.match(play, /beginStructuralBossChargingPhase/);
+assert.match(play, /spawnStructuralBossChargers/);
+assert.match(play, /STRUCTURAL_CHARGE_INTERVAL_MS = 10000/);
+assert.match(play, /enterStructuralBossPhaseThree/);
+assert.match(play, /STRUCTURAL_FIRE_PATH_DELAY_MS = 5000/);
+assert.match(play, /STRUCTURAL_PURSUIT_STUN_MS = 3000/);
 assert.match(play, /action === "enemySkill"/);
 assert.match(server, /"enemySkill"/);
 assert.match(server, /"transform"/);

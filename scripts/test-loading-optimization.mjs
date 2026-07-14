@@ -29,6 +29,12 @@ assert.doesNotMatch(html, /id="chatToggleButton"/);
 assert.doesNotMatch(html, /id="reconnectButton"/);
 assert.match(overrides, /\.boss-panel\.m04-text-only/);
 assert.match(overrides, /background: transparent;/);
+assert.match(overrides, /grid-template-columns: repeat\(3, 40px\)/);
+assert.match(overrides, /grid-template-rows: repeat\(2, 36px\)/);
+assert.match(play, /prepareCinematicMapTransition\(node\)/);
+assert.match(play, /ensureChapterEndCinematicReady\(\)/);
+assert.match(play, /setMapLoadingProgress\(100, "动画与新地图已就绪"\)/);
+assert.match(html, /p1boss-end\.mp4\?v=20260714-4k-faststart-v2/);
 
 const mapAssetPaths = map => [
   map.background,
@@ -50,8 +56,18 @@ assert.ok(m1Bytes < 4 * 1024 * 1024, `M1 map payload must stay below 4 MiB, got 
 assert.ok(m1Paths.some(assetPath => /minimap-runtime-v1\.webp$/.test(assetPath)));
 assert.ok(Object.values(registry.maps).flatMap(mapAssetPaths).filter(path => /background|foreground|chunks/.test(path)).every(path => /\.(webp|jpg)$/.test(path)));
 
+const cinematicPath = "assets/cg/p1boss-end.mp4";
+assert.ok(statSync(cinematicPath).size > 150 * 1024 * 1024, "4K ending CG must be included in the full build");
+const videoHeader = readFileSync(cinematicPath).subarray(0, 256 * 1024);
+const moovOffset = videoHeader.indexOf(Buffer.from("moov"));
+const mdatOffset = videoHeader.indexOf(Buffer.from("mdat"));
+assert.ok(moovOffset >= 0 && mdatOffset >= 0 && moovOffset < mdatOffset, "ending CG must keep fast-start metadata before media data");
+assert.equal(registry.maps.ch1_m04_library_lawn_boss.interactionNodes.find(node => node.id === "ch1_m04_node_completion").cinematicBeforeTransition, true);
+
 assert.match(server, /max-age=2592000, immutable/);
 assert.match(server, /if-none-match/);
+assert.match(server, /content-range/);
+assert.match(server, /status = 206/);
 assert.match(apache, /image\/webp/);
 assert.match(apache, /max-age=2592000, immutable/);
 assert.ok(existsSync("dict/legacy-assets-20260713-loading-audit/assets"));

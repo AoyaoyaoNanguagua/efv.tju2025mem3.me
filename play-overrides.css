@@ -124,6 +124,88 @@
   }
 }
 
+/* Compact public-channel dock: two rows of three icon buttons. Descriptions
+   are exposed through the shared in-game tooltip instead of permanent labels. */
+@media (min-width: 761px) {
+  .bottom-dock,
+  .bottom-dock:has(.public-chat.collapsed) {
+    grid-template-columns: minmax(0, 1fr) 132px;
+    gap: 6px;
+    width: min(790px, calc(100vw - 32px));
+    padding: 0 4px 4px;
+  }
+
+  .bottom-dock .public-chat {
+    grid-template-rows: auto minmax(22px, 1fr) auto;
+    min-height: 104px;
+    height: 104px;
+    max-height: 112px;
+    padding: 5px 7px 4px;
+  }
+
+  .bottom-dock .chat-head {
+    min-height: 18px;
+  }
+
+  .bottom-dock .chat-messages {
+    max-height: 30px;
+    margin-top: 1px;
+  }
+
+  .bottom-dock .chat-form {
+    margin-top: 2px;
+  }
+
+  .bottom-dock .quickbar {
+    display: grid;
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(2, 36px);
+    justify-content: center;
+    align-content: center;
+    gap: 4px;
+    width: 132px;
+    min-height: 78px;
+    padding: 2px;
+  }
+
+  .bottom-dock .quickbar button {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    place-items: center;
+    min-width: 36px;
+    min-height: 34px;
+    padding: 0;
+  }
+
+  .bottom-dock .quickbar button::before {
+    width: 28px;
+    height: 28px;
+  }
+
+  .bottom-dock .quickbar button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bottom-dock .quickbar button small {
+    left: 24px;
+    bottom: -1px;
+  }
+}
+
+@media (max-width: 760px) {
+  html.touch-ui .bottom-dock .quickbar,
+  .bottom-dock .quickbar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 /* M04 uses a compact text-only encounter progress indicator. */
 .boss-panel.m04-text-only {
   display: block;

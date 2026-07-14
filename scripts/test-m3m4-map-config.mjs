@@ -6,6 +6,7 @@ const m1 = registry.maps.ch1_m01_classroom_spawn;
 const m2 = registry.maps.ch1_m02_prompt_archive;
 const m3 = registry.maps.ch1_m03_agent_lab;
 const m4 = registry.maps.ch1_m04_library_lawn_boss;
+const m5 = registry.maps.ch1_m05_sakura_tongji_avenue;
 
 const classroomDesks = m1.props.filter(prop => /^m01_desk_/.test(prop.id));
 assert.equal(classroomDesks.length, 12);
@@ -70,4 +71,17 @@ assert.equal(m4.foregroundOverlays.length, 0);
 assert.ok(m4.encounters.some(encounter => encounter.id === "ch1_m04_final_boss"));
 assert.match(m4.minimapImage.path, /structural-lab-minimap-v1\.jpg$/);
 
-console.log("M3/M4 map configuration passed");
+const m4ToM5 = m4.interactionNodes.find(node => node.id === "ch1_m04_node_completion");
+assert.equal(m4ToM5.type, "teleport");
+assert.equal(m4ToM5.visual, "transferArray");
+assert.equal(m4ToM5.cinematicBeforeTransition, true);
+assert.equal(m4ToM5.targetMapId, m5.id);
+assert.equal(m5.title, "樱花同济大道");
+assert.equal(m5.background.width, 1536);
+assert.equal(m5.background.height, 2928);
+assert.match(m5.background.path, /sakura-tongji-avenue-v2\.webp$/);
+assert.ok(m5.spawn.y > 2700, "M5 player must enter from the south transfer array");
+assert.equal(m5.disableDefaultEnemies, true);
+assert.deepEqual(m5.npcs, [], "pedestrians are baked into the art and must not create collision bodies");
+
+console.log("M3/M4/M5 map configuration passed");

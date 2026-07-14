@@ -129,6 +129,44 @@ class CombatEffectSyncTests(unittest.TestCase):
         self.assertEqual(event["shieldSpent"], 11)
         self.assertFalse(event["down"])
 
+    def test_structural_boss_phase_events_keep_multiplayer_payload(self):
+        SERVER.handle_combat_event(
+            self.client,
+            {
+                "event": {
+                    "action": "structuralBossDash",
+                    "mapId": "ch1_m01_classroom_spawn",
+                    "enemyId": "structural-final-boss",
+                    "damage": 64,
+                    "points": [{"x": 640, "y": 720}, {"x": 920, "y": 760}],
+                }
+            },
+        )
+        event = self.broadcasts[-1][1]["event"]
+        self.assertEqual(event["action"], "structuralBossDash")
+        self.assertEqual(event["damage"], 64)
+        self.assertEqual(len(event["points"]), 2)
+
+        SERVER.handle_enemy_state(
+            self.client,
+            {
+                "enemy": {
+                    "id": "structural-final-boss",
+                    "mapId": "ch1_m01_classroom_spawn",
+                    "state": "charging",
+                    "bossForm": 2,
+                    "bossPhase": "charging",
+                    "bossCharger": False,
+                    "hp": 1000,
+                    "maxHp": 2000,
+                }
+            },
+        )
+        enemy = self.broadcasts[-1][1]["enemy"]
+        self.assertEqual(enemy["bossPhase"], "charging")
+        self.assertEqual(enemy["bossForm"], 2)
+        self.assertFalse(enemy["bossCharger"])
+
     def test_client_has_remote_replay_paths_for_every_combat_visual(self):
         source = (ROOT / "play.js").read_text(encoding="utf-8")
         for action in (
@@ -140,8 +178,11 @@ class CombatEffectSyncTests(unittest.TestCase):
             "berserk",
             "laodengShockwave",
             "laodengFireExplosion",
+            "physicalImpactBurst",
             "levelUp",
             "enemySkill",
+            "structuralChargeAoe",
+            "structuralBossDash",
             "playerStatus",
         ):
             self.assertIn(f'event.action === "{action}"', source, action)
@@ -150,8 +191,70 @@ class CombatEffectSyncTests(unittest.TestCase):
         self.assertIn("const damageTaken = Math.max(0, previousHp - nextHp)", source)
         self.assertIn("const shieldSpent = Math.max(0, previousShield - nextShield)", source)
         self.assertIn("slime.body.pushable = false", source)
+        self.assertIn("this.actorLeafSlimeCollider = null", source)
+        self.assertIn("Players and enemies intentionally have no mutual physics contact", source)
+        self.assertNotIn("this.physics.add.collider(this.actor, this.leafSlimes", source)
+        self.assertNotIn("this.physics.add.overlap(\n        this.actor,\n        this.leafSlimes", source)
         self.assertIn("if (options.knockback && slime.rank !== \"boss\"", source)
         self.assertIn("if (projectile.knockbackForce > 0", source)
+        self.assertIn("triggerProjectileImpactAoe(projectile, primaryTarget)", source)
+        self.assertIn("createSwordWaveVisual(x, y, rotation, depth)", source)
+        self.assertIn("setScale(0.66, 0.13)", source)
+        self.assertIn("lineTo(146, 0)", source)
+        self.assertIn("impactAoeRadius: JIANGXUN_BARRAGE_AOE_RADIUS", source)
+        self.assertIn("impactAoeRadius: AYU_SWORD_WAVE_AOE_RADIUS", source)
+        self.assertIn("allowComboHit: !!projectile.allowComboHit", source)
+        self.assertIn("ZHIXIA_ULTIMATE_CHAIN_DURATION = 1500", source)
+        self.assertIn("ZHIXIA_ULTIMATE_CHAIN_INTERVAL = 250", source)
+        self.assertIn("ZHIXIA_ULTIMATE_CHAIN_HOP_INTERVAL = 42", source)
+        self.assertIn("index * ZHIXIA_ULTIMATE_CHAIN_HOP_INTERVAL", source)
+        self.assertIn("ZHIXIA_PROJECTILE_CAST_OFFSET = 86", source)
+        self.assertIn("ZHIXIA_PROJECTILE_SPEED = 1080", source)
+        self.assertIn("speed: ZHIXIA_PROJECTILE_SPEED", source)
+        self.assertIn('app.profile.characterId === "zhixia"', source)
+        self.assertIn("ZHIXIA_ULTIMATE_CHAIN_REFRACTIONS = 3", source)
+        self.assertIn("startZhixiaUltimateAftershock(aftershockSeeds", source)
+        self.assertIn("lightningChainPulse(pulseIndex = 0)", source)
+        self.assertIn("beginStructuralBossChargingPhase(slime", source)
+        self.assertIn("spawnStructuralBossChargers(slime)", source)
+        self.assertIn("enterStructuralBossPhaseThree(slime", source)
+        self.assertIn("STRUCTURAL_CHARGE_INTERVAL_MS = 10000", source)
+        self.assertIn("STRUCTURAL_FIRE_PATH_DELAY_MS = 5000", source)
+        self.assertIn("STRUCTURAL_PURSUIT_STUN_MS = 3000", source)
+
+    def test_secondary_explosion_and_chain_metadata_are_forwarded(self):
+        for event in (
+            {
+                "action": "physicalImpactBurst",
+                "mapId": "ch1_m01_classroom_spawn",
+                "x": 720,
+                "y": 735,
+                "radius": 84,
+                "color": 0xF0BB62,
+                "comboIndex": 2,
+            },
+            {
+                "action": "chainLightning",
+                "mapId": "ch1_m01_classroom_spawn",
+                "secondary": True,
+                "pulse": 4,
+                "points": [
+                    {"x": 720, "y": 735},
+                    {"x": 780, "y": 720},
+                    {"x": 840, "y": 742},
+                    {"x": 900, "y": 710},
+                    {"x": 960, "y": 735},
+                ],
+            },
+        ):
+            SERVER.handle_combat_event(self.client, {"event": event})
+        burst = self.broadcasts[-2][1]["event"]
+        chain = self.broadcasts[-1][1]["event"]
+        self.assertEqual(burst["radius"], 84)
+        self.assertEqual(burst["comboIndex"], 2)
+        self.assertTrue(chain["secondary"])
+        self.assertEqual(chain["pulse"], 4)
+        self.assertEqual(len(chain["points"]), 5)
 
 
 if __name__ == "__main__":

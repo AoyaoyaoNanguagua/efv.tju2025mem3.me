@@ -6,7 +6,7 @@
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="play.css?v=20260712-assets-cinematic-v13">
-  <link rel="stylesheet" href="play-overrides.css?v=20260714-hud-collision-v9">
+  <link rel="stylesheet" href="play-overrides.css?v=20260714-sakura-boss-ui-v10">
 </head>
 <body>
   <main class="play-shell">
@@ -289,12 +289,12 @@
         </section>
 
         <nav class="quickbar" aria-label="快捷操作">
-          <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest"><small>T</small><span>任务</span></button>
-          <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map"><small>M</small><span>地图</span></button>
-          <button id="inventoryToggleButton" type="button" data-icon="inventory"><small>I</small><span>背包</span></button>
-          <button id="musicToggle" type="button" data-icon="music"><small>B</small><span>音乐</span></button>
-          <button id="fullscreenButton" type="button" data-icon="fullscreen"><small>F</small><span>全屏</span></button>
-          <button id="exitButton" type="button" data-icon="exit"><small>Esc</small><span>退出</span></button>
+          <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest" data-tooltip-title="任务" data-tooltip-description="打开或收起第一章任务进度。" aria-label="任务"><small>T</small><span>任务</span></button>
+          <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map" data-tooltip-title="地图" data-tooltip-description="打开或收起当前区域导航地图。" aria-label="地图"><small>M</small><span>地图</span></button>
+          <button id="inventoryToggleButton" type="button" data-icon="inventory" data-tooltip-title="背包" data-tooltip-description="查看装备、材料和任务掉落物。" aria-label="背包"><small>I</small><span>背包</span></button>
+          <button id="musicToggle" type="button" data-icon="music" data-tooltip-title="音乐" data-tooltip-description="开启或关闭当前区域背景音乐。" aria-label="音乐"><small>B</small><span>音乐</span></button>
+          <button id="fullscreenButton" type="button" data-icon="fullscreen" data-tooltip-title="全屏" data-tooltip-description="切换全屏游戏显示。" aria-label="全屏"><small>F</small><span>全屏</span></button>
+          <button id="exitButton" type="button" data-icon="exit" data-tooltip-title="退出" data-tooltip-description="退出当前角色并返回登录界面。" aria-label="退出"><small>Esc</small><span>退出</span></button>
         </nav>
       </div>
 
@@ -321,7 +321,7 @@
       </section>
 
       <section id="chapterEndCinematic" class="chapter-end-cinematic" aria-label="第一章结章动画" aria-hidden="true">
-        <video id="chapterEndVideo" src="assets/cg/p1boss-end.mp4?v=20260712-v1" preload="metadata" playsinline></video>
+        <video id="chapterEndVideo" src="assets/cg/p1boss-end.mp4?v=20260714-4k-faststart-v2" preload="metadata" playsinline></video>
         <button id="chapterEndReplayButton" class="chapter-end-replay" type="button" hidden>播放结章动画</button>
         <button id="chapterEndSkipButton" class="chapter-end-skip" type="button">跳过</button>
       </section>
@@ -362,6 +362,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-  <script src="play.js?v=20260714-hud-collision-v4"></script>
+    <script src="play.js?v=20260714-sakura-three-phase-v14"></script>
 </body>
 </html>

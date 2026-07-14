@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260714-hud-collision-v3`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260714-sakura-safe-pedestrians-v6`;
   const CHAPTER_END_CINEMATIC_PATH = "assets/cg/p1boss-end.mp4";
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
@@ -141,8 +141,17 @@
   const LINA_HEAL_CHAIN_SHIELD_MULTIPLIER = 0.65;
   const LINA_HEAL_CHAIN_HOLD_MS = 250;
   const AYU_SWORD_WAVE_RANGE = MAP_TILE_SIZE * 5.6;
+  const AYU_SWORD_WAVE_AOE_RADIUS = 112;
+  const AYU_SWORD_WAVE_AOE_MULTIPLIER = 0.38;
   const ZHIXIA_LIGHTNING_RANGE = MAP_TILE_SIZE * 7;
   const ZHIXIA_LIGHTNING_REFRACT_RANGE = MAP_TILE_SIZE * 5;
+  const ZHIXIA_PROJECTILE_CAST_OFFSET = 86;
+  const ZHIXIA_PROJECTILE_SPEED = 1080;
+  const ZHIXIA_ULTIMATE_CHAIN_DURATION = 1500;
+  const ZHIXIA_ULTIMATE_CHAIN_INTERVAL = 250;
+  const ZHIXIA_ULTIMATE_CHAIN_HOP_INTERVAL = 42;
+  const ZHIXIA_ULTIMATE_CHAIN_REFRACTIONS = 3;
+  const ZHIXIA_ULTIMATE_CHAIN_DAMAGE_MULTIPLIER = 0.36;
   const LIGHTNING_SPARK_TEXTURE_KEY = "play-lightning-spark";
   const LIGHTNING_MOTE_TEXTURE_KEY = "play-lightning-mote";
   const LIGHTNING_RIBBON_TEXTURE_KEY = "play-lightning-ribbon";
@@ -153,6 +162,8 @@
   const LAODENG_BERSERK_DAMAGE_MULTIPLIER = 1.5;
   const JIANGXUN_BARRAGE_ARROWS = 15;
   const JIANGXUN_BARRAGE_SPREAD = Phaser.Math.DegToRad(30);
+  const JIANGXUN_BARRAGE_AOE_RADIUS = 84;
+  const JIANGXUN_BARRAGE_AOE_MULTIPLIER = 0.32;
   const LEAF_SLIME_SHEET = "assets/game/enemies/animated/leaf-poring-sprites-v2.png";
   const LEAF_SLIME_KEY = "play-leaf-slime";
   const LEAF_SLIME_FRAME_SIZE = 128;
@@ -195,6 +206,10 @@
   const BOSS_KEY = "play-ai-professor-boss";
   const BOSS_IMAGE = "assets/game/bosses/ai-professor-summoner-game-cutout-v1.png";
   const BOSS_VISUAL_SCALE = 0.42;
+  const BOSS_REWARD_CHEST_KEY = "ch1-boss-reward-chest";
+  const BOSS_REWARD_CHEST_IMAGE = "assets/game/items/ch1-boss-reward-chest-sheet-v1.png";
+  const BOSS_REWARD_CHEST_FRAME_WIDTH = 192;
+  const BOSS_REWARD_CHEST_FRAME_HEIGHT = 144;
   const PROFESSOR_FLY_KEY = "ch1-ai-professor-fly";
   const PROFESSOR_FLY_IMAGE = "assets/game/characters/npcs/ai-professor-fly-v1.png";
   const PROFESSOR_FLY_VISUAL_SCALE = 0.18;
@@ -405,9 +420,9 @@
     },
     {
       key: M04_STRUCTURAL_BOSS_KEY,
-      path: "assets/game/bosses/m04-structural-instability-boss-sheet-v2.png",
-      frameWidth: 147,
-      frameHeight: 168,
+      path: "assets/game/bosses/m04-structural-instability-boss-sheet-v3-hd.png",
+      frameWidth: 224,
+      frameHeight: 256,
       archetype: "structuralBoss",
       actions: {
         move: { frames: enemyGridFrames(1, 8), frameRate: 8, repeat: -1 },
@@ -415,9 +430,9 @@
         transform: { frames: enemyGridFrames(3, 8), frameRate: 8, repeat: 0 },
         phaseMove: { frames: enemyGridFrames(4, 8), frameRate: 14, repeat: -1 },
         phaseAttack: { frames: enemyGridFrames(5, 8), frameRate: 16, repeat: 0 },
-        phaseSpecial: { frames: enemyGridFrames(5, 8), frameRate: 13, repeat: 0 },
-        hit: { frames: enemyGridFrames(6, 8, 0, 2), frameRate: 13, repeat: 0 },
-        dead: { frames: enemyGridFrames(6, 8, 2, 7), frameRate: 8, repeat: 0 }
+        phaseSpecial: { frames: enemyGridFrames(6, 8), frameRate: 15, repeat: 0 },
+        hit: { frames: enemyGridFrames(7, 8, 0, 3), frameRate: 13, repeat: 0 },
+        dead: { frames: enemyGridFrames(8, 8), frameRate: 8, repeat: 0 }
       }
     }
   ];
@@ -507,6 +522,13 @@
   const BOSS_PORTAL_EGRESS_MS = 520;
   const BOSS_PORTAL_CLOSE_MS = 260;
   const BOSS_PORTAL_STAGGER_MS = 55;
+  const STRUCTURAL_CHARGE_INTERVAL_MS = 10000;
+  const STRUCTURAL_REINFORCEMENT_INTERVAL_MS = 2200;
+  const STRUCTURAL_FIRE_PATH_DELAY_MS = 5000;
+  const STRUCTURAL_PURSUIT_STUN_MS = 3000;
+  const STRUCTURAL_PHASE3_DASH_COOLDOWN_MS = 7600;
+  const STRUCTURAL_CHARGER_GROUP = "ch1_m04_structural_chargers";
+  const STRUCTURAL_REINFORCEMENT_GROUP = "ch1_m04_structural_reinforcements";
   const PLAYER_CRIT_CHANCE = 0.16;
   const PLAYER_MAGIC_CRIT_MULTIPLIER = 2;
   const PLAYER_PHYSICAL_CRIT_MULTIPLIER = 1.5;
@@ -561,10 +583,12 @@
   const LINA_DEFAULT_STAFF_SOCKET = LINA_STAFF_CAST_SOCKETS[1];
 
   const ALL_FRAMES = [0, 1, 2, 3, 4, 5, 6, 7];
+  const AYU_WALK_FRAMES = ALL_FRAMES;
   const FOUR_FRAMES = [0, 1, 2, 3];
   const CHARGE_LOOP_FRAMES = [1, 2, 3];
   const ULTIMATE_CAST_FRAMES = [0, 1, 2, 3, 1, 2, 3];
   const SIX_FRAMES = [0, 1, 2, 3, 4, 5];
+  const ZHIXIA_WALK_FRAMES = [0, 1, 2, 4, 5, 6];
   const LINA_ATTACK_VISUAL_SCALE = 1.1;
   const ACTOR_DEFAULT_VISUAL_SCALE = 1;
   const PEER_DEFAULT_VISUAL_SCALE = 0.96;
@@ -606,7 +630,7 @@
       name: "阿宇",
       color: "#d99a4a",
       portrait: "assets/portraits/ayu-q-v2.png",
-      sprite: "assets/sprites/ayu-sprites-v17-unarmed-walk-seat-lina-edge.png",
+      sprite: "assets/sprites/ayu-sprites-v19-redrawn-walk-cat-end.png",
       baseline: 140,
       speed: 270
     },
@@ -615,7 +639,7 @@
       name: "知夏",
       color: "#66bfe8",
       portrait: "assets/portraits/zhixia.png",
-      sprite: "assets/sprites/zhixia-sprites-v6-cat-alpha.png",
+      sprite: "assets/sprites/zhixia/zhixia-sprites-final.png",
       baseline: 140,
       speed: 250
     },
@@ -624,7 +648,7 @@
       name: "老登",
       color: "#e18a52",
       portrait: "assets/portraits/laodeng-q-v2.png",
-      sprite: "assets/sprites/laodeng-sprites-v7-lina-edge.png",
+      sprite: "assets/sprites/laodeng-sprites-v9-redrawn-cat-run.png",
       baseline: 140,
       speed: 235
     },
@@ -633,7 +657,7 @@
       name: "江寻",
       color: "#68a977",
       portrait: "assets/portraits/jiangxun-q-v2.png",
-      sprite: "assets/sprites/jiangxun-sprites-v8-lina-edge.png",
+      sprite: "assets/sprites/jiangxun-sprites-v10-redrawn-cat-motion.png",
       baseline: 140,
       speed: 255
     }
@@ -1663,11 +1687,19 @@
   function showSkillTooltip(button, pinned = false) {
     const tooltip = $("#skillTooltip");
     const stage = $(".game-stage");
-    const definition = getSkillDefinition(button?.dataset.skillId);
+    const definition = button?.dataset.skillId
+      ? getSkillDefinition(button.dataset.skillId)
+      : button?.dataset.tooltipTitle
+        ? {
+            name: button.dataset.tooltipTitle,
+            key: button.querySelector("small")?.textContent || "",
+            description: button.dataset.tooltipDescription || ""
+          }
+        : null;
     if (!tooltip || !stage || !button || !definition) return;
     clearChildren(tooltip);
     const title = document.createElement("strong");
-    title.textContent = `${definition.name} · ${definition.key}`;
+    title.textContent = definition.key ? `${definition.name} · ${definition.key}` : definition.name;
     const description = document.createElement("p");
     description.textContent = definition.description;
     tooltip.append(title, description);
@@ -2594,6 +2626,14 @@
     });
   }
 
+  function setMapLoadingProgress(value, title = "") {
+    const bar = $("#mapLoadingBar");
+    const label = $("#mapLoadingTitle");
+    const percent = clamp(Math.round(Number(value) || 0), 0, 100);
+    if (bar) bar.style.width = `${percent}%`;
+    if (label && title) label.textContent = title;
+  }
+
   function hideMapLoading() {
     const overlay = $("#mapLoadingOverlay");
     const bar = $("#mapLoadingBar");
@@ -3020,7 +3060,7 @@
     }
 
     shouldPlayChapterTrack(mapId = app.profile?.mapId) {
-      return /^ch1_m0[1-4]_/.test(String(mapId || ""));
+      return /^ch1_m0[1-5]_/.test(String(mapId || ""));
     }
 
     selectGameTrack(mapId = app.profile?.mapId) {
@@ -3179,6 +3219,15 @@
       this.noise(0.18, 0.06, "lowpass", 520);
       this.tone(92, 0.22, "sawtooth", 0.05);
       window.setTimeout(() => this.tone(260, 0.08, "triangle", 0.045), 35);
+    }
+    lightningChainPulse(pulseIndex = 0) {
+      const step = Math.max(0, Number(pulseIndex) || 0) % 6;
+      const lift = step * 34;
+      this.noise(0.16, 0.032, "highpass", 1850 + lift * 5);
+      this.sweep(510 + lift, 1480 + lift * 2, 0.14, "sawtooth", 0.038);
+      this.tone(118 + lift * 0.42, 0.16, "triangle", 0.035);
+      window.setTimeout(() => this.tone(820 + lift * 1.7, 0.065, "sine", 0.03), 42);
+      window.setTimeout(() => this.noise(0.09, 0.018, "bandpass", 2600 + lift * 4), 74);
     }
     hit() {
       this.noise(0.09, 0.035, "bandpass", 1320);
@@ -3513,6 +3562,48 @@
     app.scene?.syncBoss();
   }
 
+  function ensureChapterEndCinematicReady() {
+    const video = $("#chapterEndVideo");
+    if (!video) return Promise.resolve();
+    if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+      setMapLoadingProgress(96, "4K 结章动画已就绪");
+      return Promise.resolve();
+    }
+    video.preload = "auto";
+    chapterEndCinematicState.autoPreloadRequested = true;
+    return new Promise(resolve => {
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        window.clearInterval(progressTimer);
+        window.clearTimeout(timeoutTimer);
+        ["canplay", "canplaythrough", "loadeddata", "error"].forEach(eventName => video.removeEventListener(eventName, finish));
+        setMapLoadingProgress(96, video.error ? "动画流已建立，将尝试播放" : "4K 结章动画已就绪");
+        resolve();
+      };
+      const update = () => {
+        let ratio = 0;
+        if (Number.isFinite(video.duration) && video.duration > 0 && video.buffered.length) {
+          try {
+            ratio = clamp(video.buffered.end(video.buffered.length - 1) / video.duration, 0, 1);
+          } catch {
+            ratio = 0;
+          }
+        }
+        const readyBonus = Math.max(0, Number(video.readyState) || 0) * 4;
+        const percent = clamp(24 + ratio * 62 + readyBonus, 24, 94);
+        setMapLoadingProgress(percent, `正在缓冲 4K 结章动画 · ${Math.round(percent)}%`);
+        if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) finish();
+      };
+      const progressTimer = window.setInterval(update, 220);
+      const timeoutTimer = window.setTimeout(finish, 20000);
+      ["canplay", "canplaythrough", "loadeddata", "error"].forEach(eventName => video.addEventListener(eventName, finish, { once: true }));
+      update();
+      video.load();
+    });
+  }
+
   class PlayScene extends Phaser.Scene {
     constructor() {
       super("Play");
@@ -3557,6 +3648,10 @@
       this.load.spritesheet(LEAF_SLIME_KEY, LEAF_SLIME_SHEET, {
         frameWidth: LEAF_SLIME_FRAME_SIZE,
         frameHeight: LEAF_SLIME_FRAME_SIZE
+      });
+      this.load.spritesheet(BOSS_REWARD_CHEST_KEY, BOSS_REWARD_CHEST_IMAGE, {
+        frameWidth: BOSS_REWARD_CHEST_FRAME_WIDTH,
+        frameHeight: BOSS_REWARD_CHEST_FRAME_HEIGHT
       });
       this.load.spritesheet(PROFESSOR_NPC_KEY, PROFESSOR_NPC_IMAGE, {
         frameWidth: PROFESSOR_NPC_FRAME_WIDTH,
@@ -3630,6 +3725,7 @@
       this.prepareLeafSlimeAnimations();
       this.prepareNpcAnimations();
       this.preparePortalAnimations();
+      this.prepareBossChestAnimations();
       this.ensureProjectileHitboxTexture();
       this.ensureBossChestTexture();
       this.ensureEnemySeedProjectileTexture();
@@ -4086,18 +4182,46 @@
         const marker = node.type === "teleport"
           ? this.createMapTransferArray(node)
           : this.createStaticInteractionHint(node);
+        const markerKey = node.markerImage?.key || node.markerTextureKey;
+        const isTaskPropLabel = node.type !== "teleport" && !!markerKey;
         const labelX = Number.isFinite(Number(node.labelX)) ? Number(node.labelX) : (Number(node.hintX) || node.x);
-        const labelY = Number.isFinite(Number(node.labelY)) ? Number(node.labelY) : (Number(node.hintY) || node.y) - 24;
+        const configuredLabelY = Number.isFinite(Number(node.labelY)) ? Number(node.labelY) : (Number(node.hintY) || node.y) - 24;
+        let labelY = configuredLabelY;
+        if (isTaskPropLabel && this.textures.exists(markerKey)) {
+          const source = this.textures.get(markerKey)?.getSourceImage?.();
+          const markerHeight = Math.max(1, Number(source?.height) || Number(node.hintHeight) || 38);
+          const markerScale = Math.max(0.01, Number(node.markerScale) || 0.3);
+          const markerOriginY = clamp(Number(node.markerOriginY) || 0.86, 0, 1);
+          const markerY = Number.isFinite(Number(node.hintY)) ? Number(node.hintY) : node.y;
+          const markerTopY = markerY + (Number(node.markerOffsetY) || 0) - markerHeight * markerScale * markerOriginY;
+          labelY = Math.min(configuredLabelY, markerTopY - 10);
+        }
+        const labelStyle = isTaskPropLabel
+          ? {
+              fontFamily: "Microsoft YaHei, sans-serif",
+              fontSize: "13px",
+              fontStyle: "700",
+              color: "#111111",
+              stroke: "#ffffff",
+              strokeThickness: 4,
+              padding: { x: 2, y: 1 }
+            }
+          : {
+              fontFamily: "Microsoft YaHei, sans-serif",
+              fontSize: "12px",
+              fontStyle: "700",
+              color: "#30263d",
+              backgroundColor: "rgba(255,255,255,.78)",
+              padding: { x: 6, y: 3 }
+            };
+        const labelDepth = isTaskPropLabel
+          ? Math.max(Number(node.labelDepth) || 0, Number(marker?.depth) || 0, Number(node.y) + 8) + 160
+          : Number(node.labelDepth) || labelY + 8;
         const label = node.showLabel === false
           ? null
-          : this.add.text(labelX, labelY, node.label || "交互", {
-            fontFamily: "Microsoft YaHei, sans-serif",
-            fontSize: "12px",
-            fontStyle: "700",
-            color: "#30263d",
-            backgroundColor: "rgba(255,255,255,.78)",
-            padding: { x: 6, y: 3 }
-          }).setOrigin(0.5, 1).setDepth(Number(node.labelDepth) || labelY + 8);
+          : this.add.text(labelX, labelY, node.label || "交互", labelStyle)
+            .setOrigin(0.5, 1)
+            .setDepth(labelDepth);
         this.interactionMarkers.push({ node, marker, label });
       });
       this.refreshInteractionMarkerVisibility();
@@ -4279,6 +4403,10 @@
         return;
       }
       if (node.type === "teleport") {
+        if (node.cinematicBeforeTransition) {
+          this.prepareCinematicMapTransition(node);
+          return;
+        }
         this.transitionToMap(node);
         return;
       }
@@ -4308,10 +4436,34 @@
         qty: 1,
         source: "chapter_boss"
       });
-      this.bossChest.setVisible(false).setActive(false);
+      this.bossChestOpened = true;
+      this.bossChestExpiresAt = this.time.now + WORLD_DROP_TTL_MS;
+      this.bossChest.body.enable = false;
+      this.bossChest.play("ch1-boss-chest-open", true);
       claimBossReward();
       renderInteractionPrompt("");
       renderMinimap(this);
+      showToast("Boss 宝箱已开启，将与普通掉落物一样在 5 分钟后消失");
+    }
+
+    updateBossChest(time) {
+      if (!this.bossChest?.visible || !this.bossChestOpened || !this.bossChestExpiresAt) return;
+      const remaining = this.bossChestExpiresAt - time;
+      if (remaining <= 0) {
+        this.tweens.add({
+          targets: this.bossChest,
+          alpha: 0,
+          y: this.bossChest.y - 18,
+          duration: 360,
+          ease: "Cubic.easeIn",
+          onComplete: () => this.bossChest?.setVisible(false).setActive(false)
+        });
+        this.bossChestExpiresAt = 0;
+        return;
+      }
+      if (remaining <= WORLD_DROP_BLINK_MS) {
+        this.bossChest.setAlpha(Math.floor(time / 180) % 2 ? 0.36 : 1);
+      }
     }
 
     getEncounter(id) {
@@ -4383,10 +4535,16 @@
         texture?.setFilter?.(Phaser.Textures.FilterMode.NEAREST);
         ACTIONS.forEach(action => {
           const key = `${character.id}-${action.id}`;
+          let actionFrames = this.makeActionFrames(character.id, action);
+          if (character.id === "ayu" && action.id === "walk") {
+            actionFrames = AYU_WALK_FRAMES.map(column => ({ key: character.id, frame: action.row * COLS + column }));
+          } else if (character.id === "zhixia" && action.id === "walk") {
+            actionFrames = ZHIXIA_WALK_FRAMES.map(column => ({ key: character.id, frame: action.row * COLS + column }));
+          }
           if (!this.anims.exists(key)) {
             this.anims.create({
               key,
-              frames: this.makeActionFrames(character.id, action),
+              frames: actionFrames,
               frameRate: Math.max(1, action.fps * ANIMATION_SPEED_FACTOR),
               repeat: action.repeat
             });
@@ -4395,7 +4553,7 @@
           if (!this.anims.exists(onceKey)) {
             this.anims.create({
               key: onceKey,
-              frames: this.makeActionFrames(character.id, action),
+              frames: actionFrames,
               frameRate: Math.max(1, action.fps * ANIMATION_SPEED_FACTOR),
               repeat: 0
             });
@@ -4564,6 +4722,28 @@
           repeat: -1
         });
       });
+    }
+
+    prepareBossChestAnimations() {
+      if (!this.textures.exists(BOSS_REWARD_CHEST_KEY)) return;
+      this.textures.get(BOSS_REWARD_CHEST_KEY)?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
+      if (!this.anims.exists("ch1-boss-chest-closed")) {
+        this.anims.create({
+          key: "ch1-boss-chest-closed",
+          frames: this.anims.generateFrameNumbers(BOSS_REWARD_CHEST_KEY, { start: 0, end: 3 }),
+          frameRate: 3,
+          repeat: -1,
+          yoyo: true
+        });
+      }
+      if (!this.anims.exists("ch1-boss-chest-open")) {
+        this.anims.create({
+          key: "ch1-boss-chest-open",
+          frames: this.anims.generateFrameNumbers(BOSS_REWARD_CHEST_KEY, { start: 4, end: 7 }),
+          frameRate: 7,
+          repeat: 0
+        });
+      }
     }
 
     ensureProjectileHitboxTexture() {
@@ -5316,6 +5496,7 @@
       this.projectiles?.children?.each(projectile => this.destroyProjectile(projectile, false));
       this.enemyProjectiles?.clear(true, true);
       this.leafSlimes?.children?.each(slime => {
+        this.clearStructuralBossPhaseVisuals?.(slime);
         slime.shadow?.destroy();
         slime.hpBg?.destroy();
         slime.hpFrame?.destroy();
@@ -5328,6 +5509,8 @@
       (this.bossPortals || []).forEach(item => item?.portal?.destroy());
       this.bossPortals = [];
       this.bossChest?.setVisible(false).setActive(false);
+      this.bossChestOpened = false;
+      this.bossChestExpiresAt = 0;
       this.bossSprite?.setVisible(false).setActive(false);
       syncBossState({ ...BOSS });
     }
@@ -5479,6 +5662,34 @@
       });
     }
 
+    prepareCinematicMapTransition(node) {
+      const targetMapId = node.targetMapId || this.getCurrentMapId();
+      const maps = this.getChapterMapRegistry();
+      if (!maps[targetMapId] || this.mapTransitioning || app.cinematicActive) return;
+      this.mapTransitioning = true;
+      this.isActionLocked = true;
+      this.actor?.body?.setVelocity(0, 0);
+      showMapLoading("正在准备 4K 结章动画与樱花同济大道");
+      setMapLoadingProgress(12, "正在预载樱花同济大道 · 12%");
+      Promise.all([
+        this.ensureMapAssetsLoaded(targetMapId),
+        ensureChapterEndCinematicReady()
+      ]).then(() => {
+        setMapLoadingProgress(100, "动画与新地图已就绪");
+        hideMapLoading();
+        this.mapTransitioning = false;
+        window.setTimeout(() => {
+          playChapterEndCinematic(() => this.transitionToMap({ ...node, cinematicBeforeTransition: false }));
+        }, 230);
+      }).catch(error => {
+        console.error("Cinematic transition preload failed", error);
+        this.mapTransitioning = false;
+        this.isActionLocked = false;
+        hideMapLoading();
+        showToast("结章动画或樱花大道资源加载失败，请稍后重试传送阵");
+      });
+    }
+
     createBoss() {
       this.bossSprite = this.physics.add.image(0, 0, BOSS_KEY)
         .setOrigin(0.5, 0.72)
@@ -5488,14 +5699,16 @@
         .setDepth(0);
       this.bossSprite.body.setAllowGravity(false);
       this.bossSprite.body.setImmovable(true);
-      this.bossChest = this.physics.add.image(0, 0, "play-boss-chest")
+      this.bossChest = this.physics.add.sprite(0, 0, BOSS_REWARD_CHEST_KEY, 0)
         .setOrigin(0.5, 0.82)
-        .setScale(1.05)
+        .setScale(0.74)
         .setVisible(false)
         .setActive(false)
         .setDepth(0);
       this.bossChest.body.setAllowGravity(false);
       this.bossChest.body.setImmovable(true);
+      this.bossChestOpened = false;
+      this.bossChestExpiresAt = 0;
       this.ensureBossPortalTextures();
     }
 
@@ -5721,6 +5934,7 @@
           tint: unit.tint,
           scale: unit.scale,
           maxHp: unit.maxHp,
+          baseHealthMultiplier: this.getCurrentMapId() === M04_MAP_ID ? 2 : 1,
           damage: unit.damage,
           creditDefense: unit.creditDefense,
           rewardExp: unit.rewardExp,
@@ -5763,7 +5977,9 @@
       const x = 3135 * scale;
       const y = 650 * scale;
       this.professorDeparted = true;
-      const finalState = { ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: 1800, hp: 1800, summonsRemaining: 1 };
+      const finalDifficulty = this.getEnemyDifficultyScale("boss");
+      const finalBossMaxHp = Math.round(1800 * 3 * finalDifficulty.health);
+      const finalState = { ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: finalBossMaxHp, hp: finalBossMaxHp, summonsRemaining: 1 };
       syncBossState(finalState);
       if (app.connected) app.multiplayer?.sendBossStart(finalState);
       const finalBoss = this.spawnLeafSlime({
@@ -5775,8 +5991,9 @@
         staticImage: false,
         rank: "boss",
         label: "结构失稳聚合体",
-        scale: 1.9,
+        scale: 1.35,
         maxHp: 1800,
+        baseHealthMultiplier: 3,
         damage: 24,
         creditDefense: 10,
         rewardExp: 160,
@@ -5787,9 +6004,9 @@
         wanderSpeed: 24,
         chaseSpeed: 42,
         aggroRange: 820,
-        bodyWidth: 108,
-        bodyHeight: 72,
-        hudOffsetY: -292,
+        bodyWidth: 126,
+        bodyHeight: 82,
+        hudOffsetY: -330,
         broadcast: app.connected
       });
       if (!finalBoss) {
@@ -5907,9 +6124,16 @@
       this.bossSprite?.setVisible(false).setActive(false);
       this.bossChest
         ?.setPosition(chestX, chestY)
+        .setTexture(BOSS_REWARD_CHEST_KEY, 0)
+        .setScale(0.74)
+        .setAlpha(1)
         .setVisible(true)
         .setActive(true)
         .setDepth(chestY + 16);
+      if (this.bossChest?.body) this.bossChest.body.enable = true;
+      this.bossChestOpened = false;
+      this.bossChestExpiresAt = 0;
+      this.bossChest?.play("ch1-boss-chest-closed", true);
       syncBossState({ ...app.boss, active: false, hp: 0, phase: "chest", chestReady: true });
       showToast("召唤物已清除，Boss 宝箱出现了");
       renderMinimap(this);
@@ -6189,6 +6413,11 @@
 
     getEncounterPartySize() {
       if (!app.connected) return 1;
+      if (this.getCurrentMapId() === M04_MAP_ID && currentM04Session()?.active) {
+        const ids = new Set((currentM04Session().memberIds || []).map(String).filter(Boolean));
+        if (app.profile?.id) ids.add(String(app.profile.id));
+        return clamp(ids.size || 1, 1, 5);
+      }
       const activeRemoteCount = Array.from(this.remotePlayers?.values?.() || [])
         .filter(remote => remote?.sprite?.active && !remote.down).length;
       return clamp(1 + activeRemoteCount, 1, 6);
@@ -6198,6 +6427,14 @@
       if (networkSynced) return { partySize: 1, health: 1, damage: 1, hazards: 0 };
       const partySize = this.getEncounterPartySize();
       const extra = partySize - 1;
+      if (this.getCurrentMapId() === M04_MAP_ID) {
+        return {
+          partySize,
+          health: 1 + extra * 0.75,
+          damage: 1 + extra * 0.10,
+          hazards: Math.min(3, extra)
+        };
+      }
       const healthStep = rank === "boss" ? 0.75 : ["rare", "elite"].includes(rank) ? 0.6 : 0.35;
       return {
         partySize,
@@ -6250,6 +6487,8 @@
       slime.partySizeAtSpawn = difficulty.partySize;
       slime.hazardBonus = difficulty.hazards;
       slime.bossForm = Math.max(1, Number(options.bossForm) || 1);
+      slime.bossPhase = String(options.bossPhase || (textureKey === M04_STRUCTURAL_BOSS_KEY ? "phase1" : ""));
+      slime.bossCharger = !!options.bossCharger;
       slime.transforming = false;
       slime.baseVisualScale = visualScale;
       slime.stationary = !!options.stationary;
@@ -6277,10 +6516,11 @@
       slime.wanderUntil = 0;
       const configuredMaxHp = Math.max(1, Number(options.maxHp) || Number(options.hp) || (rank === "boss" ? 1200 : rank === "rare" ? 260 : rank === "elite" ? 150 : 72));
       const mobHealthMultiplier = rank === "mob" ? 2 : 1;
-      slime.maxHp = Math.round(configuredMaxHp * mobHealthMultiplier * difficulty.health);
+      const baseHealthMultiplier = Math.max(0.1, Number(options.baseHealthMultiplier) || 1);
+      slime.maxHp = Math.round(configuredMaxHp * mobHealthMultiplier * baseHealthMultiplier * difficulty.health);
       const incomingHp = Number(options.hp);
       const currentHp = Number.isFinite(incomingHp)
-        ? incomingHp * (options.maxHp ? 1 : mobHealthMultiplier) * (options.networkSynced ? 1 : difficulty.health)
+        ? incomingHp * (options.maxHp ? 1 : mobHealthMultiplier * baseHealthMultiplier) * (options.networkSynced ? 1 : difficulty.health)
         : slime.maxHp;
       slime.hp = clamp(currentHp, 0, slime.maxHp);
       slime.damage = Math.max(1, Math.round((Number(options.damage) || (rank === "rare" ? 16 : rank === "elite" ? 12 : 8)) * difficulty.damage));
@@ -6313,9 +6553,9 @@
       slime.body.setAllowGravity(false);
       slime.body.setCollideWorldBounds(true);
       slime.body.setImmovable(slime.stationary);
-      // This Phaser build exposes `pushable` as a Body property rather than
-      // the newer setPushable() helper. Player movement must never displace an
-      // enemy; skills can still apply explicit velocity-based knockback.
+      // Contact is resolved by our symmetric overlap guard below. Keep the
+      // flag disabled as a second line of defence against accidental Arcade
+      // separation if another collider is introduced later.
       slime.body.pushable = false;
       slime.state = "move";
       slime.nextHopAt = 0;
@@ -6401,6 +6641,8 @@
           scale: visualScale,
           enemyArchetype: slime.enemyArchetype,
           bossForm: slime.bossForm,
+          bossPhase: slime.bossPhase,
+          bossCharger: slime.bossCharger,
           hazardBonus: slime.hazardBonus,
           groupId: slime.groupId,
           bossSummon: slime.isBossSummon,
@@ -6439,6 +6681,8 @@
         scale: Number(slime.scale) || undefined,
         enemyArchetype: slime.enemyArchetype || "",
         bossForm: Number(slime.bossForm) || 1,
+        bossPhase: slime.bossPhase || "",
+        bossCharger: !!slime.bossCharger,
         hazardBonus: Number(slime.hazardBonus) || 0,
         group: slime.groupId || "",
         bossSummon: !!slime.bossSummon,
@@ -6474,6 +6718,8 @@
         scale: Number(slime.baseVisualScale || slime.scaleX || 0.9),
         enemyArchetype: slime.enemyArchetype || "",
         bossForm: Math.max(1, Number(slime.bossForm) || 1),
+        bossPhase: slime.bossPhase || "",
+        bossCharger: !!slime.bossCharger,
         hazardBonus: Math.max(0, Number(slime.hazardBonus) || 0),
         groupId: slime.groupId || "",
         bossSummon: !!slime.isBossSummon,
@@ -6501,6 +6747,7 @@
       }
       if (!slime) return;
       const previousHp = Math.max(0, Number(slime.hp || 0));
+      const previousBossPhase = String(slime.bossPhase || "");
       slime.setPosition(Number(enemy.x) || slime.x, Number(enemy.y) || slime.y);
       slime.maxHp = Math.max(1, Number(enemy.maxHp || slime.maxHp || 1));
       slime.hp = clamp(Number(enemy.hp ?? slime.hp), 0, slime.maxHp);
@@ -6508,6 +6755,8 @@
       slime.groupId = enemy.groupId || slime.groupId || "";
       slime.isBossSummon = !!(enemy.bossSummon ?? slime.isBossSummon);
       slime.enemyArchetype = enemy.enemyArchetype || slime.enemyArchetype || "";
+      slime.bossPhase = String(enemy.bossPhase || slime.bossPhase || "");
+      slime.bossCharger = !!(enemy.bossCharger ?? slime.bossCharger);
       slime.hazardBonus = Math.max(0, Number(enemy.hazardBonus ?? slime.hazardBonus) || 0);
       if (enemy.state !== "transform") slime.bossForm = Math.max(1, Number(enemy.bossForm ?? slime.bossForm) || 1);
       this.refreshEnemyHpBar(slime);
@@ -6542,6 +6791,20 @@
       }
       if (enemy.state === "transform") {
         this.triggerStructuralBossTransform(slime, { network: true });
+        return;
+      }
+      if (enemy.state === "charging") {
+        if (previousBossPhase !== "charging" || !slime.energyShield?.active) {
+          slime.bossPhase = previousBossPhase;
+          this.beginStructuralBossChargingPhase(slime, { network: true });
+        }
+        return;
+      }
+      if (enemy.state === "phase3") {
+        if (previousBossPhase !== "phase3" || !slime.body?.enable) {
+          slime.bossPhase = previousBossPhase;
+          this.enterStructuralBossPhaseThree(slime, { network: true });
+        }
         return;
       }
       if (enemy.state === "attack") {
@@ -6677,6 +6940,19 @@
         });
         return;
       }
+      if (event.action === "structuralChargeAoe") {
+        const slime = this.findLeafSlime(String(event.enemyId || ""));
+        if (slime?.active) this.triggerStructuralFullMapAoe(slime, { damage: Math.max(1, Number(event.damage) || 1) });
+        return;
+      }
+      if (event.action === "structuralBossDash") {
+        const slime = this.findLeafSlime(String(event.enemyId || ""));
+        const points = (Array.isArray(event.points) ? event.points : [])
+          .slice(0, 5)
+          .map(point => ({ x: Number(point.x) || 0, y: Number(point.y) || 0 }));
+        if (slime?.active && points.length) this.startStructuralBossDash(slime, points);
+        return;
+      }
       if (remote?.sprite?.active && !remote.down) {
         const key = `${event.characterId || remote.characterId}-attack-once`;
         if (this.anims.exists(key)) remote.sprite.play(key, true);
@@ -6710,6 +6986,16 @@
         this.launchLaodengSixWayShockwaves(Number(event.x) || 0, Number(event.y) || 0, false, false);
         return;
       }
+      if (event.action === "physicalImpactBurst") {
+        this.renderPhysicalImpactBurst(
+          Number(event.x) || 0,
+          Number(event.y) || 0,
+          Math.max(32, Number(event.radius) || 72),
+          Number(event.color) || 0xf0bb62
+        );
+        app.audio.fireExplosion(Math.max(0, Number(event.comboIndex) || 0));
+        return;
+      }
       if (event.action === "berserk") {
         if (remote?.sprite?.active) {
           remote.sprite.setScale(PEER_DEFAULT_VISUAL_SCALE * LAODENG_BERSERK_SCALE);
@@ -6722,7 +7008,8 @@
         return;
       }
       if (event.action === "chainLightning") {
-        app.audio.ultimateBurst();
+        if (event.secondary) app.audio.lightningChainPulse(Number(event.pulse) || 0);
+        else app.audio.ultimateBurst();
         const points = Array.isArray(event.points) ? event.points : [];
         points.slice(1).forEach((target, index) => {
           const source = points[index];
@@ -6789,6 +7076,7 @@
       const slime = this.findLeafSlime(String(id || ""));
       if (!slime) return;
       this.syncedSlimeIds.delete(slime.slimeId);
+      this.clearStructuralBossPhaseVisuals(slime);
       slime.shadow?.destroy();
       slime.hpBg?.destroy();
       slime.hpFrame?.destroy();
@@ -6798,9 +7086,11 @@
     }
 
     bindActorLeafSlimeCollision() {
-      if (!this.actor || !this.leafSlimes) return;
       this.actorLeafSlimeCollider?.destroy?.();
-      this.actorLeafSlimeCollider = this.physics.add.collider(this.actor, this.leafSlimes);
+      // Players and enemies intentionally have no mutual physics contact.
+      // Combat continues to use explicit range/hit tests, so both sides can
+      // pass through one another without pushing or creating a soft lock.
+      this.actorLeafSlimeCollider = null;
     }
 
     playLoop(actionId) {
@@ -7023,7 +7313,7 @@
           kind: "magic",
           color: 0x73d9ff,
           damage: Number(app.profile.magicPower || 22),
-          speed: 820,
+          speed: ZHIXIA_PROJECTILE_SPEED,
           maxDistance: MAP_TILE_SIZE * 7,
           visualType: "lightningOrb"
         }));
@@ -7114,7 +7404,12 @@
           speed: 760,
           piercing: true,
           noEnergyGain: true,
+          allowComboHit: true,
           knockbackForce: 185,
+          impactAoeRadius: AYU_SWORD_WAVE_AOE_RADIUS,
+          impactAoeMultiplier: AYU_SWORD_WAVE_AOE_MULTIPLIER,
+          impactAoeColor: 0x8fd8ff,
+          impactAoeComboIndex: roundIndex,
           visualType: "swordWave",
           audioType: "sword"
         }));
@@ -7138,6 +7433,7 @@
       this.actor.body.setVelocity(0, 0);
       this.actor.play("zhixia-attack-once", true);
       const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
+      const aftershockSeeds = [];
       this.broadcastCombatEvent("zhixiaUltimate", {
         x: this.actor.x,
         y: this.actor.y - 42,
@@ -7150,15 +7446,117 @@
           if (!this.actor?.active || this.isDead) return;
           const x = this.actor.x + aim.x * MAP_TILE_SIZE * index;
           const y = this.actor.y - 42 + aim.y * MAP_TILE_SIZE * index;
-          this.strikeLightning(x, y, Math.round(Number(app.profile.magicPower || 22) * 1.15), 92);
+          const hits = this.strikeLightning(x, y, Math.round(Number(app.profile.magicPower || 22) * 1.15), 92);
+          if (hits.length) aftershockSeeds.push({ x, y });
         });
       }
       app.audio.ultimateWind();
+      this.time.delayedCall(1180, () => {
+        if (!this.actor?.active || this.isDead) return;
+        this.startZhixiaUltimateAftershock(aftershockSeeds, {
+          x: this.actor.x + aim.x * MAP_TILE_SIZE * 5,
+          y: this.actor.y - 42 + aim.y * MAP_TILE_SIZE * 5
+        });
+      });
       this.time.delayedCall(1220, () => {
         this.isCasting = false;
         this.isActionLocked = false;
         this.returnToBaseLoop();
       });
+    }
+
+    startZhixiaUltimateAftershock(seedPoints, fallbackPoint) {
+      const seeds = (Array.isArray(seedPoints) ? seedPoints : [])
+        .filter(point => Number.isFinite(point?.x) && Number.isFinite(point?.y));
+      if (!seeds.length) return;
+      const pulseCount = Math.max(1, Math.floor(ZHIXIA_ULTIMATE_CHAIN_DURATION / ZHIXIA_ULTIMATE_CHAIN_INTERVAL));
+      for (let pulse = 0; pulse < pulseCount; pulse += 1) {
+        this.time.delayedCall(pulse * ZHIXIA_ULTIMATE_CHAIN_INTERVAL, () => {
+          if (!this.actor?.active || this.isDead) return;
+          this.triggerZhixiaUltimateAftershockPulse(seeds, pulse, fallbackPoint);
+        });
+      }
+    }
+
+    triggerZhixiaUltimateAftershockPulse(seedPoints, pulse, fallbackPoint) {
+      const activeEnemies = (this.leafSlimes?.getChildren?.() || [])
+        .filter(slime => slime?.active && !["dead", "vanish", "emerging", "transform"].includes(slime.state));
+      if (!activeEnemies.length) return;
+      const seed = seedPoints[pulse % seedPoints.length] || fallbackPoint;
+      const first = activeEnemies
+        .map(slime => ({
+          slime,
+          distance: Phaser.Math.Distance.Between(seed.x, seed.y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y)
+        }))
+        .filter(item => item.distance <= ZHIXIA_LIGHTNING_REFRACT_RANGE)
+        .sort((a, b) => a.distance - b.distance)[0]?.slime;
+      if (!first) return;
+
+      const chain = [first];
+      const visited = new Set(chain);
+      while (chain.length < ZHIXIA_ULTIMATE_CHAIN_REFRACTIONS + 1) {
+        const current = chain[chain.length - 1];
+        const next = activeEnemies
+          .filter(slime => !visited.has(slime))
+          .map(slime => ({
+            slime,
+            distance: Phaser.Math.Distance.Between(
+              current.x,
+              current.y + LEAF_SLIME_HIT_OFFSET_Y,
+              slime.x,
+              slime.y + LEAF_SLIME_HIT_OFFSET_Y
+            )
+          }))
+          .filter(item => item.distance <= ZHIXIA_LIGHTNING_REFRACT_RANGE)
+          .sort((a, b) => a.distance - b.distance)[0]?.slime;
+        if (!next) break;
+        visited.add(next);
+        chain.push(next);
+      }
+
+      const points = [seed, ...chain.map(slime => ({ x: slime.x, y: slime.y + LEAF_SLIME_HIT_OFFSET_Y }))];
+      // Keep the promised three visible refractions even when fewer than four
+      // enemies remain. Empty bounces arc into the floor and deal no damage.
+      while (points.length < ZHIXIA_ULTIMATE_CHAIN_REFRACTIONS + 2) {
+        const previous = points[points.length - 1];
+        const angle = pulse * 0.83 + points.length * 1.71;
+        const distance = 72 + points.length * 9;
+        points.push({
+          x: clamp(previous.x + Math.cos(angle) * distance, 36, this.worldWidth - 36),
+          y: clamp(previous.y + Math.sin(angle) * distance * 0.56, 48, this.worldHeight - 48)
+        });
+      }
+      this.broadcastCombatEvent("chainLightning", {
+        x: seed.x,
+        y: seed.y,
+        points,
+        secondary: true,
+        pulse
+      });
+      points.slice(1).forEach((target, index) => {
+        const source = points[index];
+        this.time.delayedCall(index * ZHIXIA_ULTIMATE_CHAIN_HOP_INTERVAL, () => {
+          this.drawLightningArc(source.x, source.y, target.x, target.y, {
+            intensity: Math.max(0.68, 1.04 - index * 0.08),
+            style: "chain"
+          });
+          this.renderChainLightningHit(target.x, target.y, Math.max(30, 46 - index * 4));
+          const slime = chain[index];
+          if (!slime?.active) return;
+          const damage = Math.max(1, Math.round(
+            Number(app.profile.magicPower || 22)
+            * ZHIXIA_ULTIMATE_CHAIN_DAMAGE_MULTIPLIER
+            * Math.max(0.72, 1 - index * 0.08)
+          ));
+          this.playLeafSlimeHit(slime, damage, {
+            kind: "magic",
+            charged: true,
+            noEnergyGain: true,
+            allowComboHit: true
+          });
+        });
+      });
+      app.audio.lightningChainPulse(pulse);
     }
 
     castLaodengUltimate() {
@@ -7193,10 +7591,15 @@
             vec: { x: Math.cos(baseAngle + spread), y: Math.sin(baseAngle + spread) },
             kind: "physical",
             color: 0xc5eb92,
-            damage: Math.max(1, Math.round(Number(app.profile.attackPower || 26) * 0.52)),
+            damage: Math.max(1, Math.round(Number(app.profile.attackPower || 26) * 0.62)),
             maxDistance: MAP_TILE_SIZE * 9,
             speed: Phaser.Math.Between(850, 980),
             noEnergyGain: true,
+            allowComboHit: true,
+            impactAoeRadius: JIANGXUN_BARRAGE_AOE_RADIUS,
+            impactAoeMultiplier: JIANGXUN_BARRAGE_AOE_MULTIPLIER,
+            impactAoeColor: 0xf0bb62,
+            impactAoeComboIndex: index % 5,
             barrageDamageRamp,
             visualType: "arrowBarrage",
             audioType: "bow"
@@ -7244,6 +7647,7 @@
           slime.galePushToken = pushToken;
           const pushDuration = 165;
           const pushSpeed = LINA_GALE_PUSH_DISTANCE / (pushDuration / 1000);
+          slime.skillKnockbackUntil = this.time.now + pushDuration + 12;
           slime.body.setVelocity(unit.x * pushSpeed, unit.y * pushSpeed);
           this.time.delayedCall(pushDuration, () => {
             if (slime.active && slime.body?.enable && slime.galePushToken === pushToken) slime.body.setVelocity(0, 0);
@@ -7921,6 +8325,7 @@
             if (slime.rank === "boss" || !slime.active || !slime.body?.enable) return;
             const token = (slime.impactPunchToken || 0) + 1;
             slime.impactPunchToken = token;
+            slime.skillKnockbackUntil = this.time.now + 202;
             slime.body.setVelocity(direction.x * 520, direction.y * 520);
             this.time.delayedCall(190, () => {
               if (slime.active && slime.body?.enable && slime.impactPunchToken === token) slime.body.setVelocity(0, 0);
@@ -8124,6 +8529,7 @@
         const pull = 230 + (1 - clamp(distance / LINA_TORNADO_PULL_RADIUS, 0, 1)) * 390;
         const tangent = distance > 34 ? 115 : 0;
         slime.tornadoPullUntil = this.time.now + 72;
+        slime.skillKnockbackUntil = this.time.now + 84;
         slime.body.setVelocity(unit.x * pull - unit.y * tangent, unit.y * pull + unit.x * tangent);
       });
     }
@@ -8179,6 +8585,7 @@
             const unit = normalizeVector(dx || vec.x, dy || vec.y);
             const token = (slime.impactPunchToken || 0) + 1;
             slime.impactPunchToken = token;
+            slime.skillKnockbackUntil = this.time.now + 180;
             slime.body.setVelocity(unit.x * 460, unit.y * 460);
             this.time.delayedCall(170, () => {
               if (slime.active && slime.body?.enable && slime.impactPunchToken === token) slime.body.setVelocity(0, 0);
@@ -8768,126 +9175,79 @@
     }
 
     renderZhixiaLightningCrown(x, groundY, radius) {
-      const scale = radius / 92 * 0.7;
-      const depth = groundY - 72;
-      const shadow = this.add.graphics().setPosition(x, groundY).setDepth(depth);
-      const pool = this.add.graphics().setPosition(x, groundY).setDepth(depth + 1).setBlendMode(Phaser.BlendModes.ADD);
-      const crown = this.add.graphics().setPosition(x, groundY).setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
-      const core = this.add.graphics().setPosition(x, groundY).setDepth(depth + 3).setBlendMode(Phaser.BlendModes.ADD);
-      const cracks = this.add.graphics().setPosition(x, groundY).setDepth(depth + 4).setBlendMode(Phaser.BlendModes.ADD);
-      const crownImage = this.textures.exists(ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY)
-        ? this.add.image(x, groundY, ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY)
-          .setOrigin(0.5, 0.72)
-          .setScale(scale)
-          .setDepth(depth + 2)
-        : null;
-      const point = (px, py) => ({ x: px * scale, y: py * scale });
-      const drawPath = (graphics, points, width, color, alpha) => {
-        graphics.lineStyle(width * scale, color, alpha);
-        graphics.beginPath();
-        graphics.moveTo(points[0].x, points[0].y);
-        points.slice(1).forEach(value => graphics.lineTo(value.x, value.y));
-        graphics.strokePath();
-      };
-      shadow.fillStyle(0x021541, 0.52);
-      shadow.fillEllipse(0, 10 * scale, 252 * scale, 58 * scale);
-      pool.fillStyle(0x0b55ff, 0.14);
-      pool.fillEllipse(0, 8 * scale, 220 * scale, 42 * scale);
-      pool.lineStyle(3 * scale, 0x168dff, 0.22);
-      pool.strokeEllipse(0, 8 * scale, 226 * scale, 46 * scale);
-      if (!crownImage) {
-        const crownPoints = [
-          point(-126, 8), point(-108, -16), point(-80, -10), point(-58, -38), point(-45, -9),
-          point(-20, -24), point(0, -12), point(20, -27), point(42, -9), point(62, -42),
-          point(78, -11), point(108, -24), point(126, 7), point(90, 21), point(45, 26),
-          point(0, 34), point(-44, 27), point(-92, 22)
-        ];
-        crown.fillStyle(0x0879ff, 0.92);
-        crown.fillPoints(crownPoints, true);
-        crown.lineStyle(3 * scale, 0x63e8ff, 0.9);
-        crown.strokePoints(crownPoints, true);
-        crown.fillStyle(0xbef8ff, 0.96);
-        crown.fillPoints([
-          point(-122, 7), point(-106, -15), point(-80, -8), point(-58, -36), point(-48, -8),
-          point(-22, -20), point(-6, -8), point(-34, 10), point(-76, 15)
-        ], true);
-        crown.fillPoints([
-          point(122, 7), point(106, -23), point(80, -9), point(62, -40), point(49, -7),
-          point(23, -23), point(7, -8), point(35, 11), point(78, 15)
-        ], true);
-        core.fillStyle(0xf9ffff, 0.98);
-        core.fillPoints([
-          point(-66, 11), point(-39, -3), point(-21, -18), point(-9, -5), point(0, -27),
-          point(10, -5), point(24, -20), point(43, -3), point(68, 10), point(28, 18),
-          point(0, 24), point(-28, 18)
-        ], true);
-        core.fillStyle(0x8eeeff, 0.72);
-        core.fillEllipse(0, 6 * scale, 104 * scale, 38 * scale);
+      const scale = radius / 92;
+      const depth = groundY + 76;
+      const scorch = this.add.graphics().setPosition(x, groundY).setDepth(depth - 2);
+      const ring = this.add.graphics().setPosition(x, groundY).setDepth(depth - 1).setBlendMode(Phaser.BlendModes.ADD);
+      const cracks = this.add.graphics().setPosition(x, groundY).setDepth(depth).setBlendMode(Phaser.BlendModes.ADD);
+      const spray = this.add.graphics().setPosition(x, groundY).setDepth(depth + 1).setBlendMode(Phaser.BlendModes.ADD);
+      scorch.fillStyle(0x031535, 0.2);
+      scorch.fillEllipse(0, 8 * scale, 126 * scale, 26 * scale);
+      ring.lineStyle(3 * scale, 0x2baeff, 0.76);
+      ring.strokeEllipse(0, 5 * scale, 116 * scale, 24 * scale);
+      ring.lineStyle(1.2 * scale, 0xe9ffff, 0.94);
+      ring.strokeEllipse(0, 5 * scale, 82 * scale, 16 * scale);
+      for (let index = 0; index < 12; index += 1) {
+        const angle = index / 12 * Math.PI * 2 + Phaser.Math.FloatBetween(-0.14, 0.14);
+        const squash = 0.42;
+        const middle = Phaser.Math.Between(32, 50) * scale;
+        const reach = Phaser.Math.Between(70, 118) * scale;
+        const bend = Phaser.Math.Between(-12, 12) * scale;
+        cracks.lineStyle(index % 3 === 0 ? 3.2 * scale : 1.7 * scale, index % 2 ? 0x4cd8ff : 0xf2ffff, 0.88);
+        cracks.beginPath();
+        cracks.moveTo(Math.cos(angle) * 17 * scale, Math.sin(angle) * 17 * scale * squash);
+        cracks.lineTo(Math.cos(angle) * middle - Math.sin(angle) * bend, Math.sin(angle) * middle * squash + Math.cos(angle) * bend * 0.28);
+        cracks.lineTo(Math.cos(angle) * reach, Math.sin(angle) * reach * squash);
+        cracks.strokePath();
       }
-      const crackPaths = [
-        [point(-18, 13), point(-68, 25), point(-112, 22), point(-154, 31)],
-        [point(-30, 7), point(-78, 2), point(-118, 11), point(-145, 4)],
-        [point(16, 14), point(62, 25), point(104, 20), point(150, 29)],
-        [point(28, 8), point(75, 0), point(112, 9), point(143, 3)],
-        [point(-4, 17), point(8, 30), point(37, 34), point(58, 43)]
-      ];
-      crackPaths.forEach((path, index) => {
-        drawPath(cracks, path, index === 4 ? 5 : 7, 0x0752df, 0.35);
-        drawPath(cracks, path, index === 4 ? 1.3 : 2, index % 2 ? 0xf5ffff : 0x66dcff, 0.94);
-      });
-      [-44, -20, 0, 22, 48].forEach((offset, index) => {
-        const spear = [
-          point(offset, 5),
-          point(offset + (index % 2 ? -5 : 6), -Phaser.Math.Between(22, 38)),
-          point(offset + (index % 2 ? -2 : 3), -Phaser.Math.Between(8, 16))
-        ];
-        drawPath(crown, spear, index === 2 ? 4.8 : 3, index === 2 ? 0xf8ffff : 0x57dbff, 0.92);
-      });
+      for (let index = 0; index < 18; index += 1) {
+        const angle = Phaser.Math.FloatBetween(Math.PI * 1.06, Math.PI * 1.94);
+        const start = Phaser.Math.Between(5, 24) * scale;
+        const length = Phaser.Math.Between(32, 92) * scale;
+        spray.lineStyle(index % 4 === 0 ? 3.4 * scale : 1.5 * scale, index % 3 ? 0x6feaff : 0xffffff, 0.9);
+        spray.lineBetween(
+          Math.cos(angle) * start,
+          Math.sin(angle) * start * 0.54,
+          Math.cos(angle) * length,
+          Math.sin(angle) * length
+        );
+      }
       const sparks = this.add.particles(x, groundY - 4 * scale, LIGHTNING_SPARK_TEXTURE_KEY, {
         emitting: false,
-        lifespan: { min: 170, max: 340 },
-        speed: { min: 63, max: 161 },
-        angle: { min: 190, max: 350 },
-        gravityY: 180,
-        rotate: { min: 0, max: 160 },
-        scale: { start: 0.48, end: 0 },
+        lifespan: { min: 190, max: 420 },
+        speed: { min: 110, max: 250 },
+        angle: { min: 198, max: 342 },
+        gravityY: 310,
+        rotate: { min: -180, max: 180 },
+        scale: { start: 0.54, end: 0 },
         alpha: { start: 0.94, end: 0 },
         tint: [0xffffff, 0xa7f3ff, 0x38bcff, 0x1257ee],
         blendMode: "ADD"
-      }).setDepth(depth + 5);
-      sparks.explode(56, 0, 0);
+      }).setDepth(depth + 2);
+      sparks.explode(68, 0, 0);
       const motes = this.add.particles(x, groundY - 4 * scale, LIGHTNING_MOTE_TEXTURE_KEY, {
         emitting: false,
-        lifespan: { min: 210, max: 430 },
-        speed: { min: 35, max: 118 },
-        angle: { min: 202, max: 338 },
-        gravityY: -55,
-        scale: { start: 0.42, end: 0 },
+        lifespan: { min: 240, max: 520 },
+        speed: { min: 46, max: 148 },
+        angle: { min: 0, max: 360 },
+        gravityY: 80,
+        scale: { start: 0.36, end: 0 },
         alpha: { start: 0.86, end: 0 },
         tint: [0xffffff, 0xbff7ff, 0x47c8ff, 0x175cff],
         blendMode: "ADD"
-      }).setDepth(depth + 5);
-      motes.explode(36, 0, 0);
-      [pool, crown, core, cracks].forEach((layer, index) => this.tweens.add({
+      }).setDepth(depth + 2);
+      motes.explode(42, 0, 0);
+      [ring, cracks, spray].forEach((layer, index) => this.tweens.add({
         targets: layer,
-        scaleX: index === 0 ? 1.2 : 1.08,
-        scaleY: index === 0 ? 0.62 : 0.76,
+        scaleX: 1.12 + index * 0.05,
+        scaleY: 0.78 + index * 0.08,
         alpha: 0,
-        duration: 250 + index * 14,
+        duration: 260 + index * 40,
         ease: "Quad.easeOut",
         onComplete: () => layer.destroy()
       }));
-      if (crownImage) this.tweens.add({
-        targets: crownImage,
-        scaleX: crownImage.scaleX * 1.08,
-        scaleY: crownImage.scaleY * 0.76,
-        alpha: 0,
-        duration: 278,
-        ease: "Quad.easeOut",
-        onComplete: () => crownImage.destroy()
-      });
-      this.tweens.add({ targets: shadow, scaleX: 1.12, scaleY: 0.76, alpha: 0, duration: 320, ease: "Quad.easeOut", onComplete: () => shadow.destroy() });
-      this.time.delayedCall(470, () => {
+      this.tweens.add({ targets: scorch, scaleX: 1.1, scaleY: 0.82, alpha: 0, duration: 420, ease: "Quad.easeOut", onComplete: () => scorch.destroy() });
+      this.time.delayedCall(560, () => {
         sparks.destroy();
         motes.destroy();
       });
@@ -8902,13 +9262,20 @@
 
     strikeLightning(x, y, damage, radius) {
       this.playLightningStrikeVisual(x, y, radius);
+      const hits = [];
       (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
         if (!slime?.active || ["dead", "vanish", "emerging"].includes(slime.state)) return;
         if (Phaser.Math.Distance.Between(x, y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y) <= radius + LEAF_SLIME_HIT_RADIUS) {
-          this.playLeafSlimeHit(slime, damage, { kind: "magic", noEnergyGain: true });
+          const dealt = this.playLeafSlimeHit(slime, damage, {
+            kind: "magic",
+            noEnergyGain: true,
+            allowComboHit: true
+          });
+          if (dealt > 0) hits.push(slime);
         }
       });
       app.audio.hit();
+      return hits;
     }
 
     flashSlash(x, y, angle, depth = 45, charged = false) {
@@ -9168,13 +9535,21 @@
     createSwordWaveVisual(x, y, rotation, depth) {
       const container = this.add.container(x, y).setRotation(rotation).setDepth(depth);
       const wake = this.add.image(-38, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.62, 0.3).setTint(0xd2eaf5).setAlpha(0.14).setBlendMode(Phaser.BlendModes.ADD);
+        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.72, 0.18).setTint(0x7ccdf7).setAlpha(0.18).setBlendMode(Phaser.BlendModes.ADD);
       const wave = this.add.image(-34, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.58, 0.2).setTint(0xffffff).setAlpha(1).setBlendMode(Phaser.BlendModes.ADD);
+        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.66, 0.13).setTint(0xe9faff).setAlpha(1).setBlendMode(Phaser.BlendModes.ADD);
       const edge = this.add.image(-27, 0, SWORD_WAVE_TEXTURE_KEY)
-        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.48, 0.08).setTint(0xffffff).setAlpha(1).setBlendMode(Phaser.BlendModes.ADD);
-      const tip = this.add.triangle(122, 0, -8, -9, 22, 0, -8, 9, 0xf9feff, 0.98).setBlendMode(Phaser.BlendModes.ADD);
-      container.add([wake, wave, edge, tip]);
+        .setOrigin(0.08, 0.5).setFlipX(true).setScale(0.58, 0.045).setTint(0xffffff).setAlpha(1).setBlendMode(Phaser.BlendModes.ADD);
+      const spine = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      spine.lineStyle(2.2, 0xf8feff, 0.98);
+      spine.beginPath();
+      spine.moveTo(-18, 0);
+      spine.lineTo(146, 0);
+      spine.strokePath();
+      spine.lineStyle(1, 0x83d9ff, 0.84);
+      spine.lineBetween(12, -4, 132, -1);
+      const tip = this.add.triangle(150, 0, -18, -6, 34, 0, -18, 6, 0xffffff, 1).setBlendMode(Phaser.BlendModes.ADD);
+      container.add([wake, wave, edge, spine, tip]);
       this.tweens.add({ targets: [wake, wave, edge], scaleX: "+=0.07", alpha: "-=0.14", duration: 90, yoyo: true, repeat: -1 });
       return container;
     }
@@ -9265,6 +9640,11 @@
       projectile.knockbackForce = Math.max(0, Number(options.knockbackForce) || 0);
       projectile.largeTargetHits = new Map();
       projectile.noEnergyGain = !!options.noEnergyGain;
+      projectile.allowComboHit = !!options.allowComboHit;
+      projectile.impactAoeRadius = Math.max(0, Number(options.impactAoeRadius) || 0);
+      projectile.impactAoeMultiplier = Math.max(0, Number(options.impactAoeMultiplier) || 0);
+      projectile.impactAoeColor = Number(options.impactAoeColor) || projectile.color;
+      projectile.impactAoeComboIndex = Math.max(0, Number(options.impactAoeComboIndex) || 0);
       projectile.barrageDamageRamp = options.barrageDamageRamp instanceof Map ? options.barrageDamageRamp : null;
       projectile.visualType = options.visualType || "";
       projectile.hitTargets = new Set();
@@ -9445,8 +9825,89 @@
       this.spawnWindBurst(x, y, 9, 58, 240);
     }
 
+    renderPhysicalImpactBurst(x, y, radius, color = 0xf0bb62) {
+      const visualRadius = clamp(Number(radius) || 72, 32, 132);
+      const ring = this.add.graphics().setPosition(x, y).setDepth(y + 96).setBlendMode(Phaser.BlendModes.ADD);
+      ring.lineStyle(4, color, 0.9);
+      ring.strokeCircle(0, 0, visualRadius * 0.24);
+      ring.lineStyle(1.5, 0xffffff, 0.76);
+      ring.strokeCircle(0, 0, visualRadius * 0.14);
+      const shards = this.add.graphics().setPosition(x, y).setDepth(y + 98).setBlendMode(Phaser.BlendModes.ADD);
+      for (let index = 0; index < 12; index += 1) {
+        const angle = index / 12 * Math.PI * 2 + Phaser.Math.FloatBetween(-0.16, 0.16);
+        const inner = Phaser.Math.Between(7, 17);
+        const outer = Phaser.Math.Between(Math.round(visualRadius * 0.45), Math.round(visualRadius * 0.9));
+        shards.lineStyle(index % 3 === 0 ? 3.4 : 1.8, index % 4 === 0 ? 0xffffff : color, 0.86);
+        shards.lineBetween(
+          Math.cos(angle) * inner,
+          Math.sin(angle) * inner * 0.72,
+          Math.cos(angle) * outer,
+          Math.sin(angle) * outer * 0.72
+        );
+      }
+      this.emitPhysicalSparks(x, y, 14, color);
+      this.tweens.add({
+        targets: ring,
+        scale: 2.8,
+        alpha: 0,
+        duration: 310,
+        ease: "Cubic.easeOut",
+        onComplete: () => ring.destroy()
+      });
+      this.tweens.add({
+        targets: shards,
+        scale: 1.22,
+        alpha: 0,
+        duration: 360,
+        ease: "Cubic.easeOut",
+        onComplete: () => shards.destroy()
+      });
+    }
+
+    triggerProjectileImpactAoe(projectile, primaryTarget) {
+      const radius = Math.max(0, Number(projectile?.impactAoeRadius) || 0);
+      const multiplier = Math.max(0, Number(projectile?.impactAoeMultiplier) || 0);
+      if (!radius || !multiplier || !primaryTarget?.active) return 0;
+      const x = primaryTarget.x;
+      const y = primaryTarget.y + LEAF_SLIME_HIT_OFFSET_Y;
+      const color = Number(projectile.impactAoeColor) || projectile.color || 0xf0bb62;
+      this.renderPhysicalImpactBurst(x, y, radius, color);
+      this.broadcastCombatEvent("physicalImpactBurst", {
+        x,
+        y,
+        radius,
+        color,
+        comboIndex: Math.min(4, Number(projectile.impactAoeComboIndex) || 0)
+      });
+      if (this.time.now - Number(this.lastPhysicalImpactAudioAt || 0) >= 92) {
+        this.lastPhysicalImpactAudioAt = this.time.now;
+        app.audio.fireExplosion(Math.min(4, Number(projectile.impactAoeComboIndex) || 0));
+      }
+      let hitCount = 0;
+      const aoeDamage = Math.max(1, Math.round(Number(projectile.damage || 1) * multiplier));
+      (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
+        if (!slime?.active || slime === primaryTarget || ["dead", "vanish", "emerging", "transform"].includes(slime.state)) return;
+        const distance = Phaser.Math.Distance.Between(x, y, slime.x, slime.y + LEAF_SLIME_HIT_OFFSET_Y);
+        if (distance > radius + LEAF_SLIME_HIT_RADIUS) return;
+        const dealt = this.playLeafSlimeHit(slime, aoeDamage, {
+          kind: "physical",
+          charged: true,
+          noEnergyGain: true,
+          allowComboHit: true
+        });
+        if (dealt > 0) hitCount += 1;
+      });
+      return hitCount;
+    }
+
     getCastOrigin(vec) {
       if (app.profile.characterId === "lina") return this.getLinaStaffCastOrigin(vec);
+      if (app.profile.characterId === "zhixia") {
+        return {
+          x: this.actor.x + vec.x * ZHIXIA_PROJECTILE_CAST_OFFSET,
+          y: this.actor.y - 58 + vec.y * ZHIXIA_PROJECTILE_CAST_OFFSET
+        };
+      }
       return {
         x: this.actor.x + vec.x * 54,
         y: this.actor.y - 58 + vec.y * 54
@@ -9565,15 +10026,18 @@
       hitDamage = this.applyJiangxunBarrageDamageRamp(projectile, targetKey, hitDamage);
       if (!projectile.piercing) this.destroyProjectile(projectile, true);
       if (slime.state === "dead" || slime.state === "vanish") return !projectile.piercing;
-      this.playLeafSlimeHit(slime, hitDamage, {
+      const dealtDamage = this.playLeafSlimeHit(slime, hitDamage, {
         kind: projectile.kind || "magic",
         charged: !!projectile.charged,
-        noEnergyGain: !!projectile.noEnergyGain
+        noEnergyGain: !!projectile.noEnergyGain,
+        allowComboHit: !!projectile.allowComboHit
       });
+      if (dealtDamage > 0) this.triggerProjectileImpactAoe(projectile, slime);
       if (projectile.knockbackForce > 0 && ["mob", "elite"].includes(slime.rank) && slime.active && slime.body?.enable) {
         const aim = normalizeVector(slime.x - projectile.spawnX, slime.y - projectile.spawnY);
         const token = (slime.projectileKnockbackToken || 0) + 1;
         slime.projectileKnockbackToken = token;
+        slime.skillKnockbackUntil = this.time.now + 140;
         slime.body.setVelocity(aim.x * projectile.knockbackForce, aim.y * projectile.knockbackForce);
         this.time.delayedCall(130, () => {
           if (slime.active && slime.body?.enable && slime.projectileKnockbackToken === token) slime.body.setVelocity(0, 0);
@@ -9885,30 +10349,359 @@
       });
       this.time.delayedCall(1420, () => {
         if (!slime.active || slime.actionToken !== token) return;
-        slime.bossForm = 2;
-        slime.transforming = false;
-        slime.state = "move";
-        slime.stationary = false;
-        slime.smoothMovement = true;
-        slime.wanderSpeed = Math.max(42, Number(slime.wanderSpeed) || 0);
-        slime.chaseSpeed = Math.max(88, Number(slime.chaseSpeed) || 0);
-        slime.damage = Math.round(Math.max(1, slime.damage) * 1.18);
-        slime.setScale(slime.baseVisualScale * 1.05).setOrigin(0.5, 0.72);
-        if (slime.body) {
-          slime.body.enable = true;
-          slime.body.setImmovable(false);
-          slime.body.reset(slime.x, slime.y);
-        }
-        this.playEnemyAnimation(slime, "move", true);
-        this.refreshEnemyHpBar(slime);
-        if (!options.network) this.broadcastEnemyState(slime, "move");
-        showToast("结构外壳已破碎：BOSS 重构为高速剪切兽形态");
+        this.beginStructuralBossChargingPhase(slime, options);
       });
       return true;
     }
 
+    beginStructuralBossChargingPhase(slime, options = {}) {
+      if (!slime?.active) return;
+      slime.bossForm = 2;
+      slime.bossPhase = "charging";
+      slime.transforming = false;
+      slime.state = "charging";
+      slime.stationary = true;
+      slime.smoothMovement = false;
+      slime.structuralChargeStartedAt = this.time.now;
+      slime.structuralNextAoeAt = this.time.now + STRUCTURAL_CHARGE_INTERVAL_MS;
+      slime.structuralNextReinforcementAt = this.time.now + 420;
+      slime.structuralPhase3DashAt = 0;
+      slime.setScale(slime.baseVisualScale * 1.06).setOrigin(0.5, 0.72);
+      if (slime.body) {
+        slime.body.enable = true;
+        slime.body.setVelocity(0, 0);
+        slime.body.setImmovable(true);
+        slime.body.reset(slime.x, slime.y);
+      }
+      slime.energyShield?.destroy?.();
+      slime.energyShield = this.add.ellipse(slime.x, slime.y - 88, 320, 390, 0x4fe8ff, 0.13)
+        .setStrokeStyle(7, 0x9af8ff, 0.88)
+        .setDepth(slime.y + 33)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      slime.chargeTrack?.destroy?.();
+      slime.chargeFill?.destroy?.();
+      slime.chargeLabel?.destroy?.();
+      slime.chargeTrack = this.add.rectangle(slime.x, slime.y + slime.hudOffsetY - 48, 250, 17, 0x142735, 0.92)
+        .setStrokeStyle(2, 0xd9fbff, 0.9)
+        .setDepth(slime.y + 45);
+      slime.chargeFill = this.add.rectangle(slime.x - 122, slime.y + slime.hudOffsetY - 48, 244, 11, 0x54dff2, 0.96)
+        .setOrigin(0, 0.5)
+        .setDepth(slime.y + 46);
+      slime.chargeLabel = this.add.text(slime.x, slime.y + slime.hudOffsetY - 69, "能量罩充能 · 10.0 秒", {
+        fontFamily: "Microsoft YaHei, sans-serif",
+        fontSize: "16px",
+        fontStyle: "bold",
+        color: "#e8feff",
+        stroke: "#173747",
+        strokeThickness: 5
+      }).setOrigin(0.5).setDepth(slime.y + 47);
+      this.playEnemyAnimation(slime, "phaseMove", true);
+      this.refreshEnemyHpBar(slime);
+      if (this.isEncounterCoordinator()) {
+        this.spawnStructuralBossChargers(slime);
+        this.spawnStructuralReinforcements(slime, 6);
+      }
+      if (!options.network) this.broadcastEnemyState(slime, "charging");
+      showToast("第二阶段：击杀 3 名稀有充能精英，阻止每 10 秒一次的全图燃爆");
+    }
+
+    spawnStructuralBossChargers(slime) {
+      const definitions = [
+        { textureKey: QUANTUM_SCHOLAR_KEY, label: "量子充能稀有精英", dx: -310, dy: 170, scale: 1.28 },
+        { textureKey: BLOCKCHAIN_CHAINBEAST_KEY, label: "链铸充能稀有精英", dx: 310, dy: 170, scale: 1.32 },
+        { textureKey: AIAGENT_CYBERMAGE_KEY, label: "Agent 充能稀有精英", dx: 0, dy: -250, scale: 1.24 }
+      ];
+      definitions.forEach((definition, index) => {
+        const id = `ch1-m04-boss-charger-${index}`;
+        if (this.findLeafSlime(id)) return;
+        const charger = this.spawnLeafSlime({
+          id,
+          x: clamp(slime.x + definition.dx, 120, this.worldWidth - 120),
+          y: clamp(slime.y + definition.dy, 140, this.worldHeight - 140),
+          group: STRUCTURAL_CHARGER_GROUP,
+          textureKey: definition.textureKey,
+          rank: "rare",
+          label: definition.label,
+          scale: definition.scale,
+          maxHp: 340,
+          baseHealthMultiplier: 2,
+          damage: 18,
+          creditDefense: 7,
+          rewardExp: 52,
+          rewardCredits: 5,
+          bossCharger: true,
+          bossSummon: true,
+          smoothMovement: true,
+          wanderSpeed: 25,
+          chaseSpeed: 54,
+          aggroRange: 980,
+          broadcast: app.connected
+        });
+        if (charger) {
+          charger.provokedUntil = Number.POSITIVE_INFINITY;
+          this.showFloatingText(charger.x, charger.y - 150, "正在给 BOSS 充能", { color: "#9af8ff", size: "18px", rise: 34, duration: 900 });
+        }
+      });
+    }
+
+    spawnStructuralReinforcements(slime, count = 2) {
+      const alive = (this.leafSlimes?.getChildren?.() || []).filter(enemy =>
+        enemy?.active && enemy.groupId === STRUCTURAL_REINFORCEMENT_GROUP && !["dead", "vanish"].includes(enemy.state)
+      );
+      const room = Math.max(0, 12 - alive.length);
+      const textures = [QUANTUM_PAPER_KEY, BLOCKCHAIN_SPIDER_KEY, AIAGENT_BOTCAT_KEY];
+      for (let index = 0; index < Math.min(room, count); index += 1) {
+        const angle = Math.PI * 2 * (index + Math.random()) / Math.max(1, count);
+        const radius = Phaser.Math.Between(310, 470);
+        const textureKey = textures[(alive.length + index) % textures.length];
+        this.spawnLeafSlime({
+          id: `ch1-m04-reinforcement-${Date.now()}-${index}-${Math.floor(Math.random() * 9999)}`,
+          x: clamp(slime.x + Math.cos(angle) * radius, 100, this.worldWidth - 100),
+          y: clamp(slime.y + Math.sin(angle) * radius, 120, this.worldHeight - 120),
+          group: STRUCTURAL_REINFORCEMENT_GROUP,
+          textureKey,
+          rank: "mob",
+          label: "失稳增援小怪",
+          scale: 0.94,
+          maxHp: 82,
+          baseHealthMultiplier: 2,
+          damage: 11,
+          rewardExp: 14,
+          rewardCredits: 1,
+          bossSummon: true,
+          smoothMovement: true,
+          wanderSpeed: 32,
+          chaseSpeed: 58,
+          aggroRange: 980,
+          broadcast: app.connected
+        });
+      }
+    }
+
+    updateStructuralBossCharging(slime, time) {
+      slime.body?.setVelocity(0, 0);
+      const elapsed = Math.max(0, time - Number(slime.structuralChargeStartedAt || time));
+      const progress = clamp((elapsed % STRUCTURAL_CHARGE_INTERVAL_MS) / STRUCTURAL_CHARGE_INTERVAL_MS, 0, 1);
+      const seconds = Math.max(0, (STRUCTURAL_CHARGE_INTERVAL_MS - (elapsed % STRUCTURAL_CHARGE_INTERVAL_MS)) / 1000);
+      slime.energyShield?.setPosition(slime.x, slime.y - 88).setDepth(slime.y + 33);
+      slime.chargeTrack?.setPosition(slime.x, slime.y + slime.hudOffsetY - 48).setDepth(slime.y + 45);
+      slime.chargeFill?.setPosition(slime.x - 122, slime.y + slime.hudOffsetY - 48).setDisplaySize(Math.max(2, 244 * progress), 11).setDepth(slime.y + 46);
+      slime.chargeLabel?.setPosition(slime.x, slime.y + slime.hudOffsetY - 69).setText(`能量罩充能 · ${seconds.toFixed(1)} 秒`).setDepth(slime.y + 47);
+      if (!this.isEncounterCoordinator()) return;
+      const chargers = (this.leafSlimes?.getChildren?.() || []).filter(enemy =>
+        enemy?.active && enemy.bossCharger && !["dead", "vanish"].includes(enemy.state)
+      );
+      if (!chargers.length) {
+        this.enterStructuralBossPhaseThree(slime);
+        return;
+      }
+      if (time >= Number(slime.structuralNextReinforcementAt || 0)) {
+        slime.structuralNextReinforcementAt = time + STRUCTURAL_REINFORCEMENT_INTERVAL_MS;
+        this.spawnStructuralReinforcements(slime, 2);
+      }
+      if (time >= Number(slime.structuralNextAoeAt || 0)) {
+        slime.structuralChargeStartedAt = time;
+        slime.structuralNextAoeAt = time + STRUCTURAL_CHARGE_INTERVAL_MS;
+        this.triggerStructuralFullMapAoe(slime);
+        this.broadcastCombatEvent("structuralChargeAoe", { enemyId: slime.slimeId, damage: Math.round(slime.damage * 1.25) });
+      }
+    }
+
+    triggerStructuralFullMapAoe(slime, options = {}) {
+      if (!slime?.active || this.getCurrentMapId() !== M04_MAP_ID) return;
+      const width = this.scale.width;
+      const height = this.scale.height;
+      const warning = this.add.rectangle(width / 2, height / 2, width, height, 0xff5a28, 0.12)
+        .setScrollFactor(0)
+        .setDepth(100000);
+      const label = this.add.text(width / 2, height * 0.42, "全图燃爆 · 立即防御", {
+        fontFamily: "Microsoft YaHei, sans-serif",
+        fontSize: "34px",
+        fontStyle: "bold",
+        color: "#fff2c7",
+        stroke: "#6b170f",
+        strokeThickness: 8
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(100001);
+      this.tweens.add({ targets: warning, alpha: 0.35, duration: 180, yoyo: true, repeat: 3 });
+      this.time.delayedCall(860, () => {
+        warning.destroy();
+        label.destroy();
+        if (!slime.active || this.getCurrentMapId() !== M04_MAP_ID) return;
+        this.cameras.main.flash(300, 255, 84, 35, false);
+        this.cameras.main.shake(520, 0.011);
+        for (let index = 0; index < 14; index += 1) {
+          const x = this.cameras.main.worldView.x + Math.random() * this.cameras.main.worldView.width;
+          const y = this.cameras.main.worldView.y + Math.random() * this.cameras.main.worldView.height;
+          this.renderPhysicalImpactBurst(x, y, Phaser.Math.Between(62, 112), 0xff673b);
+        }
+        this.damagePlayer(Math.max(1, Number(options.damage) || Math.round(slime.damage * 1.25)));
+        app.audio?.fireExplosion?.(3);
+      });
+    }
+
+    clearStructuralBossPhaseVisuals(slime) {
+      ["energyShield", "chargeTrack", "chargeFill", "chargeLabel"].forEach(key => {
+        slime?.[key]?.destroy?.();
+        if (slime) slime[key] = null;
+      });
+    }
+
+    enterStructuralBossPhaseThree(slime, options = {}) {
+      if (!slime?.active || slime.bossPhase === "phase3") return;
+      slime.bossForm = 3;
+      slime.bossPhase = "phase3";
+      slime.state = "move";
+      slime.stationary = false;
+      slime.smoothMovement = false;
+      slime.wanderSpeed = 72;
+      slime.chaseSpeed = 168;
+      slime.damage = Math.round(Math.max(1, slime.damage) * 1.22);
+      slime.structuralCloseStartedAt = 0;
+      slime.structuralStunCooldownAt = 0;
+      slime.structuralPhase3DashAt = this.time.now + 2200;
+      this.clearStructuralBossPhaseVisuals(slime);
+      if (slime.body) {
+        slime.body.enable = true;
+        slime.body.setImmovable(false);
+        slime.body.reset(slime.x, slime.y);
+      }
+      (this.leafSlimes?.getChildren?.() || [])
+        .filter(enemy => enemy?.active && enemy.groupId === STRUCTURAL_REINFORCEMENT_GROUP && !["dead", "vanish"].includes(enemy.state))
+        .forEach(enemy => {
+          enemy.state = "vanish";
+          enemy.body.enable = false;
+          this.tweens.add({ targets: [enemy, enemy.shadow, enemy.hpBg, enemy.hpFrame, enemy.hpFill, enemy.nameLabel].filter(Boolean), alpha: 0, duration: 260, onComplete: () => this.syncSlimeRemove(enemy.slimeId) });
+        });
+      this.playEnemyAnimation(slime, "phaseMove", true);
+      this.refreshEnemyHpBar(slime);
+      if (!options.network) this.broadcastEnemyState(slime, "phase3");
+      showToast("第三阶段：能量罩解除，BOSS 将高速追打并在玩家之间穿梭");
+    }
+
+    applyStructuralPursuitStun() {
+      if (this.isDead || !this.actor?.active) return;
+      this.structuralStunToken = (this.structuralStunToken || 0) + 1;
+      const token = this.structuralStunToken;
+      this.isActionLocked = true;
+      this.actor.body?.setVelocity(0, 0);
+      this.showFloatingText(this.actor.x, this.actor.y - 132, "结构压制 · 硬直 3 秒", { color: "#ffb09c", size: "21px", rise: 54, duration: 1050 });
+      this.cameras.main.shake(180, 0.006);
+      this.time.delayedCall(STRUCTURAL_PURSUIT_STUN_MS, () => {
+        if (this.structuralStunToken !== token || this.isDead || app.dialogue || app.cinematicActive) return;
+        this.isActionLocked = false;
+      });
+    }
+
+    updateStructuralBossPhaseThree(slime, time, delta) {
+      if (!slime.body?.enable || slime.structuralDashing) return;
+      const dx = this.actor.x - slime.x;
+      const dy = this.actor.y - slime.y;
+      const distance = Math.hypot(dx, dy);
+      const direction = normalizeVector(dx, dy);
+      const blend = 1 - Math.exp(-9 * Math.max(1, Number(delta) || 16) / 1000);
+      slime.body.setVelocity(
+        Phaser.Math.Linear(slime.body.velocity.x, direction.x * slime.chaseSpeed, blend),
+        Phaser.Math.Linear(slime.body.velocity.y, direction.y * slime.chaseSpeed, blend)
+      );
+      if (Math.abs(slime.body.velocity.x) > 2) slime.setFlipX(slime.body.velocity.x < 0);
+      this.playEnemyAnimation(slime, "phaseMove");
+      if (distance < 112) {
+        slime.structuralCloseStartedAt ||= time;
+        if (time - slime.structuralCloseStartedAt >= 780 && time >= Number(slime.structuralStunCooldownAt || 0)) {
+          slime.structuralStunCooldownAt = time + STRUCTURAL_PURSUIT_STUN_MS + 2400;
+          slime.structuralCloseStartedAt = time;
+          this.damagePlayer(Math.round(slime.damage * 0.72));
+          this.applyStructuralPursuitStun();
+        }
+      } else slime.structuralCloseStartedAt = 0;
+      if (this.isEncounterCoordinator() && time >= Number(slime.structuralPhase3DashAt || 0)) {
+        slime.structuralPhase3DashAt = time + STRUCTURAL_PHASE3_DASH_COOLDOWN_MS;
+        const targets = [this.actor, ...Array.from(this.remotePlayers?.values?.() || []).map(remote => remote?.sprite)]
+          .filter(target => target?.active)
+          .slice(0, 5)
+          .map(target => ({ x: Math.round(target.x), y: Math.round(target.y) }));
+        this.startStructuralBossDash(slime, targets);
+        this.broadcastCombatEvent("structuralBossDash", { enemyId: slime.slimeId, points: targets });
+      }
+    }
+
+    distanceToSegment(point, start, end) {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      if (!dx && !dy) return Math.hypot(point.x - start.x, point.y - start.y);
+      const ratio = clamp(((point.x - start.x) * dx + (point.y - start.y) * dy) / (dx * dx + dy * dy), 0, 1);
+      return Math.hypot(point.x - (start.x + ratio * dx), point.y - (start.y + ratio * dy));
+    }
+
+    createStructuralFirePath(slime, start, end) {
+      const graphics = this.add.graphics().setDepth(Math.max(start.y, end.y) + 24);
+      graphics.lineStyle(26, 0xff512b, 0.28).lineBetween(start.x, start.y, end.x, end.y);
+      graphics.lineStyle(7, 0xffd06b, 0.82).lineBetween(start.x, start.y, end.x, end.y);
+      this.tweens.add({ targets: graphics, alpha: 0.52, duration: 320, yoyo: true, repeat: -1 });
+      this.time.delayedCall(STRUCTURAL_FIRE_PATH_DELAY_MS, () => {
+        if (!graphics.active) return;
+        this.tweens.killTweensOf(graphics);
+        this.renderPhysicalImpactBurst((start.x + end.x) / 2, (start.y + end.y) / 2, 96, 0xff6a36);
+        if (this.actor?.active && this.distanceToSegment(this.actor, start, end) <= 72) this.damagePlayer(Math.round(slime.damage * 1.05));
+        app.audio?.fireExplosion?.(2);
+        graphics.destroy();
+      });
+    }
+
+    startStructuralBossDash(slime, points = []) {
+      if (!slime?.active || slime.structuralDashing || !points.length) return;
+      slime.structuralDashing = true;
+      slime.state = "attack";
+      slime.body?.setVelocity(0, 0);
+      if (slime.body) slime.body.enable = false;
+      this.playEnemyAnimation(slime, "phaseSpecial", true);
+      const route = points.slice(0, 5);
+      const moveNext = index => {
+        if (!slime.active) return;
+        if (index >= route.length) {
+          slime.structuralDashing = false;
+          slime.state = "move";
+          if (slime.body) {
+            slime.body.enable = true;
+            slime.body.reset(slime.x, slime.y);
+          }
+          this.playEnemyAnimation(slime, "phaseMove", true);
+          return;
+        }
+        const start = { x: slime.x, y: slime.y };
+        const end = route[index];
+        const duration = clamp(Phaser.Math.Distance.Between(start.x, start.y, end.x, end.y) / 1.65, 120, 360);
+        this.tweens.add({
+          targets: slime,
+          x: end.x,
+          y: end.y,
+          duration,
+          ease: "Cubic.easeInOut",
+          onUpdate: () => slime.setDepth(slime.y + 30),
+          onComplete: () => {
+            this.createStructuralFirePath(slime, start, end);
+            this.renderPhysicalImpactBurst(end.x, end.y, 62, 0x67eaff);
+            moveNext(index + 1);
+          }
+        });
+      };
+      moveNext(0);
+    }
+
     playLeafSlimeHit(slime, baseDamage = MELEE.damage, options = {}) {
       if (slime.transforming || (slime.state === "hit" && !options.allowComboHit) || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return 0;
+      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && slime.bossPhase === "charging") {
+        this.showFloatingText(slime.x, slime.y + slime.hudOffsetY - 18, "能量罩吸收", {
+          color: "#bff7ff",
+          size: "22px",
+          rise: 44,
+          duration: 620
+        });
+        slime.energyShield?.setAlpha(0.58);
+        this.time.delayedCall(90, () => slime.energyShield?.setAlpha(0.22));
+        app.audio?.shield?.();
+        return 0;
+      }
       slime.provokedUntil = this.time.now + 12000;
       const result = this.rollPlayerDamage(baseDamage, slime, options.kind || "magic");
       slime.hp = Math.max(0, Number(slime.hp || 0) - result.amount);
@@ -10778,6 +11571,14 @@
         if (!slime?.active || !this.actor?.active) return;
         slime.setDepth(slime.y + 6);
         this.updateEnemyHud(slime);
+        if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && slime.bossPhase === "charging") {
+          this.updateStructuralBossCharging(slime, time);
+          return;
+        }
+        if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && slime.bossPhase === "phase3") {
+          this.updateStructuralBossPhaseThree(slime, time, delta);
+          return;
+        }
         if (time < Number(slime.tornadoPullUntil || 0)) return;
         if (["hit", "dead", "vanish", "attack", "hop", "emerging"].includes(slime.state)) return;
         const dx = this.actor.x - slime.x;
@@ -11223,6 +12024,7 @@
       this.updateLeafSlimes(time, delta);
       this.updateBoss(time);
       this.updateWorldDrops(time);
+      this.updateBossChest(time);
       if (time - this.lastInteractionUpdateAt >= INTERACTION_UPDATE_INTERVAL_MS) {
         this.lastInteractionUpdateAt = time;
         this.updateInteractionPrompt();
@@ -11390,7 +12192,8 @@
   }
 
   function bindSkillTooltips() {
-    document.querySelectorAll(".skill[data-skill-id]").forEach(button => {
+    const selector = ".skill[data-skill-id], .quickbar button[data-tooltip-title]";
+    document.querySelectorAll(selector).forEach(button => {
       button.addEventListener("pointerenter", event => {
         if (event.pointerType !== "touch") showSkillTooltip(button, false);
       });
@@ -11405,7 +12208,7 @@
       });
     });
     document.addEventListener("pointerdown", event => {
-      if (event.target.closest?.(".skill[data-skill-id]")) return;
+      if (event.target.closest?.(selector)) return;
       hideSkillTooltip(true);
     });
   }

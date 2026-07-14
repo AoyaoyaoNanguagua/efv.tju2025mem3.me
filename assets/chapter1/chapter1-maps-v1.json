@@ -2279,6 +2279,8 @@
         },
         "markerScale": 0.28,
         "markerOriginY": 0.92,
+        "markerShadowWidth": 68,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.14,
         "markerGlowAlpha": 0.03,
           "hintX": 975,
@@ -2308,6 +2310,8 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.92,
+        "markerShadowWidth": 58,
+        "markerShadowHeight": 13,
         "markerShadowAlpha": 0.14,
         "markerGlowAlpha": 0.035,
           "hintX": 1536,
@@ -2341,6 +2345,8 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.92,
+        "markerShadowWidth": 66,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.14,
         "markerGlowAlpha": 0.04,
           "hintX": 2273,
@@ -2374,6 +2380,8 @@
         },
         "markerScale": 0.29,
         "markerOriginY": 0.9,
+        "markerShadowWidth": 94,
+        "markerShadowHeight": 18,
         "markerShadowAlpha": 0.15,
         "markerGlowAlpha": 0.045,
           "hintX": 1536,
@@ -2883,12 +2891,13 @@
         },
         {
           "id": "ch1_m04_node_completion",
-          "type": "chapter-clear",
-          "label": "章节完成点",
+          "type": "teleport",
+          "label": "前往樱花同济大道",
           "x": 3135,
           "y": 610,
           "radius": 150,
-          "visualType": "background-prop",
+          "visual": "transferArray",
+          "ringScale": 1.12,
           "hintX": 3135,
           "hintY": 565,
           "hintWidth": 164,
@@ -2900,7 +2909,10 @@
           ],
           "setFlags": [
             "ch1_complete"
-          ]
+          ],
+          "targetMapId": "ch1_m05_sakura_tongji_avenue",
+          "targetSpawnId": "ch1_m05_spawn_south_transfer",
+          "cinematicBeforeTransition": true
         }
       ],
       "enemySpawns": [],
@@ -2946,6 +2958,58 @@
       },
       "version": "1.0.0-structural-lab-l-shape",
       "summary": "Four-panel L-shaped structural mechanics laboratory with an entrance wing, staged teaching bays, and a large final load-testing arena."
+    },
+    "ch1_m05_sakura_tongji_avenue": {
+      "id": "ch1_m05_sakura_tongji_avenue",
+      "title": "樱花同济大道",
+      "chapterId": "chapter1",
+      "background": {
+        "id": "ch1-m05-sakura-tongji-avenue-v2",
+        "key": "ch1-m05-sakura-tongji-avenue-v2",
+        "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-tongji-avenue-v2.webp",
+        "width": 1536,
+        "height": 2928
+      },
+      "spawn": {
+        "id": "ch1_m05_spawn_south_transfer",
+        "x": 768,
+        "y": 2780,
+        "facing": "N"
+      },
+      "spawnPoints": [
+        {
+          "id": "ch1_m05_spawn_south_transfer",
+          "x": 768,
+          "y": 2780,
+          "facing": "N"
+        }
+      ],
+      "camera": {
+        "startX": 768,
+        "startY": 2600
+      },
+      "obstacles": [
+        { "id": "m05-west-boundary", "x": 0, "y": 0, "w": 245, "h": 2928 },
+        { "id": "m05-east-boundary", "x": 1291, "y": 0, "w": 245, "h": 2928 },
+        { "id": "m05-north-boundary", "x": 0, "y": 0, "w": 1536, "h": 70 },
+        { "id": "m05-south-boundary-left", "x": 0, "y": 2868, "w": 620, "h": 60 },
+        { "id": "m05-south-boundary-right", "x": 916, "y": 2868, "w": 620, "h": 60 }
+      ],
+      "npcs": [],
+      "interactionNodes": [],
+      "enemySpawns": [],
+      "disableDefaultEnemies": true,
+      "encounters": [],
+      "exitPoints": [],
+      "foregroundOverlays": [],
+      "minimapImage": {
+        "key": "ch1-m05-sakura-tongji-avenue-v2",
+        "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-tongji-avenue-v2.webp",
+        "width": 1536,
+        "height": 2928
+      },
+      "version": "1.0.1-safe-pedestrian-sakura-avenue",
+      "summary": "Three vertically stitched academy avenue panels with a broad central road, cherry blossom promenades, football field, tennis courts and static student blossom-viewing scenes."
     }
   }
 }

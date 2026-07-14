@@ -164,7 +164,8 @@ def write_portrait(source_dir: Path, destination: Path) -> None:
 def main() -> None:
     root = Path(__file__).resolve().parents[1]
     source_dir = root / "tmp" / "imagegen" / "zhixia-v5-rows"
-    destination = root / "assets" / "sprites" / "zhixia-sprites-v5-prototype.png"
+    destination = root / "assets" / "sprites" / "zhixia" / "zhixia-sprites-v5-prototype.png"
+    destination.parent.mkdir(parents=True, exist_ok=True)
     portrait = root / "assets" / "portraits" / "zhixia.png"
     preview = root / "tmp" / "imagegen" / "zhixia-sprites-v5-preview.png"
     sheet = assemble(source_dir, destination)

@@ -49,9 +49,9 @@ CHAT_HISTORY_LIMIT = max(0, int(os.environ.get("CHAT_HISTORY_LIMIT", str(MAX_CHA
 CHAT_TEXT_LIMIT = max(1, int(os.environ.get("CHAT_TEXT_LIMIT", "180")))
 CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
 MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
-COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "levelUp", "enemySkill", "playerStatus"}
+COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "physicalImpactBurst", "levelUp", "enemySkill", "playerStatus", "structuralChargeAoe", "structuralBossDash"}
 COMBAT_VISUAL_TYPES = {"", "arrow", "arrowHeavy", "arrowBarrage", "swordWave", "lightningOrb", "windBolt"}
-ENEMY_STATES = {"move", "hit", "dead", "attack", "transform"}
+ENEMY_STATES = {"move", "hit", "dead", "attack", "transform", "charging", "phase3"}
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
 
@@ -1280,6 +1280,8 @@ def handle_slime_spawn(client: WsClient, message: dict) -> None:
         "scale": clean_float(incoming.get("scale"), 0.9, 0.05, 3.0),
         "enemyArchetype": clean_limited_text(incoming.get("enemyArchetype", ""), 32),
         "bossForm": int(clean_number(incoming.get("bossForm"), 1, 1, 4)),
+        "bossPhase": clean_limited_text(incoming.get("bossPhase", ""), 16),
+        "bossCharger": bool(incoming.get("bossCharger", False)),
         "hazardBonus": int(clean_number(incoming.get("hazardBonus"), 0, 0, 6)),
         "groupId": clean_limited_text(incoming.get("groupId", ""), 64),
         "bossSummon": bool(incoming.get("bossSummon", False)),
@@ -1458,11 +1460,15 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
         "color": clean_number(incoming.get("color"), 0xFFFFFF, 0, 0xFFFFFF),
         "charged": bool(incoming.get("charged", False)),
         "berserk": bool(incoming.get("berserk", False)),
+        "secondary": bool(incoming.get("secondary", False)),
+        "pulse": int(clean_number(incoming.get("pulse"), 0, 0, 12)),
+        "comboIndex": int(clean_number(incoming.get("comboIndex"), 0, 0, 8)),
         "level": int(clean_number(incoming.get("level"), client.player.get("level", 1), 1, 99)),
         "levels": int(clean_number(incoming.get("levels"), 1, 1, 12)),
         "skillId": clean_limited_text(incoming.get("skillId", ""), 32),
         "enemyId": clean_slime_id(incoming.get("enemyId"), fallback=False),
         "damageAmount": clean_number(incoming.get("damageAmount"), 0, 0, 9999),
+        "damage": clean_number(incoming.get("damage"), 0, 0, 9999),
         "healAmount": clean_number(incoming.get("healAmount"), 0, 0, 9999),
         "shieldSpent": clean_number(incoming.get("shieldSpent"), 0, 0, 9999),
         "shieldGain": clean_number(incoming.get("shieldGain"), 0, 0, 9999),
@@ -1507,6 +1513,8 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
         "scale": scale,
         "enemyArchetype": clean_limited_text(incoming.get("enemyArchetype", ""), 32),
         "bossForm": int(clean_number(incoming.get("bossForm"), 1, 1, 4)),
+        "bossPhase": clean_limited_text(incoming.get("bossPhase", ""), 16),
+        "bossCharger": bool(incoming.get("bossCharger", False)),
         "hazardBonus": int(clean_number(incoming.get("hazardBonus"), 0, 0, 6)),
         "groupId": clean_limited_text(incoming.get("groupId", ""), 64),
         "bossSummon": bool(incoming.get("bossSummon", False)),
