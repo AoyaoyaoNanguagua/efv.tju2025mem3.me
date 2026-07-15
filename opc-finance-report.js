@@ -55,14 +55,74 @@
     if (node) node.textContent = value;
   });
 
+  const channelColors = ["#e88fa8", "#4a8fb8", "#c99a4b"];
+  const channelStats = channelProfiles.map((profile, index) => {
+    const rows = successful.filter(item => item.channel === profile.name);
+    const gross = rows.reduce((sum, item) => sum + item.amount, 0);
+    const cash = rows.reduce((sum, item) => sum + item.net, 0);
+    const receivable = rows
+      .filter(item => !item.settlementAt || item.status === "对账差异")
+      .reduce((sum, item) => sum + item.amount, 0);
+    return {
+      ...profile,
+      color: channelColors[index],
+      rows,
+      gross,
+      cash,
+      receivable,
+      share: paidTotal ? gross / paidTotal * 100 : 0
+    };
+  });
+
+  const validCountNode = document.querySelector("[data-overview-valid-count]");
+  if (validCountNode) validCountNode.textContent = `${successful.length} 笔有效回调`;
+
+  const overviewRows = document.querySelector("[data-overview-channel-rows]");
+  if (overviewRows) {
+    overviewRows.innerHTML = channelStats.map(item => `<tr>
+      <td><span class="finance-overview-channel-name" style="--channel-color:${item.color}"><i></i>${item.name}</span></td>
+      <td>${item.rows.length}</td>
+      <td>${money(item.gross)}</td>
+      <td>${money(item.cash)}</td>
+      <td>${item.share.toFixed(1)}%</td>
+    </tr>`).join("");
+  }
+
+  const overviewTotals = {
+    "[data-overview-total-orders]": String(successful.length),
+    "[data-overview-total-paid]": money(paidTotal),
+    "[data-overview-total-settled]": money(settledTotal),
+    "[data-overview-donut-total]": money(paidTotal),
+    "[data-overview-donut-count]": `${successful.length} 笔`
+  };
+  Object.entries(overviewTotals).forEach(([selector, value]) => {
+    const node = document.querySelector(selector);
+    if (node) node.textContent = value;
+  });
+
+  const overviewDonut = document.querySelector("[data-overview-donut]");
+  if (overviewDonut) {
+    let cursor = 0;
+    const stops = channelStats.map((item, index) => {
+      const start = cursor;
+      cursor = index === channelStats.length - 1 ? 100 : cursor + item.share;
+      return `${item.color} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+    });
+    overviewDonut.style.background = paidTotal ? `conic-gradient(${stops.join(",")})` : "#dfe5e9";
+    overviewDonut.setAttribute("aria-label", channelStats.map(item => `${item.name} ${item.share.toFixed(1)}%`).join("，"));
+  }
+
+  const overviewLegend = document.querySelector("[data-overview-channel-legend]");
+  if (overviewLegend) {
+    overviewLegend.innerHTML = channelStats.map(item => `<li style="--channel-color:${item.color}">
+      <i></i><span><b>${item.name}</b><small>${item.rows.length} 笔有效回调</small></span><strong>${item.share.toFixed(1)}%</strong>
+    </li>`).join("");
+  }
+
   const channelBreakdown = document.querySelector("[data-channel-breakdown]");
   if (channelBreakdown) {
-    channelBreakdown.innerHTML = channelProfiles.map(profile => {
-      const rows = successful.filter(item => item.channel === profile.name);
-      const gross = rows.reduce((sum, item) => sum + item.amount, 0);
-      const share = paidTotal ? gross / paidTotal * 100 : 0;
-      const cash = rows.reduce((sum, item) => sum + item.net, 0);
-      return `<article><div><b>${profile.name}</b><span>${rows.length} 笔 · 费率示例 ${(profile.feeRate * 100).toFixed(1)}%</span></div><strong>${money(gross)}</strong><i style="--w:${share.toFixed(1)}%"></i><small>占比 ${share.toFixed(1)}% · 已到账 ${money(cash)}</small></article>`;
+    channelBreakdown.innerHTML = channelStats.map(item => {
+      return `<article><div><b>${item.name}</b><span>${item.rows.length} 笔 · 费率示例 ${(item.feeRate * 100).toFixed(1)}%</span></div><strong>${money(item.gross)}</strong><i style="--w:${item.share.toFixed(1)}%"></i><small>占比 ${item.share.toFixed(1)}% · 已到账 ${money(item.cash)}</small></article>`;
     }).join("");
   }
 

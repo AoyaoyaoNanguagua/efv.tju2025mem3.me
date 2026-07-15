@@ -27,34 +27,89 @@
       </div>
     </section>
 
-    <aside class="report-disclaimer"><b>管理口径</b><span>支付回调 ≠ 银行到账 ≠ 收入确认。报表采用“渠道应收—合同负债—履约收入”保守示例，具体科目、税率及收入确认时点须由企业会计政策和履约事实确定。</span></aside>
+    <section class="finance-overview-console" id="finance-overview" aria-label="支付结算经营总览">
+      <aside class="finance-overview-sidebar">
+        <div class="finance-overview-mark">
+          <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
+          <div><b>Finance Control</b><span>支付结算看板</span></div>
+        </div>
+        <nav aria-label="财务报表栏目">
+          <a class="active" href="#finance-overview"><b>经营总览</b><small>Overview</small></a>
+          <a href="#finance-channel-mix"><b>渠道结构</b><small>Channel Mix</small></a>
+          <a href="#finance-daily-controls"><b>核对控制</b><small>Controls</small></a>
+          <a href="#finance-transaction-ledger"><b>交易明细</b><small>Ledger</small></a>
+          <a href="#finance-exceptions"><b>异常队列</b><small>Exceptions</small></a>
+        </nav>
+      </aside>
 
-    <section class="payment-kpis" aria-label="支付结算摘要">
-      <article><span>模拟订单</span><strong data-kpi="orders">100</strong><small>Orders</small></article>
-      <article><span>支付成功总额</span><strong data-kpi="paid">—</strong><small>Verified callbacks</small></article>
-      <article><span>银行到账净额</span><strong data-kpi="settled">—</strong><small>Net cash received</small></article>
-      <article><span>渠道应收余额</span><strong data-kpi="receivable">—</strong><small>Payment channel A/R</small></article>
-      <article><span>渠道手续费</span><strong data-kpi="fees">—</strong><small>Payment fees</small></article>
-      <article class="kpi-alert"><span>待处理异常</span><strong data-kpi="exceptions">—</strong><small>Exceptions</small></article>
-    </section>
+      <div class="finance-overview-main">
+        <header class="finance-overview-topbar">
+          <div>
+            <span class="finance-overview-eyebrow">当前报告周期 · 2026 W27</span>
+            <h2>支付结算与收入确认周报<small>Payment Reconciliation Dashboard</small></h2>
+          </div>
+          <div class="finance-overview-pills">
+            <span class="synced">数据已同步</span>
+            <span data-overview-valid-count>正在核对有效回调</span>
+          </div>
+        </header>
 
-    <section class="report-panel recognition-panel">
-      <header><div><p class="section-label">确认路径 Recognition Policy</p><h2>同一笔充值需要经过四个可核验时点</h2></div><span class="report-tag">建议日清月结</span></header>
-      <div class="recognition-timeline">
-        <article><em>01</em><b>支付成功</b><p>服务端异步通知验签通过，同时核对商户订单号、金额、币种与幂等状态。此时可发货，但不等于银行到账。</p><small>证据：回调原文、签名结果、主动查单</small></article>
-        <article><em>02</em><b>形成渠道应收</b><p>玩家已支付、渠道尚未结算时，示例先确认对支付宝、微信或聚合支付方的结算权利。</p><small>借：其他应收款—支付渠道<br>贷：合同负债—游戏充值</small></article>
-        <article><em>03</em><b>结算到账</b><p>以渠道资金账、结算单和银行流水确认实际到账，冲销渠道应收，支付手续费独立列示。</p><small>借：银行存款 / 支付手续费<br>贷：其他应收款—支付渠道</small></article>
-        <article><em>04</em><b>履约转收入</b><p>虚拟商品控制权转移或约定服务履行时，再将相应合同负债转为收入；未消耗余额继续保留。</p><small>借：合同负债<br>贷：主营业务收入 / 相关税费</small></article>
+        <aside class="finance-overview-policy">
+          <b>管理口径</b>
+          <span>支付回调 ≠ 银行到账 ≠ 收入确认。采用“渠道应收—合同负债—履约收入”保守示例，具体科目、税率及确认时点须由企业会计政策和履约事实确定。</span>
+        </aside>
+
+        <section class="payment-kpis" aria-label="支付结算摘要">
+          <article><span>模拟订单</span><strong data-kpi="orders">100</strong><small>Orders</small></article>
+          <article><span>支付成功总额</span><strong data-kpi="paid">—</strong><small>Verified callbacks</small></article>
+          <article><span>银行到账净额</span><strong data-kpi="settled">—</strong><small>Net cash received</small></article>
+          <article><span>渠道应收余额</span><strong data-kpi="receivable">—</strong><small>Payment channel A/R</small></article>
+          <article><span>渠道手续费</span><strong data-kpi="fees">—</strong><small>Payment fees</small></article>
+          <article class="kpi-alert"><span>待处理异常</span><strong data-kpi="exceptions">—</strong><small>Exceptions</small></article>
+        </section>
+
+        <div class="finance-overview-analytics">
+          <article class="finance-overview-card finance-overview-table-card">
+            <header><div><b>支付渠道明细</b><span>Payment Breakdown</span></div><small>成功回调口径</small></header>
+            <div class="finance-overview-table-wrap">
+              <table class="finance-overview-table">
+                <thead><tr><th>支付渠道</th><th>订单</th><th>支付总额</th><th>银行实收</th><th>占比</th></tr></thead>
+                <tbody data-overview-channel-rows><tr><td colspan="5">正在汇总渠道数据…</td></tr></tbody>
+                <tfoot><tr><th>合计</th><td data-overview-total-orders>—</td><td data-overview-total-paid>—</td><td data-overview-total-settled>—</td><td>100%</td></tr></tfoot>
+              </table>
+            </div>
+          </article>
+
+          <article class="finance-overview-card finance-overview-share-card">
+            <header><div><b>支付渠道占比</b><span>Channel Share</span></div><small>按支付成功金额</small></header>
+            <div class="finance-overview-share-body">
+              <div class="finance-overview-donut" data-overview-donut role="img" aria-label="支付渠道占比">
+                <div><span>支付成功</span><strong data-overview-donut-total>—</strong><small data-overview-donut-count>— 笔</small></div>
+              </div>
+              <ul class="finance-overview-legend" data-overview-channel-legend></ul>
+            </div>
+          </article>
+        </div>
+
+        <div class="finance-overview-checkpoints">
+          <div><span>确认路径</span><b>四个时点分别留痕</b></div>
+          <ol>
+            <li><em>01</em><span><b>支付成功</b><small>回调验签</small></span></li>
+            <li><em>02</em><span><b>形成应收</b><small>渠道结算权</small></span></li>
+            <li><em>03</em><span><b>结算到账</b><small>资金账核对</small></span></li>
+            <li><em>04</em><span><b>履约收入</b><small>完成履约义务</small></span></li>
+          </ol>
+          <a href="#finance-transaction-ledger">查看 100 条明细 ↓</a>
+        </div>
       </div>
-      <div class="accounting-note"><b>为什么不是回调后直接记收入？</b><p>回调回答“玩家是否成功付款”，到账回答“钱是否进入企业可控制账户”，收入确认回答“企业是否已经完成对玩家的履约义务”。三者解决的问题不同。若售卖的是即时交付且玩家立即取得控制权的独立道具，履约时点可能与支付非常接近；若售卖虚拟币、月卡或持续服务，通常需要按实际履约模式确认收入。</p></div>
     </section>
 
     <section class="report-grid">
-      <article class="report-panel channel-panel"><header><div><p class="section-label">渠道结构 Channel Mix</p><h2>支付来源与到账表现</h2></div></header><div class="channel-breakdown" data-channel-breakdown></div></article>
-      <article class="report-panel controls-panel"><header><div><p class="section-label">日常控制 Daily Controls</p><h2>四账核对与异常关闭</h2></div></header><ol><li><b>业务订单账</b><span>商品、玩家、发货与退款状态</span></li><li><b>支付交易账</b><span>支付成功、退款、渠道流水号</span></li><li><b>渠道资金账</b><span>结算批次、手续费、净额与调账</span></li><li><b>银行流水</b><span>实际到账日期、金额与账户</span></li></ol><p>任一维度不一致即进入异常队列，不允许仅凭客户端“支付成功”页面发货或记账。</p></article>
+      <article class="report-panel channel-panel" id="finance-channel-mix"><header><div><p class="section-label">渠道结构 Channel Mix</p><h2>支付来源与到账表现</h2></div></header><div class="channel-breakdown" data-channel-breakdown></div></article>
+      <article class="report-panel controls-panel" id="finance-daily-controls"><header><div><p class="section-label">日常控制 Daily Controls</p><h2>四账核对与异常关闭</h2></div></header><ol><li><b>业务订单账</b><span>商品、玩家、发货与退款状态</span></li><li><b>支付交易账</b><span>支付成功、退款、渠道流水号</span></li><li><b>渠道资金账</b><span>结算批次、手续费、净额与调账</span></li><li><b>银行流水</b><span>实际到账日期、金额与账户</span></li></ol><p>任一维度不一致即进入异常队列，不允许仅凭客户端“支付成功”页面发货或记账。</p></article>
     </section>
 
-    <section class="report-panel transaction-panel">
+    <section class="report-panel transaction-panel" id="finance-transaction-ledger">
       <header><div><p class="section-label">交易明细 Transaction Ledger</p><h2>100 条模拟支付与结算记录</h2></div><span class="report-tag" data-record-count>100 / 100</span></header>
       <div class="transaction-filters">
         <label>搜索订单<input type="search" placeholder="商户订单 / 渠道流水 / 商品" data-payment-search></label>
@@ -70,7 +125,7 @@
     </section>
 
     <section class="report-grid">
-      <article class="report-panel exception-panel"><header><div><p class="section-label">异常队列 Exception Queue</p><h2>需要人工或 Agent 复核</h2></div></header><div data-exception-list></div></article>
+      <article class="report-panel exception-panel" id="finance-exceptions"><header><div><p class="section-label">异常队列 Exception Queue</p><h2>需要人工或 Agent 复核</h2></div></header><div data-exception-list></div></article>
       <article class="report-panel agent-export-panel"><header><div><p class="section-label">Market Agent Export</p><h2>机器可读摘要</h2></div></header><pre data-agent-export></pre><p>市场 Agent 只能读取脱敏订单、聚合金额与异常状态；支付回调原文、玩家标识和银行账号应在受控财务域保存。</p></article>
     </section>
 
