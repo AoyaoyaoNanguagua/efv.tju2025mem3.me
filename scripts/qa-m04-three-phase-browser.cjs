@@ -63,26 +63,40 @@ const URL = "http://127.0.0.1:8787/play.html";
       damage: boss.damage,
       frameWidth: source?.width || 0,
       frameHeight: source?.height || 0,
-      assetLoaded: performance.getEntriesByType("resource").some(entry => entry.name.includes("m04-structural-instability-boss-sheet-v3-hd.png"))
+      visualScale: boss.baseVisualScale,
+      assetLoaded: [1, 2, 3].every(phase => performance.getEntriesByType("resource").some(entry => entry.name.includes(`m04-structural-instability-boss-phase${phase}-sheet-v7.png`)))
     };
-    scene.triggerStructuralBossTransform(boss);
+    scene.actor.setPosition(boss.x + 42, boss.y);
+    boss.lastLightSkillAt = -999999;
+    boss.hp = 1;
+    scene.playLeafSlimeHit(boss, 99999, { noEnergyGain: true });
     await new Promise(resolve => setTimeout(resolve, 1650));
     const chargingEnemies = scene.leafSlimes.getChildren().filter(enemy => enemy.active && !["dead", "vanish"].includes(enemy.state));
     const charging = {
       phase: boss.bossPhase,
       shield: !!boss.energyShield?.active,
+      shieldSprite: !!boss.energyShieldSprite?.active,
       bodyEnabled: !!boss.body?.enable,
       chargers: chargingEnemies.filter(enemy => enemy.bossCharger).length,
       reinforcements: chargingEnemies.filter(enemy => enemy.groupId === "ch1_m04_structural_reinforcements").length,
       chargerHp: chargingEnemies.find(enemy => enemy.bossCharger)?.maxHp || 0,
-      reinforcementHp: chargingEnemies.find(enemy => enemy.groupId === "ch1_m04_structural_reinforcements")?.maxHp || 0
+      reinforcementHp: chargingEnemies.find(enemy => enemy.groupId === "ch1_m04_structural_reinforcements")?.maxHp || 0,
+      chargerArchetypes: chargingEnemies.filter(enemy => enemy.bossCharger).map(enemy => enemy.enemyArchetype).sort()
     };
     chargingEnemies.filter(enemy => enemy.bossCharger).forEach(enemy => {
       enemy.state = "dead";
       enemy.body.enable = false;
     });
     scene.updateStructuralBossCharging(boss, scene.time.now + 16);
-    await new Promise(resolve => setTimeout(resolve, 80));
+    const phase2 = {
+      phase: boss.bossPhase,
+      bodyEnabled: !!boss.body?.enable,
+      reinforcements: scene.leafSlimes.getChildren().filter(enemy => enemy.active && enemy.groupId === "ch1_m04_structural_reinforcements" && !["dead", "vanish"].includes(enemy.state)).length
+    };
+    boss.hp = 1;
+    scene.playLeafSlimeHit(boss, 99999, { noEnergyGain: true });
+    const phase3Transition = { phase: boss.bossPhase, bodyEnabled: !!boss.body?.enable };
+    await new Promise(resolve => setTimeout(resolve, 1100));
     const phase3 = {
       phase: boss.bossPhase,
       shield: !!boss.energyShield?.active,
@@ -90,23 +104,28 @@ const URL = "http://127.0.0.1:8787/play.html";
       chaseSpeed: boss.chaseSpeed,
       damage: boss.damage
     };
-    return { initial, charging, phase3 };
+    return { initial, charging, phase2, phase3Transition, phase3 };
   });
 
   assert.deepEqual(result.initial, {
     maxHp: 21600,
     damage: 34,
-    frameWidth: 1792,
-    frameHeight: 2304,
+    frameWidth: 1280,
+    frameHeight: 1440,
+    visualScale: 1,
     assetLoaded: true
   });
   assert.equal(result.charging.phase, "charging");
   assert.equal(result.charging.shield, true);
+  assert.equal(result.charging.shieldSprite, true);
   assert.equal(result.charging.bodyEnabled, true);
   assert.equal(result.charging.chargers, 3);
   assert.equal(result.charging.reinforcements, 6);
   assert.equal(result.charging.chargerHp, 2720);
   assert.equal(result.charging.reinforcementHp, 1312);
+  assert.deepEqual(result.charging.chargerArchetypes, ["structuralAnchorCharger", "structuralQuantumCharger", "structuralRelayCharger"]);
+  assert.deepEqual(result.phase2, { phase: "phase2Combat", bodyEnabled: true, reinforcements: 6 });
+  assert.deepEqual(result.phase3Transition, { phase: "phase3Transition", bodyEnabled: false });
   assert.equal(result.phase3.phase, "phase3");
   assert.equal(result.phase3.shield, false);
   assert.equal(result.phase3.bodyEnabled, true);

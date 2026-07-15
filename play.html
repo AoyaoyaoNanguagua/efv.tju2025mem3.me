@@ -6,7 +6,7 @@
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="play.css?v=20260712-assets-cinematic-v13">
-  <link rel="stylesheet" href="play-overrides.css?v=20260714-sakura-boss-ui-v10">
+  <link rel="stylesheet" href="play-overrides.css?v=20260715-three-phase-boss-hud-v11">
 </head>
 <body>
   <main class="play-shell">
@@ -312,16 +312,33 @@
       </section>
 
       <section id="bossPanel" class="boss-panel" aria-label="Boss 状态" aria-hidden="true">
-        <div>
-          <span>第一章 Boss</span>
-          <strong>陆教授协议考核</strong>
+        <div class="boss-heading">
+          <span id="bossPhaseLabel">第一章 Boss</span>
+          <strong id="bossTitle">陆教授协议考核</strong>
         </div>
-        <div class="boss-meter"><i id="bossHpBar"></i></div>
+        <div class="boss-meter boss-meter-legacy"><i id="bossHpBar"></i></div>
         <b id="bossHpText">420 / 420</b>
+        <div class="boss-phase-stack" aria-label="Boss 三阶段生命值">
+          <div id="bossPhaseRow1" class="boss-phase-row">
+            <span>Ⅰ 承载外壳</span>
+            <div class="boss-phase-meter"><i id="bossPhaseBar1"></i></div>
+            <em id="bossPhaseValue1">100%</em>
+          </div>
+          <div id="bossPhaseRow2" class="boss-phase-row">
+            <span>Ⅱ 充能核心</span>
+            <div class="boss-phase-meter"><i id="bossPhaseBar2"></i></div>
+            <em id="bossPhaseValue2">待激活</em>
+          </div>
+          <div id="bossPhaseRow3" class="boss-phase-row">
+            <span>Ⅲ 失稳终局</span>
+            <div class="boss-phase-meter"><i id="bossPhaseBar3"></i></div>
+            <em id="bossPhaseValue3">待激活</em>
+          </div>
+        </div>
       </section>
 
       <section id="chapterEndCinematic" class="chapter-end-cinematic" aria-label="第一章结章动画" aria-hidden="true">
-        <video id="chapterEndVideo" src="assets/cg/p1boss-end.mp4?v=20260714-4k-faststart-v2" preload="metadata" playsinline></video>
+        <video id="chapterEndVideo" src="assets/cg/p1boss-end-1440p30-h264-v1.mp4?v=20260715-2k30-h264-v1" preload="metadata" playsinline></video>
         <button id="chapterEndReplayButton" class="chapter-end-replay" type="button" hidden>播放结章动画</button>
         <button id="chapterEndSkipButton" class="chapter-end-skip" type="button">跳过</button>
       </section>
@@ -362,6 +379,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-    <script src="play.js?v=20260714-sakura-three-phase-v14"></script>
+    <script src="play.js?v=20260715-release-audit-v22"></script>
 </body>
 </html>

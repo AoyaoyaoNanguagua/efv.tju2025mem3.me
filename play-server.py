@@ -49,9 +49,9 @@ CHAT_HISTORY_LIMIT = max(0, int(os.environ.get("CHAT_HISTORY_LIMIT", str(MAX_CHA
 CHAT_TEXT_LIMIT = max(1, int(os.environ.get("CHAT_TEXT_LIMIT", "180")))
 CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
 MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
-COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "physicalImpactBurst", "levelUp", "enemySkill", "playerStatus", "structuralChargeAoe", "structuralBossDash"}
+COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "physicalImpactBurst", "levelUp", "enemySkill", "playerStatus", "structuralChargeAoe", "structuralSideLightning", "structuralBossDash", "structuralMarkedLightning"}
 COMBAT_VISUAL_TYPES = {"", "arrow", "arrowHeavy", "arrowBarrage", "swordWave", "lightningOrb", "windBolt"}
-ENEMY_STATES = {"move", "hit", "dead", "attack", "transform", "charging", "phase3"}
+ENEMY_STATES = {"move", "hit", "dead", "attack", "transform", "charging", "phase2Combat", "phase3", "visualHit", "collapse"}
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
 
@@ -1035,6 +1035,7 @@ def handle_join(client: WsClient, message: dict) -> None:
             "chat": chat,
             "recentChat": chat,
             "m04Session": m04_session,
+            "serverTime": int(time.time() * 1000),
         },
     )
     broadcast(room_name, {"type": "peerJoined", "player": player}, client)
@@ -1428,7 +1429,7 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
     incoming = message.get("event") or {}
     if not isinstance(incoming, dict):
         return
-    action = clean_limited_text(incoming.get("action", ""), 24)
+    action = clean_limited_text(incoming.get("action", ""), 32)
     map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
     if action not in COMBAT_EVENT_ACTIONS or map_id != str(client.player.get("mapId", "")):
         return
@@ -1443,6 +1444,41 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
             "x": clean_number(point.get("x"), client.player.get("x", 0), 0, 20000),
             "y": clean_number(point.get("y"), client.player.get("y", 0), 0, 20000),
         })
+    targets = []
+    for target in list(incoming.get("targets") or [])[:2]:
+        if not isinstance(target, dict):
+            continue
+        target_id = clean_slime_id(target.get("id"), fallback=False)
+        if not target_id:
+            continue
+        targets.append({
+            "id": target_id,
+            "x": clean_number(target.get("x"), client.player.get("x", 0), 0, 20000),
+            "y": clean_number(target.get("y"), client.player.get("y", 0), 0, 20000),
+        })
+    chains = []
+    for chain in list(incoming.get("chains") or [])[:4]:
+        if not isinstance(chain, dict):
+            continue
+        chain_points = []
+        for point in list(chain.get("points") or [])[:3]:
+            if not isinstance(point, dict):
+                continue
+            target_id = clean_slime_id(point.get("id"), fallback=False)
+            if not target_id:
+                continue
+            chain_points.append({
+                "id": target_id,
+                "x": clean_number(point.get("x"), client.player.get("x", 0), 0, 20000),
+                "y": clean_number(point.get("y"), client.player.get("y", 0), 0, 20000),
+            })
+        chains.append({
+            "sourceTargetId": clean_slime_id(chain.get("sourceTargetId"), fallback=False),
+            "branch": int(clean_number(chain.get("branch"), 0, 0, 1)),
+            "points": chain_points,
+        })
+    created_at = int(time.time() * 1000)
+    lead_ms = int(clean_number(incoming.get("leadMs"), 0, 0, 2000))
     event = {
         "sourceId": client.id,
         "characterId": clean_character(client.player.get("characterId"), "lina"),
@@ -1473,8 +1509,13 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
         "shieldSpent": clean_number(incoming.get("shieldSpent"), 0, 0, 9999),
         "shieldGain": clean_number(incoming.get("shieldGain"), 0, 0, 9999),
         "down": bool(incoming.get("down", False)),
+        "side": clean_limited_text(incoming.get("side", ""), 8),
+        "sequence": int(clean_number(incoming.get("sequence"), 0, 0, 1000000000)),
+        "targets": targets,
+        "chains": chains,
         "points": points,
-        "createdAt": int(time.time() * 1000),
+        "createdAt": created_at,
+        "executeAt": created_at + lead_ms,
     }
     broadcast(client.room_name, {"type": "combatEvent", "event": event}, client)
 
@@ -1490,6 +1531,12 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
     state = clean_limited_text(incoming.get("state", "move"), 12)
     if not enemy_id or map_id != str(client.player.get("mapId", "")) or state not in ENEMY_STATES:
         return
+    if map_id == M04_MAP_ID and state in {"transform", "charging", "phase2Combat", "phase3"}:
+        with state_lock:
+            session = (get_room(client.room_name).get("m04") or new_m04_session())
+            leader_id = str(session.get("leaderId", ""))
+        if leader_id and leader_id != str(client.id):
+            return
     texture_key = re.sub(r"[^A-Za-z0-9_-]", "", str(incoming.get("textureKey") or ""))[:80]
     rank = clean_limited_text(incoming.get("rank", "mob"), 12)
     if rank not in {"mob", "elite", "rare", "boss"}:
@@ -1530,8 +1577,60 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
     }
     with state_lock:
         room = get_room(client.room_name)
+        existing = room["slimes"].get(enemy_id)
+        if existing and state in {"visualHit", "hit", "dead"} and enemy["damageAmount"] > 0:
+            authoritative_max_hp = max(1, float(existing.get("maxHp", enemy["maxHp"])))
+            authoritative_hp = max(0, float(existing.get("hp", authoritative_max_hp)) - enemy["damageAmount"])
+            enemy["maxHp"] = authoritative_max_hp
+            enemy["hp"] = authoritative_hp
         room["slimes"][enemy_id] = enemy
     broadcast(client.room_name, {"type": "enemyState", "enemy": enemy}, client)
+
+
+def handle_enemy_batch(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name or not client.id:
+        return
+    map_id = clean_limited_text(message.get("mapId", client.player.get("mapId", "")), 64)
+    if map_id != str(client.player.get("mapId", "")) or map_id != M04_MAP_ID:
+        return
+    with state_lock:
+        room = get_room(client.room_name)
+        session = room.get("m04") or new_m04_session()
+        if session.get("active") and str(session.get("leaderId", "")) != str(client.id):
+            return
+        stored = room["slimes"]
+        enemies = []
+        for incoming in list(message.get("enemies") or [])[:24]:
+            if not isinstance(incoming, dict):
+                continue
+            enemy_id = clean_slime_id(incoming.get("id"), fallback=False)
+            existing = stored.get(enemy_id)
+            if not enemy_id or not existing or str(existing.get("mapId", "")) != map_id:
+                continue
+            max_hp = clean_number(incoming.get("maxHp"), existing.get("maxHp", 1), 1, 99999)
+            state = clean_limited_text(incoming.get("state", "move"), 16)
+            if state not in ENEMY_STATES:
+                state = "move"
+            snapshot = {
+                "id": enemy_id,
+                "x": clean_number(incoming.get("x"), existing.get("x", 0), 0, 20000),
+                "y": clean_number(incoming.get("y"), existing.get("y", 0), 0, 20000),
+                "hp": clean_number(incoming.get("hp"), existing.get("hp", max_hp), 0, max_hp),
+                "maxHp": max_hp,
+                "state": state,
+                "bossPhase": clean_limited_text(incoming.get("bossPhase", existing.get("bossPhase", "")), 16),
+                "bossForm": int(clean_number(incoming.get("bossForm"), existing.get("bossForm", 1), 1, 4)),
+                "flipX": bool(incoming.get("flipX", False)),
+            }
+            existing.update(snapshot)
+            enemies.append(snapshot)
+    if enemies:
+        broadcast(client.room_name, {
+            "type": "enemyBatch",
+            "mapId": map_id,
+            "serverTime": int(time.time() * 1000),
+            "enemies": enemies,
+        }, client)
 
 
 def handle_progress_event(client: WsClient, message: dict) -> None:
@@ -1668,6 +1767,8 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
         handle_combat_event(client, message)
     elif message_type == "enemyState":
         handle_enemy_state(client, message)
+    elif message_type == "enemyBatch":
+        handle_enemy_batch(client, message)
     elif message_type == "progressEvent":
         handle_progress_event(client, message)
     elif message_type == "chatSend":
@@ -1825,7 +1926,7 @@ class GameHandler(BaseHTTPRequestHandler):
                         break
                     self.wfile.write(chunk)
                     remaining -= len(chunk)
-        except (BrokenPipeError, ConnectionResetError):
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
             return
 
     def handle_websocket(self) -> None:

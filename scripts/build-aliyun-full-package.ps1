@@ -1,5 +1,5 @@
 param(
-    [string]$ReleaseName = "efv-aliyun-full-20260712-v2"
+    [string]$ReleaseName = "efv-aliyun-full-20260715"
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,6 +44,29 @@ $allowedRootNames = @(
     "sitemap.xml"
 )
 $allowedRootExtensions = @(".html", ".css", ".js")
+$excludedRuntimeAssets = @(
+    "assets\cg\p1boss-end.MOV",
+    "assets\cg\p1boss-end.mp4",
+    "assets\chapter1\concepts\*",
+    "assets\chapter1\maps\ch1_m05_sakura_tongji_avenue\background\ch1-m05-sakura-middle-v2.webp",
+    "assets\chapter1\maps\ch1_m05_sakura_tongji_avenue\background\ch1-m05-sakura-north-v2.webp",
+    "assets\chapter1\maps\ch1_m05_sakura_tongji_avenue\background\ch1-m05-sakura-north-v3.webp",
+    "assets\chapter1\maps\ch1_m05_sakura_tongji_avenue\background\ch1-m05-sakura-south-v2.webp",
+    "assets\chapter1\maps\ch1_m05_sakura_tongji_avenue\background\ch1-m05-sakura-tongji-avenue-v2.webp",
+    "assets\game\bosses\m04-structural-instability-boss-sheet-v2.png",
+    "assets\game\bosses\m04-structural-instability-boss-sheet-v3-hd.png",
+    "assets\game\bosses\m04-structural-instability-boss-sheet-v4.png",
+    "assets\game\bosses\m04-structural-instability-boss-sheet-v5.png",
+    "assets\game\bosses\m04-structural-instability-boss-sheet-v6.png",
+    "assets\game\bosses\m04-structural-instability-boss-sheet-v7.png",
+    "assets\sprites\ayu-sprites-v17-unarmed-walk-seat-lina-edge.png",
+    "assets\sprites\ayu-sprites-v18-alternating-walk-cat-transition.png",
+    "assets\sprites\jiangxun-sprites-v8-lina-edge.png",
+    "assets\sprites\jiangxun-sprites-v9-cat-paw-walk.png",
+    "assets\sprites\laodeng-sprites-v7-lina-edge.png",
+    "assets\sprites\laodeng-sprites-v8-cat-run-safe.png",
+    "assets\sprites\zhixia\zhixia-animation-reference.mp4"
+)
 
 $files = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Force | Where-Object {
     $relative = Get-RepoRelativePath $_.FullName
@@ -55,6 +78,9 @@ $files = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Force | Where-Obje
     if ($relative -like "play-data.sqlite3*") { return $false }
     if ($_.Extension -in @(".log", ".md", ".txt", ".zip")) { return $false }
     if ($parts.Count -eq 1 -and $_.Name -in $excludedTopFiles) { return $false }
+    foreach ($pattern in $excludedRuntimeAssets) {
+        if ($relative -like $pattern) { return $false }
+    }
 
     if ($top -in @("assets", "vendor")) { return $true }
     if ($parts.Count -ne 1) { return $false }
@@ -68,6 +94,30 @@ foreach ($file in $files) {
     New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
     Copy-Item -LiteralPath $file.FullName -Destination $destination
 }
+
+$branch = (& git -C $repoRoot branch --show-current).Trim()
+$commit = (& git -C $repoRoot rev-parse HEAD).Trim()
+$builtAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss K"
+$readmeTemplatePath = Join-Path $repoRoot "deployment\ALIYUN_UPDATE_README_TEMPLATE.txt"
+$readme = (Get-Content -LiteralPath $readmeTemplatePath -Raw -Encoding UTF8)
+$readme = $readme.Replace("{{BUILT_AT}}", $builtAt).Replace("{{BRANCH}}", $branch).Replace("{{COMMIT}}", $commit)
+Set-Content -LiteralPath (Join-Path $stageRoot "ALIYUN_UPDATE_README.txt") -Encoding utf8 -Value $readme
+Set-Content -LiteralPath (Join-Path $stageRoot "VERSION.txt") -Encoding ascii -Value @(
+    "release=$ReleaseName",
+    "branch=$branch",
+    "commit=$commit",
+    "built_at=$builtAt"
+)
+
+$manifestPath = Join-Path $stageRoot "FILE-MANIFEST.sha256"
+$manifestLines = Get-ChildItem -LiteralPath $stageRoot -Recurse -File | Where-Object {
+    $_.FullName -ne $manifestPath
+} | Sort-Object FullName | ForEach-Object {
+    $relative = $_.FullName.Substring($stageRoot.TrimEnd('\').Length + 1).Replace('\', '/')
+    $fileHash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+    "{0}  {1}" -f $fileHash, $relative
+}
+Set-Content -LiteralPath $manifestPath -Encoding ascii -Value $manifestLines
 
 $tar = Get-Command tar.exe -ErrorAction Stop
 & $tar.Source -a -c -f $zipPath -C $stageRoot .
@@ -83,5 +133,5 @@ Remove-Item -LiteralPath $stageRoot -Recurse -Force
 $sizeMiB = [Math]::Round((Get-Item -LiteralPath $zipPath).Length / 1MB, 2)
 Write-Output ("Package: {0}" -f $zipPath)
 Write-Output ("SHA256: {0}" -f $hash.Hash.ToLowerInvariant())
-Write-Output ("Files: {0}" -f $files.Count)
+Write-Output ("Files: {0}" -f ($files.Count + 3))
 Write-Output ("Size: {0} MiB" -f $sizeMiB)

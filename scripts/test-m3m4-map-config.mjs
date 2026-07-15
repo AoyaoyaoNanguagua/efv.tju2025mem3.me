@@ -76,12 +76,35 @@ assert.equal(m4ToM5.type, "teleport");
 assert.equal(m4ToM5.visual, "transferArray");
 assert.equal(m4ToM5.cinematicBeforeTransition, true);
 assert.equal(m4ToM5.targetMapId, m5.id);
+assert.equal(m4ToM5.x, 3255);
+assert.equal(m4ToM5.y, 390);
+assert.deepEqual(m4.spawnPoints.find(spawn => spawn.id === "ch1_m04_spawn_from_sakura"), {
+  id: "ch1_m04_spawn_from_sakura", x: 3255, y: 630, facing: "N"
+});
 assert.equal(m5.title, "樱花同济大道");
 assert.equal(m5.background.width, 1536);
-assert.equal(m5.background.height, 2928);
-assert.match(m5.background.path, /sakura-tongji-avenue-v2\.webp$/);
-assert.ok(m5.spawn.y > 2700, "M5 player must enter from the south transfer array");
+assert.equal(m5.background.height, 1984);
+assert.equal(m5.background.chunks.length, 2);
+assert.deepEqual(m5.background.chunks.map(chunk => [chunk.y, chunk.width, chunk.height]), [
+  [0, 1536, 1160],
+  [960, 1536, 1024]
+]);
+assert.match(m5.background.chunks[0].path, /sakura-north-v8\.webp$/);
+assert.match(m5.background.chunks[1].path, /sakura-south-v3\.webp$/);
+assert.equal(m5.camera.fitViewportWidth, true, "M5 must fill wide browser viewports without exposing the clear color");
+assert.equal(m5.spawn.y, 1690, "M5 player must enter from the south transfer array");
 assert.equal(m5.disableDefaultEnemies, true);
-assert.deepEqual(m5.npcs, [], "pedestrians are baked into the art and must not create collision bodies");
+assert.equal(m5.npcs.length, 8, "M5 uses eight stationary NPC sprites instead of baked pedestrians");
+assert.ok(m5.npcs.every(npc => npc.animate === false && npc.breathe === false && npc.showLabel === false));
+assert.ok(m5.npcs.every(npc => /^ch1-m05-passerby-[a-d]-v1$/.test(npc.textureKey)), "M5 must not reuse playable characters as pedestrians");
+assert.ok(m5.npcs.every(npc => /\/npcs\/ch1-m05-passerby-[a-d]-v1\.png$/.test(npc.path)));
+const npcGroupSizes = Object.values(m5.npcs.reduce((groups, npc) => {
+  groups[npc.groupId] = (groups[npc.groupId] || 0) + 1;
+  return groups;
+}, {})).sort((a, b) => a - b);
+assert.deepEqual(npcGroupSizes, [1, 1, 2, 4]);
+const m5Back = m5.exitPoints.find(exit => exit.id === "ch1_m05_exit_back_m04");
+assert.equal(m5Back.targetMapId, m4.id);
+assert.equal(m5Back.targetSpawnId, "ch1_m04_spawn_from_sakura");
 
 console.log("M3/M4/M5 map configuration passed");

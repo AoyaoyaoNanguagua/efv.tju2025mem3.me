@@ -2831,6 +2831,12 @@
           "x": 627,
           "y": 2050,
           "facing": "N"
+        },
+        {
+          "id": "ch1_m04_spawn_from_sakura",
+          "x": 3255,
+          "y": 630,
+          "facing": "N"
         }
       ],
       "camera": {
@@ -2893,17 +2899,17 @@
           "id": "ch1_m04_node_completion",
           "type": "teleport",
           "label": "前往樱花同济大道",
-          "x": 3135,
-          "y": 610,
-          "radius": 150,
+          "x": 3255,
+          "y": 390,
+          "radius": 118,
           "visual": "transferArray",
-          "ringScale": 1.12,
-          "hintX": 3135,
-          "hintY": 565,
+          "ringScale": 1.05,
+          "hintX": 3255,
+          "hintY": 345,
           "hintWidth": 164,
           "hintHeight": 48,
-          "labelX": 3135,
-          "labelY": 540,
+          "labelX": 3255,
+          "labelY": 320,
           "requiresFlags": [
             "ch1_final_boss_defeated"
           ],
@@ -2964,52 +2970,198 @@
       "title": "樱花同济大道",
       "chapterId": "chapter1",
       "background": {
-        "id": "ch1-m05-sakura-tongji-avenue-v2",
-        "key": "ch1-m05-sakura-tongji-avenue-v2",
-        "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-tongji-avenue-v2.webp",
         "width": 1536,
-        "height": 2928
+        "height": 1984,
+        "chunks": [
+          {
+            "id": "ch1-m05-sakura-north-v8",
+            "key": "ch1-m05-sakura-north-v8",
+            "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-north-v8.webp",
+            "x": 0,
+            "y": 0,
+            "width": 1536,
+            "height": 1160
+          },
+          {
+            "id": "ch1-m05-sakura-south-v3",
+            "key": "ch1-m05-sakura-south-v3",
+            "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-south-v3.webp",
+            "x": 0,
+            "y": 960,
+            "width": 1536,
+            "height": 1024
+          }
+        ]
       },
       "spawn": {
         "id": "ch1_m05_spawn_south_transfer",
         "x": 768,
-        "y": 2780,
+        "y": 1690,
         "facing": "N"
       },
       "spawnPoints": [
         {
           "id": "ch1_m05_spawn_south_transfer",
           "x": 768,
-          "y": 2780,
+          "y": 1690,
           "facing": "N"
         }
       ],
       "camera": {
         "startX": 768,
-        "startY": 2600
+        "startY": 1660,
+        "fitViewportWidth": true
       },
       "obstacles": [
-        { "id": "m05-west-boundary", "x": 0, "y": 0, "w": 245, "h": 2928 },
-        { "id": "m05-east-boundary", "x": 1291, "y": 0, "w": 245, "h": 2928 },
+        { "id": "m05-west-boundary", "x": 0, "y": 0, "w": 245, "h": 1984 },
+        { "id": "m05-east-boundary", "x": 1291, "y": 0, "w": 245, "h": 1984 },
         { "id": "m05-north-boundary", "x": 0, "y": 0, "w": 1536, "h": 70 },
-        { "id": "m05-south-boundary-left", "x": 0, "y": 2868, "w": 620, "h": 60 },
-        { "id": "m05-south-boundary-right", "x": 916, "y": 2868, "w": 620, "h": 60 }
+        { "id": "m05-south-boundary-left", "x": 0, "y": 1924, "w": 620, "h": 60 },
+        { "id": "m05-south-boundary-right", "x": 916, "y": 1924, "w": 620, "h": 60 }
       ],
-      "npcs": [],
+      "npcs": [
+        {
+          "id": "ch1_m05_npc_group_two_passerby_a",
+          "groupId": "ch1_m05_static_group_two",
+          "textureKey": "ch1-m05-passerby-a-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-a-v1.png",
+          "x": 445,
+          "y": 402,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_two_passerby_b",
+          "groupId": "ch1_m05_static_group_two",
+          "textureKey": "ch1-m05-passerby-b-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-b-v1.png",
+          "x": 540,
+          "y": 420,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_single_right",
+          "groupId": "ch1_m05_static_single_a",
+          "textureKey": "ch1-m05-passerby-c-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-c-v1.png",
+          "x": 1038,
+          "y": 690,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_single_left",
+          "groupId": "ch1_m05_static_single_b",
+          "textureKey": "ch1-m05-passerby-d-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-d-v1.png",
+          "x": 472,
+          "y": 1238,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 56,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_a",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-a-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-a-v1.png",
+          "x": 980,
+          "y": 1340,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_b",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-b-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-b-v1.png",
+          "x": 1090,
+          "y": 1355,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_c",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-c-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-c-v1.png",
+          "x": 1000,
+          "y": 1450,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_d",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-d-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-d-v1.png",
+          "x": 1110,
+          "y": 1460,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        }
+      ],
       "interactionNodes": [],
       "enemySpawns": [],
       "disableDefaultEnemies": true,
       "encounters": [],
-      "exitPoints": [],
+      "exitPoints": [
+        {
+          "id": "ch1_m05_exit_back_m04",
+          "type": "teleport",
+          "label": "返回结构实验室",
+          "x": 768,
+          "y": 1866,
+          "radius": 102,
+          "visual": "transferArray",
+          "ringScale": 1.05,
+          "targetMapId": "ch1_m04_library_lawn_boss",
+          "targetSpawnId": "ch1_m04_spawn_from_sakura"
+        }
+      ],
       "foregroundOverlays": [],
-      "minimapImage": {
-        "key": "ch1-m05-sakura-tongji-avenue-v2",
-        "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-tongji-avenue-v2.webp",
-        "width": 1536,
-        "height": 2928
-      },
-      "version": "1.0.1-safe-pedestrian-sakura-avenue",
-      "summary": "Three vertically stitched academy avenue panels with a broad central road, cherry blossom promenades, football field, tennis courts and static student blossom-viewing scenes."
+      "version": "1.1.0-two-panel-static-npcs",
+      "summary": "Two continuation-generated orthographic academy avenue panels with a broad central road, seamless overlap, eight stationary sprite NPCs and a return transfer to the structural laboratory."
     }
   }
 }

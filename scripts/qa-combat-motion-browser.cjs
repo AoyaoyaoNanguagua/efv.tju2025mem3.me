@@ -237,14 +237,15 @@ const URL = "http://127.0.0.1:8787/play.html";
   assert.deepEqual(sakuraMapProfile, {
     title: "樱花同济大道",
     width: 1536,
-    height: 2928,
+    height: 1984,
     actorX: 768,
-    actorY: 2780,
-    npcCount: 0,
-    backgroundCount: 1
+    actorY: 1690,
+    npcCount: 8,
+    backgroundCount: 2
   });
   const sakuraResourceUrls = await page.evaluate(() => performance.getEntriesByType("resource").map(entry => entry.name));
-  assert.ok(sakuraResourceUrls.some(url => url.includes("ch1-m05-sakura-tongji-avenue-v2.webp")));
+  assert.ok(sakuraResourceUrls.some(url => url.includes("ch1-m05-sakura-north-v8.webp")));
+  assert.ok(sakuraResourceUrls.some(url => url.includes("ch1-m05-sakura-south-v3.webp")));
   const sakuraScreenshotPath = path.join(ROOT, "tmp", "browser-sakura-avenue-qa.png");
   await page.screenshot({ path: sakuraScreenshotPath, fullPage: false });
 

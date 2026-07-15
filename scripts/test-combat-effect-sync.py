@@ -182,7 +182,9 @@ class CombatEffectSyncTests(unittest.TestCase):
             "levelUp",
             "enemySkill",
             "structuralChargeAoe",
+            "structuralSideLightning",
             "structuralBossDash",
+            "structuralMarkedLightning",
             "playerStatus",
         ):
             self.assertIn(f'event.action === "{action}"', source, action)
@@ -220,7 +222,122 @@ class CombatEffectSyncTests(unittest.TestCase):
         self.assertIn("enterStructuralBossPhaseThree(slime", source)
         self.assertIn("STRUCTURAL_CHARGE_INTERVAL_MS = 10000", source)
         self.assertIn("STRUCTURAL_FIRE_PATH_DELAY_MS = 5000", source)
-        self.assertIn("STRUCTURAL_PURSUIT_STUN_MS = 3000", source)
+        self.assertIn("STRUCTURAL_PURSUIT_KNOCKBACK_DISTANCE = MAP_TILE_SIZE * 5", source)
+        self.assertIn("STRUCTURAL_PHASE3_MARK_TELEGRAPH_MS = 2000", source)
+        self.assertIn("recoverStructuralBossDash(slime)", source)
+        self.assertNotIn("STRUCTURAL_PURSUIT_STUN_MS", source)
+
+    def test_structural_marked_lightning_keeps_timeline_targets_and_chains(self):
+        SERVER.handle_combat_event(
+            self.client,
+            {
+                "event": {
+                    "action": "structuralMarkedLightning",
+                    "mapId": "ch1_m01_classroom_spawn",
+                    "enemyId": "structural-final-boss",
+                    "leadMs": 650,
+                    "sequence": 7,
+                    "targets": [
+                        {"id": "ayu-player", "x": 640, "y": 720},
+                        {"id": "lina-player", "x": 760, "y": 720},
+                    ],
+                    "chains": [
+                        {
+                            "sourceTargetId": "ayu-player",
+                            "branch": 0,
+                            "points": [
+                                {"id": "lina-player", "x": 760, "y": 720},
+                                {"id": "zhixia-player", "x": 870, "y": 730},
+                            ],
+                        }
+                    ],
+                }
+            },
+        )
+        event = self.broadcasts[-1][1]["event"]
+        self.assertEqual(event["action"], "structuralMarkedLightning")
+        self.assertEqual(event["sequence"], 7)
+        self.assertEqual(len(event["targets"]), 2)
+        self.assertEqual(len(event["chains"]), 1)
+        self.assertEqual(len(event["chains"][0]["points"]), 2)
+        self.assertGreaterEqual(event["executeAt"] - event["createdAt"], 650)
+
+    def test_m04_damage_is_merged_from_authoritative_hp(self):
+        self.client.player["mapId"] = SERVER.M04_MAP_ID
+        room = SERVER.get_room(self.client.room_name)
+        room["m04"].update({"active": True, "leaderId": "another-player"})
+        room["slimes"]["structural-final-boss"] = {
+            "id": "structural-final-boss",
+            "mapId": SERVER.M04_MAP_ID,
+            "hp": 100,
+            "maxHp": 100,
+        }
+        for incoming_hp, damage, expected_hp in ((70, 30, 70), (50, 20, 50)):
+            SERVER.handle_enemy_state(
+                self.client,
+                {
+                    "enemy": {
+                        "id": "structural-final-boss",
+                        "mapId": SERVER.M04_MAP_ID,
+                        "state": "visualHit",
+                        "bossPhase": "phase2Combat",
+                        "hp": incoming_hp,
+                        "maxHp": 100,
+                        "damageAmount": damage,
+                    }
+                },
+            )
+            self.assertEqual(self.broadcasts[-1][1]["enemy"]["hp"], expected_hp)
+        broadcast_count = len(self.broadcasts)
+        SERVER.handle_enemy_state(
+            self.client,
+            {
+                "enemy": {
+                    "id": "structural-final-boss",
+                    "mapId": SERVER.M04_MAP_ID,
+                    "state": "phase3",
+                    "bossPhase": "phase3",
+                    "hp": 100,
+                    "maxHp": 100,
+                }
+            },
+        )
+        self.assertEqual(len(self.broadcasts), broadcast_count, "non-leader cannot advance boss phases")
+
+    def test_m04_leader_batch_keeps_enemy_motion_together(self):
+        self.client.player["mapId"] = SERVER.M04_MAP_ID
+        room = SERVER.get_room(self.client.room_name)
+        room["m04"].update({"active": True, "leaderId": self.client.id})
+        room["slimes"]["structural-final-boss"] = {
+            "id": "structural-final-boss",
+            "mapId": SERVER.M04_MAP_ID,
+            "x": 100,
+            "y": 100,
+            "hp": 100,
+            "maxHp": 100,
+        }
+        SERVER.handle_enemy_batch(
+            self.client,
+            {
+                "mapId": SERVER.M04_MAP_ID,
+                "enemies": [{
+                    "id": "structural-final-boss",
+                    "x": 340,
+                    "y": 520,
+                    "hp": 88,
+                    "maxHp": 100,
+                    "state": "move",
+                    "bossPhase": "phase2Combat",
+                    "bossForm": 2,
+                    "flipX": True,
+                }],
+            },
+        )
+        payload = self.broadcasts[-1][1]
+        self.assertEqual(payload["type"], "enemyBatch")
+        self.assertEqual(payload["enemies"][0]["x"], 340)
+        self.assertEqual(payload["enemies"][0]["bossPhase"], "phase2Combat")
+        self.assertEqual(room["slimes"]["structural-final-boss"]["hp"], 88)
 
     def test_secondary_explosion_and_chain_metadata_are_forwarded(self):
         for event in (

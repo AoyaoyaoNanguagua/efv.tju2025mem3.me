@@ -8,7 +8,11 @@ const assets = [
   ["assets/game/enemies/animated/ch1-m04-quantum-family-atlas-v2.png", 1176, 1176],
   ["assets/game/enemies/animated/ch1-m04-blockchain-family-atlas-v3.png", 1176, 1176],
   ["assets/game/enemies/animated/ch1-m04-aiagent-family-atlas-v3.png", 1176, 1176],
-  ["assets/game/bosses/m04-structural-instability-boss-sheet-v3-hd.png", 1792, 2304]
+  ["assets/game/bosses/m04-structural-instability-boss-phase1-sheet-v7.png", 1280, 1440],
+  ["assets/game/bosses/m04-structural-instability-boss-phase2-sheet-v7.png", 1280, 1440],
+  ["assets/game/bosses/m04-structural-instability-boss-phase3-sheet-v7.png", 1280, 1440],
+  ["assets/game/enemies/animated/ch1-m04-charging-elites-atlas-v4.png", 1280, 1080],
+  ["assets/game/vfx/m04-structural-charge-vfx-sheet-v1.png", 1280, 720]
 ];
 
 for (const [asset, width, height] of assets) {
@@ -29,8 +33,11 @@ assert.equal(m3Garden.length, 5);
 assert.ok(m3Garden.every(enemy => enemy.staticImage === false));
 assert.match(play, /const CHAPTER_ONE_ANIMATED_ENEMY_SPRITES = \[/);
 assert.match(play, /archetype: "structuralBoss"/);
-assert.match(play, /transform: \{ frames: enemyGridFrames\(3, 8\)/);
-assert.match(play, /phaseAttack: \{ frames: enemyGridFrames\(5, 8\)/);
+assert.match(play, /transform: \{ sheetIndex: 1, frames: enemyGridFrames\(0, 4\)/);
+assert.match(play, /chargeLoop: \{ sheetIndex: 1, frames: enemyGridFrames\(1, 4\)/);
+assert.match(play, /phase2Move: \{ sheetIndex: 1, frames: enemyGridFrames\(1, 4\)/);
+assert.match(play, /collapse: \{ sheetIndex: 2, frames: enemyGridFrames\(0, 4\)/);
+assert.match(play, /phaseAttack: \{ sheetIndex: 2, frames: enemyGridFrames\(2, 4\)/);
 assert.match(play, /phase: "awaitingProfessor"/);
 assert.match(play, /if \(this\.bossSprite\) this\.tweens\.killTweensOf\(this\.bossSprite\);/);
 assert.match(play, /updateProfessorWaveProximity\(\)/);
@@ -41,22 +48,58 @@ assert.match(play, /const finalBoss = this\.spawnLeafSlime\(\{/);
 assert.match(play, /终极大机器人已在陆教授所在位置完成加载/);
 assert.match(play, /return finalBoss;/);
 assert.match(play, /app\.boss\.phase === "final"[\s\S]+`终局 \$\{hpText\}`/);
-assert.match(play, /slime\.hp <= slime\.maxHp \* 0\.55/);
+assert.match(play, /slime\.bossPhase === "phase1" && slime\.hp <= 0/);
+assert.match(play, /slime\.bossPhase === "phase2Combat" && slime\.hp <= 0/);
 assert.match(play, /triggerStructuralBossTransform/);
 assert.match(play, /getEnemyDifficultyScale/);
 assert.match(play, /health: 1 \+ extra \* 0\.75/);
 assert.match(play, /damage: 1 \+ extra \* 0\.10/);
 assert.match(play, /beginStructuralBossChargingPhase/);
 assert.match(play, /spawnStructuralBossChargers/);
+assert.match(play, /slime\.bossPhase = "transforming"/);
+assert.match(play, /slime\.structuralTransformDeadline = this\.time\.now \+ 1560/);
+assert.match(play, /slime\.textureKey === M04_STRUCTURAL_BOSS_KEY && slime\.transforming/);
 assert.match(play, /STRUCTURAL_CHARGE_INTERVAL_MS = 10000/);
 assert.match(play, /enterStructuralBossPhaseThree/);
+assert.match(play, /finishStructuralBossPhaseThree/);
 assert.match(play, /STRUCTURAL_FIRE_PATH_DELAY_MS = 5000/);
-assert.match(play, /STRUCTURAL_PURSUIT_STUN_MS = 3000/);
+assert.match(play, /STRUCTURAL_PURSUIT_KNOCKBACK_DISTANCE = MAP_TILE_SIZE \* 5/);
+assert.match(play, /STRUCTURAL_PURSUIT_KNOCKBACK_DURATION_MS = 220/);
+assert.match(play, /STRUCTURAL_PURSUIT_BLAST_DELAY_MS = 2000/);
+assert.match(play, /structuralKnockbackGhost/);
+assert.match(play, /playLeafSlimeDeathSequence/);
+assert.match(play, /STRUCTURAL_BOSS_DEATH_HOLD_MS = 1400/);
+assert.match(play, /STRUCTURAL_BOSS_DEATH_FALLBACK_MS = 2100/);
+assert.doesNotMatch(play, /STRUCTURAL_PURSUIT_STUN_MS/);
+assert.match(play, /beginStructuralBossPhaseTwoCombat/);
+assert.match(play, /STRUCTURAL_PHASE2_LIGHTNING_TELEGRAPH_MS = 3000/);
+assert.match(play, /STRUCTURAL_PHASE2_LIGHTNING_RADIUS = MAP_TILE_SIZE \* 10/);
+assert.match(play, /structuralPointInLightningHalf/);
+assert.match(play, /STRUCTURAL_PHASE3_MARK_TELEGRAPH_MS = 2000/);
+assert.match(play, /STRUCTURAL_PHASE3_MARK_RADIUS = MAP_TILE_SIZE \* 3/);
+assert.match(play, /STRUCTURAL_PHASE3_CHAIN_MAX_JUMPS = 3/);
+assert.match(play, /structuralMarkedLightning/);
+assert.match(play, /STRUCTURAL_PHASE3_DASH_WATCHDOG_MS = 3600/);
+assert.match(play, /recoverStructuralBossDash/);
+assert.match(play, /STRUCTURAL_FIRE_PATH_MAX_ACTIVE = 6/);
+assert.match(play, /sendEnemyBatch/);
+assert.match(play, /serverClockOffsetMs/);
+assert.match(play, /createPersistentPlayerShieldAura/);
+assert.match(play, /updatePersistentPlayerShieldAura/);
+assert.match(play, /updatePersistentPlayerShieldAura\(this\.actorShieldAura, this\.actor, app\.profile\?\.shield/);
+assert.doesNotMatch(play, /groupId === STRUCTURAL_REINFORCEMENT_GROUP[\s\S]{0,180}enemy\.state = "vanish"/);
 assert.match(play, /action === "enemySkill"/);
 assert.match(server, /"enemySkill"/);
+assert.match(server, /"structuralSideLightning"/);
+assert.match(server, /"structuralMarkedLightning"/);
+assert.match(server, /def handle_enemy_batch/);
 assert.match(server, /"transform"/);
 assert.match(server, /"bossForm"/);
 assert.match(server, /"hazardBonus"/);
+
+for (const archetype of ["structuralQuantumCharger", "structuralAnchorCharger", "structuralRelayCharger"]) {
+  assert.match(play, new RegExp(`archetype: "${archetype}"`));
+}
 
 for (const key of [
   "QUANTUM_SCHOLAR_KEY", "QUANTUM_FAMILIAR_KEY", "QUANTUM_PAPER_KEY",
