@@ -1,6 +1,6 @@
 # Chapter 1 Active Asset Index
 
-Updated: 2026-07-10
+Updated: 2026-07-15
 
 This index lists active runtime assets after the full cleanup. Historical source and review files are not part of the working asset tree.
 
@@ -17,7 +17,9 @@ This index lists active runtime assets after the full cleanup. Historical source
 | M01 classroom | assembled background, one reusable floor tile, current prop atlas, two wall overlays |
 | M02 prompt archive | v3 wide background and 12 v3 chunks |
 | M03 agent lab | v2 background and 4 renamed v2 chunks |
-| M04 library lawn | v2 background and 4 boss-lawn chunks |
+| M04 structural mechanics lab | 4 native L-shaped structural-lab panels, three WebGL-safe structural boss phase sheets v7, charging elites v4 |
+| M05 sakura Tongji avenue | 2 continuation panels; north v8 is outpainted from an exact 200px crop of south v3 and keeps that strip as overlap; four dedicated passerby sprites provide the stationary 2/1/1/4 NPC groups; camera width fitting covers 1920px and wider viewports without exposing the clear color |
+| Chapter-end cinematic | `p1boss-end-1440p30-h264-v1.mp4`, 2560×1440 at 30fps, H.264/AAC with fast-start metadata for browser playback |
 
 All map files live under `assets/chapter1/maps/<map_id>/`.
 
@@ -32,7 +34,9 @@ All map files live under `assets/chapter1/maps/<map_id>/`.
 | NPC sprites | `assets/game/characters/npcs/` |
 | bosses | `assets/game/bosses/` |
 
-Animated enemy sheets currently include the leaf poring, runaway magic broom, biting magic book, M02 copy-paste shadow and M02 tone-drift archivist. Boss-wave cutouts for quantum, blockchain and AI Agent encounters share the same global cutout directory.
+Animated enemy sheets currently include the leaf poring, runaway magic broom, biting magic book, M02 copy-paste shadow, M02 tone-drift archivist, the M03 enemy family, and the M04 three-stage structural boss with its three dedicated charging elites. Boss-wave cutouts for quantum, blockchain and AI Agent encounters share the same global cutout directory.
+
+M04 art direction and v7 three-sheet runtime mapping is documented in `docs/asset-guides/ch1-m04-structural-boss-v4-usage.md`. Its active concept masters live under `assets/chapter1/concepts/m04/`.
 
 ## Shared VFX And UI
 

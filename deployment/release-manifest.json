@@ -1,15 +1,16 @@
 {
-  "releaseDate": "2026-07-12",
+  "releaseDate": "2026-07-15",
   "profiles": {
     "github": {
-      "description": "完整项目源码与历史资产归档，不包含本轮暂缓纳入的合作素材。",
+      "description": "完整项目源码、可复现美术处理脚本与历史资产归档；原始 MOV 母片仅本地保留。",
       "exclude": [
         "share/**",
         "release/**",
         "tmp/**",
         "play-data.sqlite3",
         "*.log",
-        "__pycache__/**"
+        "__pycache__/**",
+        "assets/cg/*.MOV"
       ]
     },
     "aliyun": {
@@ -41,6 +42,23 @@
         "*.txt",
         "*.zip",
         "__pycache__/**"
+      ],
+      "runtimeAssetExclude": [
+        "assets/cg/p1boss-end.MOV",
+        "assets/cg/p1boss-end.mp4",
+        "assets/chapter1/concepts/**",
+        "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/*-v2.webp",
+        "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-north-v3.webp",
+        "assets/game/bosses/m04-structural-instability-boss-sheet-v2.png",
+        "assets/game/bosses/m04-structural-instability-boss-sheet-v3-hd.png",
+        "assets/game/bosses/m04-structural-instability-boss-sheet-v4.png",
+        "assets/game/bosses/m04-structural-instability-boss-sheet-v5.png",
+        "assets/game/bosses/m04-structural-instability-boss-sheet-v6.png",
+        "assets/sprites/*-lina-edge.png",
+        "assets/sprites/*-cat-transition.png",
+        "assets/sprites/*-cat-paw-walk.png",
+        "assets/sprites/*-cat-run-safe.png",
+        "assets/sprites/zhixia/zhixia-animation-reference.mp4"
       ]
     }
   }

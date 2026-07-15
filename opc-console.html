@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OPC 控制台 | Third Academy Agent Hub</title>
-  <meta name="description" content="Third Academy Agent Hub 是第三学院 OPC 的 AgentOps 控制台原型，用于呈现协议化任务、Agent 执行、宣发分发、市场与财务反馈。">
+  <title>决策与订单数据中枢 | Third Academy Agent Hub</title>
+  <meta name="description" content="Third Academy Agent Hub 决策与订单数据中枢，用于管理 IP 组合配置、工作订单、三台工作节点、审批队列以及市场、财务和客户反馈信号。">
   <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
   <link rel="stylesheet" href="opc.css">
 </head>
-<body>
+<body class="decision-console-page">
   <div class="site-shell">
     <header class="site-nav">
       <a class="brand" href="opc.html" aria-label="第三学院 OPC 首页">
@@ -22,228 +22,188 @@
         <a href="opc.html">公司 Company</a>
         <a href="opc-products.html">IP 与产品 Products</a>
         <a href="opc-workflow.html">OPC 工作流 Workflow</a>
-        <a class="active" href="opc-console.html">OPC 控制台 Console</a>
+        <a class="active" href="opc-console.html">决策中枢 Console</a>
         <a href="play.html">在线试玩 Play</a>
         <a href="https://github.com/opc-studios/campus-daze">代码仓库 GitHub</a>
       </nav>
     </header>
 
-    <section class="hero console-hero">
-      <img class="hero-bg" src="assets/opc/third-academy-hero-v1.png" alt="">
+    <section class="hero console-hero decision-console-hero">
+      <img class="hero-bg" src="assets/opc/third-academy-hero-v1.png" alt="学术喵与多个产品世界组成的公司资产网络">
       <div class="hero-inner">
-        <p class="kicker">AgentOps 中间件 · 协议运行 · 增长看板</p>
-        <h1>OPC 控制台<span class="cn">Third Academy Agent Hub · AgentOps Console</span></h1>
-        <p class="hero-copy">Agent Hub 将一人公司的经营意图转化为可追踪的任务协议：Agent 负责资产生产、测试、宣发和数据整理，主理人负责方向、验收、预算和合作判断。</p>
+        <p class="kicker">PORTFOLIO DECISION · WORK ORDERS · THREE-NODE CONTROL</p>
+        <h1>决策与订单数据中枢<span class="cn">Third Academy Agent Hub · OPC Control Plane</span></h1>
+        <p class="hero-copy">把 IP 组合判断转化为可执行工作订单，在一个界面查看资源投向、订单状态、三台电脑的工作负载、人工审批，以及财务与客户信号。</p>
         <div class="hero-actions">
-          <a class="button primary" href="#hub">查看运行面板 Dashboard</a>
-          <a class="button" href="opc-workflow.html">返回工作流 Workflow</a>
+          <a class="button primary" href="#hub">进入中枢 Dashboard</a>
+          <a class="button" href="opc-workflow.html">查看公司工作流</a>
         </div>
       </div>
     </section>
 
     <main>
-      <section class="band dark" id="hub">
-        <div class="inner">
+      <section class="public-demo-disclosure console-demo-disclosure" aria-label="控制台模拟演示说明">
+        <div>
+          <b>INTERACTIVE DEMO · 决策中枢模拟数据</b>
+          <span>组合权重、工作订单、节点负载、审批事项和信号统计均为教学与汇报演示数据。控制台用于说明数据如何流转，不表示三台物理节点已经完成自动接入。</span>
+        </div>
+      </section>
+
+      <section class="band dark decision-hub-band" id="hub">
+        <div class="inner console-inner-wide">
           <div class="section-head">
             <div>
-              <p class="section-label">控制台面板 Console Surface</p>
-              <h2>把 Agent 工作、资产产出、宣发队列和财务反馈放在同一个经营界面。<span class="en">One operating interface for agents, assets, campaigns and finance.</span></h2>
+              <p class="section-label">经营操作层 Operating Control Plane</p>
+              <h2>先做组合决策，再生成订单；先提交证据，再进入下一状态。<span class="en">Allocate first, issue orders second, advance only with evidence.</span></h2>
             </div>
-            <p>当前页面展示 Third Academy Agent Hub 的信息架构。后续可接入本地脚本、GitHub、MCP 工具、平台数据和财务表，形成自动化中间件。</p>
+            <p>以下为可交互的中枢原型数据。财务报表和客户反馈台账继续保留为专业明细页，并作为决策信号入口接入本控制台。</p>
           </div>
-          <div class="console-shell" aria-label="Third Academy Agent Hub 控制台" data-console>
+
+          <div class="console-shell decision-console-shell" aria-label="Third Academy Agent Hub 决策与订单数据中枢" data-console>
             <aside class="console-sidebar">
-              <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
-              <b>Third Academy<br>Agent Hub</b>
-              <nav aria-label="控制台分区">
-                <button class="active" type="button" data-console-tab="cycle"><b>周期</b><small>Cycle</small></button>
-                <button type="button" data-console-tab="protocols"><b>协议</b><small>Protocols</small></button>
-                <button type="button" data-console-tab="agents"><b>Agent</b><small>Agents</small></button>
-                <button type="button" data-console-tab="assets"><b>资产</b><small>Assets</small></button>
-                <button type="button" data-console-tab="campaign"><b>宣发</b><small>Campaign</small></button>
-                <button type="button" data-console-tab="finance"><b>财务</b><small>Finance</small></button>
-                <button type="button" data-console-tab="customers"><b>客户关系</b><small>Feedback</small></button>
+              <div class="console-identity">
+                <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
+                <div><b>Agent Hub</b><small>OPC Control Plane</small></div>
+              </div>
+              <nav aria-label="中枢分区" role="tablist">
+                <button class="active" type="button" role="tab" aria-selected="true" data-console-tab="overview"><b>决策总览</b><small>Decision</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="orders"><b>订单队列</b><small>Work Orders</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="portfolio"><b>IP 组合</b><small>Portfolio</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="nodes"><b>三节点</b><small>Work Nodes</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="approvals"><b>审批中心</b><small>Approvals</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="signals"><b>信号账本</b><small>Signals</small></button>
               </nav>
+              <div class="console-side-links">
+                <a href="opc-finance-report.html">财务报表 ↗</a>
+                <a href="opc-feedback-records.html">反馈台账 ↗</a>
+              </div>
             </aside>
+
             <div class="console-main">
               <div class="console-topbar">
                 <div>
-                  <span class="console-eyebrow">当前周期 Current Cycle</span>
-                  <h3>学术喵在线增长周报<span>Academic Cat Online Growth Sprint</span></h3>
+                  <span class="console-eyebrow">CURRENT ALLOCATION CYCLE · DEMO</span>
+                  <h3>2026 W29 · 学术喵组合配置周期<span>Academic Cat Portfolio Allocation Cycle</span></h3>
                 </div>
                 <div class="console-pills">
-                  <span><i class="status-dot green"></i>主理人批准 Owner Approved</span>
-                  <span><i class="status-dot blue"></i>协议锁定 Protocol Locked</span>
-                  <span><i class="status-dot pink"></i>宣发就绪 Campaign Ready</span>
+                  <span><i class="status-dot green"></i>中枢原型在线</span>
+                  <span><i class="status-dot blue"></i>三节点规划就绪</span>
+                  <span><i class="status-dot pink"></i>人工审批模式</span>
                 </div>
               </div>
 
-              <div class="console-kpis">
-                <button class="console-kpi active" type="button" data-console-detail="assets"><b>128</b><span>资产总量 IP Assets</span></button>
-                <button class="console-kpi" type="button" data-console-detail="agents"><b>3</b><span>主 Agent Active</span></button>
-                <button class="console-kpi" type="button" data-console-detail="campaign"><b>24</b><span>宣发素材 Campaign</span></button>
-                <button class="console-kpi" type="button" data-console-detail="finance"><b>¥3,860</b><span>周报收入 Weekly Revenue</span></button>
+              <div class="console-kpis decision-kpis">
+                <button class="console-kpi active" type="button" data-console-detail="decisions"><b>4</b><span>资源配置线 Allocation</span></button>
+                <button class="console-kpi" type="button" data-console-detail="orders"><b>12</b><span>活跃订单 Active Orders</span></button>
+                <button class="console-kpi" type="button" data-console-detail="nodes"><b>3</b><span>工作节点 Work Nodes</span></button>
+                <button class="console-kpi" type="button" data-console-detail="approvals"><b>3</b><span>待人工审批 Approvals</span></button>
               </div>
 
-              <section class="console-view active" data-console-view="cycle">
-                <div class="dashboard-grid">
-                  <article class="chart-panel">
-                    <header><b>资产增长 Asset Growth</b><span>按周报节点统计，模拟数据</span></header>
-                    <div class="asset-bars" aria-label="资产分类周增长图">
-                      <div><span>角色 Character</span><i style="--w:72%"><b>31</b></i></div>
-                      <div><span>地图 Map</span><i style="--w:46%"><b>18</b></i></div>
-                      <div><span>怪物 Enemy</span><i style="--w:38%"><b>15</b></i></div>
-                      <div><span>视频 Video</span><i style="--w:58%"><b>24</b></i></div>
-                      <div><span>代码 Code</span><i style="--w:64%"><b>27</b></i></div>
-                      <div><span>文档 Docs</span><i style="--w:31%"><b>13</b></i></div>
+              <section class="console-view active" role="tabpanel" data-console-view="overview">
+                <div class="decision-overview-grid">
+                  <article class="chart-panel allocation-console-panel">
+                    <header><b>今日组合配置 Portfolio Allocation</b><span>结构示意 · 由决策 Agent 提议</span></header>
+                    <div class="console-allocation-bars">
+                      <div style="--w:48%"><span>主生产线</span><i><b>48</b></i><small>樱花同济篇</small></div>
+                      <div style="--w:22%"><span>验证线</span><i><b>22</b></i><small>远洋逐梦篇</small></div>
+                      <div style="--w:18%"><span>增长线</span><i><b>18</b></i><small>宣发与周边</small></div>
+                      <div style="--w:12%"><span>战略预留</span><i><b>12</b></i><small>QA 与修复</small></div>
                     </div>
                   </article>
-                  <article class="chart-panel">
-                    <header><b>周报收入 Revenue by Week</b><span>收入、赞助意向和合作报价合并口径</span></header>
-                    <div class="weekly-chart" aria-label="周报收入柱状图">
-                      <span style="--h:18%"><i>W1</i><b>¥280</b></span>
-                      <span style="--h:31%"><i>W2</i><b>¥620</b></span>
-                      <span style="--h:42%"><i>W3</i><b>¥980</b></span>
-                      <span style="--h:55%"><i>W4</i><b>¥1,420</b></span>
-                      <span style="--h:74%"><i>W5</i><b>¥2,360</b></span>
-                      <span style="--h:92%"><i>W6</i><b>¥3,860</b></span>
-                    </div>
+                  <article class="decision-memo-panel">
+                    <header><span>DECISION MEMO · 0714</span><b>今日建议：保持主生产线，限制验证线范围</b></header>
+                    <p>优先完成第一章核心体验和移动端新手路径；远洋逐梦篇只验证海上移动与场景氛围，不进入大规模资产生产；市场节点继续收集角色支线与周边反馈。</p>
+                    <dl><div><dt>停止条件</dt><dd>关键路径连续两轮未通过 QA</dd></div><div><dt>重新评估</dt><dd>今日 23:00 财务与反馈汇总后</dd></div></dl>
                   </article>
                   <article class="detail-panel" data-console-detail-panel>
-                    <b>资产总量 IP Assets</b>
-                    <p>本周期累计 128 项资产，其中视觉资产 64 项、代码与工具 27 项、宣发素材 24 项、文档与协议 13 项。资产进入复用库后，会服务后续关卡、角色活动和宣发包。</p>
-                    <dl>
-                      <div><dt>本周新增</dt><dd>+19 项</dd></div>
-                      <div><dt>可复用率</dt><dd>76%</dd></div>
-                      <div><dt>下周重点</dt><dd>敌人层级与关卡包</dd></div>
-                    </dl>
+                    <b>资源配置线 Allocation</b>
+                    <p>组合分为主生产、玩法验证、增长和战略预留四条资源线。演示权重用于说明配置逻辑；运行权重由订单消耗、财务与客户信号计算，并由主理人最终批准。</p>
+                    <dl><div><dt>主生产线</dt><dd>48 单位</dd></div><div><dt>待重新评估</dt><dd>23:00</dd></div><div><dt>最终批准</dt><dd>Human Owner</dd></div></dl>
                   </article>
                 </div>
 
-                <div class="run-board">
-                  <button class="run-card" type="button" data-console-detail="build">
-                    <div><b>产品版本 Product Build</b><span>多人同步、角色手感、页面发布</span></div>
-                  <ol>
-                    <li class="done">代码检查 Code Check</li>
-                    <li class="done">浏览器试玩 Browser QA</li>
-                    <li>体验复盘 Review Gate</li>
-                  </ol>
-                  </button>
-                  <button class="run-card" type="button" data-console-detail="campaign">
-                    <div><b>AI 宣发 AI Campaign</b><span>短视频、封面、平台文案</span></div>
-                  <ol>
-                    <li class="done">脚本生成 Script</li>
-                    <li>视频切条 Clips</li>
-                    <li>小红书队列 XHS Queue</li>
-                  </ol>
-                  </button>
-                  <button class="run-card" type="button" data-console-detail="finance">
-                    <div><b>财务闭环 Finance Loop</b><span>成本、转化、合作线索</span></div>
-                  <ol>
-                    <li class="done">成本记录 Cost Ledger</li>
-                    <li>市场信号 Market Signal</li>
-                    <li>预算建议 Budget Advice</li>
-                  </ol>
-                  </button>
+                <div class="order-glance">
+                  <header><div><b>高优先级订单</b><span>按价值、依赖、风险与截止时间排序</span></div><button type="button" data-open-console-tab="orders">查看全部订单</button></header>
+                  <div>
+                    <article><span class="order-status running">RUNNING</span><b>WO-0714-001 · 第一章关键路径验收</b><small>Node B · QA / Code · 今日 16:00</small></article>
+                    <article><span class="order-status ready">READY</span><b>WO-0714-003 · 海上移动玩法验证</b><small>Node B · Production · 预算 12</small></article>
+                    <article><span class="order-status review">REVIEW</span><b>WO-0714-006 · 移动端新手入口优化</b><small>Node C · Release · 等待主理人</small></article>
+                  </div>
                 </div>
               </section>
 
-              <section class="console-view" data-console-view="protocols">
-                <div class="data-board">
-                  <article><b>内容协议 Content Protocol</b><span>角色、地图、敌人、剧情和关卡包统一进入资产命名、尺寸、版本和验收口径。</span></article>
-                  <article><b>工具协议 Tool Protocol</b><span>Agent 通过文件系统、浏览器、图像、视频、数据和发布工具完成可追踪任务。</span></article>
-                  <article><b>质量协议 QA Protocol</b><span>每周固定检查语法、页面、试玩路径、多人同步、视频可用性和公开文案。</span></article>
+              <section class="console-view" role="tabpanel" data-console-view="orders">
+                <div class="order-toolbar">
+                  <div><b>工作订单队列</b><span>订单从中枢领取，不由 Agent 相互转发。当前展示 6 / 12 项演示订单。</span></div>
+                  <div class="order-filters" aria-label="订单状态筛选">
+                    <button class="active" type="button" data-order-filter="all">全部 12</button>
+                    <button type="button" data-order-filter="ready">Ready 3</button>
+                    <button type="button" data-order-filter="running">Running 4</button>
+                    <button type="button" data-order-filter="review">Review 3</button>
+                    <button type="button" data-order-filter="blocked">Blocked 2</button>
+                  </div>
+                </div>
+                <div class="order-board" data-order-board>
+                  <article data-order-status="running"><header><span class="order-status running">RUNNING</span><small>WO-0714-001</small></header><b>第一章关键路径验收</b><p>完成出生、对话、战斗、Boss 与结算的端到端验证。</p><dl><div><dt>资产</dt><dd>学术喵 / 樱花同济篇</dd></div><div><dt>节点</dt><dd>Node B</dd></div><div><dt>负责人</dt><dd>QA Agent</dd></div></dl></article>
+                  <article data-order-status="ready"><header><span class="order-status ready">READY</span><small>WO-0714-003</small></header><b>海上移动玩法验证</b><p>验证远洋逐梦篇的移动手感、镜头与场景尺度。</p><dl><div><dt>资产</dt><dd>远洋逐梦篇</dd></div><div><dt>节点</dt><dd>Node B</dd></div><div><dt>预算</dt><dd>12 单位</dd></div></dl></article>
+                  <article data-order-status="review"><header><span class="order-status review">REVIEW</span><small>WO-0714-006</small></header><b>移动端新手入口优化</b><p>减少首屏按钮并突出开始任务、角色与设置。</p><dl><div><dt>信号</dt><dd>反馈台账 / Website</dd></div><div><dt>节点</dt><dd>Node C</dd></div><div><dt>审批</dt><dd>Human Owner</dd></div></dl></article>
+                  <article data-order-status="running"><header><span class="order-status running">RUNNING</span><small>WO-0714-008</small></header><b>莉娜角色 PV 素材包</b><p>从已验收版本生成分镜、封面和平台文案。</p><dl><div><dt>资产</dt><dd>学术喵 / 角色增长</dd></div><div><dt>节点</dt><dd>Node C</dd></div><div><dt>负责人</dt><dd>Campaign Agent</dd></div></dl></article>
+                  <article data-order-status="blocked"><header><span class="order-status blocked">BLOCKED</span><small>WO-0714-010</small></header><b>周边预售提醒流程</b><p>等待确认隐私范围和用户授权方式，禁止继续实现。</p><dl><div><dt>资产</dt><dd>学术喵 / 周边</dd></div><div><dt>节点</dt><dd>Node C</dd></div><div><dt>阻塞</dt><dd>Privacy Gate</dd></div></dl></article>
+                  <article data-order-status="ready"><header><span class="order-status ready">READY</span><small>WO-0714-012</small></header><b>财务与反馈夜间汇总</b><p>生成组合评分、成本变化和次日决策输入。</p><dl><div><dt>周期</dt><dd>每日 23:00</dd></div><div><dt>节点</dt><dd>Node A</dd></div><div><dt>负责人</dt><dd>Finance Agent</dd></div></dl></article>
                 </div>
               </section>
 
-              <section class="console-view" data-console-view="agents">
-                <div class="agent-dashboard principal-agents">
-                  <article>
-                    <em>01 · PLANNING</em><b>策划 Agent</b><span>8 项任务 · 2 项待决策</span><i style="--w:74%"></i>
-                    <ul><li>目标拆解与版本 Brief</li><li>优先级、预算与验收口径</li><li>读取客户及财务回流信号</li></ul>
-                    <small>输出：brief.v1 → 生产 Agent</small>
+              <section class="console-view" role="tabpanel" data-console-view="portfolio">
+                <div class="console-portfolio-grid">
+                  <article class="portfolio-console-card active-portfolio">
+                    <header><span>IP-01 · ACTIVE</span><b>学术喵</b><em>组合评分 82</em></header>
+                    <p>当前公开 IP。重点是第一章体验、多人稳定性、角色辨识度和可复用内容资产。</p>
+                    <div class="portfolio-score"><span>产品成熟度<i style="--score:78%"></i></span><span>市场势能<i style="--score:71%"></i></span><span>资产复用率<i style="--score:84%"></i></span><span>营收信号<i style="--score:54%"></i></span></div>
+                    <footer><b>继续投资</b><span>主生产线 · 48 单位</span></footer>
                   </article>
-                  <article>
-                    <em>02 · PRODUCTION</em><b>生产 Agent</b><span>24 项任务 · 5 项待验收</span><i style="--w:86%"></i>
-                    <ul><li>美术 subagent · 12 项</li><li>代码 subagent · 7 项</li><li>测试 / 内容 subagent · 5 项</li></ul>
-                    <small>输出：release.v1 → 市场 Agent</small>
+                  <article class="portfolio-console-card">
+                    <header><span>CHAPTER · VALIDATION</span><b>远洋逐梦篇</b><em>验证评分 63</em></header>
+                    <p>限定在海上移动、镜头和氛围原型，不启动完整章节资产批量生产。</p>
+                    <div class="portfolio-score"><span>概念吸引力<i style="--score:82%"></i></span><span>技术确定性<i style="--score:48%"></i></span><span>资产复用率<i style="--score:57%"></i></span><span>当前成本<i style="--score:39%"></i></span></div>
+                    <footer><b>小额验证</b><span>验证线 · 22 单位</span></footer>
                   </article>
-                  <article>
-                    <em>03 · MARKET</em><b>市场 Agent</b><span>16 项任务 · 3 条新信号</span><i style="--w:68%"></i>
-                    <ul><li>宣发 subagent · 9 项</li><li>财务 subagent · 4 项</li><li>客户关系 subagent · 3 项</li></ul>
-                    <small>输出：market-signal.json → 策划 Agent</small>
-                  </article>
-                </div>
-                <div class="agent-interface-strip"><span>brief.v1</span><i>→</i><span>release.v1 + qa-report</span><i>→</i><span>market-signal.json</span><i>↺</i><span>下一轮策划</span></div>
-              </section>
-
-              <section class="console-view" data-console-view="assets">
-                <div class="dashboard-grid">
-                  <article class="chart-panel wide">
-                    <header><b>资产库结构 Asset Library</b><span>按可复用资产类型拆分</span></header>
-                    <div class="asset-bars">
-                      <div><span>视觉 Visual</span><i style="--w:86%"><b>64</b></i></div>
-                      <div><span>关卡 Level</span><i style="--w:42%"><b>18</b></i></div>
-                      <div><span>代码 Code</span><i style="--w:50%"><b>27</b></i></div>
-                      <div><span>视频 Video</span><i style="--w:46%"><b>24</b></i></div>
-                      <div><span>协议 Docs</span><i style="--w:29%"><b>13</b></i></div>
-                    </div>
-                    <div class="asset-week-grid" aria-label="资产每周增长矩阵">
-                      <span>周报 Week</span><b>W1</b><b>W2</b><b>W3</b><b>W4</b><b>W5</b><b>W6</b>
-                      <span>视觉 Visual</span><i>8</i><i>14</i><i>25</i><i>37</i><i>49</i><i>64</i>
-                      <span>代码 Code</span><i>3</i><i>7</i><i>12</i><i>17</i><i>22</i><i>27</i>
-                      <span>视频 Video</span><i>0</i><i>3</i><i>7</i><i>12</i><i>18</i><i>24</i>
-                      <span>协议 Docs</span><i>2</i><i>4</i><i>6</i><i>8</i><i>10</i><i>13</i>
-                    </div>
-                  </article>
-                  <article class="detail-panel">
-                    <b>下周资产目标</b>
-                    <p>新增 1 个敌人层级展示、2 个校园探索节点、4 条短视频切条和 1 份周报复盘，把本周市场信号沉淀为下一轮关卡包。</p>
+                  <article class="portfolio-console-card ghost-portfolio">
+                    <header><span>IP-02 · INCUBATION</span><b>未公开 IP</b><em>尚未评分</em></header>
+                    <p>只保留命题、受众假设和启动条件，等待主生产线稳定后进入概念验证。</p>
+                    <div class="incubation-checklist"><span>世界命题 · 待定义</span><span>角色种子 · 待定义</span><span>核心玩法 · 待定义</span></div>
+                    <footer><b>保持观察</b><span>暂不分配生产预算</span></footer>
                   </article>
                 </div>
               </section>
 
-              <section class="console-view" data-console-view="campaign">
-                <div class="data-board">
-                  <article><b>小红书队列 XHS Queue</b><span>8 条图文、4 条短视频、2 条角色 PV 草稿，等待主理人审核。</span></article>
-                  <article><b>内容表现 Campaign Signal</b><span>模拟收藏率 11.8%，评论有效问题 27 条，合作私信 3 条。</span></article>
-                  <article><b>下轮素材 Next Pack</b><span>围绕莉娜、知夏、校园地图和怪物视觉制作四组差异化封面。</span></article>
+              <section class="console-view" role="tabpanel" data-console-view="nodes">
+                <div class="console-node-grid">
+                  <article class="console-node-card strategy"><header><em>A</em><div><b>控制塔节点</b><span>Strategy & Control</span></div><i class="node-state planning">PLANNED</i></header><p>数据中枢、调度、决策、财务和人工审批。</p><dl><div><dt>当前订单</dt><dd>4</dd></div><div><dt>计划负载</dt><dd>42%</dd></div><div><dt>网络边界</dt><dd>LAN Core</dd></div></dl><ul><li>23:00 财务与反馈汇总</li><li>08:30 次日组合配置</li></ul></article>
+                  <article class="console-node-card production"><header><em>B</em><div><b>生产工厂节点</b><span>Product Studio</span></div><i class="node-state planning">PLANNED</i></header><p>策划、代码、美术、内容、QA 与构建。</p><dl><div><dt>当前订单</dt><dd>5</dd></div><div><dt>计划负载</dt><dd>76%</dd></div><div><dt>网络边界</dt><dd>Workspace</dd></div></dl><ul><li>第一章关键路径验收</li><li>海上移动玩法验证</li></ul></article>
+                  <article class="console-node-card market"><header><em>C</em><div><b>市场发布节点</b><span>Market & Release</span></div><i class="node-state planning">PLANNED</i></header><p>部署、宣发、玩家反馈、客户关系与周边。</p><dl><div><dt>当前订单</dt><dd>3</dd></div><div><dt>计划负载</dt><dd>58%</dd></div><div><dt>网络边界</dt><dd>Public Edge</dd></div></dl><ul><li>移动端新手入口复核</li><li>莉娜角色 PV 素材包</li></ul></article>
+                </div>
+                <div class="node-control-note"><b>统一事实源</b><span>同一账户不负责同步三台电脑的本地文件。角色定义、项目规则、订单状态和交付证据必须进入仓库、Skill 与 Agent Hub。</span></div>
+              </section>
+
+              <section class="console-view" role="tabpanel" data-console-view="approvals">
+                <div class="approval-queue">
+                  <article><header><span class="approval-level high">P0 · RELEASE</span><small>AP-0714-001</small></header><b>第一章公开试玩版本上线</b><p>QA 已提交关键路径证据，等待主理人确认品牌表现、版本说明和回滚条件。</p><dl><div><dt>来源订单</dt><dd>WO-0714-001</dd></div><div><dt>截止时间</dt><dd>今日 18:00</dd></div><div><dt>建议</dt><dd>有条件批准</dd></div></dl><footer><span>所需动作：查看证据 · 批准 / 退回</span></footer></article>
+                  <article><header><span class="approval-level medium">P1 · CONTENT</span><small>AP-0714-002</small></header><b>莉娜角色 PV 对外发布</b><p>检查平台标题、角色表述、使用素材和评论回应口径。</p><dl><div><dt>来源订单</dt><dd>WO-0714-008</dd></div><div><dt>截止时间</dt><dd>明日 10:00</dd></div><div><dt>建议</dt><dd>修改后批准</dd></div></dl><footer><span>所需动作：确认文案与公开素材</span></footer></article>
+                  <article><header><span class="approval-level locked">P0 · PRIVACY</span><small>AP-0714-003</small></header><b>周边预售提醒信息收集</b><p>当前方案涉及用户联系方式，必须先明确最小收集范围、授权和删除规则。</p><dl><div><dt>来源订单</dt><dd>WO-0714-010</dd></div><div><dt>截止时间</dt><dd>无</dd></div><div><dt>建议</dt><dd>保持阻塞</dd></div></dl><footer><span>所需动作：隐私方案确认后重新排队</span></footer></article>
                 </div>
               </section>
 
-              <section class="console-view" data-console-view="finance">
-                <div class="dashboard-grid">
-                  <article class="chart-panel wide">
-                    <header><b>周报财务 Finance Weekly</b><a class="console-link" href="opc-finance-report.html">打开报表示例 ↗</a></header>
-                    <div class="finance-rows">
-                      <div><span>W1</span><b>收入 ¥280</b><i>成本 ¥190</i><em>净额 ¥90</em></div>
-                      <div><span>W2</span><b>收入 ¥620</b><i>成本 ¥260</i><em>净额 ¥360</em></div>
-                      <div><span>W3</span><b>收入 ¥980</b><i>成本 ¥340</i><em>净额 ¥640</em></div>
-                      <div><span>W4</span><b>收入 ¥1,420</b><i>成本 ¥430</i><em>净额 ¥990</em></div>
-                      <div><span>W5</span><b>收入 ¥2,360</b><i>成本 ¥610</i><em>净额 ¥1,750</em></div>
-                      <div><span>W6</span><b>收入 ¥3,860</b><i>成本 ¥840</i><em>净额 ¥3,020</em></div>
-                    </div>
-                  </article>
-                  <article class="detail-panel">
-                    <b>资金判断 Budget Signal</b>
-                    <p>当周净额和合作线索同步上升时，下一轮优先投入可复用关卡包与角色 PV；当互动不足时，收缩范围并优化宣发素材。</p>
-                  </article>
+              <section class="console-view" role="tabpanel" data-console-view="signals">
+                <div class="signal-link-grid">
+                  <a href="opc-finance-report.html"><header><span>FINANCE LEDGER</span><b>财务确认与现金流报表</b></header><strong>¥3,020</strong><p>演示周期净额。查看支付、应收、到账、异常和 Agent 可读导出。</p><em>打开财务报表 →</em></a>
+                  <a href="opc-customer-feedback.html"><header><span>FEEDBACK INTAKE</span><b>客户反馈收集入口</b></header><strong>3 类</strong><p>正面反馈、负面问题和优化建议进入统一受理流程。</p><em>新增客户反馈 →</em></a>
+                  <a href="opc-feedback-records.html"><header><span>FEEDBACK LEDGER</span><b>客户反馈管理台账</b></header><strong>50</strong><p>演示反馈按产品、性质、优先级、负责人和闭环状态管理。</p><em>查看反馈台账 →</em></a>
                 </div>
-              </section>
-
-              <section class="console-view" data-console-view="customers">
-                <div class="feedback-summary">
-                  <article><b>正面反馈</b><strong>68%</strong><span>角色辨识度、校园氛围与多人试玩最受认可</span></article>
-                  <article><b>负面反馈</b><strong>12%</strong><span>新手目标不够清晰，移动端首屏信息偏密</span></article>
-                  <article><b>优化建议</b><strong>20%</strong><span>增加任务引导、角色故事与低门槛反馈入口</span></article>
-                </div>
-                <div class="feedback-board">
-                  <article class="feedback-card positive"><b>正面反馈 · 保持并放大</b><p>“五位学术喵很有记忆点，校园与幻想的结合自然。”</p><span>动作：进入宣发素材库，提炼角色卖点与用户原话；负责人：市场 Agent；SLA：24 小时。</span></article>
-                  <article class="feedback-card negative"><b>负面反馈 · 定位根因</b><p>“第一次进入后不知道先做什么，手机上按钮有点多。”</p><span>动作：策划 Agent 建立问题单，生产 Agent 完成新手引导与响应式修复；验收：首次任务完成率 ≥ 75%。</span></article>
-                  <article class="feedback-card suggestion"><b>优化建议 · 进入候选池</b><p>“希望每个角色有独立支线，也想看到校庆限定活动。”</p><span>动作：按用户价值、开发成本、IP 契合度三维评分；达到 70 分进入下轮策划 Brief。</span></article>
-                </div>
-                <div class="feedback-loop" aria-label="客户反馈闭环">
-                  <span>采集<br><small>页面 / 社群 / 试玩</small></span><i>→</i><span>归因<br><small>情绪 / 场景 / 频次</small></span><i>→</i><span>决策<br><small>优先级 / Owner / SLA</small></span><i>→</i><span>交付<br><small>版本 / 内容 / 回复</small></span><i>→</i><span>验证<br><small>指标 / 回访 / 关闭</small></span>
+                <div class="signal-summary-grid">
+                  <article><b>产品信号</b><strong>↑</strong><span>第一章完成度上升；移动端首屏仍需收敛。</span></article>
+                  <article><b>市场信号</b><strong>→</strong><span>角色内容稳定；远洋主题需要小范围验证。</span></article>
+                  <article><b>财务信号</b><strong>↑</strong><span>收入与合作线索上升，但仍需区分真实到账。</span></article>
+                  <article><b>客户信号</b><strong>!</strong><span>角色支线、新手引导和周边规格是高频主题。</span></article>
                 </div>
               </section>
             </div>
@@ -251,120 +211,68 @@
         </div>
       </section>
 
-      <section class="band">
+      <section class="band order-contract-band">
         <div class="inner">
           <div class="section-head">
             <div>
-              <p class="section-label">协议蓝图 Protocol Blueprint</p>
-              <h2>每一次运行都从业务目标进入协议包，再进入 Agent 和工具调用。<span class="en">Each run starts from a business brief and moves through protocol, agents and tools.</span></h2>
+              <p class="section-label">订单协议 Work Order Contract</p>
+              <h2>控制台管理状态，专业页面管理明细。<span class="en">The hub controls state; specialist pages retain detailed records.</span></h2>
             </div>
-            <p>协议包定义输入、产出、文件边界、验收口径、预算记录和发布渠道，让不同 Agent 可以并行工作，并让投资人与合作方看到可扩展的生产机制。</p>
+            <p>中枢不复制财务与反馈系统，而是引用它们的结构化信号、生成订单并跟踪是否完成闭环。</p>
           </div>
-          <div class="pipeline-board">
-            <article><b>Owner Brief</b><span>IP 目标、受众、预算、里程碑、风险边界。</span></article>
-            <article><b>Protocol Pack</b><span>任务拆解、提示词模板、文件契约、素材规格。</span></article>
-            <article><b>Agent Run</b><span>Codex 类 Agent 调用文件、浏览器、图像、视频、数据工具。</span></article>
-            <article><b>Review Gate</b><span>主理人和协作者检查体验、质量、品牌和发布风险。</span></article>
-            <article><b>Release Ledger</b><span>版本资产、宣发内容、成本记录、平台信号和复盘结论。</span></article>
+          <div class="control-plane-contract">
+            <article><em>01</em><b>决策包</b><span>选定 IP、游戏、玩法、优先级、预算与停止条件。</span></article>
+            <article><em>02</em><b>工作订单</b><span>定义负责人、输入、交付物、依赖、验收与审批门。</span></article>
+            <article><em>03</em><b>执行证据</b><span>提交文件、版本、测试、日志、消耗与风险说明。</span></article>
+            <article><em>04</em><b>专业账本</b><span>财务、市场和客户反馈保留完整记录与查询能力。</span></article>
+            <article><em>05</em><b>组合复盘</b><span>将实际结果返回决策 Agent，生成下一轮资源配置。</span></article>
           </div>
+          <div class="work-order-schema"><b>Workflow Envelope v2</b><code>{ portfolio_id, ip_id, product_id, work_order_id, assigned_role, objective, inputs[], deliverables[], budget_cap, dependencies[], acceptance[], evidence[], approval_gate, status, retry_policy, next_check_at }</code></div>
         </div>
       </section>
 
-      <section class="band mist">
+      <section class="band alt cadence-band">
         <div class="inner">
           <div class="section-head">
             <div>
-              <p class="section-label">任务队列 Mission Queue</p>
-              <h2>控制台把公司增长拆成可执行任务。<span class="en">The console turns company growth into executable missions.</span></h2>
+              <p class="section-label">调度节奏 Operating Cadence</p>
+              <h2>定时任务负责唤醒，数据中枢负责连续性。<span class="en">Schedules wake workers; the hub preserves continuity.</span></h2>
             </div>
-            <p>每个任务都对应可交付资产、验收标准和反馈数据，方便主理人、协作者和顾问围绕同一套事实做判断。</p>
+            <p>每个节点只处理自己有权限领取的订单；没有新任务时保持空闲，有阻塞时把原因写回中枢并等待人工或外部条件变化。</p>
           </div>
-          <div class="mission-grid">
-            <article class="mission-card">
-              <b>宣传视频包 Campaign Video Pack</b>
-              <span>生成预告片脚本、封面帧、短视频切条、平台标题和发布时间表。</span>
-              <small>Video Agent · Copy Agent · Distribution Agent</small>
-            </article>
-            <article class="mission-card">
-              <b>多人同步回归 Online Sync QA</b>
-              <span>浏览器打开试玩流程，检查 WebSocket 同步、角色状态、Boss 行为和移动端体验。</span>
-              <small>QA Agent · Browser Tool · Server Log</small>
-            </article>
-            <article class="mission-card">
-              <b>视觉资产扩展 Visual Asset Sprint</b>
-              <span>围绕学术喵新增角色动作、地图氛围、怪物轮廓和未来 IP 概念储备。</span>
-              <small>Art Agent · Image Tool · Asset Ledger</small>
-            </article>
-            <article class="mission-card">
-              <b>宣发财务复盘 Campaign Finance Review</b>
-              <span>汇总平台表现、互动质量、制作成本、工具消耗、潜在合作和下一轮预算建议。</span>
-              <small>Insight Agent · Finance Agent · Market Ledger</small>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="band alt">
-        <div class="inner">
-          <div class="section-head">
-            <div>
-              <p class="section-label">数据账本 Data Ledger</p>
-              <h2>市场和财务数据为下一轮产品投资提供依据。<span class="en">Market and finance data guide the next product investment cycle.</span></h2>
-            </div>
-            <p>控制台将可玩版本、宣发内容和社群互动转化为结构化数据，支持产品组合、合作谈判和资源配置。</p>
-          </div>
-          <div class="ledger-table" role="table" aria-label="OPC 数据账本">
-            <div role="row" class="ledger-head">
-              <span role="columnheader">模块 Module</span>
-              <span role="columnheader">采集内容 Data</span>
-              <span role="columnheader">经营价值 Business Value</span>
-            </div>
-            <div role="row">
-              <span role="cell">产品 Product</span>
-              <span role="cell">试玩留存、问题反馈、多人稳定性、版本质量</span>
-              <span role="cell">决定版本优先级和 IP 内容扩展节奏</span>
-            </div>
-            <div role="row">
-              <span role="cell">宣发 Campaign</span>
-              <span role="cell">完播、收藏、评论、转发、平台话题反馈</span>
-              <span role="cell">判断受众兴趣和渠道投入效率</span>
-            </div>
-            <div role="row">
-              <span role="cell">财务 Finance</span>
-              <span role="cell">模型消耗、工具成本、托管成本、外部协作预算</span>
-              <span role="cell">形成现金流周期和下一轮预算建议</span>
-            </div>
-            <div role="row">
-              <span role="cell">合作 Partnership</span>
-              <span role="cell">协作者线索、渠道资源、顾问建议、投资兴趣</span>
-              <span role="cell">扩大公司外部资源和商业化选项</span>
-            </div>
+          <div class="cadence-grid">
+            <article><time>08:00</time><b>汇总信号</b><span>Node A 读取产品、市场、财务与客户数据。</span></article>
+            <article><time>08:30</time><b>形成配置</b><span>决策 Agent 生成当天组合建议。</span></article>
+            <article><time>09:10</time><b>发布订单</b><span>批准后进入各节点的可领取队列。</span></article>
+            <article><time>15 MIN</time><b>订单检查</b><span>Node B / C 检查新订单、阻塞和复核事项。</span></article>
+            <article><time>23:00</time><b>经营复盘</b><span>财务与反馈回流，更新下一轮评分。</span></article>
           </div>
         </div>
       </section>
     </main>
 
-    <section class="contact-band">
+    <section class="contact-band console-cta">
       <div class="contact-inner">
         <div>
-          <h2>控制台让 OPC 工作流具备可展示、可扩展、可投资观察的运营形态。<span class="en">The console makes the OPC workflow visible, scalable and investable.</span></h2>
-          <p>从学术喵开始，第三学院 OPC 会把每轮产品、宣发和财务反馈沉淀为公司级增长资产。</p>
+          <h2>中枢让三台电脑围绕同一套公司事实运行。<span class="en">The control plane keeps three computers aligned to one company truth.</span></h2>
+          <p>工作流解释公司如何经营；控制台管理今天投什么、做什么、谁来做、如何验收，以及数据怎样回到下一轮决策。</p>
         </div>
         <div class="contact-actions">
-          <a class="button primary" href="opc-workflow.html">工作流 Workflow</a>
-          <a class="button" href="play.html">在线试玩 Play</a>
+          <a class="button primary" href="opc-workflow.html">查看 OPC 工作流</a>
+          <a class="button" href="opc-products.html">查看 IP 产品</a>
         </div>
       </div>
     </section>
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <span>第三学院 OPC · Agent Hub</span>
+        <span>第三学院 OPC · Decision & Work Order Hub</span>
         <div class="footer-links">
           <a href="opc.html">公司 Company</a>
           <a href="opc-products.html">产品 Products</a>
           <a href="opc-workflow.html">工作流 Workflow</a>
-          <a href="play.html">试玩 Play</a>
+          <a href="opc-finance-report.html">财务 Finance</a>
+          <a href="opc-feedback-records.html">反馈 Feedback</a>
         </div>
       </div>
     </footer>

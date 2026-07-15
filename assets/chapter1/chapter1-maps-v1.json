@@ -450,8 +450,8 @@
           "x": 1536,
           "y": 1805,
           "radius": 70,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_classroom",
           "requiresFlags": [
@@ -1449,8 +1449,8 @@
         },
         {
           "id": "ch1_m02_spawn_from_auditorium",
-          "x": 182,
-          "y": 348,
+          "x": 1536,
+          "y": 390,
           "facing": "S"
         }
       ],
@@ -1518,7 +1518,11 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.92,
+        "markerShadowWidth": 78,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.15,
+        "markerGlowWidth": 92,
+        "markerGlowHeight": 24,
         "markerGlowAlpha": 0.035,
           "hintX": 560,
           "hintY": 415,
@@ -1546,7 +1550,11 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.9,
+        "markerShadowWidth": 88,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.15,
+        "markerGlowWidth": 100,
+        "markerGlowHeight": 24,
         "markerGlowAlpha": 0.035,
           "hintX": 1270,
           "hintY": 480,
@@ -1580,7 +1588,11 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.9,
+        "markerShadowWidth": 84,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.15,
+        "markerGlowWidth": 96,
+        "markerGlowHeight": 24,
         "markerGlowAlpha": 0.035,
           "hintX": 1980,
           "hintY": 415,
@@ -1612,7 +1624,11 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.9,
+        "markerShadowWidth": 88,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.16,
+        "markerGlowWidth": 100,
+        "markerGlowHeight": 24,
         "markerGlowAlpha": 0.045,
           "hintX": 2450,
           "hintY": 550,
@@ -1714,8 +1730,8 @@
           "x": 120,
           "y": 512,
           "radius": 92,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m01_classroom_spawn",
           "targetSpawnId": "ch1_m01_spawn_from_archive"
         },
@@ -1726,8 +1742,8 @@
           "x": 1536,
           "y": 760,
           "radius": 92,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m03_agent_lab",
           "targetSpawnId": "ch1_m03_spawn_from_archive",
           "requiresFlags": [
@@ -1742,11 +1758,11 @@
           "id": "ch1_m02_exit_to_auditorium",
           "type": "teleport",
           "label": "学院大礼堂",
-          "x": 198,
-          "y": 172,
+          "x": 1536,
+          "y": 330,
           "radius": 92,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m02a_auditorium_branch",
           "targetSpawnId": "ch1_m02a_spawn_from_archive"
         }
@@ -1818,7 +1834,7 @@
           "id": "ch1_m02a_principal_bronze_statue",
           "key": "ch1-m02a-principal-bronze-statue",
           "path": "assets/chapter1/maps/ch1_m02a_auditorium_branch/props/ch1-m02a-principal-bronze-statue-v1.png",
-          "x": 2290,
+          "x": 2100,
           "y": 905,
           "scale": 0.9,
           "origin": {
@@ -1858,10 +1874,17 @@
           "h": 230
         },
         {
-          "id": "m02a-stage-front-center",
+          "id": "m02a-stage-front-center-left",
           "x": 820,
           "y": 950,
-          "w": 1432,
+          "w": 500,
+          "h": 130
+        },
+        {
+          "id": "m02a-stage-front-center-right",
+          "x": 1752,
+          "y": 950,
+          "w": 500,
           "h": 130
         },
         {
@@ -1872,18 +1895,25 @@
           "h": 230
         },
         {
+          "id": "m02a-stage-lectern",
+          "x": 1450,
+          "y": 785,
+          "w": 172,
+          "h": 150
+        },
+        {
           "id": "m02a-seat-bank-west",
           "x": 390,
-          "y": 1115,
+          "y": 1225,
           "w": 965,
-          "h": 590
+          "h": 480
         },
         {
           "id": "m02a-seat-bank-east",
           "x": 1658,
-          "y": 1115,
+          "y": 1225,
           "w": 992,
-          "h": 590
+          "h": 480
         },
         {
           "id": "m02a-south-gallery-wall-west",
@@ -1980,9 +2010,13 @@
           "id": "ch1_m02a_node_principal_statue",
           "type": "inspect",
           "label": "校长铜像",
-          "x": 2290,
+          "x": 2100,
           "y": 920,
           "radius": 145,
+          "hintX": 2100,
+          "hintY": 904,
+          "hintWidth": 78,
+          "hintHeight": 18,
           "visualPropId": "ch1_m02a_principal_bronze_statue",
           "showLabel": false,
           "dialogueId": "ch1_m02a_dialogue_statue"
@@ -1990,6 +2024,32 @@
       ],
       "enemySpawns": [],
       "disableDefaultEnemies": true,
+      "ambientEnemyRefresh": {
+        "initialCount": 2,
+        "initialDelayMs": 1200,
+        "intervalMs": 30000,
+        "minCount": 1,
+        "maxCount": 1,
+        "maxAlive": 5,
+        "avoidPlayerRadius": 240,
+        "spawnBounds": {
+          "x": 980,
+          "y": 1180,
+          "width": 1110,
+          "height": 930
+        },
+        "enemies": [
+          {
+            "textureKey": "ch1-runaway-magic-broom",
+            "label": "礼堂巡游魔法扫把",
+            "scale": 0.82,
+            "maxHp": 48,
+            "damage": 5,
+            "wanderSpeed": 34,
+            "chaseSpeed": 48
+          }
+        ]
+      },
       "encounters": [],
       "exitPoints": [
         {
@@ -1999,8 +2059,8 @@
           "x": 1536,
           "y": 2190,
           "radius": 104,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_auditorium"
         }
@@ -2145,91 +2205,63 @@
           "x": 0,
           "y": 0,
           "w": 3072,
-          "h": 390
+          "h": 270
         },
         {
           "id": "m03-west-boundary",
           "x": 0,
           "y": 0,
-          "w": 225,
+          "w": 120,
           "h": 2048
         },
         {
           "id": "m03-east-boundary",
-          "x": 2847,
+          "x": 2952,
           "y": 0,
-          "w": 225,
+          "w": 120,
           "h": 2048
         },
         {
           "id": "m03-south-left-hedge",
           "x": 0,
           "y": 1840,
-          "w": 1388,
+          "w": 1240,
           "h": 208
         },
         {
           "id": "m03-south-right-hedge",
-          "x": 1685,
+          "x": 1830,
           "y": 1840,
-          "w": 1388,
+          "w": 1242,
           "h": 208
         },
         {
           "id": "m03-west-upper-pond",
-          "x": 218,
-          "y": 500,
-          "w": 450,
-          "h": 405
+          "x": 120,
+          "y": 520,
+          "w": 300,
+          "h": 260
         },
         {
           "id": "m03-west-lower-pond",
-          "x": 218,
-          "y": 990,
-          "w": 450,
-          "h": 470
+          "x": 120,
+          "y": 900,
+          "w": 290,
+          "h": 330
         },
         {
           "id": "m03-east-upper-pond",
-          "x": 2405,
-          "y": 500,
-          "w": 450,
-          "h": 405
+          "x": 2652,
+          "y": 520,
+          "w": 300,
+          "h": 260
         },
         {
           "id": "m03-east-lower-pond",
-          "x": 2405,
-          "y": 990,
-          "w": 450,
-          "h": 470
-        },
-        {
-          "id": "m03-north-west-flowerbed",
-          "x": 645,
-          "y": 420,
-          "w": 495,
-          "h": 190
-        },
-        {
-          "id": "m03-north-east-flowerbed",
-          "x": 1932,
-          "y": 420,
-          "w": 495,
-          "h": 190
-        },
-        {
-          "id": "m03-south-west-flowerbed",
-          "x": 675,
-          "y": 1395,
-          "w": 420,
-          "h": 190
-        },
-        {
-          "id": "m03-south-east-flowerbed",
-          "x": 1977,
-          "y": 1395,
-          "w": 420,
-          "h": 190
+          "x": 2662,
+          "y": 900,
+          "w": 290,
+          "h": 330
         }
       ],
       "interactionNodes": [
@@ -2247,6 +2279,8 @@
         },
         "markerScale": 0.28,
         "markerOriginY": 0.92,
+        "markerShadowWidth": 68,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.14,
         "markerGlowAlpha": 0.03,
           "hintX": 975,
@@ -2276,6 +2310,8 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.92,
+        "markerShadowWidth": 58,
+        "markerShadowHeight": 13,
         "markerShadowAlpha": 0.14,
         "markerGlowAlpha": 0.035,
           "hintX": 1536,
@@ -2309,6 +2345,8 @@
         },
         "markerScale": 0.27,
         "markerOriginY": 0.92,
+        "markerShadowWidth": 66,
+        "markerShadowHeight": 14,
         "markerShadowAlpha": 0.14,
         "markerGlowAlpha": 0.04,
           "hintX": 2273,
@@ -2342,6 +2380,8 @@
         },
         "markerScale": 0.29,
         "markerOriginY": 0.9,
+        "markerShadowWidth": 94,
+        "markerShadowHeight": 18,
         "markerShadowAlpha": 0.15,
         "markerGlowAlpha": 0.045,
           "hintX": 1536,
@@ -2630,8 +2670,8 @@
           "x": 1536,
           "y": 1810,
           "radius": 88,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m02_prompt_archive",
           "targetSpawnId": "ch1_m02_spawn_from_lab"
         },
@@ -2642,8 +2682,8 @@
           "x": 1536,
           "y": 455,
           "radius": 92,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m04_library_lawn_boss",
           "targetSpawnId": "ch1_m04_spawn_lawn_gate",
           "requiresFlags": [
@@ -2730,6 +2770,7 @@
       "id": "ch1_m04_library_lawn_boss",
       "title": "结构力学实验室终期考核",
       "chapterId": "chapter1",
+      "runtimeScale": 1.2,
       "background": {
         "width": 3762,
         "height": 2508,
@@ -2789,6 +2830,12 @@
           "id": "ch1_m04_spawn_from_boss",
           "x": 627,
           "y": 2050,
+          "facing": "N"
+        },
+        {
+          "id": "ch1_m04_spawn_from_sakura",
+          "x": 3255,
+          "y": 630,
           "facing": "N"
         }
       ],
@@ -2850,24 +2897,28 @@
         },
         {
           "id": "ch1_m04_node_completion",
-          "type": "chapter-clear",
-          "label": "章节完成点",
-          "x": 3135,
-          "y": 610,
-          "radius": 150,
-          "visualType": "background-prop",
-          "hintX": 3135,
-          "hintY": 565,
+          "type": "teleport",
+          "label": "前往樱花同济大道",
+          "x": 3255,
+          "y": 390,
+          "radius": 118,
+          "visual": "transferArray",
+          "ringScale": 1.05,
+          "hintX": 3255,
+          "hintY": 345,
           "hintWidth": 164,
           "hintHeight": 48,
-          "labelX": 3135,
-          "labelY": 540,
+          "labelX": 3255,
+          "labelY": 320,
           "requiresFlags": [
             "ch1_final_boss_defeated"
           ],
           "setFlags": [
             "ch1_complete"
-          ]
+          ],
+          "targetMapId": "ch1_m05_sakura_tongji_avenue",
+          "targetSpawnId": "ch1_m05_spawn_south_transfer",
+          "cinematicBeforeTransition": true
         }
       ],
       "enemySpawns": [],
@@ -2889,8 +2940,8 @@
           "x": 627,
           "y": 2380,
           "radius": 110,
-          "visual": "portal",
-          "portalScale": 0.82,
+          "visual": "transferArray",
+          "ringScale": 1.05,
           "targetMapId": "ch1_m03_agent_lab",
           "targetSpawnId": "ch1_m03_spawn_from_boss_lawn"
         }
@@ -2913,6 +2964,204 @@
       },
       "version": "1.0.0-structural-lab-l-shape",
       "summary": "Four-panel L-shaped structural mechanics laboratory with an entrance wing, staged teaching bays, and a large final load-testing arena."
+    },
+    "ch1_m05_sakura_tongji_avenue": {
+      "id": "ch1_m05_sakura_tongji_avenue",
+      "title": "樱花同济大道",
+      "chapterId": "chapter1",
+      "background": {
+        "width": 1536,
+        "height": 1984,
+        "chunks": [
+          {
+            "id": "ch1-m05-sakura-north-v8",
+            "key": "ch1-m05-sakura-north-v8",
+            "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-north-v8.webp",
+            "x": 0,
+            "y": 0,
+            "width": 1536,
+            "height": 1160
+          },
+          {
+            "id": "ch1-m05-sakura-south-v3",
+            "key": "ch1-m05-sakura-south-v3",
+            "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/background/ch1-m05-sakura-south-v3.webp",
+            "x": 0,
+            "y": 960,
+            "width": 1536,
+            "height": 1024
+          }
+        ]
+      },
+      "spawn": {
+        "id": "ch1_m05_spawn_south_transfer",
+        "x": 768,
+        "y": 1690,
+        "facing": "N"
+      },
+      "spawnPoints": [
+        {
+          "id": "ch1_m05_spawn_south_transfer",
+          "x": 768,
+          "y": 1690,
+          "facing": "N"
+        }
+      ],
+      "camera": {
+        "startX": 768,
+        "startY": 1660,
+        "fitViewportWidth": true
+      },
+      "obstacles": [
+        { "id": "m05-west-boundary", "x": 0, "y": 0, "w": 245, "h": 1984 },
+        { "id": "m05-east-boundary", "x": 1291, "y": 0, "w": 245, "h": 1984 },
+        { "id": "m05-north-boundary", "x": 0, "y": 0, "w": 1536, "h": 70 },
+        { "id": "m05-south-boundary-left", "x": 0, "y": 1924, "w": 620, "h": 60 },
+        { "id": "m05-south-boundary-right", "x": 916, "y": 1924, "w": 620, "h": 60 }
+      ],
+      "npcs": [
+        {
+          "id": "ch1_m05_npc_group_two_passerby_a",
+          "groupId": "ch1_m05_static_group_two",
+          "textureKey": "ch1-m05-passerby-a-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-a-v1.png",
+          "x": 445,
+          "y": 402,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_two_passerby_b",
+          "groupId": "ch1_m05_static_group_two",
+          "textureKey": "ch1-m05-passerby-b-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-b-v1.png",
+          "x": 540,
+          "y": 420,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_single_right",
+          "groupId": "ch1_m05_static_single_a",
+          "textureKey": "ch1-m05-passerby-c-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-c-v1.png",
+          "x": 1038,
+          "y": 690,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_single_left",
+          "groupId": "ch1_m05_static_single_b",
+          "textureKey": "ch1-m05-passerby-d-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-d-v1.png",
+          "x": 472,
+          "y": 1238,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 56,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_a",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-a-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-a-v1.png",
+          "x": 980,
+          "y": 1340,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_b",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-b-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-b-v1.png",
+          "x": 1090,
+          "y": 1355,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_c",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-c-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-c-v1.png",
+          "x": 1000,
+          "y": 1450,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        },
+        {
+          "id": "ch1_m05_npc_group_four_passerby_d",
+          "groupId": "ch1_m05_static_group_four",
+          "textureKey": "ch1-m05-passerby-d-v1",
+          "path": "assets/chapter1/maps/ch1_m05_sakura_tongji_avenue/npcs/ch1-m05-passerby-d-v1.png",
+          "x": 1110,
+          "y": 1460,
+          "scale": 0.52,
+          "originY": 0.95,
+          "animate": false,
+          "breathe": false,
+          "showLabel": false,
+          "shadowWidth": 54,
+          "shadowHeight": 15
+        }
+      ],
+      "interactionNodes": [],
+      "enemySpawns": [],
+      "disableDefaultEnemies": true,
+      "encounters": [],
+      "exitPoints": [
+        {
+          "id": "ch1_m05_exit_back_m04",
+          "type": "teleport",
+          "label": "返回结构实验室",
+          "x": 768,
+          "y": 1866,
+          "radius": 102,
+          "visual": "transferArray",
+          "ringScale": 1.05,
+          "targetMapId": "ch1_m04_library_lawn_boss",
+          "targetSpawnId": "ch1_m04_spawn_from_sakura"
+        }
+      ],
+      "foregroundOverlays": [],
+      "version": "1.1.0-two-panel-static-npcs",
+      "summary": "Two continuation-generated orthographic academy avenue panels with a broad central road, seamless overlap, eight stationary sprite NPCs and a return transfer to the structural laboratory."
     }
   }
 }

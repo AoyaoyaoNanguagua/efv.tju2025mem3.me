@@ -104,8 +104,8 @@ def write_comparison(before: Image.Image, after: Image.Image, destination: Path)
 
 def main() -> None:
     root = Path(__file__).resolve().parents[1]
-    source_path = root / "assets" / "sprites" / "zhixia-sprites-v5-prototype.png"
-    destination_path = root / "assets" / "sprites" / "zhixia-sprites-v6-cat-alpha.png"
+    source_path = root / "assets" / "sprites" / "zhixia" / "zhixia-sprites-v5-prototype.png"
+    destination_path = root / "assets" / "sprites" / "zhixia" / "zhixia-sprites-v6-cat-alpha.png"
     preview_path = root / "tmp" / "imagegen" / "zhixia-cat-run-alpha-comparison.png"
     source = Image.open(source_path).convert("RGBA")
     repaired = repair(source)

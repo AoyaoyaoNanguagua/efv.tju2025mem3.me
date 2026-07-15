@@ -15,3 +15,6 @@ dict/
 play-data.sqlite3*
 
 assets/maps/playable/previews/
+
+# Local high-resolution cinematic masters; runtime exports are tracked via Git LFS.
+assets/cg/*.MOV

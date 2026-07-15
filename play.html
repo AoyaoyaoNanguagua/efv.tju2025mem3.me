@@ -6,7 +6,7 @@
   <title>学术喵的奇幻之旅：在线开发 MVP</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="play.css?v=20260712-assets-cinematic-v13">
-  <link rel="stylesheet" href="play-overrides.css?v=20260711-lina-maps-m04-v8">
+  <link rel="stylesheet" href="play-overrides.css?v=20260715-three-phase-boss-hud-v11">
 </head>
 <body>
   <main class="play-shell">
@@ -289,14 +289,12 @@
         </section>
 
         <nav class="quickbar" aria-label="快捷操作">
-          <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest"><small>T</small><span>任务</span></button>
-          <button id="chatToggleButton" type="button" data-panel-toggle="publicChat" data-icon="chat"><small>Enter</small><span>频道</span></button>
-          <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map"><small>M</small><span>地图</span></button>
-          <button id="inventoryToggleButton" type="button" data-icon="inventory"><small>I</small><span>背包</span></button>
-          <button id="musicToggle" type="button" data-icon="music"><small>B</small><span>音乐</span></button>
-          <button id="reconnectButton" type="button" data-icon="reconnect"><small>R</small><span>同步</span></button>
-          <button id="fullscreenButton" type="button" data-icon="fullscreen"><small>F</small><span>全屏</span></button>
-          <button id="exitButton" type="button" data-icon="exit"><small>Esc</small><span>退出</span></button>
+          <button id="chapterToggleButton" type="button" data-panel-toggle="chapterHud" data-icon="quest" data-tooltip-title="任务" data-tooltip-description="打开或收起第一章任务进度。" aria-label="任务"><small>T</small><span>任务</span></button>
+          <button id="mapToggleButton" type="button" data-panel-toggle="minimapPanel" data-icon="map" data-tooltip-title="地图" data-tooltip-description="打开或收起当前区域导航地图。" aria-label="地图"><small>M</small><span>地图</span></button>
+          <button id="inventoryToggleButton" type="button" data-icon="inventory" data-tooltip-title="背包" data-tooltip-description="查看装备、材料和任务掉落物。" aria-label="背包"><small>I</small><span>背包</span></button>
+          <button id="musicToggle" type="button" data-icon="music" data-tooltip-title="音乐" data-tooltip-description="开启或关闭当前区域背景音乐。" aria-label="音乐"><small>B</small><span>音乐</span></button>
+          <button id="fullscreenButton" type="button" data-icon="fullscreen" data-tooltip-title="全屏" data-tooltip-description="切换全屏游戏显示。" aria-label="全屏"><small>F</small><span>全屏</span></button>
+          <button id="exitButton" type="button" data-icon="exit" data-tooltip-title="退出" data-tooltip-description="退出当前角色并返回登录界面。" aria-label="退出"><small>Esc</small><span>退出</span></button>
         </nav>
       </div>
 
@@ -314,16 +312,33 @@
       </section>
 
       <section id="bossPanel" class="boss-panel" aria-label="Boss 状态" aria-hidden="true">
-        <div>
-          <span>第一章 Boss</span>
-          <strong>陆教授协议考核</strong>
+        <div class="boss-heading">
+          <span id="bossPhaseLabel">第一章 Boss</span>
+          <strong id="bossTitle">陆教授协议考核</strong>
         </div>
-        <div class="boss-meter"><i id="bossHpBar"></i></div>
+        <div class="boss-meter boss-meter-legacy"><i id="bossHpBar"></i></div>
         <b id="bossHpText">420 / 420</b>
+        <div class="boss-phase-stack" aria-label="Boss 三阶段生命值">
+          <div id="bossPhaseRow1" class="boss-phase-row">
+            <span>Ⅰ 承载外壳</span>
+            <div class="boss-phase-meter"><i id="bossPhaseBar1"></i></div>
+            <em id="bossPhaseValue1">100%</em>
+          </div>
+          <div id="bossPhaseRow2" class="boss-phase-row">
+            <span>Ⅱ 充能核心</span>
+            <div class="boss-phase-meter"><i id="bossPhaseBar2"></i></div>
+            <em id="bossPhaseValue2">待激活</em>
+          </div>
+          <div id="bossPhaseRow3" class="boss-phase-row">
+            <span>Ⅲ 失稳终局</span>
+            <div class="boss-phase-meter"><i id="bossPhaseBar3"></i></div>
+            <em id="bossPhaseValue3">待激活</em>
+          </div>
+        </div>
       </section>
 
       <section id="chapterEndCinematic" class="chapter-end-cinematic" aria-label="第一章结章动画" aria-hidden="true">
-        <video id="chapterEndVideo" src="assets/cg/p1boss-end.mp4?v=20260712-v1" preload="metadata" playsinline></video>
+        <video id="chapterEndVideo" src="assets/cg/p1boss-end-1440p30-h264-v1.mp4?v=20260715-2k30-h264-v1" preload="metadata" playsinline></video>
         <button id="chapterEndReplayButton" class="chapter-end-replay" type="button" hidden>播放结章动画</button>
         <button id="chapterEndSkipButton" class="chapter-end-skip" type="button">跳过</button>
       </section>
@@ -364,6 +379,6 @@
   </main>
 
   <script src="vendor/phaser.min.js"></script>
-  <script src="play.js?v=20260713-loading-optimization-v1"></script>
+    <script src="play.js?v=20260715-release-audit-v22"></script>
 </body>
 </html>

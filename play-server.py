@@ -49,9 +49,9 @@ CHAT_HISTORY_LIMIT = max(0, int(os.environ.get("CHAT_HISTORY_LIMIT", str(MAX_CHA
 CHAT_TEXT_LIMIT = max(1, int(os.environ.get("CHAT_TEXT_LIMIT", "180")))
 CHAT_RATE_WINDOW_SECONDS = CHAT_RATE_WINDOW
 MAX_CHAT_MESSAGES_PER_WINDOW = CHAT_RATE_LIMIT
-COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "levelUp", "enemySkill"}
+COMBAT_EVENT_ACTIONS = {"projectile", "melee", "linaGale", "chainLightning", "zhixiaUltimate", "berserk", "laodengShockwave", "laodengFireExplosion", "physicalImpactBurst", "levelUp", "enemySkill", "playerStatus", "structuralChargeAoe", "structuralSideLightning", "structuralBossDash", "structuralMarkedLightning"}
 COMBAT_VISUAL_TYPES = {"", "arrow", "arrowHeavy", "arrowBarrage", "swordWave", "lightningOrb", "windBolt"}
-ENEMY_STATES = {"move", "hit", "dead", "attack", "transform"}
+ENEMY_STATES = {"move", "hit", "dead", "attack", "transform", "charging", "phase2Combat", "phase3", "visualHit", "collapse"}
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 CHAT_TAG_RE = re.compile(r"<[^>\r\n]{0,120}>")
 
@@ -112,6 +112,22 @@ DEFAULT_BOSS = {
     "eliteRemaining": 0,
     "chestReady": False,
 }
+
+M04_MAP_ID = "ch1_m04_library_lawn_boss"
+
+
+def new_m04_session() -> dict:
+    return {
+        "active": False,
+        "sessionId": "",
+        "leaderId": "",
+        "leaderName": "",
+        "flags": [],
+        "started": False,
+        "phase": "idle",
+        "waveIndex": 0,
+        "startedAt": 0,
+    }
 
 CONTENT_TYPES = {
     ".html": "text/html; charset=utf-8",
@@ -469,8 +485,8 @@ def save_profile(user: sqlite3.Row, profile: dict) -> dict:
             (user["id"], profile_json, now),
         )
         conn.execute(
-            "UPDATE users SET nickname = ?, character_id = ?, updated_at = ? WHERE id = ?",
-            (safe_profile["name"], safe_profile["characterId"], now, user["id"]),
+            "UPDATE users SET character_id = ?, updated_at = ? WHERE id = ?",
+            (safe_profile["characterId"], now, user["id"]),
         )
         try:
             character_record_id = int(safe_profile.get("characterRecordId", ""))
@@ -486,7 +502,7 @@ def save_profile(user: sqlite3.Row, profile: dict) -> dict:
                 """,
                 (
                     safe_profile["characterId"],
-                    safe_profile["name"],
+                    DEFAULT_CHARACTER_NAMES.get(safe_profile["characterId"], safe_profile["name"]),
                     safe_profile["level"],
                     safe_profile["exp"],
                     safe_profile["credits"],
@@ -513,10 +529,11 @@ DEFAULT_CHARACTER_NAMES = {
 
 def character_to_dict(row: sqlite3.Row) -> dict:
     max_hp = clean_number(row["max_hp"], 160, 1, 9999)
+    character_id = clean_character(row["character_id"])
     return {
         "slot": int(row["slot"]),
-        "characterId": clean_character(row["character_id"]),
-        "name": clean_name(row["name"]),
+        "characterId": character_id,
+        "name": DEFAULT_CHARACTER_NAMES.get(character_id, clean_name(row["name"])),
         "level": clean_number(row["level"], 1, 1, 99),
         "exp": clean_number(row["exp"], 0, 0, 99999),
         "credits": clean_number(row["credits"], 0, 0, 99999),
@@ -557,7 +574,7 @@ def handle_character_create(user: sqlite3.Row, payload: dict) -> tuple[int, dict
         return 400, {"error": f"角色仓库已满（最多 {CHARACTER_LIMIT} 个角色）。"}
     used_slots = {item["slot"] for item in characters}
     slot = next(index for index in range(CHARACTER_LIMIT) if index not in used_slots)
-    name = clean_name(payload.get("name"), user["nickname"])
+    name = DEFAULT_CHARACTER_NAMES.get(requested, clean_name(user["nickname"]))
     now = time.time()
     with db() as conn:
         cursor = conn.execute(
@@ -669,12 +686,92 @@ def get_room(name: str = "zhonghe-plaza") -> dict:
             "drops": {},
             "progress": {},
             "chat": [],
+            "m04": new_m04_session(),
         }
     rooms[name].setdefault("slimes", {})
     rooms[name].setdefault("drops", {})
     rooms[name].setdefault("progress", {})
     rooms[name].setdefault("chat", [])
+    rooms[name].setdefault("m04", new_m04_session())
     return rooms[name]
+
+
+def m04_member_ids(room: dict) -> list[str]:
+    return [
+        str(peer_id)
+        for peer_id, player in room.get("peers", {}).items()
+        if str(player.get("mapId", "")) == M04_MAP_ID
+    ]
+
+
+def m04_session_payload(room: dict) -> dict:
+    session = room.get("m04") or new_m04_session()
+    return {
+        "active": bool(session.get("active")),
+        "sessionId": str(session.get("sessionId", "")),
+        "leaderId": str(session.get("leaderId", "")),
+        "leaderName": clean_limited_text(session.get("leaderName", ""), 16),
+        "flags": list(session.get("flags") or [])[:240],
+        "started": bool(session.get("started")),
+        "phase": clean_limited_text(session.get("phase", "idle"), 32),
+        "waveIndex": int(clean_number(session.get("waveIndex"), 0, 0, 12)),
+        "memberIds": m04_member_ids(room),
+    }
+
+
+def clear_m04_runtime_locked(room: dict) -> None:
+    room["boss"] = dict(DEFAULT_BOSS)
+    room["slimes"] = {
+        enemy_id: enemy
+        for enemy_id, enemy in room.get("slimes", {}).items()
+        if str(enemy.get("mapId", "")) != M04_MAP_ID
+    }
+    room["drops"] = {
+        drop_id: drop
+        for drop_id, drop in room.get("drops", {}).items()
+        if str(drop.get("mapId", "")) != M04_MAP_ID
+    }
+    room["progress"] = {
+        event_id: event
+        for event_id, event in room.get("progress", {}).items()
+        if str(event.get("mapId", "")) != M04_MAP_ID
+    }
+
+
+def update_m04_session_locked(room: dict, client_id: str, player: dict, previous_map_id: str = "") -> tuple[bool, bool]:
+    current_map_id = str(player.get("mapId", ""))
+    session = room.get("m04") or new_m04_session()
+    changed = False
+    boss_reset = False
+    if current_map_id == M04_MAP_ID:
+        if not session.get("active"):
+            clear_m04_runtime_locked(room)
+            flags = [str(flag) for flag in list(player.get("flags") or [])[:240] if str(flag)]
+            session = {
+                **new_m04_session(),
+                "active": True,
+                "sessionId": secrets.token_urlsafe(8),
+                "leaderId": str(client_id),
+                "leaderName": clean_limited_text(player.get("name", "玩家"), 16),
+                "flags": list(dict.fromkeys(flags)),
+                "startedAt": int(time.time() * 1000),
+            }
+            room["m04"] = session
+            changed = True
+            boss_reset = True
+        elif str(session.get("leaderId", "")) == str(client_id):
+            merged_flags = list(dict.fromkeys([
+                *list(session.get("flags") or []),
+                *[str(flag) for flag in list(player.get("flags") or [])[:240] if str(flag)],
+            ]))[:240]
+            session["flags"] = merged_flags
+            session["leaderName"] = clean_limited_text(player.get("name", session.get("leaderName", "玩家")), 16)
+    elif previous_map_id == M04_MAP_ID and not m04_member_ids(room):
+        clear_m04_runtime_locked(room)
+        room["m04"] = new_m04_session()
+        changed = True
+        boss_reset = True
+    return changed, boss_reset
 
 
 class WsClient:
@@ -807,6 +904,8 @@ def user_by_id(user_id: int) -> sqlite3.Row | None:
 def leave_client(client: WsClient) -> None:
     left_room = ""
     left_id = ""
+    m04_payload = None
+    reset_boss = False
     with state_lock:
         if client in clients:
             clients.remove(client)
@@ -815,17 +914,30 @@ def leave_client(client: WsClient) -> None:
         if client.room_name:
             room = get_room(client.room_name)
             if client.id in room["peers"]:
+                previous_map_id = str(room["peers"][client.id].get("mapId", ""))
                 del room["peers"][client.id]
                 left_room = client.room_name
                 left_id = client.id
+                if previous_map_id == M04_MAP_ID and not m04_member_ids(room):
+                    clear_m04_runtime_locked(room)
+                    room["m04"] = new_m04_session()
+                    m04_payload = m04_session_payload(room)
+                    reset_boss = True
             if not room["peers"]:
                 room["boss"] = dict(DEFAULT_BOSS)
                 room["slimes"].clear()
                 room["drops"].clear()
                 room["progress"].clear()
+                room["m04"] = new_m04_session()
+                m04_payload = m04_session_payload(room)
+                reset_boss = True
         client.alive = False
     if left_room and left_id:
         broadcast(left_room, {"type": "peerLeft", "id": left_id}, client)
+        if m04_payload is not None:
+            broadcast(left_room, {"type": "m04Session", "session": m04_payload}, client)
+        if reset_boss:
+            broadcast(left_room, {"type": "bossState", "boss": dict(DEFAULT_BOSS)}, client)
 
 
 def player_state_from_message(user: sqlite3.Row, profile: dict, incoming: dict) -> dict:
@@ -893,6 +1005,8 @@ def handle_join(client: WsClient, message: dict) -> None:
         clients.add(client)
         clients_by_user[client.user_id] = client
         room["peers"][client.id] = player
+        m04_changed, m04_boss_reset = update_m04_session_locked(room, client.id, player)
+        m04_session = m04_session_payload(room)
         peers = [peer for peer_id, peer in room["peers"].items() if peer_id != client.id]
         boss = dict(room["boss"])
         slimes = list(room["slimes"].values())
@@ -920,9 +1034,15 @@ def handle_join(client: WsClient, message: dict) -> None:
             "progress": progress,
             "chat": chat,
             "recentChat": chat,
+            "m04Session": m04_session,
+            "serverTime": int(time.time() * 1000),
         },
     )
     broadcast(room_name, {"type": "peerJoined", "player": player}, client)
+    if m04_changed:
+        broadcast(room_name, {"type": "m04Session", "session": m04_session})
+    if m04_boss_reset:
+        broadcast(room_name, {"type": "bossState", "boss": dict(DEFAULT_BOSS)})
 
 
 def handle_update(client: WsClient, message: dict) -> None:
@@ -937,9 +1057,17 @@ def handle_update(client: WsClient, message: dict) -> None:
     profile = load_profile(user)
     player = player_state_from_message(user, profile, message.get("player") or {})
     with state_lock:
+        previous_map_id = str(client.player.get("mapId", ""))
         client.player = player
-        get_room(client.room_name)["peers"][client.id] = player
+        room = get_room(client.room_name)
+        room["peers"][client.id] = player
+        m04_changed, m04_boss_reset = update_m04_session_locked(room, client.id, player, previous_map_id)
+        m04_session = m04_session_payload(room)
     broadcast(client.room_name, {"type": "peerUpdated", "player": player}, client)
+    if m04_changed:
+        broadcast(client.room_name, {"type": "m04Session", "session": m04_session})
+    if m04_boss_reset:
+        broadcast(client.room_name, {"type": "bossState", "boss": dict(DEFAULT_BOSS)})
 
 
 def handle_area_heal(client: WsClient, message: dict) -> None:
@@ -1058,6 +1186,14 @@ def handle_healing_chain(client: WsClient, message: dict) -> None:
 def handle_boss_start(client: WsClient, message: dict) -> None:
     if client.user_id is None or not client.room_name:
         return
+    map_id = str(client.player.get("mapId", ""))
+    if map_id == M04_MAP_ID:
+        with state_lock:
+            session = (get_room(client.room_name).get("m04") or new_m04_session())
+            is_leader = bool(session.get("active")) and str(session.get("leaderId", "")) == str(client.id)
+        if not is_leader:
+            send_ws(client, {"type": "notice", "text": "本轮 M04 仅首位进入者可推进陆教授考核。"})
+            return
     incoming = message.get("boss") or {}
     boss = dict(DEFAULT_BOSS)
     boss["maxHp"] = clean_number(incoming.get("maxHp"), DEFAULT_BOSS["maxHp"], 1, 99999)
@@ -1073,7 +1209,13 @@ def handle_boss_start(client: WsClient, message: dict) -> None:
     boss["eliteRemaining"] = clean_number(incoming.get("eliteRemaining"), 1, 0, 9)
     boss["chestReady"] = bool(incoming.get("chestReady", False))
     with state_lock:
-        get_room(client.room_name)["boss"] = boss
+        room = get_room(client.room_name)
+        room["boss"] = boss
+        if map_id == M04_MAP_ID:
+            session = room.get("m04") or new_m04_session()
+            session["started"] = True
+            session["phase"] = boss["phase"]
+            session["waveIndex"] = int(boss["waveIndex"])
     broadcast(client.room_name, {"type": "bossState", "boss": boss})
 
 
@@ -1112,6 +1254,11 @@ def handle_slime_spawn(client: WsClient, message: dict) -> None:
     map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
     if map_id != str(client.player.get("mapId", "")):
         return
+    if map_id == M04_MAP_ID and bool(incoming.get("bossSummon", False)):
+        with state_lock:
+            session = (get_room(client.room_name).get("m04") or new_m04_session())
+            if not session.get("active") or str(session.get("leaderId", "")) != str(client.id):
+                return
     texture_key = re.sub(r"[^A-Za-z0-9_-]", "", str(incoming.get("textureKey") or ""))[:80]
     rank = clean_limited_text(incoming.get("rank", "mob"), 12)
     if rank not in {"mob", "elite", "rare", "boss"}:
@@ -1134,11 +1281,18 @@ def handle_slime_spawn(client: WsClient, message: dict) -> None:
         "scale": clean_float(incoming.get("scale"), 0.9, 0.05, 3.0),
         "enemyArchetype": clean_limited_text(incoming.get("enemyArchetype", ""), 32),
         "bossForm": int(clean_number(incoming.get("bossForm"), 1, 1, 4)),
+        "bossPhase": clean_limited_text(incoming.get("bossPhase", ""), 16),
+        "bossCharger": bool(incoming.get("bossCharger", False)),
         "hazardBonus": int(clean_number(incoming.get("hazardBonus"), 0, 0, 6)),
         "groupId": clean_limited_text(incoming.get("groupId", ""), 64),
         "bossSummon": bool(incoming.get("bossSummon", False)),
         "bossWaveId": clean_limited_text(incoming.get("bossWaveId", ""), 32),
         "bossWaveTitle": clean_limited_text(incoming.get("bossWaveTitle", ""), 64),
+        "ambientWander": bool(incoming.get("ambientWander", False)),
+        "passiveWander": bool(incoming.get("passiveWander", False)),
+        "smoothMovement": bool(incoming.get("smoothMovement", False)),
+        "wanderSpeed": clean_float(incoming.get("wanderSpeed"), 34, 0, 500),
+        "chaseSpeed": clean_float(incoming.get("chaseSpeed"), 48, 0, 800),
         "ownerId": client.id,
         "createdAt": int(time.time() * 1000),
     }
@@ -1275,7 +1429,7 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
     incoming = message.get("event") or {}
     if not isinstance(incoming, dict):
         return
-    action = clean_limited_text(incoming.get("action", ""), 24)
+    action = clean_limited_text(incoming.get("action", ""), 32)
     map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
     if action not in COMBAT_EVENT_ACTIONS or map_id != str(client.player.get("mapId", "")):
         return
@@ -1290,6 +1444,41 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
             "x": clean_number(point.get("x"), client.player.get("x", 0), 0, 20000),
             "y": clean_number(point.get("y"), client.player.get("y", 0), 0, 20000),
         })
+    targets = []
+    for target in list(incoming.get("targets") or [])[:2]:
+        if not isinstance(target, dict):
+            continue
+        target_id = clean_slime_id(target.get("id"), fallback=False)
+        if not target_id:
+            continue
+        targets.append({
+            "id": target_id,
+            "x": clean_number(target.get("x"), client.player.get("x", 0), 0, 20000),
+            "y": clean_number(target.get("y"), client.player.get("y", 0), 0, 20000),
+        })
+    chains = []
+    for chain in list(incoming.get("chains") or [])[:4]:
+        if not isinstance(chain, dict):
+            continue
+        chain_points = []
+        for point in list(chain.get("points") or [])[:3]:
+            if not isinstance(point, dict):
+                continue
+            target_id = clean_slime_id(point.get("id"), fallback=False)
+            if not target_id:
+                continue
+            chain_points.append({
+                "id": target_id,
+                "x": clean_number(point.get("x"), client.player.get("x", 0), 0, 20000),
+                "y": clean_number(point.get("y"), client.player.get("y", 0), 0, 20000),
+            })
+        chains.append({
+            "sourceTargetId": clean_slime_id(chain.get("sourceTargetId"), fallback=False),
+            "branch": int(clean_number(chain.get("branch"), 0, 0, 1)),
+            "points": chain_points,
+        })
+    created_at = int(time.time() * 1000)
+    lead_ms = int(clean_number(incoming.get("leadMs"), 0, 0, 2000))
     event = {
         "sourceId": client.id,
         "characterId": clean_character(client.player.get("characterId"), "lina"),
@@ -1307,12 +1496,26 @@ def handle_combat_event(client: WsClient, message: dict) -> None:
         "color": clean_number(incoming.get("color"), 0xFFFFFF, 0, 0xFFFFFF),
         "charged": bool(incoming.get("charged", False)),
         "berserk": bool(incoming.get("berserk", False)),
+        "secondary": bool(incoming.get("secondary", False)),
+        "pulse": int(clean_number(incoming.get("pulse"), 0, 0, 12)),
+        "comboIndex": int(clean_number(incoming.get("comboIndex"), 0, 0, 8)),
         "level": int(clean_number(incoming.get("level"), client.player.get("level", 1), 1, 99)),
         "levels": int(clean_number(incoming.get("levels"), 1, 1, 12)),
         "skillId": clean_limited_text(incoming.get("skillId", ""), 32),
         "enemyId": clean_slime_id(incoming.get("enemyId"), fallback=False),
+        "damageAmount": clean_number(incoming.get("damageAmount"), 0, 0, 9999),
+        "damage": clean_number(incoming.get("damage"), 0, 0, 9999),
+        "healAmount": clean_number(incoming.get("healAmount"), 0, 0, 9999),
+        "shieldSpent": clean_number(incoming.get("shieldSpent"), 0, 0, 9999),
+        "shieldGain": clean_number(incoming.get("shieldGain"), 0, 0, 9999),
+        "down": bool(incoming.get("down", False)),
+        "side": clean_limited_text(incoming.get("side", ""), 8),
+        "sequence": int(clean_number(incoming.get("sequence"), 0, 0, 1000000000)),
+        "targets": targets,
+        "chains": chains,
         "points": points,
-        "createdAt": int(time.time() * 1000),
+        "createdAt": created_at,
+        "executeAt": created_at + lead_ms,
     }
     broadcast(client.room_name, {"type": "combatEvent", "event": event}, client)
 
@@ -1328,6 +1531,12 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
     state = clean_limited_text(incoming.get("state", "move"), 12)
     if not enemy_id or map_id != str(client.player.get("mapId", "")) or state not in ENEMY_STATES:
         return
+    if map_id == M04_MAP_ID and state in {"transform", "charging", "phase2Combat", "phase3"}:
+        with state_lock:
+            session = (get_room(client.room_name).get("m04") or new_m04_session())
+            leader_id = str(session.get("leaderId", ""))
+        if leader_id and leader_id != str(client.id):
+            return
     texture_key = re.sub(r"[^A-Za-z0-9_-]", "", str(incoming.get("textureKey") or ""))[:80]
     rank = clean_limited_text(incoming.get("rank", "mob"), 12)
     if rank not in {"mob", "elite", "rare", "boss"}:
@@ -1351,6 +1560,8 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
         "scale": scale,
         "enemyArchetype": clean_limited_text(incoming.get("enemyArchetype", ""), 32),
         "bossForm": int(clean_number(incoming.get("bossForm"), 1, 1, 4)),
+        "bossPhase": clean_limited_text(incoming.get("bossPhase", ""), 16),
+        "bossCharger": bool(incoming.get("bossCharger", False)),
         "hazardBonus": int(clean_number(incoming.get("hazardBonus"), 0, 0, 6)),
         "groupId": clean_limited_text(incoming.get("groupId", ""), 64),
         "bossSummon": bool(incoming.get("bossSummon", False)),
@@ -1366,8 +1577,60 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
     }
     with state_lock:
         room = get_room(client.room_name)
+        existing = room["slimes"].get(enemy_id)
+        if existing and state in {"visualHit", "hit", "dead"} and enemy["damageAmount"] > 0:
+            authoritative_max_hp = max(1, float(existing.get("maxHp", enemy["maxHp"])))
+            authoritative_hp = max(0, float(existing.get("hp", authoritative_max_hp)) - enemy["damageAmount"])
+            enemy["maxHp"] = authoritative_max_hp
+            enemy["hp"] = authoritative_hp
         room["slimes"][enemy_id] = enemy
     broadcast(client.room_name, {"type": "enemyState", "enemy": enemy}, client)
+
+
+def handle_enemy_batch(client: WsClient, message: dict) -> None:
+    if client.user_id is None or not client.room_name or not client.id:
+        return
+    map_id = clean_limited_text(message.get("mapId", client.player.get("mapId", "")), 64)
+    if map_id != str(client.player.get("mapId", "")) or map_id != M04_MAP_ID:
+        return
+    with state_lock:
+        room = get_room(client.room_name)
+        session = room.get("m04") or new_m04_session()
+        if session.get("active") and str(session.get("leaderId", "")) != str(client.id):
+            return
+        stored = room["slimes"]
+        enemies = []
+        for incoming in list(message.get("enemies") or [])[:24]:
+            if not isinstance(incoming, dict):
+                continue
+            enemy_id = clean_slime_id(incoming.get("id"), fallback=False)
+            existing = stored.get(enemy_id)
+            if not enemy_id or not existing or str(existing.get("mapId", "")) != map_id:
+                continue
+            max_hp = clean_number(incoming.get("maxHp"), existing.get("maxHp", 1), 1, 99999)
+            state = clean_limited_text(incoming.get("state", "move"), 16)
+            if state not in ENEMY_STATES:
+                state = "move"
+            snapshot = {
+                "id": enemy_id,
+                "x": clean_number(incoming.get("x"), existing.get("x", 0), 0, 20000),
+                "y": clean_number(incoming.get("y"), existing.get("y", 0), 0, 20000),
+                "hp": clean_number(incoming.get("hp"), existing.get("hp", max_hp), 0, max_hp),
+                "maxHp": max_hp,
+                "state": state,
+                "bossPhase": clean_limited_text(incoming.get("bossPhase", existing.get("bossPhase", "")), 16),
+                "bossForm": int(clean_number(incoming.get("bossForm"), existing.get("bossForm", 1), 1, 4)),
+                "flipX": bool(incoming.get("flipX", False)),
+            }
+            existing.update(snapshot)
+            enemies.append(snapshot)
+    if enemies:
+        broadcast(client.room_name, {
+            "type": "enemyBatch",
+            "mapId": map_id,
+            "serverTime": int(time.time() * 1000),
+            "enemies": enemies,
+        }, client)
 
 
 def handle_progress_event(client: WsClient, message: dict) -> None:
@@ -1379,6 +1642,12 @@ def handle_progress_event(client: WsClient, message: dict) -> None:
     map_id = clean_limited_text(incoming.get("mapId", client.player.get("mapId", "")), 64)
     if map_id != str(client.player.get("mapId", "")):
         return
+    if map_id == M04_MAP_ID:
+        with state_lock:
+            session = (get_room(client.room_name).get("m04") or new_m04_session())
+            if not session.get("active") or str(session.get("leaderId", "")) != str(client.id):
+                send_ws(client, {"type": "notice", "text": "M04 区域进度由本轮首位进入者统一推进。"})
+                return
     kind = clean_limited_text(incoming.get("kind", "flag"), 16)
     if kind not in {"flag", "node", "encounter"}:
         kind = "flag"
@@ -1406,6 +1675,12 @@ def handle_progress_event(client: WsClient, message: dict) -> None:
         room = get_room(client.room_name)
         existing = room["progress"].get(event["id"])
         room["progress"][event["id"]] = event
+        if map_id == M04_MAP_ID:
+            session = room.get("m04") or new_m04_session()
+            session["flags"] = list(dict.fromkeys([
+                *list(session.get("flags") or []),
+                *flags,
+            ]))[:240]
     if not existing:
         broadcast(client.room_name, {"type": "progressEvent", "event": event}, client)
 
@@ -1426,7 +1701,8 @@ def handle_chat_send(client: WsClient, message: dict) -> None:
         profile = load_profile(user)
         name = clean_name(profile.get("name"), client.player.get("name") or client.id)
         if name in DEFAULT_CHARACTER_NAMES.values():
-            name = clean_name(user["nickname"], client.id)
+            account_name = clean_name(user["nickname"], user["username"])
+            name = user["username"] if account_name in DEFAULT_CHARACTER_NAMES.values() else account_name
         character_id = clean_character(profile.get("characterId"), client.player.get("characterId", "lina"))
         player_id = profile["id"]
     else:
@@ -1491,6 +1767,8 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
         handle_combat_event(client, message)
     elif message_type == "enemyState":
         handle_enemy_state(client, message)
+    elif message_type == "enemyBatch":
+        handle_enemy_batch(client, message)
     elif message_type == "progressEvent":
         handle_progress_event(client, message)
     elif message_type == "chatSend":
@@ -1648,7 +1926,7 @@ class GameHandler(BaseHTTPRequestHandler):
                         break
                     self.wfile.write(chunk)
                     remaining -= len(chunk)
-        except (BrokenPipeError, ConnectionResetError):
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
             return
 
     def handle_websocket(self) -> None:
