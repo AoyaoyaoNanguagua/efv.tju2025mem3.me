@@ -32,8 +32,26 @@
       <section class="single-order-complete" data-order-complete hidden>
         <span>CLOSED LOOP</span>
         <h1>本轮经营循环已经完成。</h1>
-        <p>策划规格、技术构建、QA 证据和市场物料都已写回 Agent Hub。</p>
+        <p>Human Owner 已手动发布游戏版本，策划规格、技术构建、QA 证据和市场物料均已写回 Agent Hub。</p>
         <div><a class="button primary" href="play.html">查看当前游戏版本</a><a class="button" data-return-console href="opc-console.html#current-order">返回中台审计记录</a></div>
+      </section>
+
+      <section class="single-order-release" data-order-release hidden>
+        <div class="single-order-release-copy">
+          <span>HUMAN RELEASE GATE · MANUAL ACTION</span>
+          <h1>游戏正式发版必须由 Human Owner 手动执行。</h1>
+          <p>技术 Agent 已提交可验收构建与 QA 证据。市场宣发沿独立路径运行，不构成游戏发版前置条件，也不能代替人工发布动作。</p>
+          <dl>
+            <div><dt>技术构建</dt><dd>已验收</dd></div>
+            <div><dt>发布责任</dt><dd>Human Owner</dd></div>
+            <div><dt>市场路径</dt><dd>独立并行</dd></div>
+          </dl>
+        </div>
+        <div class="single-order-release-action">
+          <b>最终人工把关</b>
+          <span>核对构建版本、QA 证据、回滚说明与公开边界后，再执行正式发版。</span>
+          <button class="button primary" type="button" data-order-publish>Human Owner 手动发布游戏版本</button>
+        </div>
       </section>
 
       <section class="single-order-card" data-order-card hidden>

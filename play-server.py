@@ -232,32 +232,32 @@ def opc_roadshow_orders() -> list[dict]:
             "id": "WO-DEMO-MKT-001",
             "stage": "market",
             "stageIndex": 3,
-            "createdBy": "Agent Hub · 已验收版本触发",
+            "createdBy": "Agent Hub · 策划规格批准后并行生成",
             "assignedRole": "市场 Agent · Market OPC",
-            "scheduledAt": "13:00",
-            "title": "制作“樱花大道新 Boss”更新海报",
-            "objective": "仅使用已通过技术验收的 Boss 素材和版本事实，制作一张可公开审核的更新海报与短文案。",
+            "scheduledAt": "10:30",
+            "title": "筹备“樱花大道新 Boss”对外宣发",
+            "objective": "基于已批准的策划规格启动海报、文案与社群传播筹备；技术素材通过验收后再补充版本截图与最终事实。",
             "inputs": [
-                "BUILD-DEMO-0716：已批准试玩版本",
-                "ASSET-BOSS-DOG-v1：已批准透明素材",
-                "第三学院 OPC 海报模板、版本号和试玩入口",
+                "BOSS-DOG-SPEC-v1：已批准的 Boss 策划与美术规格",
+                "第三学院 OPC 海报模板、品牌语气和公开边界",
+                "技术节点后续写回的已验收截图、素材与版本事实",
             ],
             "deliverables": [
-                "《樱花大道 Boss 来袭》更新海报",
-                "30 字以内平台标题与 80 字以内更新说明",
-                "试玩入口、版本号和 DEMO 数据声明",
+                "《樱花大道 Boss 来袭》预热海报与更新海报",
+                "30 字以内平台标题、80 字以内说明与社群发布计划",
+                "已验收技术素材到位后的版本号、试玩入口与 DEMO 声明",
             ],
             "acceptance": [
-                "不得宣传尚未进入已批准构建的技能或玩法",
-                "海报沿用学术喵品牌视觉并清楚标注试玩版本",
-                "公开前必须由 Human Owner 完成最终内容审批",
+                "策划规格批准后允许启动预热，但不得把规划内容表述为已上线事实",
+                "技术素材到位后仅引用已通过验收的版本能力",
+                "所有对外内容必须由 Human Owner 完成最终内容审批",
             ],
             "result": {
-                "summary": "市场 Agent 已提交更新海报与发布文案，经营循环完成。",
+                "summary": "市场 Agent 已提交独立的对外宣发内容与社群发布计划。",
                 "evidence": [
                     "POSTER-BOSS-DOG-v1：《樱花大道 Boss 来袭》海报",
                     "COPY-DEMO-0716：平台标题、更新说明和试玩入口已生成",
-                    "发布记录已写回 Agent Hub，等待下一轮玩家反馈与财务信号",
+                    "市场交付已写回 Agent Hub，不作为游戏版本发版前置条件",
                 ],
             },
         },
@@ -273,6 +273,13 @@ def new_opc_roadshow_state(demo_id: str) -> dict:
         "currentOrderIndex": -1,
         "currentStatus": "DECISION_READY",
         "humanApproved": False,
+        "orderStates": [
+            {"status": "LOCKED", "humanApproved": False},
+            {"status": "LOCKED", "humanApproved": False},
+            {"status": "LOCKED", "humanApproved": False},
+        ],
+        "releaseReady": False,
+        "published": False,
         "signals": [
             {"source": "财务账本", "value": "¥2,184", "label": "樱花同济篇演示净额", "trend": "+31%"},
             {"source": "客户反馈", "value": "14 / 50", "label": "希望樱花大道增加 Boss", "trend": "高频"},
@@ -299,6 +306,31 @@ def opc_roadshow_snapshot(demo_id: str) -> dict:
         return json.loads(json.dumps(state, ensure_ascii=False))
 
 
+def sync_opc_roadshow_current(state: dict) -> None:
+    if state["completed"]:
+        state["currentOrderIndex"] = -1
+        state["currentStatus"] = "CLOSED_LOOP"
+        state["humanApproved"] = False
+        return
+    current_index = int(state.get("currentOrderIndex", -1))
+    order_states = state["orderStates"]
+    if 0 <= current_index < len(order_states):
+        state["currentStatus"] = order_states[current_index]["status"]
+        state["humanApproved"] = bool(order_states[current_index]["humanApproved"])
+        return
+    state["currentStatus"] = "AWAITING_MANUAL_RELEASE" if state["releaseReady"] and not state["published"] else "NO_ACTIVE_ORDER"
+    state["humanApproved"] = False
+
+
+def close_opc_roadshow_if_ready(state: dict) -> None:
+    market_done = state["orderStates"][2]["status"] == "ACCEPTED"
+    if not state["published"] or not market_done or state["completed"]:
+        return
+    state["completed"] = True
+    state["audit"].append({"time": "14:00", "actor": "Agent Hub", "event": "人工发布记录、市场交付与审计证据已回流，经营周期闭合"})
+    sync_opc_roadshow_current(state)
+
+
 def apply_opc_roadshow_action(payload: dict) -> tuple[int, dict]:
     demo_id = clean_opc_demo_id(payload.get("demoId"))
     action = str(payload.get("action") or "").strip()
@@ -313,47 +345,70 @@ def apply_opc_roadshow_action(payload: dict) -> tuple[int, dict]:
             if not state["started"]:
                 state["started"] = True
                 state["currentOrderIndex"] = 0
-                state["currentStatus"] = "WAITING_APPROVAL"
-                state["humanApproved"] = False
+                state["orderStates"][0] = {"status": "WAITING_APPROVAL", "humanApproved": False}
+                sync_opc_roadshow_current(state)
                 state["audit"].append({"time": "09:00", "actor": "决策 Agent", "event": f"已创建 {orders[0]['id']}，等待 Human Owner 审批"})
             return 200, {"demo": state}
 
         if not state["started"] or state["completed"]:
             return 409, {"error": "当前经营周期状态不允许执行此操作。", "demo": state}
 
-        current_index = int(state["currentOrderIndex"])
+        if action == "publish":
+            if not state["releaseReady"]:
+                return 409, {"error": "技术构建尚未通过验收，人工发布门不可用。", "demo": state}
+            if not state["published"]:
+                state["published"] = True
+                state["audit"].append({"time": "12:10", "actor": "Human Owner", "event": "已核验构建与 QA 证据，并手动执行游戏正式发版"})
+            close_opc_roadshow_if_ready(state)
+            sync_opc_roadshow_current(state)
+            return 200, {"demo": state}
+
+        requested_stage = str(payload.get("stage") or "").strip().lower()
+        requested_index = next((index for index, order in enumerate(orders) if order["stage"] == requested_stage), -1)
+        current_index = requested_index if requested_index >= 0 else int(state["currentOrderIndex"])
         if current_index < 0 or current_index >= len(orders):
             return 409, {"error": "当前没有可处理的工单。", "demo": state}
         current = orders[current_index]
+        current_state = state["orderStates"][current_index]
 
         if action == "approve":
-            if not state["humanApproved"]:
-                state["humanApproved"] = True
-                state["currentStatus"] = "READY"
+            if current_state["status"] not in {"WAITING_APPROVAL", "READY"}:
+                return 409, {"error": "当前工单尚未释放或已经完成。", "demo": state}
+            if not current_state["humanApproved"]:
+                current_state["humanApproved"] = True
+                current_state["status"] = "READY"
+                state["currentOrderIndex"] = current_index
+                sync_opc_roadshow_current(state)
                 state["audit"].append({"time": current["scheduledAt"], "actor": "Human Owner", "event": f"已批准 {current['id']}，允许 {current['assignedRole']} 领取"})
             return 200, {"demo": state}
 
         if action == "complete":
-            if not state["humanApproved"]:
+            if current_state["status"] != "READY" or not current_state["humanApproved"]:
                 return 409, {"error": "工单尚未通过人工审批。", "demo": state}
-            state["completedOrders"].append({
-                "id": current["id"],
-                "title": current["title"],
-                "assignedRole": current["assignedRole"],
-                "result": current["result"],
-                "status": "ACCEPTED",
-            })
+            if not any(item["id"] == current["id"] for item in state["completedOrders"]):
+                state["completedOrders"].append({
+                    "id": current["id"],
+                    "title": current["title"],
+                    "assignedRole": current["assignedRole"],
+                    "result": current["result"],
+                    "status": "ACCEPTED",
+                })
+            current_state["status"] = "ACCEPTED"
+            current_state["humanApproved"] = True
             state["audit"].append({"time": current["scheduledAt"], "actor": current["assignedRole"], "event": current["result"]["summary"]})
-            if current_index == len(orders) - 1:
-                state["completed"] = True
-                state["currentStatus"] = "CLOSED_LOOP"
-                state["audit"].append({"time": "14:00", "actor": "Agent Hub", "event": "版本、市场交付与审计证据已回流，等待下一轮反馈"})
+            if current_index == 0:
+                state["orderStates"][1] = {"status": "WAITING_APPROVAL", "humanApproved": False}
+                state["orderStates"][2] = {"status": "WAITING_APPROVAL", "humanApproved": False}
+                state["currentOrderIndex"] = 1
+                state["audit"].append({"time": "10:05", "actor": "Agent Hub", "event": f"策划规格已验收；{orders[1]['id']} 与 {orders[2]['id']} 已并行释放"})
             else:
-                state["currentOrderIndex"] = current_index + 1
-                state["currentStatus"] = "WAITING_APPROVAL"
-                state["humanApproved"] = False
-                next_order = orders[current_index + 1]
-                state["audit"].append({"time": next_order["scheduledAt"], "actor": "Agent Hub", "event": f"依赖已满足，创建 {next_order['id']} 并等待人工审批"})
+                if current_index == 1:
+                    state["releaseReady"] = True
+                    state["audit"].append({"time": "12:00", "actor": "Agent Hub", "event": "技术构建与 QA 证据已验收，人工发布门已就绪；市场线不构成发版前置条件"})
+                pending_indexes = [index for index in (1, 2) if state["orderStates"][index]["status"] in {"WAITING_APPROVAL", "READY"}]
+                state["currentOrderIndex"] = pending_indexes[0] if pending_indexes else -1
+            close_opc_roadshow_if_ready(state)
+            sync_opc_roadshow_current(state)
             return 200, {"demo": state}
 
     return 400, {"error": "未知的经营周期操作。"}

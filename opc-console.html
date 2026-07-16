@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>实时经营循环 | Third Academy Agent Hub</title>
-  <meta name="description" content="第三学院 OPC 实时经营循环：决策 Agent 读取财务与客户信号，经 Human Owner 审批后依次生成策划、技术和市场工单。">
+  <meta name="description" content="第三学院 OPC 实时经营循环：决策 Agent 读取经营信号，策划通过后并行释放技术与市场工单，游戏版本最终由 Human Owner 手动发版。">
   <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
   <link rel="stylesheet" href="opc.css">
 </head>
@@ -30,7 +30,7 @@
 
     <div class="roadshow-page-controls" aria-label="经营周期分屏导航">
       <button type="button" aria-label="上一页" data-roadshow-prev>↑</button>
-      <span><b data-roadshow-page>01</b><i>/</i><small data-roadshow-pages>04</small></span>
+      <span><b data-roadshow-page>01</b><i>/</i><small data-roadshow-pages>05</small></span>
       <button type="button" aria-label="下一页" data-roadshow-next>↓</button>
     </div>
 
@@ -38,11 +38,21 @@
       <img class="hero-bg" src="assets/opc/third-academy-hero-v1.png" alt="第三学院 OPC 中台与工作节点">
       <div class="hero-inner">
         <p class="kicker">LIVE OPERATING CYCLE · ONE HUB · FOUR ONE-PERSON OPCS</p>
-        <h1>实时经营循环<span class="cn">Decision → Planning → Technical → Market</span></h1>
-        <p class="hero-copy">四个一人 OPC 通过统一 Agent Hub 完成可审计的经营周期：财务、客户与产品信号进入中台，决策 Agent 创建工单，策划、技术和市场 Agent 按依赖领取；Human Owner 在关键状态门保留最终批准权。</p>
+        <h1>实时经营循环<span class="cn">Decision → Planning → Technical ∥ Market → Human Release</span></h1>
+        <p class="hero-copy">四个一人 OPC 通过统一 Agent Hub 完成可审计的经营周期：策划规格批准后，技术生产与市场宣发进入两条独立路径；游戏构建通过 QA 后，仍须由 Human Owner 手动完成正式发版。</p>
         <div class="hero-actions">
-          <a class="button primary" href="#live-cycle">启动经营周期</a>
+          <a class="button primary" href="#operating-roadmap">查看经营路线图</a>
           <a class="button" href="opc-workflow.html#decision-console">查看中台与工作流原理</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="roadshow-roadmap-slide roadshow-slide" id="operating-roadmap" data-roadshow-slide>
+      <div class="roadshow-roadmap-shell">
+        <img src="assets/opc/opc-live-operating-roadmap-v2.png" alt="OPC 实时经营路线图：经营信号进入 Agent Hub，策划批准后技术发布与市场宣发双线并行，游戏版本由 Human Owner 手动发版">
+        <div class="roadshow-roadmap-caption">
+          <div><b>策划批准后双线并行</b><span>技术负责构建、QA 与待验收版本；市场独立完成对外宣发；正式游戏版本只通过 Human Owner 手动发布。</span></div>
+          <a class="button primary" href="#live-cycle">进入经营周期</a>
         </div>
       </div>
     </section>
@@ -76,7 +86,7 @@
             <article data-roadshow-step="decision"><em>01</em><div><b>决策 OPC</b><span>读取信号 · 创建订单</span></div><i>READY</i></article>
             <article data-roadshow-step="planning"><em>02</em><div><b>策划 OPC</b><span>Boss 规格 · ImageGen 约束</span></div><i>LOCKED</i></article>
             <article data-roadshow-step="technical"><em>03</em><div><b>技术 OPC</b><span>素材接入 · QA 证据</span></div><i>LOCKED</i></article>
-            <article data-roadshow-step="market"><em>04</em><div><b>市场 OPC</b><span>海报文案 · 发布回流</span></div><i>LOCKED</i></article>
+            <article data-roadshow-step="market"><em>04</em><div><b>市场 OPC</b><span>海报文案 · 对外宣发</span></div><i>LOCKED</i></article>
           </div>
 
           <div class="roadshow-console-grid">
@@ -106,9 +116,14 @@
       <section class="band dark roadshow-order-slide roadshow-slide" id="current-order" data-roadshow-slide>
         <div class="inner console-inner-wide">
           <div class="section-head">
-            <div><p class="section-label">第二步 · 当前工单 Active Work Order</p><h2>中枢仅释放当前可执行订单。<span class="en">One executable order, one accountable owner, one approval gate.</span></h2></div>
-            <p>Human Owner 在订单视图中完成审批；对应 Agent 只有在状态变为 READY 后才能领取、执行并提交证据。</p>
+            <div><p class="section-label">第二步 · 依赖订单 Dependency-aware Orders</p><h2>中枢按依赖释放可执行订单。<span class="en">Parallel paths, accountable owners, explicit approval gates.</span></h2></div>
+            <p>策划规格验收后，技术与市场工单同时释放并独立推进；技术结果进入人工发布门，市场交付不构成游戏发版前置条件。</p>
           </div>
+
+          <section class="roadshow-parallel-orders" data-parallel-orders hidden>
+            <header><div><span>PARALLEL WORKSTREAMS</span><b>策划批准后的并行工单</b></div><small>技术负责版本 · 市场负责宣发</small></header>
+            <div data-parallel-order-list></div>
+          </section>
 
           <section class="roadshow-order-empty" data-current-order-empty>
             <span>WAITING FOR DECISION AGENT</span>
@@ -120,7 +135,7 @@
           <section class="roadshow-current-order" data-current-order hidden>
             <div class="roadshow-order-status">
               <span data-current-status>WAITING APPROVAL</span>
-              <small>当前可执行工单</small>
+              <small>当前选中工单</small>
             </div>
             <div class="roadshow-order-copy">
               <code data-current-order-id>WO-DEMO-PLAN-001</code>
@@ -131,8 +146,13 @@
             <a class="button primary" data-open-current-order href="opc-order.html">打开当前工单与人工审批</a>
           </section>
 
+          <section class="roadshow-manual-release" data-roadshow-release hidden>
+            <div><span>HUMAN RELEASE GATE</span><h3>技术版本已通过验收，等待 Human Owner 手动发版。</h3><p>Agent 只能提交构建与 QA 证据；正式版本发布必须由 Human Owner 在人工发布门中执行。</p></div>
+            <a class="button primary" data-open-release-gate href="opc-order.html?stage=release">进入人工发布门</a>
+          </section>
+
           <section class="roadshow-complete" data-roadshow-complete hidden>
-            <div><span>CLOSED LOOP · 14:00</span><h3>Boss 版本、QA 证据和市场物料已经回到中台。</h3><p>下一轮玩家反馈和财务信号将继续进入明日的决策 Agent，经营循环闭合。</p></div>
+            <div><span>CLOSED LOOP · 14:00</span><h3>Human Owner 已手动发版，市场交付与审计证据也已回到中台。</h3><p>正式游戏版本与对外宣发沿独立路径完成，新的反馈和财务信号将进入下一经营周期。</p></div>
             <div><a class="button primary" href="play.html">打开当前游戏版本</a><button class="button" type="button" data-roadshow-reset>启动新周期</button></div>
           </section>
 
@@ -147,7 +167,7 @@
         <div class="inner">
           <div class="section-head">
             <div><p class="section-label">人机协作契约 Operating Contract</p><h2>Human Owner 保留关键批准权，Agent 按订单执行并提交证据。<span class="en">Human approves; agents execute and submit evidence.</span></h2></div>
-            <p>审批前 Agent 看不到可领取状态；执行后必须提交交付物与证据，中台才会创建下一张依赖工单。</p>
+            <p>审批前 Agent 看不到可领取状态；执行后必须提交交付物与证据，中台才会释放下游或并行工单。</p>
           </div>
           <div class="control-plane-contract roadshow-contract">
             <article><em>01</em><b>共享事实</b><span>财务、反馈、产品和容量进入同一中台。</span></article>

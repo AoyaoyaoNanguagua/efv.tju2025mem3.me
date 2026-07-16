@@ -117,10 +117,10 @@
                     <dl><div><dt>主生产线</dt><dd>48 单位</dd></div><div><dt>当前验证</dt><dd>樱花大道 Boss</dd></div><div><dt>最终批准</dt><dd>Human Owner</dd></div></dl>
                   </article>
                 </div>
-                <div class="order-glance"><header><div><b>当前经营订单</b><span>中枢按依赖释放可执行订单，交付与审批完成后生成下游订单</span></div><a class="button" href="opc-console.html">进入经营循环</a></header><div>
+                <div class="order-glance"><header><div><b>当前经营订单</b><span>策划批准后并行释放技术与市场工单；游戏发版保留人工发布门</span></div><a class="button" href="opc-console.html">进入经营循环</a></header><div>
                   <article><span class="order-status ready">READY</span><b>策划 · Boss 规格与 ImageGen 约束</b><small>Planning OPC · 10:00</small></article>
                   <article><span class="order-status blocked">LOCKED</span><b>技术 · 素材接入与 QA 证据</b><small>等待策划交付与人工批准</small></article>
-                  <article><span class="order-status blocked">LOCKED</span><b>市场 · 更新海报与发布文案</b><small>等待已验收游戏版本</small></article>
+                  <article><span class="order-status blocked">LOCKED</span><b>市场 · 海报文案与对外宣发</b><small>等待策划规格批准 · 与技术线并行</small></article>
                 </div></div>
               </section>
 
@@ -129,7 +129,7 @@
                 <div class="order-board">
                   <article data-order-status="ready"><header><span class="order-status ready">WAITING APPROVAL</span><small>WO-DEMO-PLAN-001</small></header><b>樱花大道 Boss 策划与美术规格</b><p>读取财务与反馈信号，设计“被污染的学术犬”Boss。</p><dl><div><dt>负责人</dt><dd>策划 Agent</dd></div><div><dt>审批</dt><dd>Human Owner</dd></div></dl></article>
                   <article data-order-status="blocked"><header><span class="order-status blocked">LOCKED</span><small>WO-DEMO-TECH-001</small></header><b>生成并接入 Boss</b><p>ImageGen 素材、基础战斗、资源检查和浏览器 QA。</p><dl><div><dt>负责人</dt><dd>技术 Agent</dd></div><div><dt>依赖</dt><dd>策划规格已批准</dd></div></dl></article>
-                  <article data-order-status="blocked"><header><span class="order-status blocked">LOCKED</span><small>WO-DEMO-MKT-001</small></header><b>制作更新海报</b><p>只使用已批准素材和版本事实生成公开物料。</p><dl><div><dt>负责人</dt><dd>市场 Agent</dd></div><div><dt>依赖</dt><dd>技术版本已验收</dd></div></dl></article>
+                  <article data-order-status="blocked"><header><span class="order-status blocked">LOCKED</span><small>WO-DEMO-MKT-001</small></header><b>筹备对外宣发</b><p>策划规格批准后即可启动，技术素材到位后再补充已验收版本事实。</p><dl><div><dt>负责人</dt><dd>市场 Agent</dd></div><div><dt>依赖</dt><dd>策划规格已批准</dd></div></dl></article>
                 </div>
               </section>
 
@@ -145,7 +145,7 @@
                 <div class="console-node-grid">
                   <article class="console-node-card strategy"><header><em>A</em><div><b>控制塔节点</b><span>Strategy & Control</span></div><i class="node-state planning">ONLINE</i></header><p>中台、决策 Agent、财务汇总和人工审批。</p><dl><div><dt>今日角色</dt><dd>项目经理 OPC</dd></div><div><dt>计划负载</dt><dd>42%</dd></div></dl></article>
                   <article class="console-node-card production"><header><em>B</em><div><b>策划与技术节点</b><span>Planning & Technical</span></div><i class="node-state planning">READY</i></header><p>领取已批准订单，生成规格、素材、代码和 QA 证据。</p><dl><div><dt>今日角色</dt><dd>策划 / 技术 OPC</dd></div><div><dt>可用容量</dt><dd>42%</dd></div></dl></article>
-                  <article class="console-node-card market"><header><em>C</em><div><b>市场发布节点</b><span>Market & Release</span></div><i class="node-state planning">IDLE</i></header><p>只读取已验收版本，生成海报、文案和发布记录。</p><dl><div><dt>今日角色</dt><dd>市场 OPC</dd></div><div><dt>公开边界</dt><dd>人工审批</dd></div></dl></article>
+                  <article class="console-node-card market"><header><em>C</em><div><b>市场传播节点</b><span>Market Communications</span></div><i class="node-state planning">IDLE</i></header><p>基于已批准策划独立筹备海报、文案与社群传播，不承担游戏版本发版。</p><dl><div><dt>今日角色</dt><dd>市场 OPC</dd></div><div><dt>公开边界</dt><dd>人工审批</dd></div></dl></article>
                 </div>
               </section>
 
@@ -289,9 +289,9 @@
               <footer>权限：项目写入 · 测试 · 构建</footer>
             </article>
             <article class="work-node market-node">
-              <header><em>C</em><div><small>MARKET & RELEASE</small><b>市场发布节点</b></div><span>PUBLIC EDGE</span></header>
-              <p>把已验收资产转化为发布、宣发、反馈与商业信号。</p>
-              <ul><li>部署与发布 Agent</li><li>宣发与周边设计</li><li>玩家反馈与客户关系</li><li>有限公网和平台接口</li></ul>
+              <header><em>C</em><div><small>MARKET COMMUNICATIONS</small><b>市场传播节点</b></div><span>PUBLIC EDGE</span></header>
+              <p>把已批准策划与已验收素材转化为宣发、反馈与商业信号，独立于技术发版路径。</p>
+              <ul><li>海报、文案与社群传播</li><li>宣发与周边设计</li><li>玩家反馈与客户关系</li><li>有限公网和平台接口</li></ul>
               <footer>权限：公开资产 · 受控外部访问</footer>
             </article>
           </div>
@@ -342,7 +342,7 @@
             </article>
             <div class="order-contract">
               <div class="status-machine" aria-label="工作订单状态机">
-                <span>DRAFT</span><i>→</i><span>APPROVED</span><i>→</i><span class="active">READY</span><i>→</i><span>CLAIMED</span><i>→</i><span>RUNNING</span><i>→</i><span>REVIEW</span><i>→</i><span>ACCEPTED</span><i>→</i><span>PUBLISHED</span><i>→</i><span>MEASURED</span>
+                <span>DRAFT</span><i>→</i><span>APPROVED</span><i>→</i><span class="active">READY</span><i>→</i><span>CLAIMED</span><i>→</i><span>RUNNING</span><i>→</i><span>REVIEW</span><i>→</i><span>ACCEPTED</span><i>→</i><span>HUMAN RELEASE</span><i>→</i><span>PUBLISHED</span><i>→</i><span>MEASURED</span>
               </div>
               <code>{ portfolio_id, ip_id, product_id, work_order_id, assigned_role, objective, inputs[], deliverables[], budget_cap, dependencies[], acceptance[], evidence[], approval_gate, status, retry_policy, next_check_at }</code>
               <p>遇到阻塞时进入 <b>BLOCKED</b> 或 <b>RETRY</b>，而不是把不完整结果继续传递给下一角色。</p>
@@ -355,8 +355,8 @@
               <article><em>02</em><b>信号归因</b><span>客户关系 Agent 将问题归类为网站体验与新手引导。</span></article>
               <article><em>03</em><b>决策评分</b><span>决策 Agent 综合用户价值、修改成本和 IP 影响给出高优先级。</span></article>
               <article><em>04</em><b>订单执行</b><span>中枢生成 WO-0714-006，由生产节点收敛首屏入口并提交测试证据。</span></article>
-              <article><em>05</em><b>人类验收</b><span>主理人检查移动端效果、品牌表达和公开发布风险。</span></article>
-              <article><em>06</em><b>发布与复盘</b><span>市场节点部署版本，新的体验数据与成本重新进入组合决策。</span></article>
+              <article><em>05</em><b>人类验收与发版</b><span>主理人核验构建、QA 证据和回滚说明，并手动执行正式发版。</span></article>
+              <article><em>06</em><b>宣发与复盘</b><span>市场节点沿独立路径完成对外传播，新的体验数据与成本重新进入组合决策。</span></article>
             </div>
           </div>
         </div>
@@ -396,7 +396,7 @@
         <div>
           <p class="section-label">FROM OPERATING SYSTEM TO LIVE CYCLE</p>
           <h2>从运行原理进入可交互、可审计的经营循环。<span class="en">Move from the operating model into a live, reviewable cycle.</span></h2>
-          <p>决策 Agent 读取财务与反馈信号并创建首张待审批工单；Human Owner 批准后，策划、技术与市场 Agent 按依赖提交交付物与证据。</p>
+          <p>决策 Agent 创建首张策划工单；策划批准后技术与市场双线并行，技术构建通过验收后仍须由 Human Owner 手动完成正式发版。</p>
         </div>
         <div class="contact-actions">
           <a class="button primary" href="opc-console.html">打开经营循环 Live Cycle</a>

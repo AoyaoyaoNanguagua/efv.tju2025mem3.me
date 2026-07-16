@@ -91,6 +91,11 @@
     if (value) value.textContent = label;
   };
 
+  const getOrderState = (demo, index) => demo.orderStates?.[index] || {
+    status: demo.currentOrderIndex === index ? demo.currentStatus : "LOCKED",
+    humanApproved: demo.currentOrderIndex === index && demo.humanApproved
+  };
+
   const renderSignals = demo => {
     const root = document.querySelector("[data-roadshow-signals]");
     if (!root) return;
@@ -128,10 +133,15 @@
     const empty = document.querySelector("[data-current-order-empty]");
     const orderPanel = document.querySelector("[data-current-order]");
     const complete = document.querySelector("[data-roadshow-complete]");
-    const hasOrder = demo.started && demo.currentOrderIndex >= 0 && !demo.completed;
+    const releaseGate = document.querySelector("[data-roadshow-release]");
+    const currentState = demo.currentOrderIndex >= 0 ? getOrderState(demo, demo.currentOrderIndex) : null;
+    const hasOrder = demo.started && demo.currentOrderIndex >= 0 && !demo.completed && ["WAITING_APPROVAL", "READY"].includes(currentState?.status);
     if (empty) empty.hidden = demo.started;
     if (orderPanel) orderPanel.hidden = !hasOrder;
     if (complete) complete.hidden = !demo.completed;
+    if (releaseGate) releaseGate.hidden = !demo.releaseReady || demo.published || demo.completed;
+    const releaseLink = document.querySelector("[data-open-release-gate]");
+    if (releaseLink) releaseLink.href = `opc-order.html?demo=${encodeURIComponent(demoId)}&stage=release`;
     if (!hasOrder) return;
 
     const order = demo.orders[demo.currentOrderIndex];
@@ -142,14 +152,32 @@
       "[data-current-order-creator]": order.createdBy,
       "[data-current-order-role]": order.assignedRole,
       "[data-current-order-time]": order.scheduledAt,
-      "[data-current-status]": demo.currentStatus.replaceAll("_", " ")
+      "[data-current-status]": currentState.status.replaceAll("_", " ")
     };
     Object.entries(fields).forEach(([selector, value]) => {
       const target = document.querySelector(selector);
       if (target) target.textContent = value;
     });
     const link = document.querySelector("[data-open-current-order]");
-    if (link) link.href = `opc-order.html?demo=${encodeURIComponent(demoId)}`;
+    if (link) link.href = `opc-order.html?demo=${encodeURIComponent(demoId)}&stage=${encodeURIComponent(order.stage)}`;
+  };
+
+  const renderParallelOrders = demo => {
+    const panel = document.querySelector("[data-parallel-orders]");
+    const list = document.querySelector("[data-parallel-order-list]");
+    if (!panel || !list) return;
+    const planningAccepted = getOrderState(demo, 0).status === "ACCEPTED";
+    panel.hidden = !planningAccepted || demo.completed;
+    if (panel.hidden) return;
+    list.innerHTML = [1, 2].map(index => {
+      const order = demo.orders[index];
+      const state = getOrderState(demo, index);
+      const label = state.status.replaceAll("_", " ");
+      const content = `<i></i><span><b>${escapeHtml(order.assignedRole)}</b><small>${escapeHtml(order.title)}</small></span><em>${escapeHtml(label)}</em>`;
+      return state.status === "ACCEPTED"
+        ? `<article class="done">${content}</article>`
+        : `<a href="opc-order.html?demo=${encodeURIComponent(demoId)}&stage=${encodeURIComponent(order.stage)}">${content}</a>`;
+    }).join("");
   };
 
   const renderAudit = demo => {
@@ -163,10 +191,10 @@
   const renderSteps = demo => {
     setStepState("decision", demo.started ? "done" : "active", demo.started ? "DONE" : "READY");
     ["planning", "technical", "market"].forEach((stage, index) => {
-      const order = demo.orders[index];
-      const completed = demo.completedOrders.some(item => item.id === order.id);
-      const active = demo.started && !demo.completed && demo.currentOrderIndex === index;
-      setStepState(stage, completed ? "done" : active ? "active" : "locked", completed ? "DONE" : active ? demo.currentStatus.replaceAll("_", " ") : "LOCKED");
+      const state = getOrderState(demo, index);
+      const completed = state.status === "ACCEPTED";
+      const active = ["WAITING_APPROVAL", "READY"].includes(state.status);
+      setStepState(stage, completed ? "done" : active ? "active" : "locked", completed ? "DONE" : active ? state.status.replaceAll("_", " ") : "LOCKED");
     });
   };
 
@@ -175,6 +203,7 @@
     renderSignals(demo);
     renderDecision(demo);
     renderCurrentOrder(demo);
+    renderParallelOrders(demo);
     renderAudit(demo);
     renderSteps(demo);
     setConnection("Agent Hub 已连接 · 共享状态在线", "online");
@@ -202,9 +231,9 @@
     }
   };
 
-  document.querySelector("[data-run-decision]")?.addEventListener("click", () => runAction("run-decision", 2));
+  document.querySelector("[data-run-decision]")?.addEventListener("click", () => runAction("run-decision", 3));
   document.querySelectorAll("[data-roadshow-reset]").forEach(button => {
-    button.addEventListener("click", () => runAction("reset", 1));
+    button.addEventListener("click", () => runAction("reset", 2));
   });
 
   refresh();
