@@ -1,5 +1,5 @@
 param(
-    [string]$ReleaseName = "efv-aliyun-full-20260715"
+    [string]$ReleaseName = "efv-aliyun-full-20260716-boss-animation"
 )
 
 $ErrorActionPreference = "Stop"
@@ -61,6 +61,7 @@ $excludedRuntimeAssets = @(
     "assets\game\bosses\m04-structural-instability-boss-sheet-v7.png",
     "assets\sprites\ayu-sprites-v17-unarmed-walk-seat-lina-edge.png",
     "assets\sprites\ayu-sprites-v18-alternating-walk-cat-transition.png",
+    "assets\sprites\ayu-sprites-v19-redrawn-walk-cat-end.png",
     "assets\sprites\jiangxun-sprites-v8-lina-edge.png",
     "assets\sprites\jiangxun-sprites-v9-cat-paw-walk.png",
     "assets\sprites\laodeng-sprites-v7-lina-edge.png",

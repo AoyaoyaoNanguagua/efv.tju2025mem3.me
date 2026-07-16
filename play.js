@@ -26,7 +26,7 @@
   const MAP_DATA_PATH = "assets/maps/playable/zhonghe-plaza-tilemap-playtest-v1.json";
   const CHAPTER_ONE_MAPS_KEY = "play-ch1-map-registry";
   const CHAPTER_ONE_MAPS_PATH = "assets/chapter1/chapter1-maps-v1.json";
-  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260715-sakura-fullscreen-release-v13`;
+  const CHAPTER_ONE_MAPS_REQUEST_PATH = `${CHAPTER_ONE_MAPS_PATH}?v=20260716-npc-scale-facing-chest-v14`;
   const CHAPTER_END_CINEMATIC_PATH = "assets/cg/p1boss-end-1440p30-h264-v1.mp4";
   const QUEUED_MAP_IMAGE_KEYS_BY_SCENE = new WeakMap();
 
@@ -469,23 +469,31 @@
       paths: [
         "assets/game/bosses/m04-structural-instability-boss-phase1-sheet-v7.png?v=20260715-webgl-safe-v7",
         "assets/game/bosses/m04-structural-instability-boss-phase2-sheet-v7.png?v=20260715-webgl-safe-v7",
-        "assets/game/bosses/m04-structural-instability-boss-phase3-sheet-v7.png?v=20260715-webgl-safe-v7"
+        "assets/game/bosses/m04-structural-instability-boss-phase3-sheet-v7.png?v=20260715-webgl-safe-v7",
+        "assets/game/bosses/m04-professor-to-phase1-transition-v8.png?v=20260716-imagegen-v8",
+        "assets/game/bosses/m04-phase1-to-phase2-transition-v8.png?v=20260716-imagegen-v8",
+        "assets/game/bosses/m04-phase2-to-phase3-transition-v8.png?v=20260716-imagegen-v8",
+        "assets/game/bosses/m04-phase1-walk-cycle-v8.png?v=20260716-imagegen-v8",
+        "assets/game/bosses/m04-phase2-walk-cycle-v8.png?v=20260716-imagegen-v8",
+        "assets/game/bosses/m04-phase3-walk-cycle-v8.png?v=20260716-imagegen-v8"
       ],
       frameWidth: 320,
       frameHeight: 360,
       archetype: "structuralBoss",
+      sourceFacing: "left",
       actions: {
         idle: { sheetIndex: 0, frames: enemyGridFrames(0, 4), frameRate: 5, repeat: -1 },
-        move: { sheetIndex: 0, frames: enemyGridFrames(1, 4), frameRate: 7, repeat: -1 },
+        move: { sheetIndex: 6, frames: enemyGridFrames(0, 8), frameRate: 9, repeat: -1 },
         attack: { sheetIndex: 0, frames: enemyGridFrames(2, 4), frameRate: 11, repeat: 0 },
         hit: { sheetIndex: 0, frames: enemyGridFrames(3, 4), frameRate: 12, repeat: 0 },
-        transform: { sheetIndex: 1, frames: enemyGridFrames(0, 4), frameRate: 6, repeat: 0 },
-        phase2Move: { sheetIndex: 1, frames: enemyGridFrames(1, 4), frameRate: 7, repeat: -1 },
+        professorTransform: { sheetIndex: 3, frames: enemyGridFrames(0, 8), frameRate: 8, repeat: 0 },
+        transform: { sheetIndex: 4, frames: enemyGridFrames(0, 8), frameRate: 8, repeat: 0 },
+        phase2Move: { sheetIndex: 7, frames: enemyGridFrames(0, 8), frameRate: 9, repeat: -1 },
         chargeLoop: { sheetIndex: 1, frames: enemyGridFrames(1, 4), frameRate: 7, repeat: -1 },
         chargeAttack: { sheetIndex: 1, frames: enemyGridFrames(2, 4), frameRate: 11, repeat: 0 },
         chargeHit: { sheetIndex: 1, frames: enemyGridFrames(3, 4), frameRate: 12, repeat: 0 },
-        collapse: { sheetIndex: 2, frames: enemyGridFrames(0, 4), frameRate: 7, repeat: 0 },
-        phaseMove: { sheetIndex: 2, frames: enemyGridFrames(1, 4), frameRate: 10, repeat: -1 },
+        collapse: { sheetIndex: 5, frames: enemyGridFrames(0, 8), frameRate: 8, repeat: 0 },
+        phaseMove: { sheetIndex: 8, frames: enemyGridFrames(0, 8), frameRate: 10, repeat: -1 },
         phaseHit: { sheetIndex: 2, frames: [6, 5, 4], frameRate: 15, repeat: 0 },
         phaseAttack: { sheetIndex: 2, frames: enemyGridFrames(2, 4), frameRate: 13, repeat: 0 },
         phaseSpecial: { sheetIndex: 2, frames: enemyGridFrames(2, 4), frameRate: 15, repeat: 0 },
@@ -595,6 +603,10 @@
   const BOSS_PORTAL_EGRESS_MS = 520;
   const BOSS_PORTAL_CLOSE_MS = 260;
   const BOSS_PORTAL_STAGGER_MS = 55;
+  const PROFESSOR_BOSS_TRANSFORM_MS = 1050;
+  const PROFESSOR_BOSS_TRANSFORM_WATCHDOG_MS = 1450;
+  const PROFESSOR_BOSS_TRANSITION_SCALE = 0.94;
+  const STRUCTURAL_BOSS_FORM_TRANSITION_WATCHDOG_MS = 1550;
   const STRUCTURAL_CHARGE_INTERVAL_MS = 10000;
   const STRUCTURAL_REINFORCEMENT_INTERVAL_MS = 2200;
   const STRUCTURAL_FIRE_PATH_DELAY_MS = 5000;
@@ -727,7 +739,7 @@
       name: "阿宇",
       color: "#d99a4a",
       portrait: "assets/portraits/ayu-q-v2.png",
-      sprite: "assets/sprites/ayu-sprites-v19-redrawn-walk-cat-end.png",
+      sprite: "assets/sprites/ayu-sprites-v20-transform-cat-scale-fixed.png",
       baseline: 140,
       speed: 270
     },
@@ -2379,13 +2391,15 @@
     const waveTitle = String(app.boss.waveTitle || "协议考核");
     const m04ProgressText = app.boss.phase === "final"
       ? `终局 · ${waveTitle} · ${hpText}`
-      : app.boss.phase === "awaitingProfessor"
-        ? wave > total
-          ? "三波完成 · 靠近陆教授启动终局"
-          : `第 ${Math.max(1, wave - 1)}/${total} 波完成 · 靠近陆教授继续`
-        : app.boss.phase === "portalOpening"
-          ? `第 ${wave}/${total} 波 · ${waveTitle} · 传送门开启`
-          : `第 ${wave}/${total} 波 · ${waveTitle} · 剩余 ${Math.max(0, Math.ceil(app.boss.hp))}`;
+      : app.boss.phase === "professorTransforming"
+        ? "三波完成 · 陆教授正在重构终极形态"
+        : app.boss.phase === "awaitingProfessor"
+          ? wave > total
+            ? "三波完成 · 靠近陆教授启动终局"
+            : `第 ${Math.max(1, wave - 1)}/${total} 波完成 · 靠近陆教授继续`
+          : app.boss.phase === "portalOpening"
+            ? `第 ${wave}/${total} 波 · ${waveTitle} · 传送门开启`
+            : `第 ${wave}/${total} 波 · ${waveTitle} · 剩余 ${Math.max(0, Math.ceil(app.boss.hp))}`;
     $("#bossHpText").textContent = !app.boss.active
       ? hpText
       : m04TextOnly
@@ -2521,17 +2535,21 @@
         done: false
       });
     });
-    if (app.boss.active && app.boss.hp > 0) {
-      markers.push({ type: "boss", x: app.boss.x, y: app.boss.y, label: "教授考核", locked: false, done: false });
-    } else if (scene.mapData.chapterBossPoint && !hasFlag("ch1_final_boss_defeated")) {
+    const professorPhase = String(app.boss.phase || "idle");
+    const professorPositionActive = ["awaitingProfessor", "professorTransforming"].includes(professorPhase);
+    if (app.boss.active && (app.boss.hp > 0 || professorPositionActive)) {
+      const label = professorPhase === "professorTransforming" ? "教授终局重构" : "教授考核";
+      markers.push({ type: "boss", x: app.boss.x, y: app.boss.y, label, locked: false, done: false });
+    } else if (scene.mapData.chapterBossPoint) {
       const point = scene.mapData.chapterBossPoint;
+      const replayAvailable = hasFlag("ch1_final_boss_defeated") || hasFlag("ch1_complete");
       markers.push({
         type: "boss",
         x: point.x,
         y: point.y,
-        label: "教授考核",
+        label: replayAvailable ? "教授考核 · 可回顾" : "教授考核",
         locked: !minimapFlagsMet(point.requiresFlags),
-        done: false
+        done: app.boss.phase === "replayComplete"
       });
     }
     if (scene.bossChest?.visible) {
@@ -3736,6 +3754,7 @@
 
   function syncBossState(boss) {
     const wasActive = app.boss.active;
+    const previousPhase = String(app.boss.phase || "idle");
     app.boss = { ...app.boss, ...boss };
     if (app.profile?.mapId === M04_MAP_ID && currentM04Session()?.active) {
       currentM04Session().phase = String(app.boss.phase || "idle");
@@ -3745,9 +3764,13 @@
     if (boss?.phase === "awaitingProfessor" && app.scene) {
       app.scene.bossWavePending = true;
       app.scene.professorDeparted = false;
+    } else if (["professorTransforming", "final", "replayComplete", "chest", "idle"].includes(String(boss?.phase || "")) && app.scene) {
+      app.scene.bossWavePending = false;
+      if (["final", "replayComplete", "chest"].includes(String(boss?.phase || ""))) app.scene.professorDeparted = true;
     }
     renderBossHud();
     app.scene?.syncBoss();
+    app.scene?.syncProfessorBossTransition?.(previousPhase, String(app.boss.phase || "idle"));
   }
 
   function getChapterEndCinematicBufferedSeconds(video) {
@@ -3826,6 +3849,8 @@
       this.syncedSlimeIds = new Set();
       this.bossSummonIds = new Set();
       this.bossWavePending = false;
+      this.professorTransformToken = 0;
+      this.m04BossReplay = false;
       this.ambientEnemyRefreshTimer = null;
       this.ambientEnemyInitialTimer = null;
       this.ambientEnemySequence = 0;
@@ -3901,6 +3926,8 @@
       this.syncedSlimeIds = new Set();
       this.bossSummonIds = new Set();
       this.bossWavePending = false;
+      this.professorTransformToken += 1;
+      this.m04BossReplay = false;
       this.activeInteraction = null;
       this.encounterRewards = new Set();
       this.selectedEquipment = EQUIPMENT[0];
@@ -4527,7 +4554,12 @@
         renderInteractionPrompt(`等待主控 ${currentM04Session()?.leaderName || "首位玩家"} 与陆教授交互`);
         return;
       }
-      renderInteractionPrompt(`${locked ? "条件未满足：" : ""}${node.label || "交互"}`);
+      const label = this.getCurrentMapId() === M04_MAP_ID
+        && node.type === "boss"
+        && (hasFlag("ch1_final_boss_defeated") || hasFlag("ch1_complete"))
+        ? "回顾陆教授协议考核"
+        : node.label || "交互";
+      renderInteractionPrompt(`${locked ? "条件未满足：" : ""}${label}`);
     }
 
     applyNodeRewards(node) {
@@ -4695,6 +4727,13 @@
           ease: "Cubic.easeIn",
           onComplete: () => this.bossChest?.setVisible(false).setActive(false)
         });
+        this.tweens.add({
+          targets: this.bossChestShadow,
+          alpha: 0,
+          duration: 300,
+          ease: "Cubic.easeIn",
+          onComplete: () => this.bossChestShadow?.setVisible(false).setActive(false)
+        });
         this.bossChestExpiresAt = 0;
         return;
       }
@@ -4744,18 +4783,25 @@
         slime?.active && slime.groupId === groupId && slime.state !== "dead" && slime.state !== "vanish"
       );
       if (alive) return;
+      const replayClear = groupId === "ch1_m04_final_boss" && this.m04BossReplay;
       this.encounterRewards.add(groupId);
-      (encounter.setFlagsOnClear || []).forEach(flag => setFlag(flag));
-      if (encounter.rewardCredits) app.profile.credits += Number(encounter.rewardCredits) || 0;
-      if (encounter.rewardExp) grantExperience(Number(encounter.rewardExp) || 0);
+      if (!replayClear) {
+        (encounter.setFlagsOnClear || []).forEach(flag => setFlag(flag));
+        if (encounter.rewardCredits) app.profile.credits += Number(encounter.rewardCredits) || 0;
+        if (encounter.rewardExp) grantExperience(Number(encounter.rewardExp) || 0);
+      }
       renderHud();
       this.refreshNpcQuestMarkers();
       this.refreshInteractionMarkerVisibility();
       renderMinimap(this);
-      showToast(groupId === "ch1_m01_encounter_bug_notes"
-        ? `${encounter.title || "遭遇"}完成，返回陆教授处交付任务`
-        : `${encounter.title || "遭遇"}完成，区域协议已更新`);
-      if (groupId === "ch1_m04_final_boss") this.time.delayedCall(520, () => this.prepareBossChest());
+      showToast(replayClear
+        ? "陆教授终局回顾完成，历史通关记录与首通宝箱保持不变"
+        : groupId === "ch1_m01_encounter_bug_notes"
+          ? `${encounter.title || "遭遇"}完成，返回陆教授处交付任务`
+          : `${encounter.title || "遭遇"}完成，区域协议已更新`);
+      if (groupId === "ch1_m04_final_boss") {
+        this.time.delayedCall(520, () => replayClear ? this.finishM04BossReplay() : this.prepareBossChest());
+      }
     }
 
     enterChapterBossArena(node) {
@@ -4975,10 +5021,12 @@
       if (!this.anims.exists("ch1-boss-chest-closed")) {
         this.anims.create({
           key: "ch1-boss-chest-closed",
-          frames: this.anims.generateFrameNumbers(BOSS_REWARD_CHEST_KEY, { start: 0, end: 3 }),
+          // Frame 2 is a substantially smaller chest drawing and made the
+          // unopened chest appear to pulse in size. Keep the similarly sized
+          // closed/glow drawings for a stable, subtle idle loop.
+          frames: [0, 1, 3, 1].map(frame => ({ key: BOSS_REWARD_CHEST_KEY, frame })),
           frameRate: 3,
-          repeat: -1,
-          yoyo: true
+          repeat: -1
         });
       }
       if (!this.anims.exists("ch1-boss-chest-open")) {
@@ -5755,6 +5803,7 @@
       (this.bossPortals || []).forEach(item => item?.portal?.destroy());
       this.bossPortals = [];
       this.bossChest?.setVisible(false).setActive(false);
+      this.bossChestShadow?.setVisible(false).setActive(false).setAlpha(0.28);
       this.bossChestOpened = false;
       this.bossChestExpiresAt = 0;
       this.bossSprite?.setVisible(false).setActive(false);
@@ -5938,7 +5987,7 @@
     }
 
     createBoss() {
-      this.bossSprite = this.physics.add.image(0, 0, BOSS_KEY)
+      this.bossSprite = this.physics.add.sprite(0, 0, BOSS_KEY)
         .setOrigin(0.5, 0.72)
         .setScale(BOSS_VISUAL_SCALE)
         .setVisible(false)
@@ -5954,6 +6003,11 @@
         .setDepth(0);
       this.bossChest.body.setAllowGravity(false);
       this.bossChest.body.setImmovable(true);
+      this.bossChestShadow = this.add.ellipse(0, 0, 126, 30, 0x182235, 0.28)
+        .setScale(1, 0.72)
+        .setVisible(false)
+        .setActive(false)
+        .setDepth(0);
       this.bossChestOpened = false;
       this.bossChestExpiresAt = 0;
       this.ensureBossPortalTextures();
@@ -5961,8 +6015,8 @@
 
     syncBoss() {
       if (!this.bossSprite) return;
-      const visiblePhases = new Set(["summoning", "between", "awaitingProfessor", "portalOpening", "portalClosing"]);
-      if (this.professorDeparted || (!app.boss.active && !visiblePhases.has(app.boss.phase))) {
+      const visiblePhases = new Set(["summoning", "between", "awaitingProfessor", "portalOpening", "portalClosing", "professorTransforming"]);
+      if (this.professorDeparted || !visiblePhases.has(app.boss.phase)) {
         this.bossSprite.setVisible(false).setActive(false);
         return;
       }
@@ -5987,6 +6041,7 @@
         showToast("本轮考核已经启动，不能从第一个交互点重复召唤");
         return null;
       }
+      const replayingClearedBoss = structuralExam && (hasFlag("ch1_final_boss_defeated") || hasFlag("ch1_complete"));
       const runtimeScale = structuralExam ? this.getM04RuntimeScale() : 1;
       const x = structuralExam ? firstWave.mapX * runtimeScale : (Number.isFinite(options.x) ? options.x : clamp(this.actor.x + 420, 420, this.worldWidth - 420));
       const y = structuralExam ? firstWave.mapY * runtimeScale : (Number.isFinite(options.y) ? options.y : clamp(this.actor.y - 70, 640, this.worldHeight - 420));
@@ -6006,8 +6061,11 @@
         chestReady: false
       };
       app.bossRewardClaimed = false;
+      this.m04BossReplay = replayingClearedBoss;
+      this.professorTransformToken += 1;
+      if (structuralExam) this.encounterRewards.delete("ch1_m04_final_boss");
       if (structuralExam && currentM04Session()) currentM04Session().started = true;
-      setFlag(BOSS_CHEST_FLAG, false);
+      if (!replayingClearedBoss) setFlag(BOSS_CHEST_FLAG, false);
       this.bossWavePending = false;
       this.professorDeparted = false;
       (this.mapNpcs || []).filter(entry => entry.item?.id === "ch1_m04_npc_professor").forEach(entry => {
@@ -6016,11 +6074,14 @@
         entry.label?.setVisible(false);
       });
       this.bossChest?.setVisible(false).setActive(false);
+      this.bossChestShadow?.setVisible(false).setActive(false).setAlpha(0.28);
       if (app.connected) app.multiplayer.sendBossStart(boss);
       syncBossState(boss);
       this.beginBossWaveSequence(0);
       app.audio.boss();
-      showToast("陆教授开启三系协议考核：量子、区块链、AI Agent");
+      showToast(replayingClearedBoss
+        ? "已开启陆教授考核回顾：三波召唤与终局 BOSS 将完整重演"
+        : "陆教授开启三系协议考核：量子、区块链、AI Agent");
       return boss;
     }
 
@@ -6217,18 +6278,127 @@
       });
     }
 
-    spawnM04FinalBoss() {
+    syncProfessorBossTransition(previousPhase, nextPhase) {
+      if (previousPhase === nextPhase || nextPhase !== "professorTransforming" || this.isEncounterCoordinator()) return;
+      this.playProfessorBossTransformation();
+    }
+
+    playProfessorBossTransformation(onComplete) {
+      const sprite = this.bossSprite;
+      if (!sprite) {
+        onComplete?.();
+        return;
+      }
+      const definition = this.getAnimatedEnemyDefinition(M04_STRUCTURAL_BOSS_KEY);
+      const transitionAction = definition?.actions?.professorTransform;
+      const transitionKey = `${M04_STRUCTURAL_BOSS_KEY}-professorTransform`;
+      const hasGeneratedTransition = !!transitionAction?.sheetKey && this.anims.exists(transitionKey);
+      this.professorDeparted = false;
+      this.tweens.killTweensOf(sprite);
+      sprite.stop?.();
+      sprite
+        .setTexture(hasGeneratedTransition ? transitionAction.sheetKey : BOSS_KEY, 0)
+        .setOrigin(0.5, 0.72)
+        .setPosition(Number(app.boss.x) || sprite.x, Number(app.boss.y) || sprite.y)
+        .setScale(hasGeneratedTransition ? PROFESSOR_BOSS_TRANSITION_SCALE : BOSS_VISUAL_SCALE)
+        .setAngle(0)
+        .setAlpha(1)
+        .setVisible(true)
+        .setActive(true)
+        .setDepth(sprite.y + 12);
+      const aura = this.add.ellipse(sprite.x, sprite.y - 82, 120, 178, 0x68eaff, 0.2)
+        .setStrokeStyle(6, 0xbff7ff, 0.9)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(sprite.y + 14);
+      const core = this.add.circle(sprite.x, sprite.y - 82, 22, 0xffffff, 0.86)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(sprite.y + 15);
+      this.spawnHealingMotes(sprite.x, sprite.y - 82, 72, 148, PROFESSOR_BOSS_TRANSFORM_MS);
+      this.cameras.main.flash(260, 82, 210, 255, false);
+      this.tweens.add({
+        targets: aura,
+        scaleX: 3.8,
+        scaleY: 2.7,
+        alpha: 0,
+        duration: PROFESSOR_BOSS_TRANSFORM_MS,
+        ease: "Cubic.easeOut",
+        onComplete: () => aura.destroy()
+      });
+      this.tweens.add({
+        targets: core,
+        scale: 5.6,
+        alpha: 0,
+        duration: PROFESSOR_BOSS_TRANSFORM_MS - 80,
+        ease: "Cubic.easeIn",
+        onComplete: () => core.destroy()
+      });
+      let finished = false;
+      const animationEvent = `animationcomplete-${transitionKey}`;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        sprite.off?.(animationEvent, finish);
+        this.professorDeparted = true;
+        sprite.stop?.();
+        sprite
+          .setTexture(BOSS_KEY)
+          .setVisible(false)
+          .setActive(false)
+          .setOrigin(0.5, 0.72)
+          .setScale(BOSS_VISUAL_SCALE)
+          .setAngle(0)
+          .setAlpha(1);
+        onComplete?.();
+      };
+      if (hasGeneratedTransition) {
+        sprite.once(animationEvent, finish);
+        sprite.play(transitionKey, true);
+      }
+      this.time.delayedCall(hasGeneratedTransition ? PROFESSOR_BOSS_TRANSFORM_WATCHDOG_MS : PROFESSOR_BOSS_TRANSFORM_MS, finish);
+    }
+
+    beginProfessorBossTransformation() {
+      if (this.getCurrentMapId() !== M04_MAP_ID || app.boss.phase !== "awaitingProfessor" || !this.isEncounterCoordinator()) return false;
+      this.bossWavePending = false;
+      const token = ++this.professorTransformToken;
+      const transitionState = {
+        ...app.boss,
+        active: true,
+        phase: "professorTransforming",
+        waveTitle: "终局形态重构",
+        hp: 0,
+        summonsRemaining: 0,
+        eliteRemaining: 0
+      };
+      syncBossState(transitionState);
+      if (app.connected) app.multiplayer?.sendBossStart(transitionState);
+      showToast("陆教授开始终局重构，结构失稳聚合体正在实体化");
+      const finish = () => {
+        // A remote boss-state snapshot can arrive while the local transformation
+        // strip is still playing. The local token and map are the authoritative
+        // stale-work guards; requiring the transient phase as well could leave
+        // the professor hidden without ever spawning the final boss.
+        if (token !== this.professorTransformToken || this.getCurrentMapId() !== M04_MAP_ID) return;
+        this.spawnM04FinalBoss({ transitionToken: token });
+      };
+      this.playProfessorBossTransformation(finish);
+      this.time.delayedCall(PROFESSOR_BOSS_TRANSFORM_WATCHDOG_MS, finish);
+      return true;
+    }
+
+    spawnM04FinalBoss(options = {}) {
+      if (this.getCurrentMapId() !== M04_MAP_ID) return null;
+      if (options.transitionToken && options.transitionToken !== this.professorTransformToken) return null;
       const existingFinalBoss = this.findLeafSlime("ch1-m04-structural-final-boss");
-      if (existingFinalBoss || hasFlag("ch1_final_boss_defeated")) return existingFinalBoss;
+      if (existingFinalBoss) return existingFinalBoss;
       const scale = this.getM04RuntimeScale();
       const x = 3135 * scale;
       const y = 650 * scale;
+      this.bossWavePending = false;
       this.professorDeparted = true;
       const finalDifficulty = this.getEnemyDifficultyScale("boss");
       const finalBossMaxHp = Math.round(1800 * 3 * finalDifficulty.health);
       const finalState = { ...app.boss, active: true, x, y, phase: "final", waveTitle: "结构失稳聚合体", maxHp: finalBossMaxHp, hp: finalBossMaxHp, summonsRemaining: 1 };
-      syncBossState(finalState);
-      if (app.connected) app.multiplayer?.sendBossStart(finalState);
       const finalBoss = this.spawnLeafSlime({
         id: "ch1-m04-structural-final-boss",
         x,
@@ -6258,9 +6428,11 @@
       });
       if (!finalBoss) {
         showToast("终极大机器人加载失败，正在重新构建");
-        this.time.delayedCall(260, () => this.spawnM04FinalBoss());
+        this.time.delayedCall(260, () => this.spawnM04FinalBoss(options));
         return null;
       }
+      syncBossState(finalState);
+      if (app.connected) app.multiplayer?.sendBossStart(finalState);
       this.bossSprite?.setVisible(false).setActive(false);
       app.audio.ultimateBurst();
       this.cameras.main.flash(420, 76, 196, 255, false);
@@ -6306,6 +6478,7 @@
       const runtimeScale = this.getM04RuntimeScale();
       this.bossWavePending = true;
       this.professorDeparted = false;
+      this.professorTransformToken += 1;
       if (this.bossSprite) this.tweens.killTweensOf(this.bossSprite);
       this.bossSprite
         ?.setTexture(BOSS_KEY)
@@ -6345,7 +6518,8 @@
     }
 
     updateProfessorWaveProximity() {
-      if (app.boss.phase !== "awaitingProfessor" || !this.bossWavePending || !this.bossSprite?.visible) return;
+      if (app.boss.phase !== "awaitingProfessor" || !this.bossWavePending) return;
+      if (!this.bossSprite?.visible) this.syncBoss();
       const professor = { x: Number(app.boss.x) || 0, y: Number(app.boss.y) || 0 };
       const approached = !!this.actor?.active
         && Phaser.Math.Distance.Between(this.actor.x, this.actor.y, professor.x, professor.y) <= 190 * this.getM04RuntimeScale();
@@ -6356,12 +6530,20 @@
         this.beginBossWaveSequence(nextIndex);
         return;
       }
-      this.bossWavePending = true;
-      this.playProfessorFlyAway();
-      this.time.delayedCall(520, () => {
-        this.bossWavePending = false;
-        this.spawnM04FinalBoss();
-      });
+      this.beginProfessorBossTransformation();
+    }
+
+    finishM04BossReplay() {
+      if (this.getCurrentMapId() !== M04_MAP_ID) return;
+      const replayState = { ...app.boss, active: false, hp: 0, phase: "replayComplete", chestReady: false, summonsRemaining: 0 };
+      this.bossWavePending = false;
+      this.professorDeparted = true;
+      this.bossSprite?.setVisible(false).setActive(false);
+      this.bossChest?.setVisible(false).setActive(false);
+      this.bossChestShadow?.setVisible(false).setActive(false).setAlpha(0.28);
+      syncBossState(replayState);
+      if (app.connected) app.multiplayer?.sendBossStart(replayState);
+      renderMinimap(this);
     }
 
     prepareBossChest() {
@@ -6377,6 +6559,13 @@
         .setVisible(true)
         .setActive(true)
         .setDepth(chestY + 16);
+      this.bossChestShadow
+        ?.setPosition(chestX, chestY + 4)
+        .setScale(1, 0.72)
+        .setAlpha(0.28)
+        .setVisible(true)
+        .setActive(true)
+        .setDepth(chestY - 2);
       if (this.bossChest?.body) this.bossChest.body.enable = true;
       this.bossChestOpened = false;
       this.bossChestExpiresAt = 0;
@@ -6531,14 +6720,18 @@
     }
 
     playEnemyAnimation(slime, action, restart = false) {
-      if (!slime?.active) return;
+      if (!slime?.active) return "";
       if (slime.staticImage) {
         this.playStaticEnemyAnimation(slime, action, restart);
-        return;
+        return "";
       }
       let resolvedAction = action;
       if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY) {
-        if (["charging", "phase2Combat"].includes(slime.bossPhase)) {
+        if (slime.bossPhase === "charging") {
+          if (["move", "idle"].includes(action)) resolvedAction = "chargeLoop";
+          if (["attack", "special"].includes(action)) resolvedAction = "chargeAttack";
+          if (action === "hit") resolvedAction = "chargeHit";
+        } else if (slime.bossPhase === "phase2Combat") {
           if (["move", "idle"].includes(action)) resolvedAction = "phase2Move";
           if (["attack", "special"].includes(action)) resolvedAction = "chargeAttack";
           if (action === "hit") resolvedAction = "chargeHit";
@@ -6550,7 +6743,31 @@
         }
       }
       const key = `${slime.textureKey || LEAF_SLIME_KEY}-${resolvedAction}`;
-      if (this.anims.exists(key)) slime.play(key, restart);
+      // Phaser's second `play` argument is `ignoreIfPlaying`, not `restart`.
+      // Keep looped movement animations advancing across update ticks, while
+      // still allowing one-shot actions to restart when explicitly requested.
+      if (!this.anims.exists(key)) return "";
+      slime.play(key, !restart);
+      return key;
+    }
+
+    playEnemyAnimationOnce(slime, action, onComplete, watchdogMs = 1400) {
+      const key = this.playEnemyAnimation(slime, action, true);
+      if (!key) {
+        onComplete?.();
+        return false;
+      }
+      const eventName = `animationcomplete-${key}`;
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        slime?.off?.(eventName, finish);
+        onComplete?.();
+      };
+      slime.once(eventName, finish);
+      this.time.delayedCall(Math.max(120, Number(watchdogMs) || 1400), finish);
+      return true;
     }
 
     playStaticEnemyAnimation(slime, action, restart = false) {
@@ -6685,6 +6902,15 @@
 
     getAnimatedEnemyDefinition(textureKey) {
       return CHAPTER_ONE_ANIMATED_ENEMY_SPRITES.find(item => item.key === textureKey) || null;
+    }
+
+    setEnemyFacingFromMotion(slime, motionX) {
+      const horizontal = Number(motionX) || 0;
+      if (!slime || Math.abs(horizontal) <= 0.1) return;
+      const sourceFacesLeft = this.getAnimatedEnemyDefinition(slime.textureKey)?.sourceFacing === "left";
+      // Most character/enemy sheets are authored facing right. The generated
+      // structural BOSS sheets face left, so their flip rule must be inverted.
+      slime.setFlipX(sourceFacesLeft ? horizontal > 0 : horizontal < 0);
     }
 
     getEncounterPartySize() {
@@ -10805,24 +11031,15 @@
       if (slime.body) slime.body.enable = false;
       slime.clearTint();
       renderBossHud();
-      this.playEnemyAnimation(slime, "transform", true);
+      this.playEnemyAnimationOnce(slime, "transform", () => {
+        if (!slime.active || !slime.transforming || slime.bossPhase !== "transforming") return;
+        this.beginStructuralBossChargingPhase(slime, options);
+      }, STRUCTURAL_BOSS_FORM_TRANSITION_WATCHDOG_MS);
       this.playStructuralBreakBurst(slime.x, slime.y);
       app.audio?.ultimateBurst();
       this.time.delayedCall(230, () => app.audio?.hit());
       this.time.delayedCall(470, () => app.audio?.fireExplosion?.(1));
       if (!options.network) this.broadcastEnemyState(slime, "transform", options.effect || {});
-      this.tweens.add({
-        targets: slime,
-        scaleX: slime.baseVisualScale * 0.96,
-        scaleY: slime.baseVisualScale * 0.94,
-        duration: 620,
-        yoyo: true,
-        ease: "Sine.easeInOut"
-      });
-      this.time.delayedCall(1420, () => {
-        if (!slime.active || !slime.transforming || slime.bossPhase !== "transforming") return;
-        this.beginStructuralBossChargingPhase(slime, options);
-      });
       return true;
     }
 
@@ -11218,7 +11435,7 @@
         Phaser.Math.Linear(slime.body.velocity.x, direction.x * slime.chaseSpeed, blend),
         Phaser.Math.Linear(slime.body.velocity.y, direction.y * slime.chaseSpeed, blend)
       );
-      if (Math.abs(slime.body.velocity.x) > 2) slime.setFlipX(slime.body.velocity.x < 0);
+      if (Math.abs(slime.body.velocity.x) > 2) this.setEnemyFacingFromMotion(slime, slime.body.velocity.x);
       this.playEnemyAnimation(slime, "move");
     }
 
@@ -11272,11 +11489,15 @@
       if (slime.body) slime.body.enable = false;
       renderBossHud();
       this.clearStructuralBossPhaseVisuals(slime);
-      this.playEnemyAnimation(slime, "collapse", true);
+      this.playEnemyAnimationOnce(
+        slime,
+        "collapse",
+        () => this.finishStructuralBossPhaseThree(slime),
+        STRUCTURAL_BOSS_FORM_TRANSITION_WATCHDOG_MS
+      );
       this.playStructuralBreakBurst(slime.x, slime.y);
       this.cameras.main.flash(280, 74, 228, 244, false);
       if (!options.network) this.broadcastEnemyState(slime, "phase3");
-      this.time.delayedCall(980, () => this.finishStructuralBossPhaseThree(slime));
     }
 
     finishStructuralBossPhaseThree(slime) {
@@ -11614,7 +11835,7 @@
         Phaser.Math.Linear(slime.body.velocity.x, direction.x * slime.chaseSpeed, blend),
         Phaser.Math.Linear(slime.body.velocity.y, direction.y * slime.chaseSpeed, blend)
       );
-      if (Math.abs(slime.body.velocity.x) > 2) slime.setFlipX(slime.body.velocity.x < 0);
+      if (Math.abs(slime.body.velocity.x) > 2) this.setEnemyFacingFromMotion(slime, slime.body.velocity.x);
       this.playEnemyAnimation(slime, "phaseMove");
       if (distance < 112) {
         slime.structuralCloseStartedAt ||= time;
@@ -12757,7 +12978,7 @@
       const token = slime.actionToken;
       slime.state = "attack";
       const vec = normalizeVector(dx, dy);
-      slime.setFlipX(dx < 0);
+      this.setEnemyFacingFromMotion(slime, dx);
       this.playEnemyAnimation(slime, "attack", true);
       app.audio?.enemyAttack();
       slime.body.setVelocity(
@@ -12786,7 +13007,7 @@
       const vec = normalizeVector(dx, dy);
       const hopDistance = Math.min(LEAF_SLIME_HOP_DISTANCE, Math.max(18, distance - LEAF_SLIME_ATTACK_RANGE + 12));
       slime.state = "hop";
-      slime.setFlipX(dx < 0);
+      this.setEnemyFacingFromMotion(slime, dx);
       this.playEnemyAnimation(slime, "move", true);
       slime.body.setVelocity(vec.x * (hopDistance / LEAF_SLIME_HOP_DURATION * 1000), vec.y * (hopDistance / LEAF_SLIME_HOP_DURATION * 1000));
       this.time.delayedCall(LEAF_SLIME_HOP_DURATION, () => {
@@ -12848,7 +13069,7 @@
       const velocityX = Phaser.Math.Linear(slime.body.velocity.x, vec.x * speed, blend);
       const velocityY = Phaser.Math.Linear(slime.body.velocity.y, vec.y * speed, blend);
       slime.body.setVelocity(velocityX, velocityY);
-      if (Math.abs(velocityX) > 2) slime.setFlipX(velocityX < 0);
+      if (Math.abs(velocityX) > 2) this.setEnemyFacingFromMotion(slime, velocityX);
       this.playEnemyAnimation(slime, "move");
     }
 
@@ -12929,7 +13150,7 @@
           slime.body.setVelocity(0, 0);
           return;
         }
-        slime.setFlipX(dx < 0);
+        this.setEnemyFacingFromMotion(slime, dx);
         if (distance <= LEAF_SLIME_ATTACK_RANGE) this.triggerLeafSlimeAttack(slime, dx, dy);
         else this.startLeafSlimeHop(slime, dx, dy, distance);
       });

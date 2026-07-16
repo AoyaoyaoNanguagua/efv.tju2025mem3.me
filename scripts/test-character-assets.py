@@ -10,7 +10,7 @@ BASELINE = 140
 REQUIRED_COLUMNS = [4, 6, 4, 4, 6, 8, 4, 6]
 SHEETS = [
     "lina-sprites-v10-anchored-expanded.png",
-    "ayu-sprites-v19-redrawn-walk-cat-end.png",
+    "ayu-sprites-v20-transform-cat-scale-fixed.png",
     "zhixia/zhixia-sprites-final.png",
     "laodeng-sprites-v9-redrawn-cat-run.png",
     "jiangxun-sprites-v10-redrawn-cat-motion.png",
@@ -23,7 +23,7 @@ PORTRAITS = [
 ]
 TRANSPARENT_PORTRAITS = {"ayu-q-v2.png", "laodeng-q-v2.png", "jiangxun-q-v2.png"}
 BASELINE_LOCKED = {
-    "ayu-sprites-v19-redrawn-walk-cat-end.png",
+    "ayu-sprites-v20-transform-cat-scale-fixed.png",
     "zhixia-sprites-final.png",
     "laodeng-sprites-v9-redrawn-cat-run.png",
     "jiangxun-sprites-v10-redrawn-cat-motion.png",
@@ -106,8 +106,10 @@ def test_ayu_unarmed_walk_and_seated_transform(path: Path) -> None:
         assert bbox
         run_heights.append(bbox[3] - bbox[1])
     assert final_bbox
-    assert final_bbox[3] - final_bbox[1] <= max(run_heights) * 1.12, (
-        "ayu: transform final cat face/body is too large for the cat-run transition"
+    final_height = final_bbox[3] - final_bbox[1]
+    average_run_height = sum(run_heights) / len(run_heights)
+    assert abs(final_height - average_run_height) <= 14, (
+        "ayu: transform final cat must match the cat-run character scale"
     )
     assert final_bbox[0] >= 4 and final_bbox[2] <= FRAME - 4, "ayu: final cat endpoint is clipped"
 
@@ -216,7 +218,7 @@ def main() -> None:
     test_regenerated_jiangxun(ROOT / "assets" / "sprites" / "jiangxun-sprites-v10-redrawn-cat-motion.png")
     test_jiangxun_cat_paws(ROOT / "assets" / "sprites" / "jiangxun-sprites-v10-redrawn-cat-motion.png")
     test_ayu_unarmed_walk_and_seated_transform(
-        ROOT / "assets" / "sprites" / "ayu-sprites-v19-redrawn-walk-cat-end.png"
+        ROOT / "assets" / "sprites" / "ayu-sprites-v20-transform-cat-scale-fixed.png"
     )
     test_cat_motion_repairs(ROOT / "assets" / "sprites")
     for name in (

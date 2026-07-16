@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
 const registry = JSON.parse(readFileSync("assets/chapter1/chapter1-maps-v1.json", "utf8"));
+const play = readFileSync("play.js", "utf8");
 const maps = registry.maps;
 const m2 = maps.ch1_m02_prompt_archive;
 const auditorium = maps.ch1_m02a_auditorium_branch;
@@ -30,6 +31,16 @@ for (const npc of auditorium.npcs) {
 }
 assert.equal(auditorium.dialogues[0].speaker, "峹牧");
 assert.equal(auditorium.npcs[0].label, "峹牧");
+
+const mumu = auditorium.npcs.find(npc => npc.id === "ch1_m02a_npc_mumu");
+const xiaozhu = auditorium.npcs.find(npc => npc.id === "ch1_m02a_pet_xiaozhu");
+assert.equal(mumu.scale, 1.066, "The human NPC must be enlarged by exactly 30%");
+assert.equal(mumu.shadowWidth, 68);
+assert.equal(mumu.shadowHeight, 16);
+assert.equal(xiaozhu.scale, 0.7, "Animal NPC scale must remain unchanged");
+assert.equal(xiaozhu.shadowWidth, 58);
+assert.equal(xiaozhu.shadowHeight, 14);
+assert.match(play, /20260716-npc-scale-facing-chest-v14/, "Map JSON cache key must expose the NPC scale update");
 
 const m2ToAuditorium = m2.exitPoints.find(exit => exit.targetMapId === auditorium.id);
 const auditoriumToM2 = auditorium.exitPoints.find(exit => exit.targetMapId === m2.id);

@@ -1952,13 +1952,13 @@
           "animationKey": "ch1-m02a-mumu-idle",
           "x": 865,
           "y": 865,
-          "scale": 0.82,
+          "scale": 1.066,
           "originY": 1,
           "animate": true,
           "breathe": true,
           "showLabel": false,
-          "shadowWidth": 78,
-          "shadowHeight": 20,
+          "shadowWidth": 68,
+          "shadowHeight": 16,
           "shadowOffsetY": 2
         },
         {
@@ -1973,8 +1973,8 @@
           "animate": true,
           "breathe": false,
           "showLabel": false,
-          "shadowWidth": 72,
-          "shadowHeight": 18,
+          "shadowWidth": 58,
+          "shadowHeight": 14,
           "shadowOffsetY": 1
         }
       ],

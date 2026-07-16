@@ -11,6 +11,12 @@ const assets = [
   ["assets/game/bosses/m04-structural-instability-boss-phase1-sheet-v7.png", 1280, 1440],
   ["assets/game/bosses/m04-structural-instability-boss-phase2-sheet-v7.png", 1280, 1440],
   ["assets/game/bosses/m04-structural-instability-boss-phase3-sheet-v7.png", 1280, 1440],
+  ["assets/game/bosses/m04-professor-to-phase1-transition-v8.png", 2560, 360],
+  ["assets/game/bosses/m04-phase1-to-phase2-transition-v8.png", 2560, 360],
+  ["assets/game/bosses/m04-phase2-to-phase3-transition-v8.png", 2560, 360],
+  ["assets/game/bosses/m04-phase1-walk-cycle-v8.png", 2560, 360],
+  ["assets/game/bosses/m04-phase2-walk-cycle-v8.png", 2560, 360],
+  ["assets/game/bosses/m04-phase3-walk-cycle-v8.png", 2560, 360],
   ["assets/game/enemies/animated/ch1-m04-charging-elites-atlas-v4.png", 1280, 1080],
   ["assets/game/vfx/m04-structural-charge-vfx-sheet-v1.png", 1280, 720]
 ];
@@ -33,15 +39,37 @@ assert.equal(m3Garden.length, 5);
 assert.ok(m3Garden.every(enemy => enemy.staticImage === false));
 assert.match(play, /const CHAPTER_ONE_ANIMATED_ENEMY_SPRITES = \[/);
 assert.match(play, /archetype: "structuralBoss"/);
-assert.match(play, /transform: \{ sheetIndex: 1, frames: enemyGridFrames\(0, 4\)/);
+assert.match(play, /sourceFacing: "left"/);
+assert.match(play, /setEnemyFacingFromMotion\(slime, motionX\)/);
+assert.match(play, /sourceFacesLeft \? horizontal > 0 : horizontal < 0/);
+assert.match(play, /professorTransform: \{ sheetIndex: 3, frames: enemyGridFrames\(0, 8\)/);
+assert.match(play, /transform: \{ sheetIndex: 4, frames: enemyGridFrames\(0, 8\)/);
 assert.match(play, /chargeLoop: \{ sheetIndex: 1, frames: enemyGridFrames\(1, 4\)/);
-assert.match(play, /phase2Move: \{ sheetIndex: 1, frames: enemyGridFrames\(1, 4\)/);
-assert.match(play, /collapse: \{ sheetIndex: 2, frames: enemyGridFrames\(0, 4\)/);
+assert.match(play, /move: \{ sheetIndex: 6, frames: enemyGridFrames\(0, 8\)/);
+assert.match(play, /phase2Move: \{ sheetIndex: 7, frames: enemyGridFrames\(0, 8\)/);
+assert.match(play, /collapse: \{ sheetIndex: 5, frames: enemyGridFrames\(0, 8\)/);
+assert.match(play, /phaseMove: \{ sheetIndex: 8, frames: enemyGridFrames\(0, 8\)/);
 assert.match(play, /phaseAttack: \{ sheetIndex: 2, frames: enemyGridFrames\(2, 4\)/);
+assert.match(play, /slime\.play\(key, !restart\)/);
+assert.match(play, /playEnemyAnimationOnce/);
+assert.match(play, /STRUCTURAL_BOSS_FORM_TRANSITION_WATCHDOG_MS/);
+assert.ok(play.includes('frames: [0, 1, 3, 1].map(frame => ({ key: BOSS_REWARD_CHEST_KEY, frame }))'));
+assert.doesNotMatch(play, /generateFrameNumbers\(BOSS_REWARD_CHEST_KEY, \{ start: 0, end: 3 \}\)/);
+assert.match(play, /this\.bossChestShadow = this\.add\.ellipse/);
+assert.doesNotMatch(play, /delayedCall\(1420, \(\) =>/);
+assert.doesNotMatch(play, /delayedCall\(980, \(\) => this\.finishStructuralBossPhaseThree/);
 assert.match(play, /phase: "awaitingProfessor"/);
+assert.match(play, /phase: "professorTransforming"/);
+assert.match(play, /beginProfessorBossTransformation/);
+assert.match(play, /PROFESSOR_BOSS_TRANSFORM_WATCHDOG_MS/);
 assert.match(play, /if \(this\.bossSprite\) this\.tweens\.killTweensOf\(this\.bossSprite\);/);
 assert.match(play, /updateProfessorWaveProximity\(\)/);
 assert.doesNotMatch(play, /delayedCall\(900, \(\) => this\.beginBossWaveSequence/);
+assert.doesNotMatch(play, /existingFinalBoss \|\| hasFlag\("ch1_final_boss_defeated"\)/);
+assert.match(play, /const replayingClearedBoss = structuralExam/);
+assert.match(play, /this\.encounterRewards\.delete\("ch1_m04_final_boss"\)/);
+assert.match(play, /finishM04BossReplay/);
+assert.match(play, /this\.professorDeparted \|\| !visiblePhases\.has\(app\.boss\.phase\)/);
 assert.match(play, /const finalBossMaxHp = Math\.round\(1800 \* 3 \* finalDifficulty\.health\)/);
 assert.match(play, /baseHealthMultiplier: 3/);
 assert.match(play, /const finalBoss = this\.spawnLeafSlime\(\{/);

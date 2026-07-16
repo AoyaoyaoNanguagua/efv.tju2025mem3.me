@@ -1,5 +1,5 @@
 {
-  "releaseDate": "2026-07-15",
+  "releaseDate": "2026-07-16",
   "profiles": {
     "github": {
       "description": "完整项目源码、可复现美术处理脚本与历史资产归档；原始 MOV 母片仅本地保留。",
@@ -14,7 +14,7 @@
       ]
     },
     "aliyun": {
-      "description": "可直接部署的线上运行文件，不携带开发资料、历史归档或本地数据。",
+      "description": "可直接部署的线上运行文件，不携带开发资料、历史归档或本地数据库。",
       "include": [
         "assets/**",
         "vendor/**",
@@ -56,6 +56,7 @@
         "assets/game/bosses/m04-structural-instability-boss-sheet-v6.png",
         "assets/sprites/*-lina-edge.png",
         "assets/sprites/*-cat-transition.png",
+        "assets/sprites/ayu-sprites-v19-redrawn-walk-cat-end.png",
         "assets/sprites/*-cat-paw-walk.png",
         "assets/sprites/*-cat-run-safe.png",
         "assets/sprites/zhixia/zhixia-animation-reference.mp4"

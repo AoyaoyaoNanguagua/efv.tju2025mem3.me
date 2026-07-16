@@ -16,6 +16,14 @@ const URL = "http://127.0.0.1:8787/play.html";
     if (message.type() === "error") errors.push(message.text());
   });
   await page.addInitScript(() => {
+    Object.defineProperty(window, "WebSocket", {
+      configurable: true,
+      value: class DisabledQaWebSocket {
+        constructor() {
+          throw new Error("WebSocket disabled for deterministic offline QA");
+        }
+      }
+    });
     localStorage.setItem("efv-local-characters", JSON.stringify([{
       id: "browser-qa-zhixia",
       account: "local-guest",
@@ -64,7 +72,7 @@ const URL = "http://127.0.0.1:8787/play.html";
     }));
   });
   const expectedNames = {
-    ayu: "ayu-sprites-v19-redrawn-walk-cat-end.png",
+    ayu: "ayu-sprites-v20-transform-cat-scale-fixed.png",
     zhixia: "zhixia/zhixia-sprites-final.png",
     laodeng: "laodeng-sprites-v9-redrawn-cat-run.png",
     jiangxun: "jiangxun-sprites-v10-redrawn-cat-motion.png"
