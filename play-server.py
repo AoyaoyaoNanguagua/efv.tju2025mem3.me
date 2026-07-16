@@ -16,7 +16,7 @@ import time
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 
 ROOT = Path(__file__).resolve().parent
@@ -148,6 +148,215 @@ state_lock = threading.RLock()
 rooms: dict[str, dict] = {}
 clients: set["WsClient"] = set()
 clients_by_user: dict[int, "WsClient"] = {}
+
+opc_roadshow_lock = threading.RLock()
+opc_roadshow_sessions: dict[str, dict] = {}
+
+
+def clean_opc_demo_id(value: object) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9_-]", "", str(value or "cycle-01"))[:32]
+    return cleaned or "cycle-01"
+
+
+def opc_roadshow_orders() -> list[dict]:
+    return [
+        {
+            "id": "WO-DEMO-PLAN-001",
+            "stage": "planning",
+            "stageIndex": 1,
+            "createdBy": "决策 Agent · Decision OPC",
+            "assignedRole": "策划 Agent · Planning OPC",
+            "scheduledAt": "10:00",
+            "title": "樱花大道 Boss 策划与美术规格",
+            "objective": "为《樱花同济篇》的樱花大道设计一个可快速验证的“被污染的学术犬”Boss，并形成技术 Agent 可直接执行的结构化规格。",
+            "inputs": [
+                "FIN-DEMO-0716：樱花同济篇贡献演示净额 ¥2,184，占组合 72%",
+                "FB-DEMO-BOSS：50 条模拟反馈中有 14 条希望樱花大道增加 Boss",
+                "CAP-NODE-B：技术节点今日可用容量 42%，预算上限 24 Token 单位",
+            ],
+            "deliverables": [
+                "Boss 名称、设定、体型和画风说明",
+                "ImageGen 透明背景素材提示词与朝向约束",
+                "血量、速度、普通攻击和掉落参数",
+                "技术接入验收标准与最多两次重试规则",
+            ],
+            "acceptance": [
+                "继承现有学术喵校园幻想画风，不出现写实摄影质感",
+                "默认素材面向左侧，技术接入时必须按 Boss 朝向规则翻转",
+                "方案控制为单 Boss、普通攻击，不扩张到复杂技能系统",
+            ],
+            "result": {
+                "summary": "策划 Agent 已提交《被污染的学术犬》Boss 规格包。",
+                "evidence": [
+                    "BOSS-DOG-SPEC-v1：体型为玩家 1.8 倍，默认面向左侧",
+                    "HP 680 · 移速 72 · 普攻伤害 18 · 攻击间隔 1.4 秒",
+                    "ImageGen 提示词、透明背景要求、锚点和碰撞箱规则已齐备",
+                ],
+            },
+        },
+        {
+            "id": "WO-DEMO-TECH-001",
+            "stage": "technical",
+            "stageIndex": 2,
+            "createdBy": "Agent Hub · 依赖规则自动生成",
+            "assignedRole": "技术 Agent · Technical OPC",
+            "scheduledAt": "11:00",
+            "title": "生成并接入“被污染的学术犬”Boss",
+            "objective": "使用已批准的策划规格调用 ImageGen 生成 Boss 素材，完成樱花大道接入、基础战斗参数和浏览器验收。",
+            "inputs": [
+                "BOSS-DOG-SPEC-v1：策划 Agent 已批准规格包",
+                "现有游戏画风、角色比例和樱花大道地图资产",
+                "Boss 模板：移动、普通攻击、受击、死亡和阴影",
+            ],
+            "deliverables": [
+                "透明背景 Boss 素材与可追溯生成记录",
+                "Boss 配置、地图出生点和基础战斗接入",
+                "资源 200 检查、浏览器无报错和战斗截图",
+                "修改文件、版本号、风险与回滚说明",
+            ],
+            "acceptance": [
+                "Boss 能出生、移动、普通攻击、受击和死亡",
+                "左右移动朝向正确，脚下阴影、锚点和碰撞箱稳定",
+                "刷新页面后地图正常加载，控制台无 JavaScript 错误",
+            ],
+            "result": {
+                "summary": "技术 Agent 已生成素材并完成 Boss 最小可玩接入。",
+                "evidence": [
+                    "ASSET-BOSS-DOG-v1：透明背景素材与尺寸归一化完成",
+                    "BUILD-DEMO-0716：樱花大道 Boss 出生、移动、攻击与死亡通过",
+                    "QA：关键资源 200 · 浏览器控制台 0 error · 已提交试玩截图",
+                ],
+            },
+        },
+        {
+            "id": "WO-DEMO-MKT-001",
+            "stage": "market",
+            "stageIndex": 3,
+            "createdBy": "Agent Hub · 已验收版本触发",
+            "assignedRole": "市场 Agent · Market OPC",
+            "scheduledAt": "13:00",
+            "title": "制作“樱花大道新 Boss”更新海报",
+            "objective": "仅使用已通过技术验收的 Boss 素材和版本事实，制作一张可公开审核的更新海报与短文案。",
+            "inputs": [
+                "BUILD-DEMO-0716：已批准试玩版本",
+                "ASSET-BOSS-DOG-v1：已批准透明素材",
+                "第三学院 OPC 海报模板、版本号和试玩入口",
+            ],
+            "deliverables": [
+                "《樱花大道 Boss 来袭》更新海报",
+                "30 字以内平台标题与 80 字以内更新说明",
+                "试玩入口、版本号和 DEMO 数据声明",
+            ],
+            "acceptance": [
+                "不得宣传尚未进入已批准构建的技能或玩法",
+                "海报沿用学术喵品牌视觉并清楚标注试玩版本",
+                "公开前必须由 Human Owner 完成最终内容审批",
+            ],
+            "result": {
+                "summary": "市场 Agent 已提交更新海报与发布文案，经营循环完成。",
+                "evidence": [
+                    "POSTER-BOSS-DOG-v1：《樱花大道 Boss 来袭》海报",
+                    "COPY-DEMO-0716：平台标题、更新说明和试玩入口已生成",
+                    "发布记录已写回 Agent Hub，等待下一轮玩家反馈与财务信号",
+                ],
+            },
+        },
+    ]
+
+
+def new_opc_roadshow_state(demo_id: str) -> dict:
+    return {
+        "demoId": demo_id,
+        "mode": "DEMO · 加速经营周期",
+        "started": False,
+        "completed": False,
+        "currentOrderIndex": -1,
+        "currentStatus": "DECISION_READY",
+        "humanApproved": False,
+        "signals": [
+            {"source": "财务账本", "value": "¥2,184", "label": "樱花同济篇演示净额", "trend": "+31%"},
+            {"source": "客户反馈", "value": "14 / 50", "label": "希望樱花大道增加 Boss", "trend": "高频"},
+            {"source": "产品数据", "value": "86%", "label": "第一章核心链路完成度", "trend": "可扩展"},
+            {"source": "节点容量", "value": "42%", "label": "技术节点今日可用容量", "trend": "可投入"},
+        ],
+        "decisionMemo": {
+            "title": "建议启动樱花大道轻量 Boss 验证",
+            "summary": "樱花同济篇的产品与财务信号向上，玩家对樱花大道战斗记忆点的需求集中，技术节点仍有可用容量。建议投入 24 Token 单位，先验证一个单体 Boss，不扩张复杂技能系统。",
+            "reasoning": ["用户价值高", "实现边界清楚", "可复用现有 Boss 模板", "失败可在两次生成后停止"],
+        },
+        "orders": opc_roadshow_orders(),
+        "completedOrders": [],
+        "audit": [
+            {"time": "08:00", "actor": "Agent Hub", "event": "财务、客户、产品与节点信号已汇总"},
+            {"time": "08:30", "actor": "决策 Agent", "event": "决策建议已生成，等待经营周期启动并创建首张工单"},
+        ],
+    }
+
+
+def opc_roadshow_snapshot(demo_id: str) -> dict:
+    with opc_roadshow_lock:
+        state = opc_roadshow_sessions.setdefault(demo_id, new_opc_roadshow_state(demo_id))
+        return json.loads(json.dumps(state, ensure_ascii=False))
+
+
+def apply_opc_roadshow_action(payload: dict) -> tuple[int, dict]:
+    demo_id = clean_opc_demo_id(payload.get("demoId"))
+    action = str(payload.get("action") or "").strip()
+    with opc_roadshow_lock:
+        if action == "reset":
+            opc_roadshow_sessions[demo_id] = new_opc_roadshow_state(demo_id)
+            return 200, {"demo": opc_roadshow_sessions[demo_id]}
+
+        state = opc_roadshow_sessions.setdefault(demo_id, new_opc_roadshow_state(demo_id))
+        orders = state["orders"]
+        if action == "run-decision":
+            if not state["started"]:
+                state["started"] = True
+                state["currentOrderIndex"] = 0
+                state["currentStatus"] = "WAITING_APPROVAL"
+                state["humanApproved"] = False
+                state["audit"].append({"time": "09:00", "actor": "决策 Agent", "event": f"已创建 {orders[0]['id']}，等待 Human Owner 审批"})
+            return 200, {"demo": state}
+
+        if not state["started"] or state["completed"]:
+            return 409, {"error": "当前经营周期状态不允许执行此操作。", "demo": state}
+
+        current_index = int(state["currentOrderIndex"])
+        if current_index < 0 or current_index >= len(orders):
+            return 409, {"error": "当前没有可处理的工单。", "demo": state}
+        current = orders[current_index]
+
+        if action == "approve":
+            if not state["humanApproved"]:
+                state["humanApproved"] = True
+                state["currentStatus"] = "READY"
+                state["audit"].append({"time": current["scheduledAt"], "actor": "Human Owner", "event": f"已批准 {current['id']}，允许 {current['assignedRole']} 领取"})
+            return 200, {"demo": state}
+
+        if action == "complete":
+            if not state["humanApproved"]:
+                return 409, {"error": "工单尚未通过人工审批。", "demo": state}
+            state["completedOrders"].append({
+                "id": current["id"],
+                "title": current["title"],
+                "assignedRole": current["assignedRole"],
+                "result": current["result"],
+                "status": "ACCEPTED",
+            })
+            state["audit"].append({"time": current["scheduledAt"], "actor": current["assignedRole"], "event": current["result"]["summary"]})
+            if current_index == len(orders) - 1:
+                state["completed"] = True
+                state["currentStatus"] = "CLOSED_LOOP"
+                state["audit"].append({"time": "14:00", "actor": "Agent Hub", "event": "版本、市场交付与审计证据已回流，等待下一轮反馈"})
+            else:
+                state["currentOrderIndex"] = current_index + 1
+                state["currentStatus"] = "WAITING_APPROVAL"
+                state["humanApproved"] = False
+                next_order = orders[current_index + 1]
+                state["audit"].append({"time": next_order["scheduledAt"], "actor": "Agent Hub", "event": f"依赖已满足，创建 {next_order['id']} 并等待人工审批"})
+            return 200, {"demo": state}
+
+    return 400, {"error": "未知的经营周期操作。"}
 
 
 @contextmanager
@@ -1782,7 +1991,12 @@ class GameHandler(BaseHTTPRequestHandler):
         print(f"{self.address_string()} - {fmt % args}")
 
     def do_GET(self) -> None:
-        path = urlparse(self.path).path
+        parsed = urlparse(self.path)
+        path = parsed.path
+        if path == "/api/opc/roadshow":
+            demo_id = clean_opc_demo_id(parse_qs(parsed.query).get("demo", ["cycle-01"])[0])
+            json_response(self, 200, {"demo": opc_roadshow_snapshot(demo_id)})
+            return
         if path == "/api/me":
             user = user_by_token(auth_token_from_header(self))
             if not user:
@@ -1846,6 +2060,10 @@ class GameHandler(BaseHTTPRequestHandler):
                 json_response(self, 401, {"error": "登录已过期，请重新登录。"})
                 return
             status, body = handle_character_delete(user, payload)
+            json_response(self, status, body)
+            return
+        if path == "/api/opc/roadshow/action":
+            status, body = apply_opc_roadshow_action(payload)
             json_response(self, status, body)
             return
         json_response(self, 404, {"error": "接口不存在。"})

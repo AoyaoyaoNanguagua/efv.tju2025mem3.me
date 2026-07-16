@@ -136,7 +136,7 @@
     form.reset();
     if (status) {
       status.hidden = false;
-      status.innerHTML = `<b>模拟提交成功</b><span>反馈编号：${escapeHtml(id)}。已进入客户关系 → 市场 → 策划的演示流转队列。</span>`;
+      status.innerHTML = `<b>DEMO 反馈已提交</b><span>反馈编号：${escapeHtml(id)}。已进入客户关系 → 市场 → 策划的状态流转队列。</span>`;
       status.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   });

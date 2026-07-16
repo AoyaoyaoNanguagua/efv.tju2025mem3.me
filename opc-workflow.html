@@ -21,10 +21,10 @@
       <nav class="nav-links" aria-label="主导航" data-nav-links>
         <a href="opc.html">公司 Company</a>
         <a href="opc-products.html">IP 与产品 Products</a>
-        <a class="active" href="opc-workflow.html">OPC 工作流 Workflow</a>
-        <a href="opc-console.html">决策中枢 Console</a>
+        <a class="active" href="opc-workflow.html">工作流与中枢 Workflow</a>
+        <a href="opc-console.html">经营循环 Live Cycle</a>
         <a href="play.html">在线试玩 Play</a>
-        <a href="https://github.com/opc-studios/campus-daze">代码仓库 GitHub</a>
+        <a href="https://github.com/AoyaoyaoNanguagua/efv.tju2025mem3.me">代码仓库 GitHub</a>
       </nav>
     </header>
 
@@ -35,8 +35,8 @@
         <h1>让 Token 像资本一样，<br>流向最有价值的 IP<span class="cn">OPC Portfolio Decision & Operating System</span></h1>
         <p class="hero-copy">第三学院 OPC 是一家 AI 原生 IP 资产运营公司。人类主理人确定长期方向，决策 Agent 在多个 IP、游戏与玩法之间配置算力、时间和预算，三台 Codex 工作节点通过统一数据中枢完成策划、生产、部署、市场与财务循环。</p>
         <div class="hero-actions">
-          <a class="button primary" href="#allocation">查看今日资源配置</a>
-          <a class="button" href="opc-console.html">进入决策与订单中枢</a>
+          <a class="button primary" href="#decision-console">先看决策与订单中枢</a>
+          <a class="button" href="opc-console.html">进入实时经营循环</a>
         </div>
         <div class="operating-facts" aria-label="OPC 运行结构">
           <article><strong>1</strong><span>Human Owner<br>最终责任人</span></article>
@@ -53,6 +53,115 @@
         <div>
           <b>DEMO · 模拟经营演示</b>
           <span>页面中的资源权重、订单编号、执行时间、节点负载、财务金额和反馈统计用于说明 OPC 的运作机制，不代表真实经营结果；“学术喵”及其游戏、章节、角色与视觉资产属于当前项目内容。</span>
+        </div>
+      </section>
+
+      <section class="band dark decision-hub-band workflow-console-band" id="decision-console">
+        <div class="inner console-inner-wide">
+          <div class="section-head">
+            <div>
+              <p class="section-label">先看中台 Control Plane First</p>
+              <h2>一屏看清今天投什么、谁来做、怎样验收。<span class="en">One control plane for allocation, orders, evidence and approval.</span></h2>
+            </div>
+            <p>统一中枢呈现资源配置、执行责任、交付证据与审批状态；下方工作流进一步说明组合决策、节点协同、订单治理和信号回流机制。</p>
+          </div>
+
+          <div class="console-shell decision-console-shell" aria-label="Third Academy Agent Hub 决策与订单数据中枢" data-console>
+            <aside class="console-sidebar">
+              <div class="console-identity">
+                <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
+                <div><b>Agent Hub</b><small>OPC Control Plane</small></div>
+              </div>
+              <nav aria-label="中枢分区" role="tablist">
+                <button class="active" type="button" role="tab" aria-selected="true" data-console-tab="overview"><b>决策总览</b><small>Decision</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="orders"><b>订单队列</b><small>Work Orders</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="portfolio"><b>IP 组合</b><small>Portfolio</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="nodes"><b>三节点</b><small>Work Nodes</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="approvals"><b>审批中心</b><small>Approvals</small></button>
+                <button type="button" role="tab" aria-selected="false" data-console-tab="signals"><b>信号账本</b><small>Signals</small></button>
+              </nav>
+              <div class="console-side-links"><a href="opc-finance-report.html">财务报表 ↗</a><a href="opc-feedback-records.html">反馈台账 ↗</a></div>
+            </aside>
+
+            <div class="console-main">
+              <div class="console-topbar">
+                <div><span class="console-eyebrow">CURRENT ALLOCATION CYCLE · DEMO</span><h3>学术喵组合配置周期<span>Academic Cat Portfolio Allocation Cycle</span></h3></div>
+                <div class="console-pills"><span><i class="status-dot green"></i>中枢在线</span><span><i class="status-dot blue"></i>三节点就绪</span><span><i class="status-dot pink"></i>人工审批</span></div>
+              </div>
+
+              <div class="console-kpis decision-kpis">
+                <button class="console-kpi active" type="button" data-console-detail="decisions"><b>4</b><span>资源配置线 Allocation</span></button>
+                <button class="console-kpi" type="button" data-console-detail="orders"><b>3</b><span>经营订单 Work Orders</span></button>
+                <button class="console-kpi" type="button" data-console-detail="nodes"><b>3</b><span>工作节点 Work Nodes</span></button>
+                <button class="console-kpi" type="button" data-console-detail="approvals"><b>1</b><span>当前人工审批 Approval</span></button>
+              </div>
+
+              <section class="console-view active" role="tabpanel" data-console-view="overview">
+                <div class="decision-overview-grid">
+                  <article class="chart-panel allocation-console-panel">
+                    <header><b>今日组合配置 Portfolio Allocation</b><span>结构示意 · 决策 Agent 提议</span></header>
+                    <div class="console-allocation-bars">
+                      <div style="--w:48%"><span>主生产线</span><i><b>48</b></i><small>樱花同济篇</small></div>
+                      <div style="--w:22%"><span>验证线</span><i><b>22</b></i><small>远洋逐梦篇</small></div>
+                      <div style="--w:18%"><span>增长线</span><i><b>18</b></i><small>宣发与周边</small></div>
+                      <div style="--w:12%"><span>战略预留</span><i><b>12</b></i><small>QA 与修复</small></div>
+                    </div>
+                  </article>
+                  <article class="decision-memo-panel">
+                    <header><span>DECISION MEMO · OPERATING CYCLE</span><b>建议启动樱花大道轻量 Boss 验证</b></header>
+                    <p>财务、客户反馈和技术容量同时向上；优先验证一个单体 Boss，不扩张复杂技能系统。</p>
+                    <dl><div><dt>预算上限</dt><dd>24 Token 单位</dd></div><div><dt>停止条件</dt><dd>两次生成仍未通过画风验收</dd></div></dl>
+                  </article>
+                  <article class="detail-panel" data-console-detail-panel>
+                    <b>资源配置线 Allocation</b><p>中台把主生产、玩法验证、增长和战略预留放在同一张配置表中，由决策 Agent 建议、Human Owner 最终批准。</p>
+                    <dl><div><dt>主生产线</dt><dd>48 单位</dd></div><div><dt>当前验证</dt><dd>樱花大道 Boss</dd></div><div><dt>最终批准</dt><dd>Human Owner</dd></div></dl>
+                  </article>
+                </div>
+                <div class="order-glance"><header><div><b>当前经营订单</b><span>中枢按依赖释放可执行订单，交付与审批完成后生成下游订单</span></div><a class="button" href="opc-console.html">进入经营循环</a></header><div>
+                  <article><span class="order-status ready">READY</span><b>策划 · Boss 规格与 ImageGen 约束</b><small>Planning OPC · 10:00</small></article>
+                  <article><span class="order-status blocked">LOCKED</span><b>技术 · 素材接入与 QA 证据</b><small>等待策划交付与人工批准</small></article>
+                  <article><span class="order-status blocked">LOCKED</span><b>市场 · 更新海报与发布文案</b><small>等待已验收游戏版本</small></article>
+                </div></div>
+              </section>
+
+              <section class="console-view" role="tabpanel" data-console-view="orders">
+                <div class="order-toolbar"><div><b>工作订单队列</b><span>订单从中枢领取，不由 Agent 相互转发。</span></div><a class="button" href="opc-console.html#current-order">打开当前订单视图</a></div>
+                <div class="order-board">
+                  <article data-order-status="ready"><header><span class="order-status ready">WAITING APPROVAL</span><small>WO-DEMO-PLAN-001</small></header><b>樱花大道 Boss 策划与美术规格</b><p>读取财务与反馈信号，设计“被污染的学术犬”Boss。</p><dl><div><dt>负责人</dt><dd>策划 Agent</dd></div><div><dt>审批</dt><dd>Human Owner</dd></div></dl></article>
+                  <article data-order-status="blocked"><header><span class="order-status blocked">LOCKED</span><small>WO-DEMO-TECH-001</small></header><b>生成并接入 Boss</b><p>ImageGen 素材、基础战斗、资源检查和浏览器 QA。</p><dl><div><dt>负责人</dt><dd>技术 Agent</dd></div><div><dt>依赖</dt><dd>策划规格已批准</dd></div></dl></article>
+                  <article data-order-status="blocked"><header><span class="order-status blocked">LOCKED</span><small>WO-DEMO-MKT-001</small></header><b>制作更新海报</b><p>只使用已批准素材和版本事实生成公开物料。</p><dl><div><dt>负责人</dt><dd>市场 Agent</dd></div><div><dt>依赖</dt><dd>技术版本已验收</dd></div></dl></article>
+                </div>
+              </section>
+
+              <section class="console-view" role="tabpanel" data-console-view="portfolio">
+                <div class="console-portfolio-grid">
+                  <article class="portfolio-console-card active-portfolio"><header><span>IP-01 · ACTIVE</span><b>学术喵</b><em>组合评分 82</em></header><p>当前公开 IP，主生产线集中在樱花同济篇核心体验。</p><footer><b>继续投资</b><span>主生产线 · 48 单位</span></footer></article>
+                  <article class="portfolio-console-card"><header><span>CHAPTER · VALIDATION</span><b>远洋逐梦篇</b><em>验证评分 63</em></header><p>只进行移动、镜头和氛围原型，不启动批量资产生产。</p><footer><b>小额验证</b><span>验证线 · 22 单位</span></footer></article>
+                  <article class="portfolio-console-card ghost-portfolio"><header><span>IP-02 · INCUBATION</span><b>未公开 IP</b><em>尚未评分</em></header><p>等待主生产线稳定后再进入概念验证。</p><footer><b>保持观察</b><span>暂不分配生产预算</span></footer></article>
+                </div>
+              </section>
+
+              <section class="console-view" role="tabpanel" data-console-view="nodes">
+                <div class="console-node-grid">
+                  <article class="console-node-card strategy"><header><em>A</em><div><b>控制塔节点</b><span>Strategy & Control</span></div><i class="node-state planning">ONLINE</i></header><p>中台、决策 Agent、财务汇总和人工审批。</p><dl><div><dt>今日角色</dt><dd>项目经理 OPC</dd></div><div><dt>计划负载</dt><dd>42%</dd></div></dl></article>
+                  <article class="console-node-card production"><header><em>B</em><div><b>策划与技术节点</b><span>Planning & Technical</span></div><i class="node-state planning">READY</i></header><p>领取已批准订单，生成规格、素材、代码和 QA 证据。</p><dl><div><dt>今日角色</dt><dd>策划 / 技术 OPC</dd></div><div><dt>可用容量</dt><dd>42%</dd></div></dl></article>
+                  <article class="console-node-card market"><header><em>C</em><div><b>市场发布节点</b><span>Market & Release</span></div><i class="node-state planning">IDLE</i></header><p>只读取已验收版本，生成海报、文案和发布记录。</p><dl><div><dt>今日角色</dt><dd>市场 OPC</dd></div><div><dt>公开边界</dt><dd>人工审批</dd></div></dl></article>
+                </div>
+              </section>
+
+              <section class="console-view" role="tabpanel" data-console-view="approvals">
+                <div class="approval-queue"><article><header><span class="approval-level high">P0 · DIRECTION</span><small>AP-DEMO-001</small></header><b>是否启动樱花大道轻量 Boss 验证</b><p>检查用户价值、实现边界、预算上限、画风要求和停止条件。</p><dl><div><dt>来源</dt><dd>决策 Agent</dd></div><div><dt>建议</dt><dd>批准 24 Token 单位</dd></div><div><dt>责任人</dt><dd>Human Owner</dd></div></dl><footer><span>进入当前工单视图完成批准并记录审计状态</span></footer></article></div>
+              </section>
+
+              <section class="console-view" role="tabpanel" data-console-view="signals">
+                <div class="signal-link-grid">
+                  <a href="opc-finance-report.html"><header><span>FINANCE LEDGER</span><b>财务确认与现金流</b></header><strong>¥2,184</strong><p>樱花同济篇演示净额，占组合 72%。</p><em>打开财务报表 →</em></a>
+                  <a href="opc-feedback-records.html"><header><span>FEEDBACK LEDGER</span><b>客户反馈台账</b></header><strong>14 / 50</strong><p>希望樱花大道增加 Boss 的高频反馈。</p><em>打开反馈台账 →</em></a>
+                  <a href="opc-console.html"><header><span>LIVE CYCLE</span><b>实时经营周期</b></header><strong>4 OPC</strong><p>决策、策划、技术、市场围绕中台完成闭环。</p><em>进入经营循环 →</em></a>
+                </div>
+              </section>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -110,48 +219,6 @@
         </div>
       </section>
 
-      <section class="band dark allocation-band" id="allocation">
-        <div class="inner">
-          <div class="section-head">
-            <div>
-              <p class="section-label">决策 Agent Decision Agent</p>
-              <h2>决策 Agent 是 OPC 的投资委员会。<span class="en">The Decision Agent acts as the portfolio investment committee.</span></h2>
-            </div>
-            <p>它不直接制作产品，而是读取产品、市场、财务和风险信号，向主理人提交当天的组合投资建议，再由数据中枢生成可执行工作订单。</p>
-          </div>
-
-          <div class="decision-system">
-            <div class="decision-inputs">
-              <p class="decision-caption">输入信号 Decision Inputs</p>
-              <div class="decision-input-grid">
-                <article><b>产品成熟度</b><span>版本质量、关键缺口、复用资产</span></article>
-                <article><b>玩家需求</b><span>问题频次、情绪、建议与留存</span></article>
-                <article><b>市场势能</b><span>内容表现、渠道反馈、合作线索</span></article>
-                <article><b>财务效率</b><span>Token、工具成本、收入与现金流</span></article>
-                <article><b>战略价值</b><span>IP 一致性、长期扩展与差异化</span></article>
-                <article><b>风险边界</b><span>安全、品牌、依赖与人工审批</span></article>
-              </div>
-              <div class="owner-gate"><strong>Human Owner Gate</strong><span>主理人批准方向、预算上限、停止条件与对外发布边界。</span></div>
-            </div>
-
-            <div class="allocation-board">
-              <header><div><small>TODAY · ALLOCATION MODEL</small><b>今日组合配置</b></div><span>结构示意</span></header>
-              <div class="allocation-lanes">
-                <article style="--allocation:48%"><div><b>主生产线</b><span>樱花同济篇 · 版本与核心体验</span></div><i><em>48</em></i></article>
-                <article style="--allocation:22%"><div><b>验证线</b><span>远洋逐梦篇 · 章节与玩法试验</span></div><i><em>22</em></i></article>
-                <article style="--allocation:18%"><div><b>增长线</b><span>宣发、反馈与周边产品</span></div><i><em>18</em></i></article>
-                <article style="--allocation:12%"><div><b>战略预留</b><span>QA、修复与突发机会</span></div><i><em>12</em></i></article>
-              </div>
-              <div class="decision-output">
-                <small>输出 Decision Pack</small>
-                <span>IP / 游戏 / 玩法</span><span>优先级</span><span>预算上限</span><span>验收标准</span><span>停止条件</span>
-              </div>
-              <a class="console-inline-link" href="opc-console.html">在决策中枢查看组合与订单 →</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section class="band alt" id="hub">
         <div class="inner">
           <div class="section-head">
@@ -194,7 +261,7 @@
               <article><b>Approval & Audit</b><span>审批、证据、历史与责任</span></article>
             </div>
           </div>
-          <div class="hub-principle"><b>唯一事实源 Single Source of Truth</b><span>页面是给人看的操作界面；MCP / API、队列与数据库才是 Agent 读取和写入状态的正式接口。</span></div>
+          <div class="hub-principle"><b>唯一事实源 Single Source of Truth</b><span>可视界面服务于 Human Owner 的操作与审计；MCP / API、队列与数据库构成 Agent 读取和写入状态的正式接口。</span></div>
         </div>
       </section>
 
@@ -302,13 +369,13 @@
               <p class="section-label">信号回流 Signal Return</p>
               <h2>市场、财务和客户声音共同决定下一轮投资。<span class="en">Market, finance and customer signals shape the next allocation.</span></h2>
             </div>
-            <p>工作流页只呈现公司级摘要；财务报表、反馈提交和反馈台账继续作为专业明细页，并接入新的决策中枢。</p>
+            <p>公司级中枢保留摘要信号，财务报表、反馈入口与反馈台账承载专业明细，并持续向下一轮组合决策回流。</p>
           </div>
           <div class="signal-source-grid">
             <a href="opc-finance-report.html"><small>FINANCE LEDGER</small><b>财务确认与现金流</b><span>支付、应收、到账、异常与下一轮预算建议。</span><em>打开财务报表 →</em></a>
             <a href="opc-customer-feedback.html"><small>FEEDBACK INTAKE</small><b>客户反馈入口</b><span>收集正面反馈、问题和优化建议。</span><em>提交客户反馈 →</em></a>
             <a href="opc-feedback-records.html"><small>FEEDBACK LEDGER</small><b>客户反馈管理台账</b><span>分类、优先级、负责人、状态与闭环结果。</span><em>查看反馈台账 →</em></a>
-            <a href="opc-console.html"><small>DECISION HUB</small><b>决策与订单中枢</b><span>把信号转成组合判断、工作订单和审批事项。</span><em>进入中枢 →</em></a>
+            <a href="opc-console.html"><small>LIVE OPERATING CYCLE</small><b>实时经营循环</b><span>决策、策划、技术和市场 OPC 围绕同一中台完成可审计闭环。</span><em>进入经营循环 →</em></a>
           </div>
 
           <div class="governance-block">
@@ -327,12 +394,12 @@
     <section class="contact-band workflow-cta">
       <div class="contact-inner">
         <div>
-          <p class="section-label">FROM STRATEGY TO OPERATIONS</p>
-          <h2>从公司工作流进入可交互的决策与订单数据中枢。<span class="en">Move from the company narrative into the interactive control plane.</span></h2>
-          <p>查看今日资源配置、IP 组合、工作订单、三节点负载、审批队列以及财务与客户信号。</p>
+          <p class="section-label">FROM OPERATING SYSTEM TO LIVE CYCLE</p>
+          <h2>从运行原理进入可交互、可审计的经营循环。<span class="en">Move from the operating model into a live, reviewable cycle.</span></h2>
+          <p>决策 Agent 读取财务与反馈信号并创建首张待审批工单；Human Owner 批准后，策划、技术与市场 Agent 按依赖提交交付物与证据。</p>
         </div>
         <div class="contact-actions">
-          <a class="button primary" href="opc-console.html">打开决策中枢 Console</a>
+          <a class="button primary" href="opc-console.html">打开经营循环 Live Cycle</a>
           <a class="button" href="opc-products.html">查看 IP 资产 Products</a>
         </div>
       </div>
@@ -344,7 +411,7 @@
         <div class="footer-links">
           <a href="opc.html">公司 Company</a>
           <a href="opc-products.html">产品 Products</a>
-          <a href="opc-console.html">决策中枢 Console</a>
+          <a href="opc-console.html">经营循环 Live Cycle</a>
           <a href="play.html">试玩 Play</a>
         </div>
       </div>

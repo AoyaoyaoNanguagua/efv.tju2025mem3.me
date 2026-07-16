@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>当前工单与人工审批 | Third Academy Agent Hub</title>
+  <meta name="description" content="第三学院 OPC 当前工单页面：展示 Agent 可读取的订单输入、交付物、验收条件、状态和 Human Owner 审批门。">
+  <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
+  <link rel="stylesheet" href="opc.css">
+</head>
+<body class="roadshow-order-page">
+  <div class="order-page-shell" data-roadshow-order>
+    <header class="order-page-nav">
+      <a class="brand" href="opc.html" aria-label="第三学院 OPC 首页">
+        <img src="assets/opc/third-academy-sakura-paw-logo-v5.png" alt="">
+        <span><strong>Third Academy Agent Hub</strong><span>Active Work Order View</span></span>
+      </a>
+      <div class="order-nav-state">
+        <span class="roadshow-connection" data-roadshow-connection><i></i>正在连接 Agent Hub</span>
+        <a data-return-console href="opc-console.html#current-order">返回经营循环</a>
+      </div>
+    </header>
+
+    <main class="single-order-stage">
+      <section class="single-order-empty" data-order-empty hidden>
+        <span>NO ACTIVE ORDER</span>
+        <h1>当前还没有工单。</h1>
+        <p>当前周期尚未生成工作订单。决策 Agent 完成信号评估后，中枢将创建首张策划工单。</p>
+        <a class="button primary" data-return-console href="opc-console.html#live-cycle">查看决策信号</a>
+      </section>
+
+      <section class="single-order-complete" data-order-complete hidden>
+        <span>CLOSED LOOP</span>
+        <h1>本轮经营循环已经完成。</h1>
+        <p>策划规格、技术构建、QA 证据和市场物料都已写回 Agent Hub。</p>
+        <div><a class="button primary" href="play.html">查看当前游戏版本</a><a class="button" data-return-console href="opc-console.html#current-order">返回中台审计记录</a></div>
+      </section>
+
+      <section class="single-order-card" data-order-card hidden>
+        <header class="single-order-header">
+          <div>
+            <span data-order-stage>PLANNING OPC · 10:00</span>
+            <code data-order-id>WO-DEMO-PLAN-001</code>
+            <h1 data-order-title>樱花大道 Boss 策划与美术规格</h1>
+          </div>
+          <div class="single-order-status">
+            <small>ORDER STATUS</small>
+            <strong data-order-status>WAITING APPROVAL</strong>
+            <span data-order-status-note>Human Owner 尚未批准，Agent 不得领取。</span>
+          </div>
+        </header>
+
+        <div class="single-order-summary">
+          <p data-order-objective></p>
+          <dl>
+            <div><dt>创建者</dt><dd data-order-creator></dd></div>
+            <div><dt>领取角色</dt><dd data-order-role></dd></div>
+            <div><dt>计划检查</dt><dd data-order-time></dd></div>
+            <div><dt>人工审批门</dt><dd>方向、预算、审美与公开边界</dd></div>
+          </dl>
+        </div>
+
+        <div class="single-order-columns">
+          <section><header><span>INPUTS</span><b>Agent 读取输入</b></header><ul data-order-inputs></ul></section>
+          <section><header><span>DELIVERABLES</span><b>必须提交的交付物</b></header><ul data-order-deliverables></ul></section>
+          <section><header><span>ACCEPTANCE</span><b>进入下一状态的条件</b></header><ul data-order-acceptance></ul></section>
+        </div>
+
+        <div class="single-order-bottom">
+          <section class="agent-readable-envelope">
+            <span>AGENT READ VIEW · WORKFLOW ENVELOPE</span>
+            <code data-order-envelope>{ work_order_id, assigned_role, objective, inputs[], deliverables[], acceptance[], approval_gate, status }</code>
+          </section>
+
+          <section class="human-approval-gate">
+            <div><span>HUMAN OWNER GATE</span><b data-gate-title>等待人工同意</b><p data-gate-copy>同意后，订单才会变为 READY，并出现在对应 Agent 的可领取队列。</p></div>
+            <div class="approval-actions">
+              <button class="button primary" type="button" data-order-approve>人工同意并下发</button>
+              <button class="button" type="button" data-order-complete-action disabled>Agent 执行并提交证据（DEMO）</button>
+            </div>
+          </section>
+        </div>
+
+        <section class="single-order-result" data-order-result hidden>
+          <div><header><span>EXECUTION EVIDENCE</span><b data-order-result-title></b></header><ul data-order-result-evidence></ul></div>
+          <button class="button primary" type="button" data-order-next>查看下一张工单</button>
+        </section>
+      </section>
+    </main>
+
+    <footer class="order-page-footer">
+      <span>DEMO · 页面中的财务、反馈与订单数据为运营演示数据</span>
+      <span>Agent 只读写 Agent Hub，不直接向下一 Agent 私下转单</span>
+      <strong data-demo-id>cycle-01</strong>
+    </footer>
+  </div>
+  <script src="opc-order.js"></script>
+</body>
+</html>
