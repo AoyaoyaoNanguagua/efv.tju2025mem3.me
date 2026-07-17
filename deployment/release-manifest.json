@@ -1,5 +1,5 @@
 {
-  "releaseDate": "2026-07-16",
+  "releaseDate": "2026-07-17",
   "profiles": {
     "github": {
       "description": "完整项目源码、可复现美术处理脚本与历史资产归档；原始 MOV 母片仅本地保留。",
@@ -54,6 +54,10 @@
         "assets/game/bosses/m04-structural-instability-boss-sheet-v4.png",
         "assets/game/bosses/m04-structural-instability-boss-sheet-v5.png",
         "assets/game/bosses/m04-structural-instability-boss-sheet-v6.png",
+        "assets/opc/opc-live-operating-roadmap-v2.png",
+        "assets/opc/opc-live-operating-roadmap-v3.png",
+        "assets/opc/opc-live-operating-roadmap-v4.png",
+        "assets/opc/opc-live-operating-roadmap-v5.png",
         "assets/sprites/*-lina-edge.png",
         "assets/sprites/*-cat-transition.png",
         "assets/sprites/ayu-sprites-v19-redrawn-walk-cat-end.png",

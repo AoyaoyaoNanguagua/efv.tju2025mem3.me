@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const assetRoot = join(repoRoot, "assets");
+const releaseManifestPath = join(repoRoot, "deployment", "release-manifest.json");
 
 function walk(directory, ignored = new Set()) {
   const files = [];
@@ -129,8 +130,29 @@ const unreferenced = assetFiles
   .map(repoPath)
   .filter(file => file !== "assets/README.md" && !references.has(file));
 
+function globToRegExp(pattern) {
+  let expression = "^";
+  for (let index = 0; index < pattern.length; index += 1) {
+    const character = pattern[index];
+    if (character === "*" && pattern[index + 1] === "*") {
+      expression += ".*";
+      index += 1;
+    } else if (character === "*") expression += "[^/]*";
+    else if ("\\^$+?.()|{}[]".includes(character)) expression += `\\${character}`;
+    else expression += character;
+  }
+  return new RegExp(`${expression}$`, "i");
+}
+
+const releaseManifest = JSON.parse(readFileSync(releaseManifestPath, "utf8"));
+const runtimeAssetExcludes = (releaseManifest.profiles?.aliyun?.runtimeAssetExclude || []).map(globToRegExp);
+const unreferencedEnteringAliyun = unreferenced.filter(file => !runtimeAssetExcludes.some(pattern => pattern.test(file)));
+unreferencedEnteringAliyun.forEach(file => issues.push(`Unreferenced asset would enter Aliyun package: ${file}`));
+const runtimeAssets = assetFiles.map(repoPath).filter(file => references.has(file));
+
 console.log(`Assets: ${assetFiles.length} files, ${(totalBytes / 1024 / 1024).toFixed(2)} MiB`);
 console.log(`Direct references: ${references.size}`);
+console.log(`Aliyun runtime assets: ${runtimeAssets.length}`);
 if (unreferenced.length) {
   console.log(`Unreferenced files (${unreferenced.length}):`);
   unreferenced.forEach(file => console.log(`  ${file}`));
@@ -141,5 +163,5 @@ if (issues.length) {
   [...new Set(issues)].forEach(issue => console.error(`  - ${issue}`));
   process.exitCode = 1;
 } else {
-  console.log("Asset audit passed: no missing references, exact duplicates, placement violations or blocked interactions.");
+  console.log("Asset audit passed: no missing references, exact duplicates, placement violations, blocked interactions or unreferenced Aliyun assets.");
 }

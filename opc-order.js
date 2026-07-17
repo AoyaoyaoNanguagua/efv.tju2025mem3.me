@@ -92,7 +92,7 @@
     if (demo.completed || releaseVisible || !hasOrder) return;
 
     const order = demo.orders[index];
-    const stageName = ({ planning: "策划 OPC", technical: "技术 OPC", market: "市场 OPC" })[order.stage] || order.assignedRole;
+    const stageName = ({ planning: "策划 Agent", technical: "技术 Agent", market: "市场 Agent" })[order.stage] || order.assignedRole;
     const approved = Boolean(state.humanApproved);
     setText("[data-order-stage]", `${String(order.stageIndex + 1).padStart(2, "0")} / 04 · ${stageName} · ${order.scheduledAt}`);
     setText("[data-order-id]", order.id);

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>实时经营循环 | Third Academy Agent Hub</title>
-  <meta name="description" content="第三学院 OPC 实时经营循环：决策 Agent 读取经营信号，策划通过后并行释放技术与市场工单，游戏版本最终由 Human Owner 手动发版。">
+  <meta name="description" content="第三学院 OPC 实时经营循环：Agent Hub 汇聚经营信号、客户反馈、订单、证据和审批状态；决策、策划、技术、市场 Agent 与猫老板 Human Owner 分别独立接入中台，最终部署必须由人工完成。">
   <link rel="icon" href="assets/opc/third-academy-sakura-paw-logo-v5.png">
   <link rel="stylesheet" href="opc.css">
 </head>
@@ -37,9 +37,9 @@
     <section class="hero console-hero roadshow-hero roadshow-slide" data-roadshow-slide>
       <img class="hero-bg" src="assets/opc/third-academy-hero-v1.png" alt="第三学院 OPC 中台与工作节点">
       <div class="hero-inner">
-        <p class="kicker">LIVE OPERATING CYCLE · ONE HUB · FOUR ONE-PERSON OPCS</p>
-        <h1>实时经营循环<span class="cn">Decision → Planning → Technical ∥ Market → Human Release</span></h1>
-        <p class="hero-copy">四个一人 OPC 通过统一 Agent Hub 完成可审计的经营周期：策划规格批准后，技术生产与市场宣发进入两条独立路径；游戏构建通过 QA 后，仍须由 Human Owner 手动完成正式发版。</p>
+        <p class="kicker">LIVE OPERATING CYCLE · ONE HUB · INDEPENDENT AGENTS</p>
+        <h1>实时经营循环<span class="cn">Agent Hub ↔ Decision · Planning · Technical · Market · Human Owner</span></h1>
+        <p class="hero-copy">经营信号与客户反馈直接沉淀在 Agent Hub；决策、策划、技术、市场 Agent 与猫老板 Human Owner 分别独立读取和回写中台。技术完成后将增量更新包写入指定目录并登记就绪状态，最终部署上线只允许 Human Owner 人工执行。</p>
         <div class="hero-actions">
           <a class="button primary" href="#operating-roadmap">查看经营路线图</a>
           <a class="button" href="opc-workflow.html#decision-console">查看中台与工作流原理</a>
@@ -49,9 +49,9 @@
 
     <section class="roadshow-roadmap-slide roadshow-slide" id="operating-roadmap" data-roadshow-slide>
       <div class="roadshow-roadmap-shell">
-        <img src="assets/opc/opc-live-operating-roadmap-v2.png" alt="OPC 实时经营路线图：经营信号进入 Agent Hub，策划批准后技术发布与市场宣发双线并行，游戏版本由 Human Owner 手动发版">
+        <img src="assets/opc/opc-live-operating-roadmap-v6.png" alt="OPC 中台辐射式经营架构：经营信号与客户反馈位于 Agent Hub 内；各 Agent 和猫老板 Human Owner 分别独立接入中台；猫老板以背影视角审批，最终仅由猫老板人工部署上线">
         <div class="roadshow-roadmap-caption">
-          <div><b>策划批准后双线并行</b><span>技术负责构建、QA 与待验收版本；市场独立完成对外宣发；正式游戏版本只通过 Human Owner 手动发布。</span></div>
+          <div><b>各 Agent 独立接单，中台统一留痕</b><span>技术完成后把增量更新包写入指定目录并向中台登记；正式部署上线只通过 Human Owner 人工执行。</span></div>
           <a class="button primary" href="#live-cycle">进入经营周期</a>
         </div>
       </div>
@@ -68,10 +68,10 @@
           </div>
           <div class="section-head">
             <div>
-              <p class="section-label">第一步 · 决策 Agent Decision OPC</p>
+              <p class="section-label">第一步 · 决策 Agent Decision Agent</p>
               <h2>先读昨日信号，再决定今天是否值得投入。<span class="en">Read shared facts first; issue one reviewable order second.</span></h2>
             </div>
-            <p>当前周期聚焦樱花大道 Boss 验证。决策 Agent 综合财务、客户、产品与节点容量信号生成策划订单，下游订单由交付证据与审批状态自动释放。</p>
+            <p>当前周期聚焦樱花大道 Boss 验证。决策 Agent 从 Agent Hub 读取财务、客户、产品与节点容量信号，再把建议和策划订单回写中台；后续各 Agent 独立领取自己的订单并回写交付证据。</p>
           </div>
 
           <div class="roadshow-toolbar">
@@ -82,11 +82,11 @@
             </div>
           </div>
 
-          <div class="roadshow-stage-rail" aria-label="四个一人 OPC 的经营阶段">
-            <article data-roadshow-step="decision"><em>01</em><div><b>决策 OPC</b><span>读取信号 · 创建订单</span></div><i>READY</i></article>
-            <article data-roadshow-step="planning"><em>02</em><div><b>策划 OPC</b><span>Boss 规格 · ImageGen 约束</span></div><i>LOCKED</i></article>
-            <article data-roadshow-step="technical"><em>03</em><div><b>技术 OPC</b><span>素材接入 · QA 证据</span></div><i>LOCKED</i></article>
-            <article data-roadshow-step="market"><em>04</em><div><b>市场 OPC</b><span>海报文案 · 对外宣发</span></div><i>LOCKED</i></article>
+          <div class="roadshow-stage-rail" aria-label="四类 Agent 的中台订单状态">
+            <article data-roadshow-step="decision"><em>01</em><div><b>决策 Agent</b><span>读取信号 · 创建订单</span></div><i>READY</i></article>
+            <article data-roadshow-step="planning"><em>02</em><div><b>策划 Agent</b><span>Boss 规格 · ImageGen 约束</span></div><i>LOCKED</i></article>
+            <article data-roadshow-step="technical"><em>03</em><div><b>技术 Agent</b><span>素材接入 · QA 证据</span></div><i>LOCKED</i></article>
+            <article data-roadshow-step="market"><em>04</em><div><b>市场 Agent</b><span>海报文案 · 对外宣发</span></div><i>LOCKED</i></article>
           </div>
 
           <div class="roadshow-console-grid">

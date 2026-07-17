@@ -32,6 +32,7 @@ for (const [asset, width, height] of assets) {
 
 const play = readFileSync("play.js", "utf8");
 const server = readFileSync("play-server.py", "utf8");
+const structuralFirePath = play.slice(play.indexOf("    createStructuralFirePath("), play.indexOf("    startStructuralBossDash("));
 const maps = JSON.parse(readFileSync("assets/chapter1/chapter1-maps-v1.json", "utf8"));
 const m3Garden = maps.maps.ch1_m03_agent_lab.enemySpawns.filter(enemy => /garden/.test(enemy.textureKey || ""));
 
@@ -76,8 +77,9 @@ assert.match(play, /const finalBoss = this\.spawnLeafSlime\(\{/);
 assert.match(play, /终极大机器人已在陆教授所在位置完成加载/);
 assert.match(play, /return finalBoss;/);
 assert.match(play, /app\.boss\.phase === "final"[\s\S]+`终局 \$\{hpText\}`/);
-assert.match(play, /slime\.bossPhase === "phase1" && slime\.hp <= 0/);
-assert.match(play, /slime\.bossPhase === "phase2Combat" && slime\.hp <= 0/);
+assert.match(play, /slime\.textureKey === M04_STRUCTURAL_BOSS_KEY && slime\.hp <= 0 && slime\.bossPhase !== "phase3"/);
+assert.match(play, /if \(slime\.bossPhase === "phase1"\)[\s\S]{0,220}triggerStructuralBossTransform/);
+assert.match(play, /if \(slime\.bossPhase === "phase2Combat"\)[\s\S]{0,220}enterStructuralBossPhaseThree/);
 assert.match(play, /triggerStructuralBossTransform/);
 assert.match(play, /getEnemyDifficultyScale/);
 assert.match(play, /health: 1 \+ extra \* 0\.75/);
@@ -90,7 +92,11 @@ assert.match(play, /slime\.textureKey === M04_STRUCTURAL_BOSS_KEY && slime\.tran
 assert.match(play, /STRUCTURAL_CHARGE_INTERVAL_MS = 10000/);
 assert.match(play, /enterStructuralBossPhaseThree/);
 assert.match(play, /finishStructuralBossPhaseThree/);
-assert.match(play, /STRUCTURAL_FIRE_PATH_DELAY_MS = 5000/);
+assert.match(play, /STRUCTURAL_FIRE_NODE_FUSE_MS = 1000/);
+assert.match(play, /STRUCTURAL_FIRE_NODE_PLANT_STEP_MS = 120/);
+assert.match(play, /STRUCTURAL_FIRE_NODE_MAX_PER_SEGMENT = 8/);
+assert.doesNotMatch(structuralFirePath, /lineBetween\(/);
+assert.doesNotMatch(play, /STRUCTURAL_FIRE_PATH_DELAY_MS/);
 assert.match(play, /STRUCTURAL_PURSUIT_KNOCKBACK_DISTANCE = MAP_TILE_SIZE \* 5/);
 assert.match(play, /STRUCTURAL_PURSUIT_KNOCKBACK_DURATION_MS = 220/);
 assert.match(play, /STRUCTURAL_PURSUIT_BLAST_DELAY_MS = 2000/);

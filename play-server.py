@@ -38,10 +38,16 @@ PROFILE_EXTRA_DEPTH = 5
 PROFILE_EXTRA_ITEMS_LIMIT = 80
 PROFILE_EXTRA_KEY_LIMIT = 64
 PROFILE_EXTRA_STRING_LIMIT = 256
-MAX_WS_MESSAGE_BYTES = max(1024, int(os.environ.get("MAX_WS_MESSAGE_BYTES", "4096")))
+MAX_WS_MESSAGE_BYTES = max(1024, int(os.environ.get("MAX_WS_MESSAGE_BYTES", "16384")))
 MAX_WS_FRAME_BYTES = max(1024, int(os.environ.get("MAX_WS_FRAME_BYTES", str(MAX_WS_MESSAGE_BYTES))))
 WS_RATE_WINDOW_SECONDS = 5.0
-MAX_WS_MESSAGES_PER_WINDOW = 120
+MAX_WS_MESSAGES_PER_WINDOW = 240
+MAX_CRITICAL_WS_MESSAGES_PER_WINDOW = 90
+# 一次性关键消息（BOSS 转阶段、刷怪、掉落、进度）走独立限流桶：
+# 它们没有重发机制，一旦被高频位置/特效消息挤掉会造成永久性失同步。
+CRITICAL_WS_TYPES = {"join", "bossStart", "slimeSpawn", "slimeRemove", "dropSpawn", "dropCollect", "progressEvent"}
+CRITICAL_ENEMY_STATES = {"transform", "charging", "phase2Combat", "phase3", "dead"}
+CRITICAL_COMBAT_ACTIONS = {"structuralBossDash", "structuralMarkedLightning", "structuralSideLightning", "structuralChargeAoe"}
 MAX_CHAT_MESSAGES = max(0, int(os.environ.get("MAX_CHAT_MESSAGES", "60")))
 CHAT_RATE_WINDOW = max(1.0, float(os.environ.get("CHAT_RATE_WINDOW", "10")))
 CHAT_RATE_LIMIT = max(1, int(os.environ.get("CHAT_RATE_LIMIT", "5")))
@@ -1049,6 +1055,7 @@ class WsClient:
         self.room_name = ""
         self.player: dict = {}
         self.message_times: list[float] = []
+        self.critical_times: list[float] = []
         self.chat_times: list[float] = []
 
 
@@ -1564,8 +1571,16 @@ def handle_slime_spawn(client: WsClient, message: dict) -> None:
     with state_lock:
         room = get_room(client.room_name)
         slimes = room["slimes"]
-        if len(slimes) >= MAX_SLIMES_PER_ROOM:
-            oldest_id = min(slimes.values(), key=lambda item: item.get("createdAt", 0)).get("id")
+        if len(slimes) >= MAX_SLIMES_PER_ROOM and slime["id"] not in slimes:
+            # 容量淘汰绝不能挤掉存活 BOSS：淘汰广播 slimeRemove 会让全房间
+            # 客户端销毁 BOSS 精灵。优先清已死亡条目，其次最旧的非 BOSS 条目。
+            candidates = sorted(slimes.values(), key=lambda item: item.get("createdAt", 0))
+            victim = next((item for item in candidates if str(item.get("state", "")) == "dead"), None)
+            if victim is None:
+                victim = next((item for item in candidates if str(item.get("rank", "")) != "boss"), None)
+            if victim is None:
+                return
+            oldest_id = victim.get("id")
             if oldest_id:
                 del slimes[oldest_id]
                 removed_id = oldest_id
@@ -1847,7 +1862,12 @@ def handle_enemy_state(client: WsClient, message: dict) -> None:
             authoritative_hp = max(0, float(existing.get("hp", authoritative_max_hp)) - enemy["damageAmount"])
             enemy["maxHp"] = authoritative_max_hp
             enemy["hp"] = authoritative_hp
-        room["slimes"][enemy_id] = enemy
+        if state == "dead":
+            # 已死亡的敌人从房间缓存清掉，避免尸体条目占满容量后
+            # 把存活 BOSS 挤出缓存（淘汰会广播 slimeRemove 移除 BOSS）。
+            room["slimes"].pop(enemy_id, None)
+        else:
+            room["slimes"][enemy_id] = enemy
     broadcast(client.room_name, {"type": "enemyState", "enemy": enemy}, client)
 
 
@@ -1995,12 +2015,23 @@ def handle_chat_send(client: WsClient, message: dict) -> None:
     broadcast(client.room_name, {"type": "chatMessage", "message": chat_message})
 
 
+def is_critical_ws_message(message_type: str, message: dict) -> bool:
+    if message_type in CRITICAL_WS_TYPES:
+        return True
+    if message_type == "enemyState":
+        enemy = message.get("enemy")
+        state = str(enemy.get("state", "")) if isinstance(enemy, dict) else ""
+        return state in CRITICAL_ENEMY_STATES
+    if message_type == "combatEvent":
+        event = message.get("event")
+        action = str(event.get("action", "")) if isinstance(event, dict) else ""
+        return action in CRITICAL_COMBAT_ACTIONS
+    return False
+
+
 def handle_ws_message(client: WsClient, raw: str) -> None:
     if len(raw.encode("utf-8")) > MAX_WS_MESSAGE_BYTES:
         client.alive = False
-        return
-    if not allow_rate(client.message_times, MAX_WS_MESSAGES_PER_WINDOW, WS_RATE_WINDOW_SECONDS):
-        send_ws(client, {"type": "rateLimited", "code": "message_rate"})
         return
     try:
         message = json.loads(raw)
@@ -2009,6 +2040,13 @@ def handle_ws_message(client: WsClient, raw: str) -> None:
     if not isinstance(message, dict):
         return
     message_type = message.get("type")
+    if is_critical_ws_message(str(message_type or ""), message):
+        if not allow_rate(client.critical_times, MAX_CRITICAL_WS_MESSAGES_PER_WINDOW, WS_RATE_WINDOW_SECONDS):
+            send_ws(client, {"type": "rateLimited", "code": "critical_rate"})
+            return
+    elif not allow_rate(client.message_times, MAX_WS_MESSAGES_PER_WINDOW, WS_RATE_WINDOW_SECONDS):
+        send_ws(client, {"type": "rateLimited", "code": "message_rate"})
+        return
     if message_type == "join":
         handle_join(client, message)
     elif message_type == "update":

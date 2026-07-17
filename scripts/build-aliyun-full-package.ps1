@@ -1,5 +1,5 @@
 param(
-    [string]$ReleaseName = "efv-aliyun-full-20260716-boss-animation"
+    [string]$ReleaseName = "efv-aliyun-full-20260717-opc-vfx-assets"
 )
 
 $ErrorActionPreference = "Stop"
@@ -59,6 +59,10 @@ $excludedRuntimeAssets = @(
     "assets\game\bosses\m04-structural-instability-boss-sheet-v5.png",
     "assets\game\bosses\m04-structural-instability-boss-sheet-v6.png",
     "assets\game\bosses\m04-structural-instability-boss-sheet-v7.png",
+    "assets\opc\opc-live-operating-roadmap-v2.png",
+    "assets\opc\opc-live-operating-roadmap-v3.png",
+    "assets\opc\opc-live-operating-roadmap-v4.png",
+    "assets\opc\opc-live-operating-roadmap-v5.png",
     "assets\sprites\ayu-sprites-v17-unarmed-walk-seat-lina-edge.png",
     "assets\sprites\ayu-sprites-v18-alternating-walk-cat-transition.png",
     "assets\sprites\ayu-sprites-v19-redrawn-walk-cat-end.png",

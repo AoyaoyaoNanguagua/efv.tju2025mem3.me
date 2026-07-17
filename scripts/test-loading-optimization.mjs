@@ -6,6 +6,7 @@ const html = readFileSync("play.html", "utf8");
 const overrides = readFileSync("play-overrides.css", "utf8");
 const server = readFileSync("play-server.py", "utf8");
 const apache = readFileSync(".htaccess", "utf8");
+const gitignore = readFileSync(".gitignore", "utf8");
 const registry = JSON.parse(readFileSync("assets/chapter1/chapter1-maps-v1.json", "utf8"));
 const preload = play.slice(play.indexOf("    preload() {"), play.indexOf("    create() {"));
 
@@ -75,6 +76,6 @@ assert.match(server, /status = 206/);
 assert.match(server, /BrokenPipeError, ConnectionResetError, ConnectionAbortedError/);
 assert.match(apache, /image\/webp/);
 assert.match(apache, /max-age=2592000, immutable/);
-assert.ok(existsSync("dict/legacy-assets-20260713-loading-audit/assets"));
+assert.match(gitignore, /^dict\/$/m, "local legacy asset archives must stay outside release and Git checkouts");
 
 console.log(`Loading optimization passed; M1 map payload ${(m1Bytes / 1048576).toFixed(2)} MiB`);

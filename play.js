@@ -156,6 +156,9 @@
   const LIGHTNING_SPARK_TEXTURE_KEY = "play-lightning-spark";
   const LIGHTNING_MOTE_TEXTURE_KEY = "play-lightning-mote";
   const LIGHTNING_RIBBON_TEXTURE_KEY = "play-lightning-ribbon";
+  const LIGHTNING_GLOW_ORB_TEXTURE_KEY = "play-lightning-glow-orb";
+  const LIGHTNING_PILLAR_TEXTURE_KEY = "play-lightning-pillar";
+  const FIRE_GLOW_ORB_TEXTURE_KEY = "play-fire-glow-orb";
   const ZHIXIA_ULTIMATE_BOLT_TEXTURE_KEY = "play-zhixia-ultimate-bolt";
   const ZHIXIA_ULTIMATE_CROWN_TEXTURE_KEY = "play-zhixia-ultimate-crown";
   const LAODENG_BERSERK_DURATION = 8000;
@@ -229,6 +232,7 @@
   const GARDEN_MOON_ORCHID_KEY = "ch1-enemy-garden-moon-orchid-rare";
   const GARDEN_CARNIVORA_BOSS_KEY = "ch1-enemy-garden-carnivora-boss";
   const M04_STRUCTURAL_BOSS_KEY = "ch1-m04-structural-instability-boss";
+  const STRUCTURAL_BOSS_HIT_FEEDBACK_OFFSET_Y = -108;
   const M04_CHARGER_QUANTUM_KEY = "ch1-m04-charger-quantum-surveyor";
   const M04_CHARGER_ANCHOR_KEY = "ch1-m04-charger-load-anchor";
   const M04_CHARGER_RELAY_KEY = "ch1-m04-charger-agent-relay";
@@ -483,7 +487,9 @@
       sourceFacing: "left",
       actions: {
         idle: { sheetIndex: 0, frames: enemyGridFrames(0, 4), frameRate: 5, repeat: -1 },
-        move: { sheetIndex: 6, frames: enemyGridFrames(0, 8), frameRate: 9, repeat: -1 },
+        // 一阶段本体移速很慢（chaseSpeed 42），走路循环放慢到 5fps 才不会
+        // 出现“脚下打滑”，也更符合大型机械的沉重感。
+        move: { sheetIndex: 6, frames: enemyGridFrames(0, 8), frameRate: 5, repeat: -1 },
         attack: { sheetIndex: 0, frames: enemyGridFrames(2, 4), frameRate: 11, repeat: 0 },
         hit: { sheetIndex: 0, frames: enemyGridFrames(3, 4), frameRate: 12, repeat: 0 },
         professorTransform: { sheetIndex: 3, frames: enemyGridFrames(0, 8), frameRate: 8, repeat: 0 },
@@ -609,7 +615,9 @@
   const STRUCTURAL_BOSS_FORM_TRANSITION_WATCHDOG_MS = 1550;
   const STRUCTURAL_CHARGE_INTERVAL_MS = 10000;
   const STRUCTURAL_REINFORCEMENT_INTERVAL_MS = 2200;
-  const STRUCTURAL_FIRE_PATH_DELAY_MS = 5000;
+  const STRUCTURAL_FIRE_NODE_FUSE_MS = 1000;
+  const STRUCTURAL_FIRE_NODE_PLANT_STEP_MS = 120;
+  const STRUCTURAL_FIRE_NODE_MAX_PER_SEGMENT = 8;
   const STRUCTURAL_PURSUIT_KNOCKBACK_DISTANCE = MAP_TILE_SIZE * 5;
   const STRUCTURAL_PURSUIT_KNOCKBACK_DURATION_MS = 220;
   const STRUCTURAL_PURSUIT_BLAST_DELAY_MS = 2000;
@@ -878,6 +886,30 @@
       quality: "rare",
       damageBonus: 0.08,
       description: "增益装备。放入增益栏后，最终伤害提高 8%。"
+    },
+    "ch1_boost_protocol_gauntlet": {
+      id: "ch1_boost_protocol_gauntlet",
+      name: "协议增幅护腕",
+      type: "equipment",
+      quality: "epic",
+      damageBonus: 0.12,
+      description: "增益装备。终章战场回收的增幅护腕，最终伤害提高 12%。"
+    },
+    "ch1_boost_mech_core_sigil": {
+      id: "ch1_boost_mech_core_sigil",
+      name: "机核徽印",
+      type: "equipment",
+      quality: "legendary",
+      damageBonus: 0.18,
+      description: "增益装备。由机械聚合体核心熔铸的徽印，最终伤害提高 18%。"
+    },
+    "ch1_boost_instability_heart": {
+      id: "ch1_boost_instability_heart",
+      name: "结构失稳之心",
+      type: "equipment",
+      quality: "mythic",
+      damageBonus: 0.25,
+      description: "增益装备。结构失稳聚合体的心核，蕴含失控的协议之力，最终伤害提高 25%。"
     },
     "ch1_drop_citation_seal_fragment": {
       id: "ch1_drop_citation_seal_fragment",
@@ -2421,7 +2453,7 @@
   }
 
   function initializeHudPanels() {
-    setPanelCollapsed("chapterHud", false);
+    setPanelCollapsed("chapterHud", true);
     const compact = window.matchMedia("(max-width: 760px)").matches;
     setPanelCollapsed("publicChat", compact);
     setPanelCollapsed("minimapPanel", compact);
@@ -3394,6 +3426,15 @@
       window.setTimeout(() => this.noise(0.1, 0.026, "highpass", 2100 + pitchLift * 5), 62);
       window.setTimeout(() => this.tone(420 + pitchLift * 2, 0.07, "triangle", 0.028), 76);
     }
+    thunderStrike() {
+      this.noise(0.14, 0.055, "highpass", 2500);
+      this.sweep(1650, 180, 0.2, "sawtooth", 0.05);
+      this.noise(0.46, 0.078, "lowpass", 230);
+      this.tone(44, 0.42, "sawtooth", 0.052);
+      window.setTimeout(() => this.noise(0.3, 0.045, "bandpass", 640), 70);
+      window.setTimeout(() => this.tone(122, 0.18, "triangle", 0.032), 140);
+      window.setTimeout(() => this.noise(0.22, 0.026, "lowpass", 320), 240);
+    }
     bowRelease(charged = false) {
       this.noise(charged ? 0.16 : 0.1, charged ? 0.044 : 0.032, "highpass", charged ? 1700 : 2200);
       this.sweep(charged ? 880 : 1120, charged ? 1480 : 1760, charged ? 0.16 : 0.105, "triangle", charged ? 0.052 : 0.038);
@@ -3748,6 +3789,9 @@
         app.scene?.applyNetworkProgressEvent(message.event);
       }
       if (message.type === "m04Session" && message.session) this.applyM04Session(message.session);
+      if (message.type === "rateLimited") {
+        console.warn(`[EFV] 服务器限流，部分同步消息被丢弃（${message.code || "unknown"}），若频繁出现请反馈`);
+      }
       if (message.type === "notice" && message.text) showToast(message.text);
     }
   }
@@ -5108,6 +5152,54 @@
         mote.generateTexture(LIGHTNING_MOTE_TEXTURE_KEY, 16, 16);
         mote.destroy();
       }
+      if (!this.textures.exists(LIGHTNING_GLOW_ORB_TEXTURE_KEY)) {
+        // 柔边辉光粒子：径向渐变代替硬边几何图形，是特效“有体积感”的关键。
+        const texture = this.textures.createCanvas(LIGHTNING_GLOW_ORB_TEXTURE_KEY, 64, 64);
+        const context = texture.getContext();
+        const gradient = context.createRadialGradient(32, 32, 2, 32, 32, 31);
+        gradient.addColorStop(0, "rgba(244,253,255,1)");
+        gradient.addColorStop(0.24, "rgba(158,224,255,0.92)");
+        gradient.addColorStop(0.58, "rgba(58,142,255,0.4)");
+        gradient.addColorStop(1, "rgba(22,62,180,0)");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 64, 64);
+        texture.refresh();
+      }
+      if (!this.textures.exists(LIGHTNING_PILLAR_TEXTURE_KEY)) {
+        // 落雷光柱：横向亮芯渐变 + 纵向淡出，配 ADD 混合形成体积光。
+        const texture = this.textures.createCanvas(LIGHTNING_PILLAR_TEXTURE_KEY, 96, 512);
+        const context = texture.getContext();
+        const horizontal = context.createLinearGradient(0, 0, 96, 0);
+        horizontal.addColorStop(0, "rgba(44,118,255,0)");
+        horizontal.addColorStop(0.3, "rgba(96,182,255,0.5)");
+        horizontal.addColorStop(0.5, "rgba(238,251,255,1)");
+        horizontal.addColorStop(0.7, "rgba(96,182,255,0.5)");
+        horizontal.addColorStop(1, "rgba(44,118,255,0)");
+        context.fillStyle = horizontal;
+        context.fillRect(0, 0, 96, 512);
+        const vertical = context.createLinearGradient(0, 0, 0, 512);
+        vertical.addColorStop(0, "rgba(255,255,255,0.14)");
+        vertical.addColorStop(0.45, "rgba(255,255,255,1)");
+        vertical.addColorStop(1, "rgba(255,255,255,0.92)");
+        context.globalCompositeOperation = "destination-in";
+        context.fillStyle = vertical;
+        context.fillRect(0, 0, 96, 512);
+        context.globalCompositeOperation = "source-over";
+        texture.refresh();
+      }
+      if (!this.textures.exists(FIRE_GLOW_ORB_TEXTURE_KEY)) {
+        // 暖色柔边辉光:火焰系特效的基础粒子/闪光纹理
+        const texture = this.textures.createCanvas(FIRE_GLOW_ORB_TEXTURE_KEY, 64, 64);
+        const context = texture.getContext();
+        const gradient = context.createRadialGradient(32, 32, 2, 32, 32, 31);
+        gradient.addColorStop(0, "rgba(255,248,224,1)");
+        gradient.addColorStop(0.22, "rgba(255,205,110,0.95)");
+        gradient.addColorStop(0.55, "rgba(255,122,42,0.45)");
+        gradient.addColorStop(1, "rgba(190,44,16,0)");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 64, 64);
+        texture.refresh();
+      }
       if (!this.textures.exists(LIGHTNING_RIBBON_TEXTURE_KEY)) {
         const texture = this.textures.createCanvas(LIGHTNING_RIBBON_TEXTURE_KEY, 256, 80);
         const context = texture.getContext();
@@ -5471,7 +5563,32 @@
       }[quality] || 0xf4ead5;
     }
 
+    rollBossArenaEquipment(slime) {
+      const source = "m04_boss_arena";
+      // 终章 BOSS 本体必掉高阶装备：神话 20% / 传说 30% / 史诗 50%
+      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY) {
+        const bossRoll = Math.random();
+        const id = bossRoll < 0.2 ? "ch1_boost_instability_heart"
+          : bossRoll < 0.5 ? "ch1_boost_mech_core_sigil"
+          : "ch1_boost_protocol_gauntlet";
+        return normalizeInventoryItem({ ...ITEM_CATALOG[id], source });
+      }
+      // 演示掉率：神话 5%，其余品阶依次抬升（传说 8% / 史诗 11% / 稀有 14% / 精良 16%）
+      const roll = Math.random();
+      if (roll < 0.05) return normalizeInventoryItem({ ...ITEM_CATALOG.ch1_boost_instability_heart, source });
+      if (roll < 0.13) return normalizeInventoryItem({ ...ITEM_CATALOG.ch1_boost_mech_core_sigil, source });
+      if (roll < 0.24) return normalizeInventoryItem({ ...ITEM_CATALOG.ch1_boost_protocol_gauntlet, source });
+      if (roll < 0.38) return normalizeInventoryItem({ ...ITEM_CATALOG.ch1_boost_focus_badge, source });
+      if (roll < 0.54) return normalizeInventoryItem({ ...ITEM_CATALOG.ch1_boost_academic_bookmark, source });
+      return null;
+    }
+
     rollEnemyDrop(slime) {
+      // 终章 BOSS 战：装备判定优先于固定素材掉落
+      if (this.getCurrentMapId() === M04_MAP_ID) {
+        const equipment = this.rollBossArenaEquipment(slime);
+        if (equipment) return equipment;
+      }
       if (slime.dropId) {
         return normalizeInventoryItem({
           id: slime.dropId,
@@ -5938,6 +6055,9 @@
           this.spawnMapLeafSlimes();
           this.scheduleAmbientEnemyRefresh();
           app.multiplayer?.syncDropsForCurrentMap();
+          // 重放已缓存的敌人快照：战斗中途进图的玩家也能立刻看到
+          // BOSS / 召唤怪，而不是等到它们被攻击才按需补生成。
+          this.syncSlimes(Array.from(app.multiplayer?.enemyStates?.values?.() || []));
           app.scene?.syncProgressEvents(Array.from(app.multiplayer?.progressEvents?.values?.() || []));
           saveProfile(app.profile);
           renderChapterHud();
@@ -6424,6 +6544,7 @@
         bodyWidth: 152,
         bodyHeight: 98,
         hudOffsetY: -322,
+        hitFeedbackOffsetY: STRUCTURAL_BOSS_HIT_FEEDBACK_OFFSET_Y,
         broadcast: app.connected
       });
       if (!finalBoss) {
@@ -6886,6 +7007,25 @@
       this.refreshEnemyHpBar(slime);
     }
 
+    getEnemyHitFeedbackAnchors(slime) {
+      const x = Number(slime?.x) || 0;
+      const y = Number(slime?.y) || 0;
+      if (slime?.textureKey === M04_STRUCTURAL_BOSS_KEY) {
+        const centerOffsetY = Number.isFinite(slime.hitFeedbackOffsetY)
+          ? Number(slime.hitFeedbackOffsetY)
+          : STRUCTURAL_BOSS_HIT_FEEDBACK_OFFSET_Y;
+        const centerY = y + centerOffsetY;
+        return { x, impactY: centerY, textY: centerY, compactRise: true };
+      }
+      const hudOffsetY = Number(slime?.hudOffsetY) || -70;
+      return {
+        x,
+        impactY: y + hudOffsetY + 34,
+        textY: y + hudOffsetY - 18,
+        compactRise: false
+      };
+    }
+
     syncEnemyShadow(slime) {
       if (!slime?.active || !slime.shadow) return;
       const structuralBoss = slime.textureKey === M04_STRUCTURAL_BOSS_KEY;
@@ -7027,6 +7167,9 @@
       slime.hp = clamp(currentHp, 0, slime.maxHp);
       slime.damage = Math.max(1, Math.round((Number(options.damage) || (rank === "rare" ? 16 : rank === "elite" ? 12 : 8)) * difficulty.damage));
       slime.creditDefense = Math.max(0, Number(options.creditDefense || 0));
+      slime.hitFeedbackOffsetY = Number.isFinite(options.hitFeedbackOffsetY)
+        ? Number(options.hitFeedbackOffsetY)
+        : null;
       slime.hudOffsetY = Number.isFinite(options.hudOffsetY)
         ? Number(options.hudOffsetY)
         : options.staticImage
@@ -7302,6 +7445,12 @@
     }
 
     updateStructuralNetworkReplica(slime, delta = 16) {
+      // 冲锋由本地 tween 演出（与主控端同步触发），期间不能再向主控端
+      // 快照位置回拉，否则每帧拉扯会让 BOSS 在两点之间瞬移。
+      if (slime.structuralDashing || slime.structuralDashQueued) {
+        slime.body?.setVelocity(0, 0);
+        return;
+      }
       const target = slime.structuralNetworkTarget;
       if (!target) {
         slime.body?.setVelocity(0, 0);
@@ -7338,17 +7487,27 @@
       slime.groupId = enemy.groupId || slime.groupId || "";
       slime.isBossSummon = !!(enemy.bossSummon ?? slime.isBossSummon);
       slime.enemyArchetype = enemy.enemyArchetype || slime.enemyArchetype || "";
-      slime.bossPhase = String(enemy.bossPhase || slime.bossPhase || "");
+      // 结构 BOSS 的阶段/形态只信任显式阶段消息。visualHit / hit 这类普通快照
+      // 带的是发送方本地（可能落后）的阶段，直接覆盖会把接收方的阶段拉回去，
+      // 导致主控端阶段判定错乱、BOSS 走错分支甚至被误杀移除。
+      const structuralBossSprite = slime.textureKey === M04_STRUCTURAL_BOSS_KEY;
+      const authoritativePhaseState = ["transform", "charging", "phase2Combat", "phase3", "dead"].includes(String(enemy.state || ""));
+      if (!structuralBossSprite || authoritativePhaseState) {
+        slime.bossPhase = String(enemy.bossPhase || slime.bossPhase || "");
+      }
       slime.bossCharger = !!(enemy.bossCharger ?? slime.bossCharger);
       slime.hazardBonus = Math.max(0, Number(enemy.hazardBonus ?? slime.hazardBonus) || 0);
-      if (enemy.state !== "transform") slime.bossForm = Math.max(1, Number(enemy.bossForm ?? slime.bossForm) || 1);
+      if (enemy.state !== "transform" && (!structuralBossSprite || authoritativePhaseState)) {
+        slime.bossForm = Math.max(1, Number(enemy.bossForm ?? slime.bossForm) || 1);
+      }
       this.refreshEnemyHpBar(slime);
       const damageAmount = Math.max(0, Number(enemy.damageAmount || previousHp - slime.hp));
       if (damageAmount > 0) {
         const critical = !!enemy.critical;
+        const feedback = this.getEnemyHitFeedbackAnchors(slime);
         this.showFloatingText(
-          slime.x,
-          slime.y + slime.hudOffsetY - 18,
+          feedback.x,
+          feedback.textY,
           `${critical ? "暴击 " : ""}-${Math.round(damageAmount)}`,
           {
             color: critical ? "#ffd86b" : "#fff7e6",
@@ -7358,7 +7517,7 @@
             strokeThickness: critical ? 8 : 7,
             hold: critical ? 240 : 180,
             duration: critical ? 1250 : 1080,
-            rise: critical ? 92 : 72
+            rise: feedback.compactRise ? (critical ? 64 : 52) : (critical ? 92 : 72)
           }
         );
         this.playEnemyHitImpact(slime, critical, enemy.sourceCharacterId);
@@ -7407,7 +7566,9 @@
         this.playEnemyAnimation(slime, this.getAnimatedEnemySkillAction(String(enemy.skillId || "")), true);
         return;
       }
-      if (enemy.state === "dead" || slime.hp <= 0) {
+      // 结构 BOSS 只接受显式 dead 状态才播放死亡；hp 快照打到 0 不代表真死
+      // （可能只是转阶段阈值），否则会在阶段切换窗口把 BOSS 直接移除。
+      if (enemy.state === "dead" || (slime.hp <= 0 && slime.textureKey !== M04_STRUCTURAL_BOSS_KEY)) {
         const defeatedGroupId = slime.groupId;
         const isStructuralBoss = slime.textureKey === M04_STRUCTURAL_BOSS_KEY;
         this.playLeafSlimeDeathSequence(slime);
@@ -7691,6 +7852,12 @@
     syncSlimeRemove(id) {
       const slime = this.findLeafSlime(String(id || ""));
       if (!slime) return;
+      // 保险：任何来源的 slimeRemove 都不允许移除存活的结构 BOSS
+      //（历史上服务器容量淘汰曾误删 BOSS），死亡演出由 dead 状态负责。
+      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && !["dead", "vanish"].includes(slime.state)) {
+        console.warn("[EFV] 已拦截对存活 BOSS 的 slimeRemove 指令", id);
+        return;
+      }
       this.syncedSlimeIds.delete(slime.slimeId);
       this.clearStructuralBossPhaseVisuals(slime);
       slime.shadow?.destroy();
@@ -7853,6 +8020,7 @@
       this.isCatJumping = true;
       this.networkAction = "catJump";
       this.actor.setTexture(character.id);
+      this.playCharacterSignatureCast(character.id, { power: 0.7, duration: 430 });
       this.actor.play(`${character.id}-catJump-once`, true);
       this.actor.once("animationcomplete", () => {
         this.isCatJumping = false;
@@ -7867,6 +8035,7 @@
       this.isTransforming = true;
       this.networkAction = "transform";
       this.actor.setTexture(character.id);
+      this.playCharacterSignatureCast(character.id, { power: 1.05, duration: 680, ultimate: true });
       if (this.isCat && this.actor.anims?.playReverse) this.actor.anims.playReverse(`${character.id}-transform-once`, true);
       else this.actor.play(`${character.id}-transform-once`, true);
       this.actor.once("animationcomplete", () => {
@@ -7905,6 +8074,7 @@
       this.networkAction = "attack";
       this.setLinaAttackVisualScale();
       this.actor.play(this.getAttackAnimationKey(), true);
+      if (characterId !== "lina") this.playCharacterSignatureCast(characterId, { charged });
       if (characterId === "ayu") {
         this.time.delayedCall(95, () => this.dealMeleeDamage({
           damageMultiplier: charged ? 0.85 : 1,
@@ -8005,6 +8175,7 @@
       this.networkAction = "attack";
       this.actor.body.setVelocity(0, 0);
       this.actor.play("ayu-attack-once", true);
+      this.playCharacterSignatureCast("ayu", { power: 1.35, duration: 780, ultimate: true });
       app.audio.ultimateWind();
       [0, 170, 340].forEach((roundDelay, roundIndex) => this.time.delayedCall(120 + roundDelay, () => {
         if (!this.actor?.active || this.isDead) return;
@@ -8048,6 +8219,7 @@
       this.networkAction = "attack";
       this.actor.body.setVelocity(0, 0);
       this.actor.play("zhixia-attack-once", true);
+      this.playCharacterSignatureCast("zhixia", { power: 1.45, duration: 880, ultimate: true });
       const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
       const aftershockSeeds = [];
       this.broadcastCombatEvent("zhixiaUltimate", {
@@ -8181,6 +8353,7 @@
       this.berserkUntil = this.time.now + LAODENG_BERSERK_DURATION;
       this.berserkEndingShown = false;
       this.setActorVisualScale(LAODENG_BERSERK_SCALE);
+      this.playCharacterSignatureCast("laodeng", { power: 1.55, duration: 920, ultimate: true });
       this.playBerserkActivationVisual();
       this.broadcastCombatEvent("berserk", { x: this.actor.x, y: this.actor.y, radius: 128 });
       this.showFloatingText(this.actor.x, this.actor.y - 128, "嗜血狂暴 8秒", { color: "#ffbd72", size: "22px", rise: 64 });
@@ -8196,6 +8369,7 @@
       this.networkAction = "attack";
       this.actor.body.setVelocity(0, 0);
       this.actor.play("jiangxun-barrage-loop", true);
+      this.playCharacterSignatureCast("jiangxun", { power: 1.4, duration: 900, ultimate: true });
       const aim = this.lastAimVector || directionVector(this.facing || DIRECTIONS[2]);
       const baseAngle = Math.atan2(aim.y, aim.x);
       const barrageDamageRamp = new Map();
@@ -8232,6 +8406,7 @@
     }
 
     fireLinaWindBolt() {
+      this.playCharacterSignatureCast("lina", { power: 0.78, duration: 470 });
       this.fireProjectile({
         kind: "magic",
         color: 0x6eea8e,
@@ -8247,6 +8422,7 @@
       const center = this.getActorFootCenter();
       const damage = Math.round(Number(app.profile.magicPower || 22) * LINA_GALE_DAMAGE_MULTIPLIER);
       let hitSomething = false;
+      this.playCharacterSignatureCast("lina", { power: 1.25, duration: 760, charged: true });
       this.playLinaGaleVisual(center.x, center.y);
       this.broadcastCombatEvent("linaGale", { x: center.x, y: center.y, radius: LINA_GALE_RADIUS });
       (this.leafSlimes?.getChildren?.() || []).forEach(slime => {
@@ -8437,6 +8613,7 @@
       const magic = Number(app.profile.magicPower || 22);
       const healing = Math.round(LINA_HEAL_CHAIN_BASE + magic * LINA_HEAL_CHAIN_MULTIPLIER);
       const shield = Math.round(LINA_HEAL_CHAIN_SHIELD_BASE + magic * LINA_HEAL_CHAIN_SHIELD_MULTIPLIER);
+      this.playCharacterSignatureCast("lina", { power: 1.55, duration: 980, ultimate: true });
       this.playHealingChainCastBurst(this.actor.x, this.actor.y);
       app.audio.ultimateWind();
       if (!app.connected || !app.multiplayer?.sendHealingChain(healing, shield, LINA_HEAL_CHAIN_RANGE, LINA_HEAL_CHAIN_JUMPS)) {
@@ -10796,8 +10973,9 @@
     }
 
     playEnemyHitImpact(slime, critical = false, sourceCharacterId = app.profile?.characterId) {
-      const x = slime.x;
-      const y = slime.y + (Number(slime.hudOffsetY) || -70) + 34;
+      const feedback = this.getEnemyHitFeedbackAnchors(slime);
+      const x = feedback.x;
+      const y = feedback.impactY;
       const color = critical ? 0xffd86b : 0xbff7ff;
       const ring = this.add.circle(x, y, critical ? 22 : 16, color, 0.18)
         .setStrokeStyle(critical ? 5 : 3, color, 0.94)
@@ -10831,8 +11009,23 @@
     playHealEffect(x, y) {
       const ring = this.add.circle(x, y - 40, 18, 0x42c98a, 0.22).setStrokeStyle(3, 0xd7fff0, 0.84).setDepth(y + 56);
       const sparkle = this.add.star(x, y - 74, 5, 6, 18, 0xd7fff0, 0.82).setDepth(y + 58);
+      const groundRing = this.add.ellipse(x, y + 3, 54, 18, 0x42c98a, 0.12)
+        .setStrokeStyle(3, 0x9fffcf, 0.82)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 54)
+        .setScale(0.55);
+      const glow = this.textures.exists(LIGHTNING_GLOW_ORB_TEXTURE_KEY)
+        ? this.add.image(x, y - 42, LIGHTNING_GLOW_ORB_TEXTURE_KEY)
+          .setTint(0x4de49b)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(y + 55)
+          .setScale(1.35, 1.8)
+          .setAlpha(0.46)
+        : null;
       this.tweens.add({ targets: ring, radius: 54, alpha: 0, duration: 520, ease: "Sine.easeOut", onComplete: () => ring.destroy() });
       this.tweens.add({ targets: sparkle, y: y - 108, angle: 80, alpha: 0, duration: 620, ease: "Sine.easeOut", onComplete: () => sparkle.destroy() });
+      this.tweens.add({ targets: groundRing, scaleX: 2.25, scaleY: 2.25, alpha: 0, duration: 640, ease: "Cubic.easeOut", onComplete: () => groundRing.destroy() });
+      if (glow) this.tweens.add({ targets: glow, y: y - 70, scaleX: 2.1, scaleY: 2.6, alpha: 0, duration: 680, ease: "Sine.easeOut", onComplete: () => glow.destroy() });
     }
 
     playShieldEffect(x, y, blocked = false) {
@@ -10840,14 +11033,129 @@
       const shield = this.add.ellipse(x, y - 45, 70, 92, color, blocked ? 0.18 : 0.13)
         .setStrokeStyle(blocked ? 4 : 2, color, blocked ? 0.9 : 0.62)
         .setDepth(y + 62);
+      const rim = this.add.ellipse(x, y - 45, 86, 108, color, 0.02)
+        .setStrokeStyle(blocked ? 2 : 1.5, 0xf2fdff, blocked ? 0.78 : 0.48)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(y + 61)
+        .setScale(0.78);
       this.tweens.add({
-        targets: shield,
+        targets: [shield, rim],
         scaleX: blocked ? 1.25 : 1.08,
         scaleY: blocked ? 1.18 : 1.08,
         alpha: 0,
         duration: blocked ? 340 : 620,
         ease: "Sine.easeOut",
-        onComplete: () => shield.destroy()
+        onComplete: () => {
+          shield.destroy();
+          rim.destroy();
+        }
+      });
+    }
+
+    getCharacterSignatureVfxProfile(characterId) {
+      return {
+        lina: { primary: 0x54df86, secondary: 0xd8ffb2, core: 0xf7fff0, glow: LIGHTNING_GLOW_ORB_TEXTURE_KEY, mote: WIND_MOTE_TEXTURE_KEY },
+        ayu: { primary: 0x73cfff, secondary: 0xe7f9ff, core: 0xffffff, glow: LIGHTNING_GLOW_ORB_TEXTURE_KEY, mote: LIGHTNING_MOTE_TEXTURE_KEY },
+        zhixia: { primary: 0x3a8cff, secondary: 0x8ff2ff, core: 0xf4feff, glow: LIGHTNING_GLOW_ORB_TEXTURE_KEY, mote: LIGHTNING_SPARK_TEXTURE_KEY },
+        laodeng: { primary: 0xff5729, secondary: 0xffbd55, core: 0xfff0a1, glow: FIRE_GLOW_ORB_TEXTURE_KEY, mote: PHYSICAL_SPARK_TEXTURE_KEY },
+        jiangxun: { primary: 0xa9db78, secondary: 0xf0c96b, core: 0xfff7d6, glow: LIGHTNING_GLOW_ORB_TEXTURE_KEY, mote: PHYSICAL_SPARK_TEXTURE_KEY }
+      }[characterId] || { primary: 0x8fd8ff, secondary: 0xdff8ff, core: 0xffffff, glow: LIGHTNING_GLOW_ORB_TEXTURE_KEY, mote: LIGHTNING_MOTE_TEXTURE_KEY };
+    }
+
+    playSignatureCastPulse(x, y, profile, options = {}) {
+      if (![x, y].every(Number.isFinite)) return;
+      const power = Math.max(0.45, Number(options.power) || 1);
+      const duration = Math.max(320, Number(options.duration) || 560);
+      const ultimate = !!options.ultimate;
+      const depth = y + 76;
+      const seal = this.add.container(x, y + 3).setDepth(depth).setScale(0.42 * power).setAlpha(0.94);
+      const children = [];
+      if (this.textures.exists(profile.glow)) {
+        children.push(this.add.image(0, -5, profile.glow)
+          .setTint(profile.primary)
+          .setAlpha(ultimate ? 0.72 : 0.5)
+          .setScale(ultimate ? 2.05 : 1.45, ultimate ? 0.7 : 0.5)
+          .setBlendMode(Phaser.BlendModes.ADD));
+      }
+      const outer = this.add.ellipse(0, 0, ultimate ? 142 : 104, ultimate ? 48 : 36, profile.primary, 0.08)
+        .setStrokeStyle(ultimate ? 5 : 3, profile.secondary, 0.9)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const inner = this.add.ellipse(0, 0, ultimate ? 86 : 62, ultimate ? 29 : 22, profile.secondary, 0.06)
+        .setStrokeStyle(2, profile.core, 0.9)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const rune = this.add.star(0, -3, ultimate ? 8 : 6, ultimate ? 18 : 12, ultimate ? 34 : 24, profile.primary, 0.16)
+        .setStrokeStyle(2, profile.core, 0.82)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const cross = this.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      const rayCount = ultimate ? 12 : 8;
+      for (let index = 0; index < rayCount; index += 1) {
+        const angle = Math.PI * 2 * index / rayCount;
+        const innerRadius = ultimate ? 42 : 31;
+        const outerRadius = ultimate ? 65 : 46;
+        cross.lineStyle(index % 3 ? 2 : 3.5, index % 2 ? profile.primary : profile.secondary, index % 3 ? 0.58 : 0.86);
+        cross.lineBetween(
+          Math.cos(angle) * innerRadius,
+          Math.sin(angle) * innerRadius * 0.34,
+          Math.cos(angle) * outerRadius,
+          Math.sin(angle) * outerRadius * 0.34
+        );
+      }
+      children.push(outer, inner, rune, cross);
+      seal.add(children);
+      this.tweens.add({ targets: [outer, rune], angle: ultimate ? 48 : 28, duration, ease: "Sine.easeOut" });
+      this.tweens.add({ targets: inner, angle: ultimate ? -64 : -34, duration, ease: "Sine.easeOut" });
+      this.tweens.add({
+        targets: seal,
+        scaleX: 1.2 * power,
+        scaleY: 1.2 * power,
+        alpha: 0,
+        duration,
+        ease: "Cubic.easeOut",
+        onComplete: () => seal.destroy()
+      });
+      if (!this.textures.exists(profile.mote)) return;
+      const moteCount = ultimate ? 12 : 7;
+      for (let index = 0; index < moteCount; index += 1) {
+        const angle = Math.PI * 2 * index / moteCount + Phaser.Math.FloatBetween(-0.18, 0.18);
+        const radius = (ultimate ? 82 : 58) * power + Phaser.Math.Between(-10, 12);
+        const mote = this.add.image(x + Math.cos(angle) * radius, y - 26 + Math.sin(angle) * radius * 0.48, profile.mote)
+          .setTint(index % 3 ? profile.primary : profile.secondary)
+          .setScale((ultimate ? 0.42 : 0.3) * power)
+          .setAlpha(0.84)
+          .setDepth(depth + 2)
+          .setBlendMode(Phaser.BlendModes.ADD);
+        this.tweens.add({
+          targets: mote,
+          x,
+          y: y - 28,
+          scale: 0.08,
+          angle: Phaser.Math.Between(-160, 160),
+          alpha: 0,
+          duration: Math.round(duration * 0.72),
+          delay: index * (ultimate ? 18 : 12),
+          ease: "Cubic.easeIn",
+          onComplete: () => mote.destroy()
+        });
+      }
+    }
+
+    playCharacterSignatureCast(characterId, options = {}) {
+      if (!this.actor?.active) return;
+      const profile = this.getCharacterSignatureVfxProfile(characterId);
+      this.playSignatureCastPulse(this.actor.x, this.actor.y + 4, profile, options);
+    }
+
+    playStructuralBossCastPulse(slime, style = "structural", options = {}) {
+      if (!slime?.active) return;
+      const profiles = {
+        structural: { primary: 0x35d6e8, secondary: 0xffc45e, core: 0xf2ffff, glow: LIGHTNING_GLOW_ORB_TEXTURE_KEY, mote: LIGHTNING_MOTE_TEXTURE_KEY },
+        lightning: { primary: 0x378dff, secondary: 0x9ff5ff, core: 0xffffff, glow: LIGHTNING_GLOW_ORB_TEXTURE_KEY, mote: LIGHTNING_SPARK_TEXTURE_KEY },
+        fire: { primary: 0xff5729, secondary: 0xffbf58, core: 0xfff2b0, glow: FIRE_GLOW_ORB_TEXTURE_KEY, mote: PHYSICAL_SPARK_TEXTURE_KEY }
+      };
+      this.playSignatureCastPulse(slime.x, slime.y + 12, profiles[style] || profiles.structural, {
+        power: Number(options.power) || 1.7,
+        duration: Number(options.duration) || 820,
+        ultimate: true
       });
     }
 
@@ -11030,6 +11338,7 @@
       slime.body?.setVelocity(0, 0);
       if (slime.body) slime.body.enable = false;
       slime.clearTint();
+      this.playStructuralBossCastPulse(slime, "structural", { power: 2.05, duration: 1050 });
       renderBossHud();
       this.playEnemyAnimationOnce(slime, "transform", () => {
         if (!slime.active || !slime.transforming || slime.bossPhase !== "transforming") return;
@@ -11334,6 +11643,7 @@
       const origin = { x: slime.x, y: slime.y };
       slime.body?.setVelocity(0, 0);
       this.playEnemyAnimation(slime, "attack", true);
+      this.playStructuralBossCastPulse(slime, "lightning", { power: 1.6, duration: 900 });
       const warning = this.add.graphics().setDepth(origin.y + 22);
       const warningText = this.add.text(origin.x, origin.y - 238, `${side === "left" ? "左" : "右"}侧雷脉蓄能 · 3 秒`, {
         fontFamily: "Microsoft YaHei, sans-serif",
@@ -11395,6 +11705,7 @@
       slime.state = "attack";
       slime.body?.setVelocity(0, 0);
       this.playEnemyAnimation(slime, "attack", true);
+      this.playStructuralBossCastPulse(slime, "structural", { power: 1.15, duration: 430 });
       this.time.delayedCall(220, () => {
         if (!slime.active || slime.structuralPhase2AttackToken !== token || !this.actor?.active) return;
         if (Phaser.Math.Distance.Between(slime.x, slime.y, this.actor.x, this.actor.y) <= 132) this.damagePlayer(Math.round(slime.damage * 0.8));
@@ -11441,6 +11752,7 @@
 
     triggerStructuralFullMapAoe(slime, options = {}) {
       if (!slime?.active || this.getCurrentMapId() !== M04_MAP_ID) return;
+      this.playStructuralBossCastPulse(slime, "fire", { power: 2.15, duration: 980 });
       const width = this.scale.width;
       const height = this.scale.height;
       const warning = this.add.rectangle(width / 2, height / 2, width, height, 0xff5a28, 0.12)
@@ -11461,10 +11773,14 @@
         if (!slime.active || this.getCurrentMapId() !== M04_MAP_ID) return;
         this.cameras.main.flash(300, 255, 84, 35, false);
         this.cameras.main.shake(520, 0.011);
-        for (let index = 0; index < 14; index += 1) {
+        // 火球雨:满屏错时引爆的火焰爆炸,部分留下地面灼烧
+        for (let index = 0; index < 9; index += 1) {
           const x = this.cameras.main.worldView.x + Math.random() * this.cameras.main.worldView.width;
           const y = this.cameras.main.worldView.y + Math.random() * this.cameras.main.worldView.height;
-          this.renderPhysicalImpactBurst(x, y, Phaser.Math.Between(62, 112), 0xff673b);
+          this.time.delayedCall(index * 55, () => {
+            if (this.getCurrentMapId() !== M04_MAP_ID) return;
+            this.playFireExplosion(x, y, Phaser.Math.FloatBetween(0.55, 0.9), { burn: index % 3 === 0, shake: false });
+          });
         }
         this.damagePlayer(Math.max(1, Number(options.damage) || Math.round(slime.damage * 1.25)));
         app.audio?.fireExplosion?.(3);
@@ -11487,6 +11803,7 @@
       slime.actionToken = (slime.actionToken || 0) + 1;
       slime.body?.setVelocity(0, 0);
       if (slime.body) slime.body.enable = false;
+      this.playStructuralBossCastPulse(slime, "lightning", { power: 2.1, duration: 1120 });
       renderBossHud();
       this.clearStructuralBossPhaseVisuals(slime);
       this.playEnemyAnimationOnce(
@@ -11532,6 +11849,7 @@
     applyStructuralPursuitKnockback(slime) {
       if (this.isDead || !this.actor?.active) return;
       if (this.time.now < Number(this.structuralKnockbackUntil || 0)) return;
+      this.playStructuralBossCastPulse(slime, "fire", { power: 1.2, duration: 520 });
       const away = normalizeVector(this.actor.x - Number(slime?.x || this.actor.x - 1), this.actor.y - Number(slime?.y || this.actor.y));
       const direction = Math.abs(away.x) + Math.abs(away.y) > 0.01 ? away : { x: slime?.flipX ? 1 : -1, y: 0 };
       const startX = this.actor.x;
@@ -11618,7 +11936,7 @@
             warning.destroy();
           }
           if (this.getCurrentMapId() !== M04_MAP_ID) return;
-          this.renderPhysicalImpactBurst(blastX, blastY, STRUCTURAL_PURSUIT_BLAST_RADIUS * 1.2, 0xff6538);
+          this.playFireExplosion(blastX, blastY, 1.05, { burn: false, shake: false });
           this.cameras.main.shake(300, 0.009);
           if (this.actor?.active && Math.hypot(this.actor.x - blastX, this.actor.y - blastY) <= STRUCTURAL_PURSUIT_BLAST_RADIUS) {
             this.damagePlayer(Math.round(Math.max(1, slime?.damage || 1) * 1.15));
@@ -11697,6 +12015,120 @@
       return this.remotePlayers?.get(String(id))?.sprite || null;
     }
 
+    playStructuralLightningImpact(x, y, power = 1) {
+      const depthBase = y + 90;
+      if (this.textures.exists(LIGHTNING_GLOW_ORB_TEXTURE_KEY)) {
+        const orb = this.add.image(x, y - 2, LIGHTNING_GLOW_ORB_TEXTURE_KEY)
+          .setBlendMode(Phaser.BlendModes.ADD).setDepth(depthBase + 4)
+          .setScale(1.4 * power).setAlpha(0.98);
+        this.tweens.add({ targets: orb, scale: 3.6 * power, alpha: 0, duration: 240, ease: "Cubic.easeOut", onComplete: () => orb.destroy() });
+      }
+      // 透视压扁的双层地面冲击波
+      [0, 90].forEach((delay, index) => {
+        this.time.delayedCall(delay, () => {
+          const ring = this.add.graphics().setPosition(x, y + 6).setDepth(depthBase + 2).setBlendMode(Phaser.BlendModes.ADD);
+          ring.lineStyle(index ? 3 : 5, index ? 0x63b8ff : 0xd8f6ff, 0.9);
+          ring.strokeEllipse(0, 0, 60, 24);
+          ring.setScale(0.34).setAlpha(0.95);
+          this.tweens.add({
+            targets: ring,
+            scaleX: (3.2 + index * 1.3) * power,
+            scaleY: (3.2 + index * 1.3) * power,
+            alpha: 0,
+            duration: 330 + index * 90,
+            ease: "Cubic.easeOut",
+            onComplete: () => ring.destroy()
+          });
+        });
+      });
+      if (this.textures.exists(LIGHTNING_GLOW_ORB_TEXTURE_KEY)) {
+        const burst = this.add.particles(x, y - 4, LIGHTNING_GLOW_ORB_TEXTURE_KEY, {
+          emitting: false,
+          speed: { min: 130 * power, max: 430 * power },
+          angle: { min: 195, max: 345 },
+          scale: { start: 0.52 * power, end: 0 },
+          alpha: { start: 0.95, end: 0 },
+          lifespan: { min: 260, max: 640 },
+          gravityY: 640,
+          blendMode: "ADD"
+        }).setDepth(depthBase + 3);
+        burst.explode(Math.max(6, Math.round(16 * power)), 0, 0);
+        this.time.delayedCall(900, () => burst.destroy());
+      }
+      // 命中后残留的地面爬行电弧
+      const crawlCount = power >= 0.9 ? 3 : 1;
+      for (let index = 0; index < crawlCount; index += 1) {
+        this.time.delayedCall(60 + index * 110, () => {
+          const angle = Math.random() * Math.PI * 2;
+          const length = 34 + Math.random() * 40 * power;
+          this.drawLightningArc(x, y + 4, x + Math.cos(angle) * length, y + 4 + Math.sin(angle) * length * 0.4, { style: "chain", intensity: 0.5 });
+        });
+      }
+      const scorch = this.add.graphics().setPosition(x, y + 6).setDepth(y - 6);
+      scorch.fillStyle(0x101a30, 0.5).fillEllipse(0, 0, 92 * power, 34 * power);
+      scorch.lineStyle(2, 0x3f8cff, 0.5).strokeEllipse(0, 0, 96 * power, 37 * power);
+      scorch.setAlpha(0.85);
+      this.tweens.add({ targets: scorch, alpha: 0, duration: 1600, delay: 250, ease: "Sine.easeIn", onComplete: () => scorch.destroy() });
+    }
+
+    playStructuralSkyLightningStrike(x, y, options = {}) {
+      const intensity = Math.max(0.4, Number(options.intensity) || 1);
+      const skyY = y - Math.max(220, Number(options.height) || 470);
+      const depthBase = y + 90;
+      // 体积光柱：一瞬间点亮再迅速收窄消散
+      if (this.textures.exists(LIGHTNING_PILLAR_TEXTURE_KEY)) {
+        const pillar = this.add.image(x, y + 10, LIGHTNING_PILLAR_TEXTURE_KEY)
+          .setOrigin(0.5, 1)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(depthBase - 2)
+          .setAlpha(0.95);
+        pillar.setDisplaySize(150 * intensity, (y + 10 - skyY) * 1.05);
+        this.tweens.add({
+          targets: pillar,
+          alpha: 0,
+          scaleX: pillar.scaleX * 0.22,
+          duration: 320,
+          ease: "Cubic.easeIn",
+          onComplete: () => pillar.destroy()
+        });
+      }
+      // 主雷曲折闪电：外辉光/中层/白热内芯三层描边 + 随机分叉
+      const drawBolt = (jitter, widthScale, alpha) => {
+        const bolt = this.add.graphics().setDepth(depthBase + 1).setBlendMode(Phaser.BlendModes.ADD).setAlpha(alpha);
+        const segments = 9;
+        const points = [];
+        for (let index = 0; index <= segments; index += 1) {
+          const t = index / segments;
+          const sway = Math.sin(t * Math.PI) * jitter;
+          points.push({
+            x: x + (index === 0 || index === segments ? 0 : Phaser.Math.Between(-sway, sway)),
+            y: Phaser.Math.Linear(skyY, y, t)
+          });
+        }
+        [[15 * widthScale, 0x1c49b8, 0.42], [7 * widthScale, 0x35a4ff, 0.8], [2.6 * widthScale, 0xeafcff, 1]].forEach(([width, color, lineAlpha]) => {
+          bolt.lineStyle(width, color, lineAlpha);
+          bolt.beginPath();
+          points.forEach((point, index) => index ? bolt.lineTo(point.x, point.y) : bolt.moveTo(point.x, point.y));
+          bolt.strokePath();
+        });
+        // 分叉支线
+        for (let branch = 0; branch < 2; branch += 1) {
+          const origin = points[Phaser.Math.Between(3, segments - 3)];
+          const dirX = branch ? 1 : -1;
+          bolt.lineStyle(2 * widthScale, 0x8fd8ff, 0.85);
+          bolt.beginPath();
+          bolt.moveTo(origin.x, origin.y);
+          bolt.lineTo(origin.x + dirX * Phaser.Math.Between(24, 46), origin.y + Phaser.Math.Between(26, 52));
+          bolt.lineTo(origin.x + dirX * Phaser.Math.Between(40, 78), origin.y + Phaser.Math.Between(60, 110));
+          bolt.strokePath();
+        }
+        this.tweens.add({ targets: bolt, alpha: 0, duration: 240, ease: "Cubic.easeIn", onComplete: () => bolt.destroy() });
+      };
+      drawBolt(30 * intensity, intensity, 1);
+      this.time.delayedCall(55, () => drawBolt(38 * intensity, intensity * 0.55, 0.85));
+      this.playStructuralLightningImpact(x, y, intensity);
+    }
+
     playStructuralMarkedLightning(slime, plan, options = {}) {
       const targets = (Array.isArray(plan?.targets) ? plan.targets : []).slice(0, 2)
         .map(target => ({ id: String(target.id || ""), x: Number(target.x) || 0, y: Number(target.y) || 0 }))
@@ -11732,6 +12164,7 @@
       }
       if (slime.structuralMarkedLightningActive) return;
       slime.structuralMarkedLightningActive = true;
+      this.playStructuralBossCastPulse(slime, "lightning", { power: 1.85, duration: 920 });
       const telegraphs = targets.map(target => {
         const ring = this.add.graphics().setPosition(target.x, target.y + 10).setDepth(target.y - 2);
         ring.fillStyle(0x38a7ff, 0.13).fillCircle(0, 0, STRUCTURAL_PHASE3_MARK_RADIUS);
@@ -11757,7 +12190,61 @@
         }).setOrigin(0.5).setDepth(target.y + 120);
         this.tweens.add({ targets: ring, alpha: 0.32, scaleX: 0.96, scaleY: 0.96, duration: 150, yoyo: true, repeat: 6 });
         this.tweens.add({ targets: marker, y: marker.y - 12, alpha: 0.48, duration: 220, yoyo: true, repeat: 4 });
-        return { target, ring, marker };
+        // 旋转符文环：让预警圈在等待期间“活”起来
+        const rune = this.add.graphics().setPosition(target.x, target.y + 10).setDepth(target.y - 1);
+        rune.lineStyle(3, 0x6fd2ff, 0.85);
+        for (let arc = 0; arc < 3; arc += 1) {
+          rune.beginPath();
+          rune.arc(0, 0, STRUCTURAL_PHASE3_MARK_RADIUS * 0.55, (arc * Math.PI * 2) / 3, (arc * Math.PI * 2) / 3 + Math.PI * 0.42);
+          rune.strokePath();
+        }
+        rune.fillStyle(0xbef0ff, 0.9);
+        for (let tri = 0; tri < 3; tri += 1) {
+          const angle = (tri * Math.PI * 2) / 3 + Math.PI * 0.62;
+          const px = Math.cos(angle) * STRUCTURAL_PHASE3_MARK_RADIUS * 0.55;
+          const py = Math.sin(angle) * STRUCTURAL_PHASE3_MARK_RADIUS * 0.55;
+          rune.fillTriangle(px - 7, py - 5, px + 7, py - 5, px, py + 8);
+        }
+        this.tweens.add({ targets: rune, angle: 360, duration: STRUCTURAL_PHASE3_MARK_TELEGRAPH_MS, ease: "Linear" });
+        this.tweens.add({ targets: rune, alpha: 0.45, duration: 240, yoyo: true, repeat: -1 });
+        // 能量向落点汇聚的辉光粒子
+        const moteTimer = this.time.addEvent({
+          delay: 130,
+          repeat: Math.max(0, Math.floor(STRUCTURAL_PHASE3_MARK_TELEGRAPH_MS / 130) - 3),
+          callback: () => {
+            if (!this.textures.exists(LIGHTNING_GLOW_ORB_TEXTURE_KEY)) return;
+            const angle = Math.random() * Math.PI * 2;
+            const radius = STRUCTURAL_PHASE3_MARK_RADIUS * (1.1 + Math.random() * 0.5);
+            const mote = this.add.image(target.x + Math.cos(angle) * radius, target.y + 10 + Math.sin(angle) * radius, LIGHTNING_GLOW_ORB_TEXTURE_KEY)
+              .setBlendMode(Phaser.BlendModes.ADD).setDepth(target.y + 60).setScale(0.55).setAlpha(0);
+            this.tweens.add({
+              targets: mote,
+              x: target.x,
+              y: target.y + 10,
+              scale: 0.18,
+              alpha: { from: 0.9, to: 0.2 },
+              duration: 420,
+              ease: "Sine.easeIn",
+              onComplete: () => mote.destroy()
+            });
+          }
+        });
+        // 落雷前 0.7 秒出现的天光预兆
+        let hintPillar = null;
+        if (this.textures.exists(LIGHTNING_PILLAR_TEXTURE_KEY)) {
+          hintPillar = this.add.image(target.x, target.y + 10, LIGHTNING_PILLAR_TEXTURE_KEY)
+            .setOrigin(0.5, 1).setBlendMode(Phaser.BlendModes.ADD).setDepth(target.y + 40).setAlpha(0);
+          hintPillar.setDisplaySize(46, 470);
+          this.tweens.add({
+            targets: hintPillar,
+            alpha: 0.17,
+            duration: 230,
+            delay: Math.max(0, STRUCTURAL_PHASE3_MARK_TELEGRAPH_MS - 700),
+            yoyo: true,
+            repeat: 2
+          });
+        }
+        return { target, ring, marker, rune, moteTimer, hintPillar };
       });
       const markerTracker = this.time.addEvent({
         delay: 50,
@@ -11774,6 +12261,15 @@
           this.tweens.killTweensOf(item.marker);
           item.ring.destroy();
           item.marker.destroy();
+          if (item.rune) {
+            this.tweens.killTweensOf(item.rune);
+            item.rune.destroy();
+          }
+          if (item.hintPillar) {
+            this.tweens.killTweensOf(item.hintPillar);
+            item.hintPillar.destroy();
+          }
+          item.moteTimer?.remove(false);
         });
         if (!slime.active || this.getCurrentMapId() !== M04_MAP_ID) {
           slime.structuralMarkedLightningActive = false;
@@ -11781,8 +12277,7 @@
         }
         let circleHits = 0;
         targets.forEach((target, targetIndex) => {
-          this.drawLightningArc(target.x, target.y - 460, target.x, target.y + 8, { style: "chain", intensity: 1.42, echo: true });
-          this.renderPhysicalImpactBurst(target.x, target.y + 6, STRUCTURAL_PHASE3_MARK_RADIUS * 0.72, 0x56cfff);
+          this.playStructuralSkyLightningStrike(target.x, target.y, { intensity: 1.25 });
           if (this.actor?.active && Phaser.Math.Distance.Between(this.actor.x, this.actor.y, target.x, target.y) <= STRUCTURAL_PHASE3_MARK_RADIUS) circleHits += 1;
           const targetChains = chains.filter(chain => String(chain.sourceTargetId || "") === target.id);
           for (let branch = 0; branch < 2; branch += 1) {
@@ -11799,7 +12294,7 @@
               const end = { x: Number(point.x) || start.x, y: Number(point.y) || start.y };
               this.time.delayedCall(70 + jump * 95, () => {
                 this.drawLightningArc(start.x, start.y - 34, end.x, end.y - 34, { style: "chain", intensity: 1.12, echo: jump === 0 });
-                this.renderPhysicalImpactBurst(end.x, end.y, 38, 0x77dcff);
+                this.playStructuralLightningImpact(end.x, end.y, 0.55);
                 if (String(point.id || "") === String(app.profile?.id || "")) this.damagePlayer(Math.round(Math.max(1, slime.damage) * 0.58));
               });
               source = end;
@@ -11807,8 +12302,9 @@
           }
         });
         if (circleHits > 0) this.damagePlayer(Math.round(Math.max(1, slime.damage) * (0.95 + (circleHits - 1) * 0.35)));
-        this.cameras.main.flash(220, 76, 190, 255, false);
-        this.cameras.main.shake(360, 0.01);
+        this.cameras.main.flash(160, 150, 215, 255, false);
+        this.cameras.main.shake(420, 0.013);
+        app.audio?.thunderStrike?.();
         app.audio?.lightningChainPulse?.(3);
         slime.structuralMarkedLightningActive = false;
       });
@@ -11818,7 +12314,8 @@
       if (slime.structuralDashing && time >= Number(slime.structuralDashDeadline || Number.POSITIVE_INFINITY)) {
         this.recoverStructuralBossDash(slime);
       }
-      if (!slime.body?.enable && slime.bossPhase === "phase3" && !slime.transforming) {
+      if (!slime.body?.enable && slime.bossPhase === "phase3" && !slime.transforming
+        && !slime.structuralDashing && !slime.structuralDashQueued) {
         this.recoverStructuralBossDash(slime);
       }
       if (!slime.body?.enable || slime.structuralDashing || slime.structuralDashQueued
@@ -11889,6 +12386,132 @@
       return Math.hypot(point.x - (start.x + ratio * dx), point.y - (start.y + ratio * dy));
     }
 
+    spawnGroundBurnPatch(x, y, options = {}) {
+      if (!this.textures.exists(FIRE_GLOW_ORB_TEXTURE_KEY)) return;
+      const power = Math.max(0.3, Number(options.power) || 1);
+      const durationMs = Math.max(600, Number(options.durationMs) || 2600);
+      const depth = y - 4;
+      // 焦痕:双层暗色椭圆 + 余温橙边
+      const scorch = this.add.graphics().setPosition(x, y).setDepth(depth);
+      scorch.fillStyle(0x1c0f0a, 0.55).fillEllipse(0, 0, 104 * power, 40 * power);
+      scorch.fillStyle(0x3a1710, 0.5).fillEllipse(0, 0, 74 * power, 28 * power);
+      scorch.lineStyle(2, 0xff7a36, 0.4).strokeEllipse(0, 0, 108 * power, 42 * power);
+      // 余烬辉光:压扁贴地、明暗呼吸
+      const glow = this.add.image(x, y, FIRE_GLOW_ORB_TEXTURE_KEY)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(depth + 1)
+        .setAlpha(0.5)
+        .setScale(1.7 * power, 0.62 * power);
+      this.tweens.add({ targets: glow, alpha: 0.22, duration: 300, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      // 持续升腾的小火苗
+      const embers = this.add.particles(x, y - 4, FIRE_GLOW_ORB_TEXTURE_KEY, {
+        lifespan: { min: 380, max: 760 },
+        speedY: { min: -66, max: -22 },
+        speedX: { min: -18, max: 18 },
+        scale: { start: 0.3 * power, end: 0 },
+        alpha: { start: 0.85, end: 0 },
+        frequency: Math.round(90 / power),
+        emitZone: { type: "random", source: new Phaser.Geom.Ellipse(0, 0, 88 * power, 30 * power) },
+        blendMode: "ADD"
+      }).setDepth(depth + 2);
+      this.time.delayedCall(durationMs, () => {
+        embers.stop();
+        this.tweens.killTweensOf(glow);
+        this.tweens.add({
+          targets: [scorch, glow],
+          alpha: 0,
+          duration: 900,
+          ease: "Sine.easeIn",
+          onComplete: () => {
+            scorch.destroy();
+            glow.destroy();
+          }
+        });
+        this.time.delayedCall(820, () => embers.destroy());
+      });
+    }
+
+    playFireExplosion(x, y, power = 1, options = {}) {
+      if (!this.textures.exists(FIRE_GLOW_ORB_TEXTURE_KEY)) return;
+      const depthBase = y + 90;
+      // 白热闪光
+      const flash = this.add.image(x, y - 12, FIRE_GLOW_ORB_TEXTURE_KEY)
+        .setBlendMode(Phaser.BlendModes.ADD).setDepth(depthBase + 5)
+        .setScale(1.5 * power).setAlpha(1);
+      this.tweens.add({ targets: flash, scale: 4.2 * power, alpha: 0, duration: 260, ease: "Cubic.easeOut", onComplete: () => flash.destroy() });
+      // 升腾火球:三个辉光球依次上升、膨胀、由白热转暗红
+      const ballTints = [0xffffff, 0xffc06a, 0xff8a3a];
+      for (let index = 0; index < 3; index += 1) {
+        const ball = this.add.image(x + Phaser.Math.Between(-14, 14) * power, y - 8, FIRE_GLOW_ORB_TEXTURE_KEY)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setDepth(depthBase + 4 - index)
+          .setScale((1.1 - index * 0.25) * power)
+          .setAlpha(0.92)
+          .setTint(ballTints[index]);
+        this.tweens.add({
+          targets: ball,
+          y: y - (70 + index * 34) * power,
+          scale: (2 + index * 0.5) * power,
+          alpha: 0,
+          duration: 460 + index * 130,
+          delay: index * 60,
+          ease: "Cubic.easeOut",
+          onComplete: () => ball.destroy()
+        });
+      }
+      // 地面冲击波:透视压扁的双环
+      [0, 80].forEach((delay, index) => {
+        this.time.delayedCall(delay, () => {
+          const ring = this.add.graphics().setPosition(x, y + 4).setDepth(depthBase + 2).setBlendMode(Phaser.BlendModes.ADD);
+          ring.lineStyle(index ? 3 : 5, index ? 0xff7a36 : 0xffd8a8, 0.9);
+          ring.strokeEllipse(0, 0, 60, 24);
+          ring.setScale(0.34).setAlpha(0.95);
+          this.tweens.add({
+            targets: ring,
+            scaleX: (3 + index * 1.4) * power,
+            scaleY: (3 + index * 1.4) * power,
+            alpha: 0,
+            duration: 340 + index * 110,
+            ease: "Cubic.easeOut",
+            onComplete: () => ring.destroy()
+          });
+        });
+      });
+      // 火星迸射:上半圆喷出后受重力回落
+      const sparks = this.add.particles(x, y - 8, FIRE_GLOW_ORB_TEXTURE_KEY, {
+        emitting: false,
+        speed: { min: 150 * power, max: 480 * power },
+        angle: { min: 190, max: 350 },
+        scale: { start: 0.42 * power, end: 0 },
+        alpha: { start: 0.95, end: 0 },
+        lifespan: { min: 320, max: 780 },
+        gravityY: 720,
+        blendMode: "ADD"
+      }).setDepth(depthBase + 3);
+      sparks.explode(Math.max(8, Math.round(20 * power)), 0, 0);
+      this.time.delayedCall(1000, () => sparks.destroy());
+      // 烟雾用普通混合,和加法火光形成物质感对比
+      if (this.textures.exists(LAODENG_SMOKE_TEXTURE_KEY)) {
+        const smoke = this.add.particles(x, y - 16, LAODENG_SMOKE_TEXTURE_KEY, {
+          emitting: false,
+          lifespan: { min: 620, max: 1100 },
+          speed: { min: 26, max: 74 },
+          angle: { min: 235, max: 305 },
+          gravityY: -60,
+          scale: { start: 0.24 * power, end: 0.8 * power },
+          alpha: { start: 0.34, end: 0 },
+          tint: [0x6a3028, 0x3d2b30, 0x26242b]
+        }).setDepth(depthBase + 1);
+        smoke.explode(Math.max(3, Math.round(5 * power)), 0, 0);
+        this.time.delayedCall(1300, () => smoke.destroy());
+      }
+      // 地面灼烧残留
+      if (options.burn !== false) {
+        this.spawnGroundBurnPatch(x, y + 4, { power: power * 0.9, durationMs: Math.round(2400 * power) });
+      }
+      if (options.shake !== false) this.cameras.main.shake(Math.round(240 * power), 0.008 * Math.min(1.4, power));
+    }
+
     createStructuralFirePath(slime, start, end) {
       if (![start?.x, start?.y, end?.x, end?.y].every(Number.isFinite)) return;
       this.structuralFirePaths ||= new Set();
@@ -11896,83 +12519,67 @@
         const oldest = this.structuralFirePaths.values().next().value;
         oldest?.cleanup?.(false);
       }
-      const depth = Math.max(start.y, end.y) + 24;
-      const scorch = this.add.graphics().setDepth(depth - 2);
-      scorch.lineStyle(34, 0x2b1515, 0.34).lineBetween(start.x, start.y, end.x, end.y);
-      scorch.lineStyle(22, 0xa62f1e, 0.3).lineBetween(start.x, start.y, end.x, end.y);
-      const glow = this.add.graphics().setDepth(depth - 1).setBlendMode(Phaser.BlendModes.ADD);
-      glow.lineStyle(13, 0xff4b1f, 0.52).lineBetween(start.x, start.y, end.x, end.y);
-      glow.lineStyle(4, 0xffd467, 0.88).lineBetween(start.x, start.y, end.x, end.y);
-      this.tweens.add({ targets: glow, alpha: 0.32, duration: 260, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-      const flame = this.add.particles(0, 0, PHYSICAL_SPARK_TEXTURE_KEY, {
-        emitting: false,
-        lifespan: { min: 360, max: 720 },
-        speed: { min: 24, max: 94 },
-        angle: { min: 232, max: 308 },
-        gravityY: -86,
-        rotate: { min: -120, max: 120 },
-        scale: { start: 0.82, end: 0 },
-        alpha: { start: 0.94, end: 0 },
-        tint: [0xfff0a0, 0xffb02f, 0xff5a1f, 0xe82f1c],
-        blendMode: "ADD"
-      }).setDepth(depth + 1);
-      const smoke = this.add.particles(0, 0, LAODENG_SMOKE_TEXTURE_KEY, {
-        emitting: false,
-        lifespan: { min: 620, max: 980 },
-        speed: { min: 18, max: 52 },
-        angle: { min: 238, max: 302 },
-        gravityY: -42,
-        scale: { start: 0.2, end: 0.66 },
-        alpha: { start: 0.3, end: 0 },
-        tint: [0x6a3028, 0x3d2b30, 0x26242b]
-      }).setDepth(depth);
       const dx = end.x - start.x;
       const dy = end.y - start.y;
       const length = Math.hypot(dx, dy) || 1;
-      const normal = { x: -dy / length, y: dx / length };
-      const pathState = { cleaned: false, cleanup: null };
-      const flameTimer = this.time.addEvent({
-        delay: 190,
-        loop: true,
-        callback: () => {
-          if (pathState.cleaned) return;
-          for (let index = 0; index < 3; index += 1) {
-            const ratio = Math.random();
-            const jitter = Phaser.Math.Between(-10, 10);
-            const x = start.x + dx * ratio + normal.x * jitter;
-            const y = start.y + dy * ratio + normal.y * jitter;
-            flame.explode(index === 0 ? 3 : 2, x, y);
-            if (index === 0) smoke.explode(1, x, y + 4);
-          }
-        }
-      });
-      pathState.cleanup = (explode = true) => {
+      const nodeCount = clamp(Math.ceil(length / MAP_TILE_SIZE), 1, STRUCTURAL_FIRE_NODE_MAX_PER_SEGMENT);
+      const pathState = { cleaned: false, cleanup: null, timers: [], warnings: new Set(), damageApplied: false };
+      const destroyWarning = warning => {
+        if (!warning) return;
+        this.tweens.killTweensOf(warning);
+        warning.destroy?.();
+        pathState.warnings.delete(warning);
+      };
+      pathState.cleanup = () => {
         if (pathState.cleaned) return;
         pathState.cleaned = true;
-        flameTimer.remove(false);
-        this.tweens.killTweensOf(glow);
+        pathState.timers.forEach(timer => timer?.remove?.(false));
+        pathState.timers.length = 0;
+        [...pathState.warnings].forEach(destroyWarning);
         this.structuralFirePaths.delete(pathState);
-        if (explode && this.getCurrentMapId() === M04_MAP_ID) {
-          this.renderPhysicalImpactBurst((start.x + end.x) / 2, (start.y + end.y) / 2, 96, 0xff6a36);
-          if (this.actor?.active && this.distanceToSegment(this.actor, start, end) <= 72) this.damagePlayer(Math.round(slime.damage * 1.05));
-          app.audio?.fireExplosion?.(2);
-        }
-        this.tweens.add({
-          targets: [scorch, glow],
-          alpha: 0,
-          duration: 320,
-          onComplete: () => {
-            scorch.destroy();
-            glow.destroy();
-          }
-        });
-        this.time.delayedCall(1050, () => {
-          flame.destroy();
-          smoke.destroy();
-        });
       };
       this.structuralFirePaths.add(pathState);
-      this.time.delayedCall(STRUCTURAL_FIRE_PATH_DELAY_MS, () => pathState.cleanup(true));
+      for (let index = 0; index < nodeCount; index += 1) {
+        const ratio = (index + 0.5) / nodeCount;
+        const x = start.x + dx * ratio;
+        const y = start.y + dy * ratio;
+        const plantTimer = this.time.delayedCall(index * STRUCTURAL_FIRE_NODE_PLANT_STEP_MS, () => {
+          if (pathState.cleaned || this.getCurrentMapId() !== M04_MAP_ID) return;
+          const warning = this.add.container(x, y + 5).setDepth(y + 18).setAlpha(0);
+          const glow = this.add.image(0, 0, FIRE_GLOW_ORB_TEXTURE_KEY)
+            .setBlendMode(Phaser.BlendModes.ADD)
+            .setTint(0xff5b26)
+            .setAlpha(0.46)
+            .setScale(0.72, 0.28);
+          const ring = this.add.ellipse(0, 0, 50, 20, 0xff3f1d, 0.12)
+            .setStrokeStyle(3, 0xffb24b, 0.9)
+            .setBlendMode(Phaser.BlendModes.ADD);
+          const core = this.add.ellipse(0, 0, 18, 7, 0xfff0a0, 0.72)
+            .setBlendMode(Phaser.BlendModes.ADD);
+          warning.add([glow, ring, core]);
+          pathState.warnings.add(warning);
+          this.tweens.add({ targets: warning, alpha: 0.95, scaleX: 1.08, scaleY: 1.08, duration: 140, ease: "Back.easeOut" });
+          this.tweens.add({ targets: [glow, ring], alpha: { from: 0.9, to: 0.34 }, scaleX: "+=0.18", scaleY: "+=0.08", duration: 180, yoyo: true, repeat: 3, ease: "Sine.easeInOut" });
+          const explodeTimer = this.time.delayedCall(STRUCTURAL_FIRE_NODE_FUSE_MS, () => {
+            if (pathState.cleaned) return;
+            destroyWarning(warning);
+            if (this.getCurrentMapId() !== M04_MAP_ID) return;
+            this.playFireExplosion(x, y, index === nodeCount - 1 ? 0.72 : 0.58, { burn: false, shake: index === nodeCount - 1 });
+            if (!pathState.damageApplied && this.actor?.active && Math.hypot(this.actor.x - x, this.actor.y - y) <= 72) {
+              pathState.damageApplied = true;
+              this.damagePlayer(Math.round(slime.damage * 1.05));
+            }
+            if (index % 2 === 0) app.audio?.fireExplosion?.(1);
+          });
+          pathState.timers.push(explodeTimer);
+        });
+        pathState.timers.push(plantTimer);
+      }
+      const cleanupTimer = this.time.delayedCall(
+        (nodeCount - 1) * STRUCTURAL_FIRE_NODE_PLANT_STEP_MS + STRUCTURAL_FIRE_NODE_FUSE_MS + 900,
+        () => pathState.cleanup()
+      );
+      pathState.timers.push(cleanupTimer);
     }
 
     startStructuralBossDash(slime, points = [], options = {}) {
@@ -12010,6 +12617,7 @@
       slime.body?.setVelocity(0, 0);
       if (slime.body) slime.body.enable = false;
       this.playEnemyAnimation(slime, "phaseSpecial", true);
+      this.playStructuralBossCastPulse(slime, "fire", { power: 1.75, duration: 720 });
       const route = points.slice(0, 5)
         .filter(point => Number.isFinite(Number(point?.x)) && Number.isFinite(Number(point?.y)))
         .map(point => ({
@@ -12082,10 +12690,11 @@
     playLeafSlimeHit(slime, baseDamage = MELEE.damage, options = {}) {
       if (slime.transforming || (slime.state === "hit" && !options.allowComboHit) || slime.state === "dead" || slime.state === "vanish" || slime.state === "emerging") return 0;
       if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && slime.bossPhase === "charging") {
-        this.showFloatingText(slime.x, slime.y + slime.hudOffsetY - 18, "能量罩吸收", {
+        const feedback = this.getEnemyHitFeedbackAnchors(slime);
+        this.showFloatingText(feedback.x, feedback.textY, "能量罩吸收", {
           color: "#bff7ff",
           size: "22px",
-          rise: 44,
+          rise: 38,
           duration: 620
         });
         slime.energyShield?.setAlpha(0.58);
@@ -12105,9 +12714,10 @@
         energyGained = this.restoreEnergy(options.energyGain ?? ENERGY_HIT_GAIN, slime.x, slime.y);
       }
       this.refreshEnemyHpBar(slime);
+      const feedback = this.getEnemyHitFeedbackAnchors(slime);
       this.showFloatingText(
-        slime.x,
-        slime.y + slime.hudOffsetY - 18,
+        feedback.x,
+        feedback.textY,
         `${result.critical ? "暴击 " : ""}-${result.amount}`,
         {
           color: result.critical ? "#ffd86b" : "#fff7e6",
@@ -12117,47 +12727,45 @@
           strokeThickness: result.critical ? 8 : 7,
           hold: result.critical ? 240 : 180,
           duration: result.critical ? 1250 : 1080,
-          rise: result.critical ? 92 : 72
+          rise: feedback.compactRise ? (result.critical ? 64 : 52) : (result.critical ? 92 : 72)
         }
       );
       this.playEnemyHitImpact(slime, result.critical);
-      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && slime.bossPhase === "phase1" && slime.hp <= 0) {
+      // BOSS 的击杀 / 转阶段裁决只允许主控端做，且只有 phase3 才可能真死。
+      // 否则阶段状态落后的客户端把本地血量打到 0 时会走通用路径广播 dead，
+      // 全队的 BOSS 会在二阶段中途被移除、永远看不到三阶段。
+      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && slime.hp <= 0 && slime.bossPhase !== "phase3") {
+        const hitEffect = {
+          damageAmount: result.amount,
+          critical: result.critical,
+          hitKind: options.kind || "magic",
+          energyGained
+        };
         if (app.connected && !this.isEncounterCoordinator()) {
-          this.broadcastEnemyState(slime, "visualHit", {
-            damageAmount: result.amount,
-            critical: result.critical,
-            hitKind: options.kind || "magic",
-            energyGained
-          });
+          // 快照带 hp=0 上报，让主控端裁决转阶段；本地血量回夹到 1 防误杀
+          this.broadcastEnemyState(slime, "visualHit", hitEffect);
+          slime.hp = 1;
+          this.refreshEnemyHpBar(slime);
           this.playStructuralBossVisualHit(slime);
           return result.amount;
         }
-        slime.hp = slime.maxHp;
-        this.refreshEnemyHpBar(slime);
-        this.triggerStructuralBossTransform(slime, {
-          effect: {
-            damageAmount: result.amount,
-            critical: result.critical,
-            hitKind: options.kind || "magic",
-            energyGained
-          }
-        });
-        return result.amount;
-      }
-      if (slime.textureKey === M04_STRUCTURAL_BOSS_KEY && slime.bossPhase === "phase2Combat" && slime.hp <= 0) {
-        if (app.connected && !this.isEncounterCoordinator()) {
-          this.broadcastEnemyState(slime, "visualHit", {
-            damageAmount: result.amount,
-            critical: result.critical,
-            hitKind: options.kind || "magic",
-            energyGained
-          });
-          this.playStructuralBossVisualHit(slime);
+        if (slime.bossPhase === "phase1") {
+          slime.hp = slime.maxHp;
+          this.refreshEnemyHpBar(slime);
+          this.triggerStructuralBossTransform(slime, { effect: hitEffect });
           return result.amount;
         }
-        slime.hp = slime.maxHp;
+        if (slime.bossPhase === "phase2Combat") {
+          slime.hp = slime.maxHp;
+          this.refreshEnemyHpBar(slime);
+          this.enterStructuralBossPhaseThree(slime);
+          return result.amount;
+        }
+        // 充能 / 变身 / 阶段过场期间不可被击杀
+        slime.hp = 1;
         this.refreshEnemyHpBar(slime);
-        this.enterStructuralBossPhaseThree(slime);
+        this.broadcastEnemyState(slime, "visualHit", hitEffect);
+        this.playStructuralBossVisualHit(slime);
         return result.amount;
       }
       const defeated = slime.hp <= 0;
@@ -13170,6 +13778,7 @@
         return;
       }
       app.audio.heal();
+      this.playCharacterSignatureCast(app.profile.characterId, { power: 0.82, duration: 560 });
       this.playHealEffect(this.actor?.x || 0, this.actor?.y || 0);
       this.playShieldEffect(this.actor?.x || 0, this.actor?.y || 0, false);
       if (healed > 0) this.showFloatingText(this.actor.x, this.actor.y - 122, `+${Math.ceil(healed)}`, { color: "#7dffbd", size: "20px", rise: 56 });
@@ -13217,6 +13826,8 @@
       if (key === "h") this.healPlayer();
       if (key === "l") this.toggleTransformState();
       if (key === "i") setInventoryOpen($("#inventoryPanel")?.classList.contains("collapsed"));
+      if (key === "t") setPanelCollapsed("chapterHud", !$("#chapterHud")?.classList.contains("collapsed"));
+      if (key === "m") setPanelCollapsed("minimapPanel", !$("#minimapPanel")?.classList.contains("collapsed"));
       if (key === "q") this.toggleCollisionDebug();
       if (key === "e") this.triggerInteraction();
     }
@@ -13263,7 +13874,9 @@
           return;
         }
         if (this.checkLeafSlimeProjectileHit(projectile)) return;
-        if (app.boss.active && app.boss.hp > 0) {
+        // 必须要求教授精灵可见：变身机械 BOSS 后 app.boss 仍是 active，
+        // 否则教授原站位会留下一个吞掉弹道的“隐形碰撞区”。
+        if (app.boss.active && app.boss.hp > 0 && this.bossSprite?.visible) {
           const bossDistance = Phaser.Math.Distance.Between(projectile.x, projectile.y, app.boss.x, app.boss.y - 60);
           if (bossDistance < 96) {
             this.hitBoss(projectile);
@@ -13615,6 +14228,30 @@
     showToast("开启 Boss 宝箱，第一章陆教授考核完成");
   }
 
+  let gameFreezeGuardInstalled = false;
+  function installGameFreezeGuard() {
+    if (gameFreezeGuardInstalled) return;
+    gameFreezeGuardInstalled = true;
+    // Phaser 在帧回调内抛出未捕获异常时不会再排下一帧 rAF，游戏会永久
+    // 定格（表现为“卡死”）。这里记录异常堆栈，并在确认主循环停摆后
+    // 重新拉起帧循环，让一次异常只损失几帧而不是整局。
+    window.addEventListener("error", event => {
+      console.error("[EFV] 捕获到未处理异常：", event.error || event.message || event);
+      const loop = app.game?.loop;
+      const raf = loop?.raf;
+      if (!loop || !raf?.isRunning) return;
+      const frameBefore = loop.frame;
+      window.setTimeout(() => {
+        const currentLoop = app.game?.loop;
+        if (!currentLoop || currentLoop !== loop) return;
+        if (loop.frame === frameBefore && raf.isRunning && typeof raf.step === "function") {
+          console.warn("[EFV] 检测到游戏主循环停摆，正在重新启动帧循环");
+          window.requestAnimationFrame(raf.step);
+        }
+      }, 400);
+    });
+  }
+
   function startGame(profile) {
     app.profile = normalizeProfile(profile);
     app.chapterOne = loadChapterState();
@@ -13627,6 +14264,7 @@
     resetChat();
     renderHud();
     renderInventory();
+    installGameFreezeGuard();
     if (!app.game) {
       app.game = new Phaser.Game({
         type: Phaser.AUTO,
@@ -13746,7 +14384,7 @@
   }
 
   function bindSkillTooltips() {
-    const selector = ".skill[data-skill-id], .quickbar button[data-tooltip-title]";
+    const selector = ".skill[data-skill-id], .skill[data-tooltip-title], .quickbar button[data-tooltip-title]";
     document.querySelectorAll(selector).forEach(button => {
       button.addEventListener("pointerenter", event => {
         if (event.pointerType !== "touch") showSkillTooltip(button, false);
